@@ -1,0 +1,235 @@
+/* ─── App shell ─── */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  position: sticky;
+  top: 0;           /* ΑΠΑΡΑΙΤΗΤΟ: Καθορίζει πού θα κολλήσει */
+  width: 220px;
+  height: 100vh;    /* Ή 100dvh για καλύτερη συμβατότητα σε κινητά */
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: width 0.2s ease, padding 0.2s ease;
+  overflow-y: auto;  /* Επιτρέπει το scroll μέσα στη sidebar αν το περιεχόμενο είναι πολύ */
+}
+
+/* ─── Toggle button ─── */
+.sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius);
+  align-self: flex-end;
+  transition: color 0.15s, background 0.15s;
+  margin-bottom: 0.35rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle:hover {
+  color: var(--text);
+  background: var(--bg-input);
+}
+
+/* ─── Section labels ─── */
+.sidebar-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 0.75rem;
+  margin-bottom: 0.4rem;
+  margin-top: 0.75rem;
+  white-space: nowrap;
+}
+
+.sidebar-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-header h4{
+ white-space: nowrap;
+}
+
+.sidebar-section-label:first-of-type {
+  margin-top: 0;
+}
+
+/* ─── Nav links ─── */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-link:hover {
+  background: var(--bg-input);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.sidebar-link.active {
+  background: rgba(79, 124, 255, 0.12);
+  color: var(--blue);
+}
+
+.sidebar-link svg {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.sidebar-link.active svg {
+  opacity: 1;
+}
+
+/* ─── Bottom logout area ─── */
+.sidebar-logout {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius);
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+
+    margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-logout:hover {
+  background: var(--bg-input);
+  color: var(--red);
+}
+
+/* ─── Collapsed state (desktop only) ─── */
+.sidebar.collapsed {
+  width: 54px;
+  padding: 1.25rem 0.5rem;
+  align-items: center;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  align-self: center;
+}
+
+.sidebar.collapsed .sidebar-section-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-link {
+  justify-content: center;
+  padding: 0.55rem;
+  width: 100%;
+}
+
+.sidebar.collapsed .sidebar-link-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-bottom {
+  display: none;
+}
+
+/* ─── Main content area ─── */
+.app-main {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  overflow-y: auto;
+}
+
+/* ─── Mobile: always show full horizontal strip ─── */
+@media (max-width: 640px) {
+  .app-body {
+    flex-direction: column;
+  }
+  .sidebar-header h4{
+    display: none;
+  }
+  /* Reset collapsed styles on mobile */
+  .sidebar,
+  .sidebar.collapsed {
+    width: 100%;
+    height: 4.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    gap: 0.15rem;
+    overflow-x: auto;
+    align-items: center;
+    transition: none;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar-bottom,
+  .sidebar.collapsed .sidebar-bottom {
+    display: none;
+  }
+
+  .sidebar-section-label,
+  .sidebar.collapsed .sidebar-section-label {
+    display: none;
+  }
+
+  .sidebar-link,
+  .sidebar.collapsed .sidebar-link {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: auto;
+  }
+
+  .sidebar-link-label,
+  .sidebar.collapsed .sidebar-link-label {
+    display: block;
+  }
+
+  .app-main {
+    padding: 1.25rem 1rem;
+  }
+}

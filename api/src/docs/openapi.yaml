@@ -1,0 +1,716 @@
+openapi: 3.0.3
+info:
+  title: Auth Boilerplate API
+  description: |
+    A production-ready authentication API with JWT access tokens, refresh token rotation,
+    reuse detection, Google OAuth, email verification, and session management.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4000
+    description: Local development
+
+tags:
+  - name: health
+    description: Service health check
+  - name: auth
+    description: Authentication and session management
+  - name: user
+    description: Current user profile operations
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token obtained from `/auth/login` or `/auth/refresh`
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: clxyz123abc
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        isVerified:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        family:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+          example: Something went wrong
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            message: Unauthorized
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+    Conflict:
+      description: Resource conflict (e.g. email already in use)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: Returns server status and current timestamp.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new account
+      description: |
+        Creates a pending registration and sends an email with a verification link.
+        The account is not active until the email is verified via `/auth/verify-email`.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: Password123!
+      responses:
+        '201':
+          description: Verification email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: Verification email sent. Please check your inbox.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                message: Email already in use
+
+  /auth/verify-email:
+    get:
+      tags: [auth]
+      summary: Verify email address
+      description: |
+        Verifies the email token from the verification link. On success, creates the
+        user account and marks it as verified.
+      operationId: verifyEmail
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Verification token from the email link
+      responses:
+        '200':
+          description: Email verified and account created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid:
+                  value:
+                    status: error
+                    message: Invalid verification token
+                expired:
+                  value:
+                    status: error
+                    message: Verification token expired
+
+  /auth/resend-verification:
+    post:
+      tags: [auth]
+      summary: Resend verification email
+      description: |
+        Generates a new verification token and resends the email.
+        Always returns success to prevent email enumeration.
+      operationId: resendVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: Verification email sent (or silently ignored if email not pending)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: If a pending registration exists, a new verification email has been sent.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in
+      description: |
+        Authenticates the user with email and password.
+
+        Returns a short-lived **access token** in the response body and sets a
+        long-lived **refresh token** as an `HttpOnly` cookie named `refreshToken`.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: Password123!
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: HttpOnly refresh token cookie
+              schema:
+                type: string
+                example: refreshToken=eyJ...; Path=/; HttpOnly; SameSite=Strict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                message: Invalid credentials
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token
+      description: |
+        Uses the `refreshToken` cookie to issue a new access token and rotate the
+        refresh token (token rotation). If the refresh token has already been used
+        (reuse attack), all sessions for the user are immediately invalidated.
+      operationId: refreshToken
+      parameters:
+        - in: cookie
+          name: refreshToken
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: New access token issued
+          headers:
+            Set-Cookie:
+              description: New rotated refresh token cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+        '401':
+          description: Missing, invalid, expired, or reused refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  value:
+                    status: error
+                    message: No refresh token provided
+                invalid:
+                  value:
+                    status: error
+                    message: Invalid refresh token
+                reused:
+                  value:
+                    status: error
+                    message: Session invalidated. Please log in again.
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Log out
+      description: |
+        Invalidates the current refresh token and clears the `refreshToken` cookie.
+        Access tokens remain valid until they expire (short-lived by design).
+      operationId: logout
+      parameters:
+        - in: cookie
+          name: refreshToken
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Logged out successfully
+          headers:
+            Set-Cookie:
+              description: Clears the refresh token cookie
+              schema:
+                type: string
+                example: refreshToken=; Max-Age=0; Path=/; HttpOnly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: Logged out successfully
+
+  /auth/forgot-password:
+    post:
+      tags: [auth]
+      summary: Request password reset
+      description: |
+        Sends a password reset email if the address belongs to an existing account.
+        Always returns success to prevent email enumeration.
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: Reset email sent (or silently ignored)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          description: Too many requests
+
+  /auth/reset-password:
+    post:
+      tags: [auth]
+      summary: Reset password
+      description: |
+        Resets the user's password using a valid reset token and invalidates all
+        existing sessions to prevent use of any stolen tokens.
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                  description: Reset token from the password reset email
+                password:
+                  type: string
+                  minLength: 8
+                  example: NewPassword123!
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: Password reset successfully
+        '400':
+          description: Invalid, expired, or already-used token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid:
+                  value:
+                    status: error
+                    message: Invalid reset token
+                expired:
+                  value:
+                    status: error
+                    message: Reset token expired
+                used:
+                  value:
+                    status: error
+                    message: Reset token already used
+
+  /auth/sessions:
+    get:
+      tags: [auth]
+      summary: List active sessions
+      description: Returns all active refresh token sessions for the authenticated user.
+      operationId: getSessions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of active sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      sessions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Session'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags: [auth]
+      summary: Revoke all sessions
+      description: |
+        Deletes all refresh tokens for the authenticated user, effectively logging
+        them out of all devices. Clears the current refresh token cookie.
+      operationId: revokeAllSessions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All sessions revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: All sessions revoked
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/google:
+    get:
+      tags: [auth]
+      summary: Initiate Google OAuth
+      description: |
+        Redirects the user to Google's OAuth consent screen.
+        Not directly callable as a JSON API — navigate the browser to this URL.
+      operationId: googleAuth
+      responses:
+        '302':
+          description: Redirect to Google OAuth
+
+  /auth/google/callback:
+    get:
+      tags: [auth]
+      summary: Google OAuth callback
+      description: |
+        Handles the OAuth callback from Google. On success, sets the refresh token
+        cookie and redirects to the frontend with the access token as a query parameter.
+      operationId: googleCallback
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to frontend with access token
+
+  /user/me:
+    get:
+      tags: [user]
+      summary: Get current user
+      description: Returns the authenticated user's profile. Never exposes `passwordHash`.
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags: [user]
+      summary: Update current user
+      description: |
+        Updates the authenticated user's email and/or password.
+
+        - **Email change**: marks account as unverified; a new verification email is sent.
+        - **Password change**: revokes all active sessions (other devices are logged out).
+      operationId: updateMe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: newemail@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: NewPassword123!
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    delete:
+      tags: [user]
+      summary: Delete current user
+      description: |
+        Permanently deletes the authenticated user's account after verifying their
+        password. All associated data (sessions, tokens) is removed.
+      operationId: deleteMe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  example: Password123!
+      responses:
+        '200':
+          description: Account deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                status: success
+                data:
+                  message: Account deleted successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Wrong password or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

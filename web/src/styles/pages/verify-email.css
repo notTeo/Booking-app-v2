@@ -1,0 +1,13 @@
+.verify-email-status {
+  color: var(--text-muted);
+}
+
+.verify-resend-form {
+  margin-top: 1.25rem;
+}
+
+.verify-resend-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}

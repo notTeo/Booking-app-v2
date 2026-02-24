@@ -1,0 +1,178 @@
+.about-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem 4rem;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  gap: 3rem;
+}
+
+/* --- Hero --- */
+.about-hero {
+  text-align: center;
+}
+
+.about-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.about-tagline {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 580px;
+  line-height: 1.7;
+}
+
+/* --- Sections --- */
+.about-section {
+  width: 100%;
+}
+
+.about-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+/* --- Features list --- */
+.about-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.about-features li {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  padding-left: 1.4rem;
+  position: relative;
+}
+
+.about-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.about-features code {
+  font-size: 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  color: var(--blue);
+}
+
+/* --- Stack table --- */
+.about-stack {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.about-stack-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-stack-row:last-child {
+  border-bottom: none;
+}
+
+.about-stack-layer {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  align-self: center;
+}
+
+.about-stack-tech {
+  font-size: 0.9rem;
+  color: var(--text);
+  align-self: center;
+}
+
+/* --- Author card --- */
+.author-card {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.author-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.author-bio {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.author-cta {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.author-cta .btn {
+  width: auto;
+  padding: 0.55rem 1.25rem;
+}
+
+/* ============ Mobile ============ */
+@media (max-width: 640px) {
+  .about-page {
+    padding: 2rem 1rem 3rem;
+    gap: 2.25rem;
+  }
+
+  .about-title {
+    font-size: 1.8rem;
+  }
+
+  .about-tagline {
+    font-size: 0.95rem;
+  }
+
+  .about-stack-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .about-stack-layer {
+    align-self: auto;
+  }
+
+  .about-stack-tech {
+    align-self: auto;
+  }
+
+  .author-cta {
+    flex-direction: column;
+  }
+
+  .author-cta .btn {
+    width: 100%;
+  }
+}

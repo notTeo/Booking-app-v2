@@ -1,0 +1,59 @@
+.billing-page {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.billing-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.billing-alert {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #22c55e;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.billing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem;
+}
+
+.billing-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.billing-label {
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.95rem;
+}
+
+.plan-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.plan-badge--free {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+}
+
+.plan-badge--pro {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.billing-actions {
+  margin-top: 0.5rem;
+}
