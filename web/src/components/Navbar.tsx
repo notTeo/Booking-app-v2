@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useLang } from '../context/LanguageContext';
 import '../styles/pages/navbar.css';
 
 export default function Navbar() {
   const { isAuthenticated, isLoading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { t, language, toggleLanguage } = useLang();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -16,28 +20,52 @@ export default function Navbar() {
     closeMenu();
   };
 
+  const Toggles = () => (
+    <div className="navbar-toggles">
+      <button
+        className="toggle-btn"
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+      >
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
+      <button
+        className="toggle-btn"
+        onClick={toggleLanguage}
+        aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
+        title={language === 'el' ? 'English' : 'Ελληνικά'}
+      >
+        {language === 'el' ? '🇬🇷' : '🇬🇧'}
+      </button>
+    </div>
+  );
+
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand" onClick={closeMenu}>AuthBoilerplate</Link>
+      <Link to="/" className="navbar-brand" onClick={closeMenu}>BOOKLY</Link>
 
       {/* Desktop nav links */}
       <div className="navbar-links">
-        <Link to="/pricing" className="navbar-link">Pricing</Link>
-        <Link to="/about" className="navbar-link">About</Link>
+        <Link to="/pricing" className="navbar-link">{t.nav.pricing}</Link>
+        <Link to="/about" className="navbar-link">{t.nav.about}</Link>
       </div>
+
+      {/* Desktop toggles */}
+      <Toggles />
 
       {/* Desktop auth actions */}
       <div className="navbar-actions">
         {!isLoading && (
           isAuthenticated ? (
-            <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
+            <button className="btn btn-ghost" onClick={handleLogout}>{t.nav.logout}</button>
           ) : (
             <>
               <Link to="/login">
-                <button className="btn btn-ghost">Login</button>
+                <button className="btn btn-ghost">{t.nav.login}</button>
               </Link>
               <Link to="/register">
-                <button className="btn btn-primary">Register</button>
+                <button className="btn btn-primary">{t.nav.register}</button>
               </Link>
             </>
           )
@@ -58,19 +86,21 @@ export default function Navbar() {
       {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="navbar-mobile-menu">
-          <Link to="/pricing" className="navbar-link" onClick={closeMenu}>Pricing</Link>
-          <Link to="/about" className="navbar-link" onClick={closeMenu}>About</Link>
+          <Link to="/pricing" className="navbar-link" onClick={closeMenu}>{t.nav.pricing}</Link>
+          <Link to="/about" className="navbar-link" onClick={closeMenu}>{t.nav.about}</Link>
+          <div className="navbar-mobile-divider" />
+          <Toggles />
           <div className="navbar-mobile-divider" />
           {!isLoading && (
             isAuthenticated ? (
-              <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
+              <button className="btn btn-ghost" onClick={handleLogout}>{t.nav.logout}</button>
             ) : (
               <>
                 <Link to="/login" onClick={closeMenu}>
-                  <button className="btn btn-ghost">Login</button>
+                  <button className="btn btn-ghost">{t.nav.login}</button>
                 </Link>
                 <Link to="/register" onClick={closeMenu}>
-                  <button className="btn btn-primary">Register</button>
+                  <button className="btn btn-primary">{t.nav.register}</button>
                 </Link>
               </>
             )

@@ -15,8 +15,8 @@ const baseTemplate = (title: string, content: string) => `
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #ffffff;
-      color: #1a1a2e;
+      background: #FAF5EE;
+      color: #1d503A;
       font-family: 'Poppins', sans-serif;
       padding: 2rem 1rem;
     }
@@ -27,12 +27,13 @@ const baseTemplate = (title: string, content: string) => `
     .brand {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #4f7cff;
+      color: #1d503A;
       margin-bottom: 1.5rem;
+      letter-spacing: 0.04em;
     }
     .card {
-      background: #f4f5f9;
-      border: 1px solid #d8dae8;
+      background: #ffffff;
+      border: 1px solid #D5C9B6;
       border-radius: 10px;
       padding: 2rem 1.5rem;
     }
@@ -40,18 +41,18 @@ const baseTemplate = (title: string, content: string) => `
       font-size: 1.5rem;
       font-weight: 800;
       margin-bottom: 0.75rem;
-      color: #1a1a2e;
+      color: #1d503A;
     }
     p {
-      color: #5a6080;
+      color: #5C7A68;
       font-size: 0.95rem;
       line-height: 1.6;
       margin-bottom: 1.25rem;
     }
     .btn {
-      background: #4f7cff;
+      background: #1d503A;
       border-radius: 10px;
-      color: #fff;
+      color: #FAF5EE;
       display: inline-block;
       font-size: 1rem;
       font-weight: 700;
@@ -59,41 +60,19 @@ const baseTemplate = (title: string, content: string) => `
       text-decoration: none;
     }
     .footer {
-      color: #5a6080;
+      color: #5C7A68;
       font-size: 0.8rem;
       margin-top: 1.25rem;
       text-align: center;
     }
     strong {
-      color: #1a1a2e;
-    }
-    @media (prefers-color-scheme: dark) {
-      body {
-        background: #0f1117;
-        color: #e8eaf6;
-      }
-      .card {
-        background: #1a1d27;
-        border-color: #2e3352;
-      }
-      h1 {
-        color: #e8eaf6;
-      }
-      p {
-        color: #7b82a8;
-      }
-      .footer {
-        color: #7b82a8;
-      }
-      strong {
-        color: #e8eaf6;
-      }
+      color: #1d503A;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="brand">AuthBoilerplate</div>
+    <div class="brand">BOOKLY</div>
     <div class="card">
       ${content}
     </div>

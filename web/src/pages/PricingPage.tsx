@@ -31,19 +31,19 @@ export default function PricingPage() {
     <div className="dashboard-layout">
       <Navbar />
       <div className="plans-page">
-        <h1 className="plans-title">Plans</h1>
+        <h1 className="plans-title">Simple, Honest Pricing</h1>
 
         <div className="plans-grid">
-          {/* Free Plan */}
+          {/* Starter Plan */}
           <div className="card plan-card">
-            <h2 className="plan-name">Free</h2>
+            <h2 className="plan-name">Starter</h2>
             <p className="plan-price">€0 / month</p>
             <ul className="plan-features">
-              <li>Basic authentication (login / register)</li>
-              <li>JWT access tokens</li>
-              <li>Refresh token support</li>
-              <li>Email verification (dummy)</li>
-              <li>Single environment setup</li>
+              <li>1 staff member</li>
+              <li>Online booking page</li>
+              <li>Up to 30 appointments per month</li>
+              <li>Email booking confirmations</li>
+              <li>Basic service management</li>
             </ul>
             <button className="btn btn-ghost" disabled>
               {user?.plan === 'free' || !isAuthenticated ? 'Current Plan' : ''}
@@ -55,12 +55,12 @@ export default function PricingPage() {
             <h2 className="plan-name">Pro</h2>
             <p className="plan-price">€19 / month</p>
             <ul className="plan-features">
-              <li>Everything in Free</li>
-              <li>Role-based access control</li>
-              <li>OAuth providers (Google, GitHub)</li>
-              <li>Advanced session management</li>
-              <li>Audit logs & security events</li>
-              <li>Production-ready auth setup</li>
+              <li>Everything in Starter</li>
+              <li>Unlimited appointments</li>
+              <li>Up to 10 staff members</li>
+              <li>SMS & email reminders</li>
+              <li>Client profiles & history</li>
+              <li>Multi-location support</li>
             </ul>
             {user?.plan === 'pro' ? (
               <button className="btn btn-ghost" disabled>Current Plan</button>

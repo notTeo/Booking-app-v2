@@ -31,21 +31,57 @@ model Subscription {
   updatedAt            DateTime           @updatedAt
 }
 
+enum ShopRole {
+  owner
+  staff
+}
+
+model Shop {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // used for subdomain/public URL
+  description String?
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  timezone    String   @default("UTC")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members UserShop[]
+}
+
+model UserShop {
+  id        String   @id @default(cuid())
+  userId    String
+  shopId    String
+  role      ShopRole @default(staff)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopId])
+}
+
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?
-  isVerified   Boolean  @default(false)
-  googleId     String?  @unique
-  stripeCustomerId  String?   @unique
-  subscription      Subscription?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String        @id @default(cuid())
+  email            String        @unique
+  passwordHash     String?
+  isVerified       Boolean       @default(false)
+  googleId         String?       @unique
+  stripeCustomerId String?       @unique
+  subscription     Subscription?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   refreshTokens          RefreshToken[]
   emailVerificationToken EmailVerificationToken?
   passwordResetToken     PasswordResetToken?
   pendingEmailChange     PendingEmailChange?
+  userShops              UserShop[]
 }
 
 model RefreshToken {

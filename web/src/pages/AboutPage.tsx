@@ -1,76 +1,75 @@
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import '../styles/pages/about.css'
+import { useLang } from '../context/LanguageContext';
 
 export default function AboutPage() {
+    const { t } = useLang();
   return (
     <div className="dashboard-layout">
       <Navbar />
       <div className="about-page">
 
         <section className="about-hero">
-          <h1 className="about-title">Auth Boilerplate</h1>
+          <h1 className="about-title">{t.about.title}</h1>
           <p className="about-tagline">
-            A full-stack TypeScript authentication starter with everything you need to ship auth in a real app.
-            Clone it, configure your env, and start building your actual product.
-          </p>
+            {t.about.tagline}
+            </p>
         </section>
 
         <section className="about-section">
-          <h2 className="about-section-title">Features</h2>
+          <h2 className="about-section-title">{t.about.offerTitle}</h2>
           <ul className="about-features">
-            <li>Register with email + password — sends a verification email</li>
-            <li>Email verification — account is only created after the link is clicked</li>
-            <li>Login / Logout — JWT access + refresh token rotation</li>
-            <li>Refresh token — stored in an <code>httpOnly</code> cookie, rotated on every use</li>
-            <li>Forgot / Reset password — token-based, invalidates all sessions on reset</li>
-            <li>Google OAuth — sign in or register via Google</li>
-            <li>Protected routes — frontend redirects unauthenticated users</li>
-            <li>Security — helmet, CORS, rate limiting, bcrypt, input validation</li>
-            <li>API docs — Swagger UI at <code>/docs</code> (local dev only)</li>
+            <li>{t.about.f1}</li>
+            <li>{t.about.f2}</li>
+            <li>{t.about.f3}</li>
+            <li>{t.about.f4}</li>
+            <li>{t.about.f5}</li>
+            <li>{t.about.f6}</li>
+            <li>{t.about.f7}</li>
+            <li>{t.about.f8}</li>
+            <li>{t.about.f9}</li>
           </ul>
         </section>
 
         <section className="about-section">
-          <h2 className="about-section-title">Stack</h2>
+          <h2 className="about-section-title">{t.about.howTitle}</h2>
           <div className="about-stack">
             <div className="about-stack-row">
-              <span className="about-stack-layer">API</span>
-              <span className="about-stack-tech">Express, TypeScript, Prisma, PostgreSQL</span>
+              <span className="about-stack-layer">{t.about.step1Label}</span>
+              <span className="about-stack-tech">{t.about.step1Desc}</span>
             </div>
             <div className="about-stack-row">
-              <span className="about-stack-layer">Auth</span>
-              <span className="about-stack-tech">JWT, bcrypt, Passport (Google OAuth), Resend (email)</span>
+              <span className="about-stack-layer">{t.about.step2Label}</span>
+              <span className="about-stack-tech">{t.about.step2Desc}</span>
             </div>
             <div className="about-stack-row">
-              <span className="about-stack-layer">Frontend</span>
-              <span className="about-stack-tech">React 19, TypeScript, Vite, React Router v7, Axios</span>
+              <span className="about-stack-layer">{t.about.step3Label}</span>
+              <span className="about-stack-tech">{t.about.step3Desc}</span>
             </div>
             <div className="about-stack-row">
-              <span className="about-stack-layer">Infrastructure</span>
-              <span className="about-stack-tech">Docker, Docker Compose, nginx</span>
+              <span className="about-stack-layer">{t.about.step4Label}</span>
+              <span className="about-stack-tech">{t.about.step4Desc}</span>
             </div>
           </div>
         </section>
 
         <section className="about-section about-author">
-          <h2 className="about-section-title">The Author</h2>
+          <h2 className="about-section-title">{t.about.storyTitle}</h2>
           <div className="card author-card">
             <p className="author-name">Nick Theodosis</p>
             <p className="author-bio">
-              I built this boilerplate because I was tired of rewriting auth from scratch every time I started a new project.
-              Auth is complex — tokens, sessions, OAuth flows, email verification — and getting it wrong has real consequences.
-              This is the setup I'd want on day one of any serious project.
+             {t.about.bio1}
             </p>
             <p className="author-bio">
-              If it saves you even a week of work, it did its job.
-            </p>
+              {t.about.bio2}
+              </p>
             <div className="author-cta">
               <Link to="/register">
-                <button className="btn btn-primary">Get Started</button>
+                <button className="btn btn-primary">{t.about.getStarted}</button>
               </Link>
-              <Link to="/plans">
-                <button className="btn btn-ghost">View Plans</button>
+              <Link to="/pricing">
+                <button className="btn btn-ghost">{t.about.viewPlans}</button>
               </Link>
             </div>
           </div>

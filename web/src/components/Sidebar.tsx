@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 import '../styles/pages/sidebar.css';
 
 function IconOverview() {
@@ -63,6 +64,7 @@ function IconLogout() {
 
 export default function Sidebar() {
   const { logout } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -80,48 +82,48 @@ export default function Sidebar() {
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
       <div className='sidebar-header'>
-        <h4 className='sidebar-link-label'>Auth Boilerplate</h4>
+        <h4 className='sidebar-link-label'>BOOKLY</h4>
         <button
           className="sidebar-toggle"
           onClick={toggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t.sidebar.expand : t.sidebar.collapse}
+          title={collapsed ? t.sidebar.expand : t.sidebar.collapse}
         >
         {collapsed ? <IconChevronRight /> : <IconChevronLeft />}
       </button>
       </div>
-      
 
-      <span className="sidebar-section-label">App</span>
+
+      <span className="sidebar-section-label">{t.sidebar.app}</span>
 
       <NavLink
         to="/dashboard"
         end
         className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-        title={collapsed ? 'Overview' : undefined}
+        title={collapsed ? t.sidebar.overview : undefined}
       >
         <IconOverview />
-        <span className="sidebar-link-label">Overview</span>
+        <span className="sidebar-link-label">{t.sidebar.overview}</span>
       </NavLink>
 
       <NavLink
         to="/billing"
         className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-        title={collapsed ? 'Billing' : undefined}
+        title={collapsed ? t.sidebar.billing : undefined}
       >
         <IconBilling />
-        <span className="sidebar-link-label">Billing</span>
+        <span className="sidebar-link-label">{t.sidebar.billing}</span>
       </NavLink>
 
-      <span className="sidebar-section-label">Account</span>
+      <span className="sidebar-section-label">{t.sidebar.account}</span>
 
       <NavLink
         to="/settings"
         className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-        title={collapsed ? 'Settings' : undefined}
+        title={collapsed ? t.sidebar.settings : undefined}
       >
         <IconSettings />
-        <span className="sidebar-link-label">Settings</span>
+        <span className="sidebar-link-label">{t.sidebar.settings}</span>
       </NavLink>
 
       <button
@@ -129,10 +131,10 @@ export default function Sidebar() {
           onClick={async () => { await logout(); navigate('/login'); }}
         >
           <IconLogout/>
-          <span className="sidebar-link-label">Logout</span>
+          <span className="sidebar-link-label">{t.sidebar.logout}</span>
         </button>
 
-        
+
     </aside>
   );
 }

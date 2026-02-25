@@ -50,7 +50,7 @@ export default function RegisterPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← AuthBoilerplate</Link>
+        <Link to="/" className="card-back">← BOOKLY</Link>
         <h1>Register</h1>
         <button className="btn-google" type="button" onClick={handleGoogle}>
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
