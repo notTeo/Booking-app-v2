@@ -10,12 +10,47 @@
   display: flex;
 }
 
+/* ─── Mobile-only top header ─── */
+.app-mobile-header {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-mobile-brand {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+}
+
+.hamburger-btn:hover {
+  background: var(--bg-input);
+}
+
 /* ─── Sidebar ─── */
 .sidebar {
   position: sticky;
-  top: 0;           /* ΑΠΑΡΑΙΤΗΤΟ: Καθορίζει πού θα κολλήσει */
+  top: 0;
   width: 220px;
-  height: 100vh;    /* Ή 100dvh για καλύτερη συμβατότητα σε κινητά */
+  height: 100vh;
   flex-shrink: 0;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
@@ -24,7 +59,7 @@
   flex-direction: column;
   gap: 0.2rem;
   transition: width 0.2s ease, padding 0.2s ease;
-  overflow-y: auto;  /* Επιτρέπει το scroll μέσα στη sidebar αν το περιεχόμενο είναι πολύ */
+  overflow-y: auto;
 }
 
 /* ─── Toggle button ─── */
@@ -62,19 +97,20 @@
   white-space: nowrap;
 }
 
-.sidebar-header{
+.sidebar-section-label:first-of-type {
+  margin-top: 0;
+}
+
+/* ─── Header ─── */
+.sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.sidebar-header h4{
- white-space: nowrap;
-}
-
-.sidebar-section-label:first-of-type {
-  margin-top: 0;
+.sidebar-header h4 {
+  white-space: nowrap;
 }
 
 /* ─── Nav links ─── */
@@ -112,7 +148,36 @@
   opacity: 1;
 }
 
-/* ─── Bottom logout area ─── */
+/* ─── Back link (shop mode) ─── */
+.sidebar-back-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.25rem 0;
+  transition: color 0.15s;
+}
+
+.sidebar-back-link:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* ─── Shop name display (shop mode) ─── */
+.sidebar-shop-name {
+  padding: 0.25rem 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Logout ─── */
 .sidebar-logout {
   width: 100%;
   background: none;
@@ -127,8 +192,7 @@
   text-align: left;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
-
-    margin-top: auto;
+  margin-top: auto;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
@@ -163,73 +227,63 @@
   display: none;
 }
 
-.sidebar.collapsed .sidebar-bottom {
+.sidebar.collapsed .sidebar-shop-name {
   display: none;
 }
 
-/* ─── Main content area ─── */
+.sidebar.collapsed .sidebar-back-link .sidebar-link-label {
+  display: none;
+}
+
+/* ─── Main content ─── */
 .app-main {
   flex: 1;
   padding: 2rem 1.5rem;
   overflow-y: auto;
 }
 
-/* ─── Mobile: always show full horizontal strip ─── */
+/* ─── Mobile: slide-in drawer ─── */
 @media (max-width: 640px) {
-  .app-body {
-    flex-direction: column;
+  .app-mobile-header {
+    display: flex;
   }
-  .sidebar-header h4{
-    display: none;
+
+  .sidebar {
+    position: fixed;
+    left: -240px;
+    top: 0;
+    height: 100vh;
+    width: 240px;
+    z-index: 200;
+    transition: left 0.25s ease;
   }
-  /* Reset collapsed styles on mobile */
-  .sidebar,
-  .sidebar.collapsed {
-    width: 100%;
-    height: 4.5rem;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    flex-direction: row;
-    justify-content: center;
-    padding: 0.5rem 0.75rem;
-    gap: 0.15rem;
-    overflow-x: auto;
-    align-items: center;
-    transition: none;
+
+  .sidebar.drawer-open {
+    left: 0;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 199;
   }
 
   .sidebar-toggle {
     display: none;
   }
 
-  .sidebar-bottom,
-  .sidebar.collapsed .sidebar-bottom {
-    display: none;
-  }
-
-  .sidebar-section-label,
-  .sidebar.collapsed .sidebar-section-label {
-    display: none;
-  }
-
-  .sidebar-link,
-  .sidebar.collapsed .sidebar-link {
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.25rem;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-    width: auto;
-  }
-
-  .sidebar-link-label,
-  .sidebar.collapsed .sidebar-link-label {
-    display: block;
-  }
-
   .app-main {
     padding: 1.25rem 1rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .app-mobile-header {
+    display: none;
+  }
+
+  .sidebar-backdrop {
+    display: none;
   }
 }

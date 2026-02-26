@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 
-export default function ShopDetailPage() {
+export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
@@ -12,7 +12,6 @@ export default function ShopDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  // Edit form state
   const [name, setName] = useState('');
   const [editSlug, setEditSlug] = useState('');
   const [description, setDescription] = useState('');
@@ -27,7 +26,6 @@ export default function ShopDetailPage() {
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
 
-  // Delete state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -80,9 +78,8 @@ export default function ShopDetailPage() {
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
       setSaveSuccess('Shop updated successfully.');
-      // If slug changed, update URL
       if (updated.slug !== slug) {
-        navigate(`/shops/${updated.slug}`, { replace: true });
+        navigate(`/shops/${updated.slug}/settings`, { replace: true });
       }
     } catch (err: any) {
       setSaveError(err.response?.data?.message ?? 'Failed to update shop.');
@@ -127,8 +124,9 @@ export default function ShopDetailPage() {
   if (notFound || !shop) {
     return (
       <div className="shops-page">
-        <button className="card-back" type="button" onClick={() => navigate('/shops')}>
-          ← My Shops
+        {/* CHANGED: back to shop overview, not /shops */}
+        <button className="card-back" type="button" onClick={() => navigate(`/shops/${slug}`)}>
+          ← Back to Shop
         </button>
         <div className="shops-empty">
           <p>Shop not found.</p>
@@ -139,12 +137,6 @@ export default function ShopDetailPage() {
 
   return (
     <div className="shops-page">
-      <div className="shop-detail-back">
-        <button className="card-back" type="button" onClick={() => navigate('/shops')}>
-          ← My Shops
-        </button>
-      </div>
-
       <div className="shop-detail-header">
         <h1>{shop.name}</h1>
         <div className="shop-detail-meta">
@@ -156,130 +148,65 @@ export default function ShopDetailPage() {
         </div>
       </div>
 
-      {/* Edit form */}
       <div className="card shop-form-card">
         <form onSubmit={handleSave}>
           <div className="form-group">
             <label htmlFor="detail-name">Name</label>
-            <input
-              id="detail-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+            <input id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
-
           <div className="form-group">
             <label htmlFor="detail-slug">Slug</label>
-            <input
-              id="detail-slug"
-              type="text"
-              value={editSlug}
-              onChange={(e) => handleSlugInput(e.target.value)}
-              required
-            />
-            <span className="shop-field-hint">
-              Lowercase letters, numbers, and hyphens only.
-            </span>
+            <input id="detail-slug" type="text" value={editSlug} onChange={(e) => handleSlugInput(e.target.value)} required />
+            <span className="shop-field-hint">Lowercase letters, numbers, and hyphens only.</span>
           </div>
-
           <div className="form-group">
             <label htmlFor="detail-description">Description</label>
-            <input
-              id="detail-description"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
+            <input id="detail-description" type="text" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
-
           <div className="shop-form-row">
             <div className="form-group">
               <label htmlFor="detail-phone">Phone</label>
-              <input
-                id="detail-phone"
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
+              <input id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
             <div className="form-group">
               <label htmlFor="detail-city">City</label>
-              <input
-                id="detail-city"
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
+              <input id="detail-city" type="text" value={city} onChange={(e) => setCity(e.target.value)} />
             </div>
           </div>
-
           <div className="form-group">
             <label htmlFor="detail-address">Address</label>
-            <input
-              id="detail-address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
+            <input id="detail-address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
-
           <div className="shop-form-row">
             <div className="form-group">
               <label htmlFor="detail-country">Country</label>
-              <input
-                id="detail-country"
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-              />
+              <input id="detail-country" type="text" value={country} onChange={(e) => setCountry(e.target.value)} />
             </div>
             <div className="form-group">
               <label htmlFor="detail-timezone">Timezone</label>
-              <input
-                id="detail-timezone"
-                type="text"
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-              />
+              <input id="detail-timezone" type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
             </div>
           </div>
-
           <div className="form-group shop-active-toggle">
             <label className="shop-checkbox-label">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-              />
+              <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
               Active
             </label>
           </div>
-
           {saveError && <div className="alert alert-error">{saveError}</div>}
           {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
-
           <button className="btn btn-primary" type="submit" disabled={saveLoading}>
             {saveLoading ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>
 
-      {/* Danger Zone — owner only */}
       {shop.role === 'owner' && (
         <div className="card shop-danger-card">
           <p className="shop-danger-title">Danger Zone</p>
-          <p className="shop-danger-desc">
-            Permanently delete this shop and all its data. This action cannot be undone.
-          </p>
-
+          <p className="shop-danger-desc">Permanently delete this shop and all its data. This action cannot be undone.</p>
           {!showDeleteConfirm ? (
-            <button
-              className="btn btn-danger"
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
+            <button className="btn btn-danger" type="button" onClick={() => setShowDeleteConfirm(true)}>
               Delete Shop
             </button>
           ) : (
@@ -292,11 +219,7 @@ export default function ShopDetailPage() {
                 <button className="btn btn-danger" type="submit" disabled={deleteLoading}>
                   {deleteLoading ? 'Deleting...' : 'Yes, Delete Shop'}
                 </button>
-                <button
-                  className="btn btn-ghost"
-                  type="button"
-                  onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
-                >
+                <button className="btn btn-ghost" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
                   Cancel
                 </button>
               </div>

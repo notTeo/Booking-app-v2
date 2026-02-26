@@ -18,6 +18,15 @@ export interface Translations {
     logout: string;
     expand: string;
     collapse: string;
+    backToShops: string;
+    shopSection: string;
+    manageSection: string;
+    bookings: string;
+    services: string;
+    team: string;
+    invites: string;
+    customers: string;
+    shopSettings: string;
   };
   shops: {
     title: string;
@@ -264,6 +273,15 @@ export const translations: Record<Language, Translations> = {
       logout: 'Αποσύνδεση',
       expand: 'Ανάπτυξη πλευρικής μπάρας',
       collapse: 'Σύμπτυξη πλευρικής μπάρας',
+      backToShops: '← Τα Καταστήματά μου',
+      shopSection: 'Κατάστημα',
+      manageSection: 'Διαχείριση',
+      bookings: 'Ραντεβού',
+      services: 'Υπηρεσίες',
+      team: 'Ομάδα',
+      invites: 'Προσκλήσεις',
+      customers: 'Πελάτες',
+      shopSettings: 'Ρυθμίσεις',
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -509,6 +527,15 @@ export const translations: Record<Language, Translations> = {
       logout: 'Logout',
       expand: 'Expand sidebar',
       collapse: 'Collapse sidebar',
+      backToShops: '← My Shops',
+      shopSection: 'Shop',
+      manageSection: 'Manage',
+      bookings: 'Bookings',
+      services: 'Services',
+      team: 'Team Members',
+      invites: 'Invites',
+      customers: 'Customers',
+      shopSettings: 'Shop Settings',
     },
     shops: {
       title: 'My Shops',

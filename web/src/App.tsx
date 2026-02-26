@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './context/AuthContext';
+import { ShopContextProvider } from './context/ShopContext';
+import { ShopRouteProvider } from './context/ShopContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,14 +17,19 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
-import PricingPage from './pages/PricingPage'
-import AboutPage from './pages/AboutPage'
+import PricingPage from './pages/PricingPage';
+import AboutPage from './pages/AboutPage';
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import ShopsPage from './pages/ShopsPage';
 import ShopNewPage from './pages/ShopNewPage';
-import ShopDetailPage from './pages/ShopDetailPage';
-
+import ShopOverviewPage from './pages/ShopOverviewPage';
+import ShopBookingsPage from './pages/ShopBookingsPage';
+import ShopServicesPage from './pages/ShopServicesPage';
+import ShopTeamPage from './pages/ShopTeamPage';
+import ShopInvitesPage from './pages/ShopInvitesPage';
+import ShopCustomersPage from './pages/ShopCustomersPage';
+import ShopSettingsPage from './pages/ShopSettingsPage';
 
 export default function App() {
   return (
@@ -30,36 +37,47 @@ export default function App() {
       <LanguageProvider>
         <BrowserRouter>
           <AuthProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/about" element={<AboutPage />} />
+            <ShopContextProvider>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/about" element={<AboutPage />} />
 
-          <Route element={<PublicRoute />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          </Route>
+                <Route element={<PublicRoute />}>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                </Route>
 
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/verify-email-change" element={<VerifyEmailChangePage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/verify-email-change" element={<VerifyEmailChangePage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/shops" element={<ShopsPage />} />
-              <Route path="/shops/new" element={<ShopNewPage />} />
-              <Route path="/shops/:slug" element={<ShopDetailPage />} />
-              <Route path="/billing" element={<BillingPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
-          </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<AppLayout />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/shops" element={<ShopsPage />} />
+                    <Route path="/shops/new" element={<ShopNewPage />} />
+                    <Route path="/billing" element={<BillingPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
 
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AuthProvider>
+                    <Route path="/shops/:slug" element={<ShopRouteProvider />}>
+                      <Route index element={<ShopOverviewPage />} />
+                      <Route path="bookings" element={<ShopBookingsPage />} />
+                      <Route path="services" element={<ShopServicesPage />} />
+                      <Route path="team" element={<ShopTeamPage />} />
+                      <Route path="invites" element={<ShopInvitesPage />} />
+                      <Route path="customers" element={<ShopCustomersPage />} />
+                      <Route path="settings" element={<ShopSettingsPage />} />
+                    </Route>
+                  </Route>
+                </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </ShopContextProvider>
+          </AuthProvider>
         </BrowserRouter>
       </LanguageProvider>
     </ThemeProvider>

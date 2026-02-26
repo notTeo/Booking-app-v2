@@ -210,6 +210,9 @@ input:focus {
   color: var(--text-muted);
   margin-bottom: 1.25rem;
   transition: color 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
 }
 
 .card-back:hover {
