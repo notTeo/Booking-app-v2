@@ -1,0 +1,285 @@
+/* ---- Shops Page ---- */
+.shops-page {
+  max-width: 860px;
+  width: 100%;
+}
+
+.shops-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.shops-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.shops-header > div {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.shops-new-btn {
+  width: auto;
+}
+
+.shops-upgrade-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.shops-upgrade-hint a {
+  color: var(--blue);
+}
+
+.shops-spinner-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+/* ---- Empty state ---- */
+.shops-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.shops-empty .btn {
+  width: auto;
+}
+
+/* ---- Shop grid ---- */
+.shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* ---- Shop card ---- */
+.shop-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.shop-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1px var(--blue);
+  text-decoration: none;
+}
+
+.shop-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.shop-card-name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.shop-card-slug {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.shop-card-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.shop-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.shop-card-city {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ---- Status & Role badges ---- */
+.shop-status-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.shop-status-badge.active {
+  background: rgba(61, 214, 140, 0.15);
+  color: var(--success);
+}
+
+.shop-status-badge.inactive {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--error);
+}
+
+.shop-role-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* ---- Upgrade card ---- */
+.shops-upgrade-card {
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shops-upgrade-card h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.shops-upgrade-card .btn {
+  width: auto;
+  align-self: flex-start;
+}
+
+/* ---- Detail page ---- */
+.shop-detail-back {
+  margin-bottom: 1rem;
+}
+
+.shop-detail-header {
+  margin-bottom: 1.5rem;
+}
+
+.shop-detail-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+
+.shop-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shop-detail-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ---- Form card ---- */
+.shop-form-card {
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+
+.shop-form-card h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.shop-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.shop-field-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+  display: block;
+}
+
+.shop-active-toggle {
+  flex-direction: row;
+  align-items: center;
+}
+
+.shop-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.shop-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.shop-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.shop-form-actions .btn {
+  width: auto;
+}
+
+/* ---- Danger card ---- */
+.shop-danger-card {
+  max-width: 600px;
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.shop-danger-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--error);
+  margin: 0 0 0.5rem;
+}
+
+.shop-danger-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}

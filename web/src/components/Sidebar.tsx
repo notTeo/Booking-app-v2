@@ -15,6 +15,14 @@ function IconOverview() {
   );
 }
 
+function IconShop() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1.5a2.5 2.5 0 0 1-1 2V13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6.5a2.5 2.5 0 0 1-1-2V3zm1.5 3.83A2.5 2.5 0 0 0 5.5 7.5a2.5 2.5 0 0 0 2-.96 2.5 2.5 0 0 0 2 .96 2.5 2.5 0 0 0 2-.96V13H4.5V6.83H3.5zM3.5 4.5v1a1 1 0 0 0 2 0V4.5h-2zm3 0v1a1 1 0 0 0 2 0V4.5h-2zm3 0v1a1 1 0 0 0 2 0V4.5h-2z" />
+    </svg>
+  );
+}
+
 function IconBilling() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -104,6 +112,15 @@ export default function Sidebar() {
       >
         <IconOverview />
         <span className="sidebar-link-label">{t.sidebar.overview}</span>
+      </NavLink>
+
+      <NavLink
+        to="/shops"
+        className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+        title={collapsed ? t.sidebar.shops : undefined}
+      >
+        <IconShop />
+        <span className="sidebar-link-label">{t.sidebar.shops}</span>
       </NavLink>
 
       <NavLink

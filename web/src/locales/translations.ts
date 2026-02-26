@@ -12,11 +12,44 @@ export interface Translations {
     app: string;
     account: string;
     overview: string;
+    shops: string;
     billing: string;
     settings: string;
     logout: string;
     expand: string;
     collapse: string;
+  };
+  shops: {
+    title: string;
+    newShop: string;
+    noShops: string;
+    upgradePrompt: string;
+    name: string;
+    slug: string;
+    slugHint: string;
+    description: string;
+    phone: string;
+    address: string;
+    city: string;
+    country: string;
+    timezone: string;
+    save: string;
+    saving: string;
+    role: string;
+    createdAt: string;
+    active: string;
+    inactive: string;
+    deleteShop: string;
+    dangerZone: string;
+    dangerDesc: string;
+    areYouSure: string;
+    confirmDelete: string;
+    deleting: string;
+    cancel: string;
+    backToShops: string;
+    notFound: string;
+    errorLoad: string;
+    successUpdate: string;
   };
   home: {
     headline: string;
@@ -225,11 +258,44 @@ export const translations: Record<Language, Translations> = {
       app: 'Εφαρμογή',
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
+      shops: 'Καταστήματα',
       billing: 'Χρεώσεις',
       settings: 'Ρυθμίσεις',
       logout: 'Αποσύνδεση',
       expand: 'Ανάπτυξη πλευρικής μπάρας',
       collapse: 'Σύμπτυξη πλευρικής μπάρας',
+    },
+    shops: {
+      title: 'Τα Καταστήματά μου',
+      newShop: 'Νέο Κατάστημα',
+      noShops: 'Δεν έχετε ακόμα καταστήματα.',
+      upgradePrompt: 'Αναβαθμίστε στο Pro για να δημιουργήσετε καταστήματα.',
+      name: 'Όνομα',
+      slug: 'Slug',
+      slugHint: 'Μόνο πεζά γράμματα, αριθμοί και παύλες (π.χ. my-shop)',
+      description: 'Περιγραφή',
+      phone: 'Τηλέφωνο',
+      address: 'Διεύθυνση',
+      city: 'Πόλη',
+      country: 'Χώρα',
+      timezone: 'Ζώνη ώρας',
+      save: 'Αποθήκευση',
+      saving: 'Αποθήκευση...',
+      role: 'Ρόλος',
+      createdAt: 'Δημιουργήθηκε',
+      active: 'Ενεργό',
+      inactive: 'Ανενεργό',
+      deleteShop: 'Διαγραφή Καταστήματος',
+      dangerZone: 'Επικίνδυνη Ζώνη',
+      dangerDesc: 'Οριστική διαγραφή καταστήματος και όλων των δεδομένων του. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
+      areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το κατάστημα.',
+      confirmDelete: 'Επιβεβαίωση Διαγραφής',
+      deleting: 'Διαγραφή...',
+      cancel: 'Ακύρωση',
+      backToShops: '← Τα Καταστήματά μου',
+      notFound: 'Το κατάστημα δεν βρέθηκε.',
+      errorLoad: 'Αποτυχία φόρτωσης καταστημάτων.',
+      successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
     },
     home: {
       headline: 'Διαχειρίσου το κατάστημά σου.',
@@ -437,11 +503,44 @@ export const translations: Record<Language, Translations> = {
       app: 'App',
       account: 'Account',
       overview: 'Overview',
+      shops: 'Shops',
       billing: 'Billing',
       settings: 'Settings',
       logout: 'Logout',
       expand: 'Expand sidebar',
       collapse: 'Collapse sidebar',
+    },
+    shops: {
+      title: 'My Shops',
+      newShop: 'New Shop',
+      noShops: 'You have no shops yet.',
+      upgradePrompt: 'Upgrade to Pro to create shops.',
+      name: 'Name',
+      slug: 'Slug',
+      slugHint: 'Lowercase letters, numbers, and hyphens only (e.g. my-shop)',
+      description: 'Description',
+      phone: 'Phone',
+      address: 'Address',
+      city: 'City',
+      country: 'Country',
+      timezone: 'Timezone',
+      save: 'Save',
+      saving: 'Saving...',
+      role: 'Role',
+      createdAt: 'Created',
+      active: 'Active',
+      inactive: 'Inactive',
+      deleteShop: 'Delete Shop',
+      dangerZone: 'Danger Zone',
+      dangerDesc: 'Permanently delete this shop and all its data. This action cannot be undone.',
+      areYouSure: 'Are you sure? This will permanently delete the shop.',
+      confirmDelete: 'Confirm Delete',
+      deleting: 'Deleting...',
+      cancel: 'Cancel',
+      backToShops: '← My Shops',
+      notFound: 'Shop not found.',
+      errorLoad: 'Failed to load shops.',
+      successUpdate: 'Shop updated successfully.',
     },
     home: {
       headline: 'Run your shop.',

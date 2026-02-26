@@ -14,6 +14,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parse } from 'yaml';
 import billingRoutes from './routes/billing.routes';
+import shopRoutes from './routes/shop.routes';
 
 const app = express();
 
@@ -61,6 +62,7 @@ if (env.nodeEnv !== 'production') {
 
 app.use("/auth", authRoutes)
 app.use('/user', userRoutes);
+app.use('/api/shops', shopRoutes);
 
 app.use(ErrorHandler);
 

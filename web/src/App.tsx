@@ -19,6 +19,9 @@ import PricingPage from './pages/PricingPage'
 import AboutPage from './pages/AboutPage'
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
+import ShopsPage from './pages/ShopsPage';
+import ShopNewPage from './pages/ShopNewPage';
+import ShopDetailPage from './pages/ShopDetailPage';
 
 
 export default function App() {
@@ -46,6 +49,9 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/shops" element={<ShopsPage />} />
+              <Route path="/shops/new" element={<ShopNewPage />} />
+              <Route path="/shops/:slug" element={<ShopDetailPage />} />
               <Route path="/billing" element={<BillingPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
