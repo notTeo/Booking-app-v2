@@ -1,0 +1,362 @@
+/* ---- Working Hours Page ---- */
+.working-hours-page {
+  max-width: 680px;
+  width: 100%;
+}
+
+.working-hours-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.working-hours-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.working-hours-header .btn {
+  width: auto;
+}
+
+/* ---- Empty state ---- */
+.wh-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ---- Create form ---- */
+.wh-create-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.wh-create-form h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.wh-create-fields {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wh-create-fields .form-group {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0;
+}
+
+.wh-create-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wh-create-actions .btn {
+  width: auto;
+}
+
+/* ---- Per-schedule card ---- */
+.wh-schedule-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.wh-schedule-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.wh-schedule-header:hover {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.wh-date-range {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.wh-date-range span {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.wh-active-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wh-active-badge.active {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.wh-active-badge.inactive {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.wh-chevron {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.wh-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ---- Schedule body (collapsible) ---- */
+.wh-schedule-body {
+  border-top: 1px solid var(--border);
+}
+
+/* ---- Schedule footer (save + delete) ---- */
+.wh-schedule-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.wh-schedule-footer .btn {
+  width: auto;
+}
+
+.wh-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wh-delete-confirm-text {
+  font-size: 0.85rem;
+  color: var(--error);
+  font-weight: 600;
+}
+
+/* ---- Slot error ---- */
+.wh-slot-error {
+  font-size: 0.78rem;
+  color: var(--error);
+  margin-top: 0.1rem;
+}
+
+/* ---- Schedule-level alert ---- */
+.wh-schedule-alert {
+  margin: 0.75rem 1.25rem 0;
+  font-size: 0.85rem;
+}
+
+/* ---- Day card ---- */
+.working-hours-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* ---- Day row ---- */
+.working-hours-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.working-hours-row:last-child {
+  border-bottom: none;
+}
+
+.working-hours-day-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-width: 100px;
+  padding-top: 0.45rem;
+  flex-shrink: 0;
+}
+
+/* ---- Toggle switch ---- */
+.working-hours-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding-top: 0.35rem;
+}
+
+.working-hours-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.working-hours-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.working-hours-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.working-hours-switch input:checked + .working-hours-slider {
+  background: var(--accent);
+}
+
+.working-hours-switch input:disabled + .working-hours-slider {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.working-hours-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.working-hours-switch input:checked + .working-hours-slider::before {
+  transform: translateX(18px);
+}
+
+.working-hours-status {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 52px;
+}
+
+.working-hours-status.open {
+  color: var(--success);
+}
+
+.working-hours-status.closed {
+  color: var(--text-muted);
+}
+
+/* ---- Time slots ---- */
+.working-hours-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.working-hours-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.working-hours-slot input[type='time'] {
+  width: 130px;
+  flex-shrink: 0;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.working-hours-sep {
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.working-hours-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.working-hours-remove:hover {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+
+.working-hours-add-slot {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  transition: border-color 0.2s, background 0.2s;
+  align-self: flex-start;
+}
+
+.working-hours-add-slot:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+/* ---- Actions ---- */
+.working-hours-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.working-hours-actions .btn {
+  width: auto;
+}

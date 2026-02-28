@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/sidebar.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -256,6 +258,10 @@ function ShopNav({ collapsed, toggle, isOpen, onClose, slug }: ShopNavProps) {
           <NavLink to={`${base}/settings`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
             <IconSettings />
             <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
+          </NavLink>
+          <NavLink to={`${base}/working-hours`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
+            <FontAwesomeIcon icon={faClock} />
+            <span className="sidebar-link-label">{t.sidebar.shopWorkingHours}</span>
           </NavLink>
         </>
       )}

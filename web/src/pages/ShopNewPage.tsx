@@ -17,7 +17,7 @@ export default function ShopNewPage() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
-  const [timezone, setTimezone] = useState('UTC');
+  const [timezone, setTimezone] = useState('Europe/Athens');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

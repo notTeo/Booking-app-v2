@@ -57,8 +57,9 @@ model Shop {
 model ShopWorkingSchedule {
   id        String    @id @default(cuid())
   shopId    String
+  staffId   String?   // null = shop schedule, User.id = staff member schedule
   startDate DateTime
-  endDate   DateTime? 
+  endDate   DateTime?
 
   isActive Boolean @default(true)
 
@@ -69,6 +70,7 @@ model ShopWorkingSchedule {
   days ShopWorkingDay[]
 
   @@index([shopId])
+  @@index([shopId, staffId])
 }
 
 enum DayOfWeek {

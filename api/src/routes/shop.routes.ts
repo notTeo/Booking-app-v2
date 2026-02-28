@@ -15,6 +15,7 @@ import {
   deleteShop,
 } from '../controllers/shop.controller';
 import workingHoursRouter from './workingHours.routes';
+import teamRouter from './team.routes';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.patch('/:id', authenticate, updateShopValidation, validate, updateShop);
 router.delete('/:id', authenticate, shopIdParamValidation, validate, deleteShop);
 
 router.use('/:shopId/schedules', workingHoursRouter);
+router.use('/:shopId/team', teamRouter);
 
 export default router;

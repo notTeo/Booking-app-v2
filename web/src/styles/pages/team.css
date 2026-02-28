@@ -1,0 +1,193 @@
+/* ---- Team Page ---- */
+.team-page {
+  max-width: 860px;
+  width: 100%;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.team-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* ---- Table card ---- */
+.team-table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.team-table th {
+  text-align: left;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.team-table-row td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.team-table-row:last-child td {
+  border-bottom: none;
+}
+
+.team-table-row {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.team-table-row:hover {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* ---- Role badges ---- */
+.team-role-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+  display: inline-block;
+}
+
+.team-role-owner {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+.team-role-staff {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ---- Date cell ---- */
+.team-date {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Remove button inside table ---- */
+.team-remove-btn {
+  width: auto !important;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.team-confirm-remove {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.team-confirm-remove .btn {
+  width: auto;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+}
+
+/* ---- Empty state ---- */
+.team-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ---- Member detail page ---- */
+.team-member-page {
+  max-width: 680px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.team-member-card.card {
+  max-width: unset;
+}
+
+.team-member-card h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem;
+  word-break: break-all;
+}
+
+.team-member-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ---- Role edit card ---- */
+.team-role-card {
+  max-width: unset !important;
+}
+
+.team-role-card h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.team-role-card .form-group {
+  margin-bottom: 1rem;
+}
+
+.team-role-card .btn {
+  width: auto;
+}
+
+/* ---- Availability section ---- */
+.team-member-schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.team-member-schedules > h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+/* Override working-hours-page to remove extra padding when nested */
+.team-member-schedules .working-hours-page {
+  padding: 0;
+  max-width: unset;
+}
+
+.team-member-schedules .working-hours-header {
+  margin-bottom: 1rem;
+}
+
+.team-member-schedules .working-hours-header h1 {
+  display: none; /* title shown by the section h2 above */
+}

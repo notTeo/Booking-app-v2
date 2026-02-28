@@ -27,9 +27,11 @@ import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
+import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
 import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
+import ShopWorkingHours from './pages/ShopWorkingHours';
 
 export default function App() {
   return (
@@ -67,9 +69,11 @@ export default function App() {
                       <Route path="bookings" element={<ShopBookingsPage />} />
                       <Route path="services" element={<ShopServicesPage />} />
                       <Route path="team" element={<ShopTeamPage />} />
+                      <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
                       <Route path="invites" element={<ShopInvitesPage />} />
                       <Route path="customers" element={<ShopCustomersPage />} />
                       <Route path="settings" element={<ShopSettingsPage />} />
+                      <Route path="working-hours" element={<ShopWorkingHours />} />
                     </Route>
                   </Route>
                 </Route>

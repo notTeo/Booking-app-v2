@@ -27,6 +27,7 @@ export interface Translations {
     invites: string;
     customers: string;
     shopSettings: string;
+    shopWorkingHours: string;
   };
   shops: {
     title: string;
@@ -252,6 +253,71 @@ export interface Translations {
     message: string;
     goHome: string;
   };
+  team: {
+    title: string;
+    email: string;
+    role: string;
+    joined: string;
+    actions: string;
+    roles: { owner: string; staff: string };
+    remove: string;
+    removing: string;
+    confirmRemove: string;
+    cancel: string;
+    noMembers: string;
+    notFound: string;
+    errorLoad: string;
+    errorRemove: string;
+    backToTeam: string;
+    editRole: string;
+    saveRole: string;
+    saving: string;
+    roleUpdated: string;
+    errorUpdateRole: string;
+    availability: string;
+    dangerZone: string;
+    removeMemberDesc: string;
+    confirmRemovePrompt: string;
+  };
+  workingHours: {
+    title: string;
+    save: string;
+    saving: string;
+    successSave: string;
+    errorLoad: string;
+    errorSave: string;
+    open: string;
+    closed: string;
+    addSlot: string;
+    newSchedule: string;
+    createSchedule: string;
+    creating: string;
+    deleteSchedule: string;
+    deleting: string;
+    confirmDelete: string;
+    cancel: string;
+    startDate: string;
+    endDate: string;
+    ongoing: string;
+    from: string;
+    to: string;
+    saveDays: string;
+    noSchedules: string;
+    errorDelete: string;
+    errorCreate: string;
+    slotEndBeforeStart: string;
+    slotDuplicate: string;
+    slotOverlap: string;
+    days: {
+      MON: string;
+      TUE: string;
+      WED: string;
+      THU: string;
+      FRI: string;
+      SAT: string;
+      SUN: string;
+    };
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -282,6 +348,7 @@ export const translations: Record<Language, Translations> = {
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
       shopSettings: 'Ρυθμίσεις',
+      shopWorkingHours: "'Ωρες Λειτουργίας"
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -507,6 +574,71 @@ export const translations: Record<Language, Translations> = {
       message: 'Η σελίδα που ψάχνετε δεν υπάρχει ή έχει μετακινηθεί.',
       goHome: 'Αρχική',
     },
+    team: {
+      title: 'Μέλη Ομάδας',
+      email: 'Email',
+      role: 'Ρόλος',
+      joined: 'Εντάχθηκε',
+      actions: 'Ενέργειες',
+      roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
+      remove: 'Αφαίρεση',
+      removing: 'Αφαίρεση...',
+      confirmRemove: 'Επιβεβαίωση Αφαίρεσης',
+      cancel: 'Ακύρωση',
+      noMembers: 'Δεν υπάρχουν μέλη ακόμα.',
+      notFound: 'Το μέλος δεν βρέθηκε.',
+      errorLoad: 'Αποτυχία φόρτωσης μελών.',
+      errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
+      backToTeam: '← Πίσω στην Ομάδα',
+      editRole: 'Επεξεργασία Ρόλου',
+      saveRole: 'Αποθήκευση Ρόλου',
+      saving: 'Αποθήκευση...',
+      roleUpdated: 'Ο ρόλος ενημερώθηκε επιτυχώς.',
+      errorUpdateRole: 'Αποτυχία ενημέρωσης ρόλου.',
+      availability: 'Πρόγραμμα Διαθεσιμότητας',
+      dangerZone: 'Επικίνδυνη Ζώνη',
+      removeMemberDesc: 'Αφαίρεση αυτού του μέλους από το κατάστημα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
+      confirmRemovePrompt: 'Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το μέλος;',
+    },
+    workingHours: {
+      title: 'Ώρες Λειτουργίας',
+      save: 'Αποθήκευση Αλλαγών',
+      saving: 'Αποθήκευση...',
+      successSave: 'Οι ώρες λειτουργίας αποθηκεύτηκαν.',
+      errorLoad: 'Αποτυχία φόρτωσης ωρών λειτουργίας.',
+      errorSave: 'Αποτυχία αποθήκευσης αλλαγών.',
+      open: 'Ανοιχτό',
+      closed: 'Κλειστό',
+      addSlot: '+ Προσθήκη',
+      newSchedule: 'Νέο Πρόγραμμα',
+      createSchedule: 'Δημιουργία',
+      creating: 'Δημιουργία...',
+      deleteSchedule: 'Διαγραφή Προγράμματος',
+      deleting: 'Διαγραφή...',
+      confirmDelete: 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;',
+      cancel: 'Ακύρωση',
+      startDate: 'Ημερομηνία έναρξης',
+      endDate: 'Ημερομηνία λήξης (προαιρετική)',
+      ongoing: 'Χωρίς λήξη',
+      from: 'Από',
+      to: 'έως',
+      saveDays: 'Αποθήκευση Ημερών',
+      noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα.',
+      errorDelete: 'Αποτυχία διαγραφής προγράμματος.',
+      errorCreate: 'Αποτυχία δημιουργίας προγράμματος.',
+      slotEndBeforeStart: 'Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.',
+      slotDuplicate: 'Διπλό χρονικό πλαίσιο.',
+      slotOverlap: 'Τα χρονικά πλαίσια δεν μπορούν να αλληλεπικαλύπτονται.',
+      days: {
+        MON: 'Δευτέρα',
+        TUE: 'Τρίτη',
+        WED: 'Τετάρτη',
+        THU: 'Πέμπτη',
+        FRI: 'Παρασκευή',
+        SAT: 'Σάββατο',
+        SUN: 'Κυριακή',
+      },
+    },
   },
 
   en: {
@@ -536,6 +668,7 @@ export const translations: Record<Language, Translations> = {
       invites: 'Invites',
       customers: 'Customers',
       shopSettings: 'Shop Settings',
+      shopWorkingHours: "Working Hours"
     },
     shops: {
       title: 'My Shops',
@@ -760,6 +893,71 @@ export const translations: Record<Language, Translations> = {
       title: 'Page not found',
       message: "The page you're looking for doesn't exist or has been moved.",
       goHome: 'Go Home',
+    },
+    team: {
+      title: 'Team Members',
+      email: 'Email',
+      role: 'Role',
+      joined: 'Joined',
+      actions: 'Actions',
+      roles: { owner: 'Owner', staff: 'Staff' },
+      remove: 'Remove',
+      removing: 'Removing...',
+      confirmRemove: 'Confirm Remove',
+      cancel: 'Cancel',
+      noMembers: 'No team members yet.',
+      notFound: 'Member not found.',
+      errorLoad: 'Failed to load team members.',
+      errorRemove: 'Failed to remove member.',
+      backToTeam: '← Back to Team',
+      editRole: 'Edit Role',
+      saveRole: 'Save Role',
+      saving: 'Saving...',
+      roleUpdated: 'Role updated successfully.',
+      errorUpdateRole: 'Failed to update role.',
+      availability: 'Availability Schedule',
+      dangerZone: 'Danger Zone',
+      removeMemberDesc: 'Remove this member from the shop. This action cannot be undone.',
+      confirmRemovePrompt: 'Are you sure you want to remove this member?',
+    },
+    workingHours: {
+      title: 'Working Hours',
+      save: 'Save Changes',
+      saving: 'Saving...',
+      successSave: 'Working hours saved.',
+      errorLoad: 'Failed to load working hours.',
+      errorSave: 'Failed to save changes.',
+      open: 'Open',
+      closed: 'Closed',
+      addSlot: '+ Add',
+      newSchedule: 'New Schedule',
+      createSchedule: 'Create',
+      creating: 'Creating...',
+      deleteSchedule: 'Delete Schedule',
+      deleting: 'Deleting...',
+      confirmDelete: 'Are you sure you want to delete this schedule?',
+      cancel: 'Cancel',
+      startDate: 'Start date',
+      endDate: 'End date (optional)',
+      ongoing: 'Ongoing',
+      from: 'From',
+      to: 'to',
+      saveDays: 'Save Days',
+      noSchedules: 'No schedules yet.',
+      errorDelete: 'Failed to delete schedule.',
+      errorCreate: 'Failed to create schedule.',
+      slotEndBeforeStart: 'End time must be after start time.',
+      slotDuplicate: 'Duplicate time slot.',
+      slotOverlap: 'Time slots cannot overlap.',
+      days: {
+        MON: 'Monday',
+        TUE: 'Tuesday',
+        WED: 'Wednesday',
+        THU: 'Thursday',
+        FRI: 'Friday',
+        SAT: 'Saturday',
+        SUN: 'Sunday',
+      },
     },
   },
 };
