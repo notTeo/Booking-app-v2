@@ -4,6 +4,8 @@ import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } fro
 import '../styles/pages/shops.css';
 import Toggles from '../components/Toggles';
 
+const TIMEZONES = Intl.supportedValuesOf('timeZone');
+
 export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -185,7 +187,15 @@ export default function ShopSettingsPage() {
             </div>
             <div className="form-group">
               <label htmlFor="detail-timezone">Timezone</label>
-              <input id="detail-timezone" type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+              <select
+                id="detail-timezone"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              >
+                {TIMEZONES.map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="form-group shop-active-toggle">

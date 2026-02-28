@@ -14,6 +14,7 @@ import {
   updateShop,
   deleteShop,
 } from '../controllers/shop.controller';
+import workingHoursRouter from './workingHours.routes';
 
 const router = Router();
 
@@ -22,5 +23,7 @@ router.get('/', authenticate, getMyShops);
 router.get('/:id', authenticate, shopIdParamValidation, validate, getShop);
 router.patch('/:id', authenticate, updateShopValidation, validate, updateShop);
 router.delete('/:id', authenticate, shopIdParamValidation, validate, deleteShop);
+
+router.use('/:shopId/schedules', workingHoursRouter);
 
 export default router;

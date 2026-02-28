@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 
+const TIMEZONES = Intl.supportedValuesOf('timeZone');
+
 export default function ShopNewPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -153,12 +155,15 @@ export default function ShopNewPage() {
             </div>
             <div className="form-group">
               <label htmlFor="shop-timezone">Timezone</label>
-              <input
+              <select
                 id="shop-timezone"
-                type="text"
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-              />
+              >
+                {TIMEZONES.map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
             </div>
           </div>
 

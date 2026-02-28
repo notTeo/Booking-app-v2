@@ -39,18 +39,70 @@ enum ShopRole {
 model Shop {
   id          String   @id @default(cuid())
   name        String
-  slug        String   @unique // used for subdomain/public URL
+  slug        String   @unique 
   description String?
   phone       String?
   address     String?
   city        String?
   country     String?
-  timezone    String   @default("UTC")
+  timezone    String   @default("Europe/Athens")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members UserShop[]
+  members              UserShop[]
+  shopWorkingSchedules ShopWorkingSchedule[]
+}
+
+model ShopWorkingSchedule {
+  id        String    @id @default(cuid())
+  shopId    String
+  startDate DateTime
+  endDate   DateTime? 
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop Shop             @relation(fields: [shopId], references: [id])
+  days ShopWorkingDay[]
+
+  @@index([shopId])
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+model ShopWorkingDay {
+  id         String    @id @default(cuid())
+  scheduleId String
+  day        DayOfWeek
+  isOpen     Boolean   @default(true)
+
+  schedule ShopWorkingSchedule    @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  hours    ShopWorkingHourRange[]
+
+  @@unique([scheduleId, day])
+}
+
+model ShopWorkingHourRange {
+  id    String @id @default(cuid())
+  dayId String
+
+  startTime String
+  endTime   String
+
+  day ShopWorkingDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@index([dayId])
 }
 
 model UserShop {

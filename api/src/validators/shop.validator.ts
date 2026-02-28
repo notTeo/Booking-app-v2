@@ -13,7 +13,11 @@ export const createShopValidation = [
   body('address').optional().trim(),
   body('city').optional().trim(),
   body('country').optional().trim(),
-  body('timezone').optional().trim(),
+  body('timezone')
+    .optional()
+    .trim()
+    .isIn(Intl.supportedValuesOf('timeZone'))
+    .withMessage('Invalid timezone'),
 ];
 
 export const updateShopValidation = [
@@ -29,7 +33,11 @@ export const updateShopValidation = [
   body('address').optional().trim(),
   body('city').optional().trim(),
   body('country').optional().trim(),
-  body('timezone').optional().trim(),
+  body('timezone')
+    .optional()
+    .trim()
+    .isIn(Intl.supportedValuesOf('timeZone'))
+    .withMessage('Invalid timezone'),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean'),
 ];
 
