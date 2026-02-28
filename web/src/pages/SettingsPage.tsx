@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { updateMe, deleteMe } from '../api/user.api';
 import '../styles/pages/settings.css';
+import Toggles from '../components/Toggles';
 
 export default function SettingsPage() {
   const { user, setUser, logout } = useAuth();
@@ -87,7 +88,7 @@ export default function SettingsPage() {
   return (
     <div className="settings-page">
       <h1>Settings</h1>
-
+      <Toggles/>
       {/* Update Email */}
       <div className="settings-section">
         <p className="settings-section-title">Email Address</p>

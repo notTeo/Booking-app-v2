@@ -28,7 +28,7 @@
 }
 
 .plan-card--pro {
-  border-color: var(--blue);
+  border-color: var(--accent);
 }
 
 .plan-name {
@@ -40,7 +40,7 @@
 .plan-price {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--blue);
+  color: var(--accent);
   margin-bottom: 1.25rem;
 }
 

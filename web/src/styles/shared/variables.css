@@ -1,31 +1,30 @@
+/* ── Light mode (default) ─────────────────────────────────────────────────── */
 :root {
-  --bg: #FAF5EE;
-  --bg-card: #FFFFFF;
-  --bg-input: #F0EAE0;
-  --border: #D5C9B6;
-  --text: #1d503A;
-  --text-muted: #5C7A68;
-  --blue: #1d503A;
-  --blue-hover: #163d2c;
-  --red: #c0392b;
+  --bg:           #f8faf8;
+  --bg-card:      #ffffff;
+  --bg-input:     #f1f5f1;
+  --border:       #e2e8e2;
+  --text:         #064e3b;
+  --text-muted:   #475569;
+  --accent:       #166534; /* Rich Emerald */
+  --accent-hover: #14532d;
+  --success:      #15803d;
+  --radius:       12px;
+  --font:         'Poppins', sans-serif;
+    --red: #c0392b;
   --red-hover: #a93226;
-  --success: #27ae60;
   --error: #e74c3c;
-  --radius: 10px;
-  --font: 'Poppins', sans-serif;
 }
 
 [data-theme="dark"] {
-  --bg: #0f1a14;
-  --bg-card: #172112;
-  --bg-input: #1e2d1a;
-  --border: #2e4430;
-  --text: #e8f0e4;
-  --text-muted: #7aaa88;
-  --blue: #4caf78;
-  --blue-hover: #5fcf8e;
-  --red: #e05252;
-  --red-hover: #c94040;
-  --success: #3dba6f;
-  --error: #f06060;
+  --bg:           #0f120f;
+  --bg-card:      #171c17;
+  --bg-input:     #1c241c;
+  --border:       #263026;
+  --text:         #e3e8e3;
+  --text-muted:   #8a998a;
+  --accent:       #8ba88e; /* Dusty Eucalyptus */
+  --accent-hover: #a3bba5;
+  --success:      #8ba88e;
+  --error:        #e57373; /* Muted red to match the chill vibe */
 }

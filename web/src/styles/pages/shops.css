@@ -36,7 +36,7 @@
 }
 
 .shops-upgrade-hint a {
-  color: var(--blue);
+  color: var(--accent);
 }
 
 .shops-spinner-wrap {
@@ -82,8 +82,8 @@
 }
 
 .shop-card:hover {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 1px var(--blue);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
   text-decoration: none;
 }
 
@@ -138,12 +138,12 @@
 }
 
 .shop-status-badge.active {
-  background: rgba(61, 214, 140, 0.15);
+  background: color-mix(in srgb, var(--success) 15%, transparent);
   color: var(--success);
 }
 
 .shop-status-badge.inactive {
-  background: rgba(255, 107, 107, 0.12);
+  background: color-mix(in srgb, var(--error) 12%, transparent);
   color: var(--error);
 }
 
@@ -266,7 +266,7 @@
 /* ---- Danger card ---- */
 .shop-danger-card {
   max-width: 600px;
-  border-color: rgba(255, 107, 107, 0.35);
+  border-color: color-mix(in srgb, var(--error) 35%, transparent);
 }
 
 .shop-danger-title {

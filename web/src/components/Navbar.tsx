@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/navbar.css';
+import Toggles from './Toggles';
+
 
 export default function Navbar() {
   const { isAuthenticated, isLoading, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const { t, language, toggleLanguage } = useLang();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,27 +19,6 @@ export default function Navbar() {
     navigate('/login');
     closeMenu();
   };
-
-  const Toggles = () => (
-    <div className="navbar-toggles">
-      <button
-        className="toggle-btn"
-        onClick={toggleTheme}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-      >
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
-      <button
-        className="toggle-btn"
-        onClick={toggleLanguage}
-        aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
-        title={language === 'el' ? 'English' : 'Ελληνικά'}
-      >
-        {language === 'el' ? '🇬🇷' : '🇬🇧'}
-      </button>
-    </div>
-  );
 
   return (
     <nav className="navbar">
@@ -52,7 +31,7 @@ export default function Navbar() {
       </div>
 
       {/* Desktop toggles */}
-      <Toggles />
+      <Toggles/>
 
       {/* Desktop auth actions */}
       <div className="navbar-actions">
@@ -89,7 +68,7 @@ export default function Navbar() {
           <Link to="/pricing" className="navbar-link" onClick={closeMenu}>{t.nav.pricing}</Link>
           <Link to="/about" className="navbar-link" onClick={closeMenu}>{t.nav.about}</Link>
           <div className="navbar-mobile-divider" />
-          <Toggles />
+          <Toggles/>
           <div className="navbar-mobile-divider" />
           {!isLoading && (
             isAuthenticated ? (

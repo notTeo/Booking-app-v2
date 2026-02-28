@@ -31,7 +31,7 @@
 
 /* ─── Danger zone ─── */
 .settings-section--danger {
-  border-color: rgba(255, 79, 79, 0.35);
+  border-color: color-mix(in srgb, var(--error) 35%, transparent);
 }
 
 .settings-section--danger .settings-section-title {

@@ -19,7 +19,7 @@
 
 .navbar-brand:hover {
   text-decoration: none;
-  color: var(--blue);
+  color: var(--accent);
 }
 
 .navbar-links {

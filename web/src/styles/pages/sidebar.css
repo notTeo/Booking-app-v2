@@ -68,7 +68,7 @@
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  padding: 0.4rem 0.5rem;
+    padding:0.75rem;
   border-radius: var(--radius);
   align-self: flex-end;
   transition: color 0.15s, background 0.15s;
@@ -111,6 +111,8 @@
 
 .sidebar-header h4 {
   white-space: nowrap;
+    font-family: 'Lobster', cursive;
+    padding:0.75rem;
 }
 
 /* ─── Nav links ─── */
@@ -135,8 +137,8 @@
 }
 
 .sidebar-link.active {
-  background: rgba(29, 80, 58, 0.144);
-  color: var(--blue);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
 }
 
 .sidebar-link svg {
@@ -157,8 +159,9 @@
   font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
-  padding: 0.25rem 0;
+  padding:0.75rem;
   transition: color 0.15s;
+  white-space: nowrap;
 }
 
 .sidebar-back-link:hover {

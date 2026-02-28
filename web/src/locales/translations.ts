@@ -273,7 +273,7 @@ export const translations: Record<Language, Translations> = {
       logout: 'Αποσύνδεση',
       expand: 'Ανάπτυξη πλευρικής μπάρας',
       collapse: 'Σύμπτυξη πλευρικής μπάρας',
-      backToShops: '← Τα Καταστήματά μου',
+      backToShops: '← ',
       shopSection: 'Κατάστημα',
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
@@ -318,7 +318,7 @@ export const translations: Record<Language, Translations> = {
     home: {
       headline: 'Διαχειρίσου το κατάστημά σου.',
       headlineAccent: 'Γέμισε την καρέκλα.',
-      sub: 'Το σύστημα ραντεβού για κουρεία και σαλόνια. Οι πελάτες κλείνουν online ενώ εσύ κάνεις αυτό που ξέρεις καλύτερα.',
+      sub: 'Η ολοκληρωμένη πλατφόρμα για κρατήσεις, διαχείριση καταστήματος και ανάπτυξη — χωρίς τον χαμό.',
       cta: 'Ξεκίνα Δωρεάν',
       signIn: 'Σύνδεση',
     },
@@ -572,7 +572,7 @@ export const translations: Record<Language, Translations> = {
     home: {
       headline: 'Run your shop.',
       headlineAccent: 'Fill your chair.',
-      sub: 'The appointment system built for barbers and salons. Let clients book online while you focus on what you do best.',
+      sub: 'The all-in-one platform to manage bookings, run your shop, and grow your business — without the chaos.',
       cta: 'Get Started Free',
       signIn: 'Sign In',
     },

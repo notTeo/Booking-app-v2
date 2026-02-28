@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
+import Toggles from '../components/Toggles';
 
 export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -147,7 +148,7 @@ export default function ShopSettingsPage() {
           <span className="shop-detail-date">Created {formatDate(shop.createdAt)}</span>
         </div>
       </div>
-
+      <Toggles/>
       <div className="card shop-form-card">
         <form onSubmit={handleSave}>
           <div className="form-group">
