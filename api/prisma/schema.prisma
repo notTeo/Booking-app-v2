@@ -73,7 +73,7 @@ model ShopWorkingSchedule {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop Shop             @relation(fields: [shopId], references: [id])
+  shop Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
   days ShopWorkingDay[]
 
   @@index([shopId])

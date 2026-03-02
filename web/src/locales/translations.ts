@@ -67,6 +67,20 @@ export interface Translations {
     sub: string;
     cta: string;
     signIn: string;
+    demo: string;
+    heroBadge: string;
+     featuresBadge: string;
+    featuresTitle: string;
+    featuresSub: string;
+    howBadge: string;
+    howTitle: string;
+    howSub: string;
+    pricingBadge: string;
+    pricingTitle: string;
+    pricingSub: string;
+    testimonialsBadge:string ;
+    testimonialsTitle: string;
+    testimonialsSub:string;
   };
   login: {
     title: string;
@@ -425,13 +439,27 @@ export const translations: Record<Language, Translations> = {
       errorLoad: 'Αποτυχία φόρτωσης καταστημάτων.',
       successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
     },
-    home: {
-      headline: 'Διαχειρίσου το κατάστημά σου.',
-      headlineAccent: 'Γέμισε την καρέκλα.',
-      sub: 'Η ολοκληρωμένη πλατφόρμα για κρατήσεις, διαχείριση καταστήματος και ανάπτυξη — χωρίς τον χαμό.',
-      cta: 'Ξεκίνα Δωρεάν',
-      signIn: 'Σύνδεση',
-    },
+home: {
+    headline: 'Διαχειρίσου το κατάστημά σου.',
+    headlineAccent: 'Γέμισε την καρέκλα.',
+    sub: 'Η ολοκληρωμένη πλατφόρμα για κρατήσεις, διαχείριση καταστήματος και ανάπτυξη — χωρίς τον χαμό.',
+    cta: 'Ξεκίνα Δωρεάν',
+    demo: 'Δείτε το Demo',
+    signIn: 'Σύνδεση',
+    heroBadge: 'Η πλατφόρμα κρατήσεων για κουρεία & σαλόνια ομορφιάς',
+    featuresBadge: 'Χαρακτηριστικά',
+    featuresTitle: 'Όλα όσα χρειάζεστε για το κατάστημά σας',
+    featuresSub: 'Σχεδιασμένο για σύγχρονα κουρεία και σαλόνια ομορφιάς που θέλουν να αναπτυχθούν.',
+    howBadge: 'Πώς Λειτουργεί',
+    howTitle: 'Έτοιμο σε λίγα λεπτά',
+    howSub: 'Τρία απλά βήματα για μια πλήρως αυτοματοποιημένη εμπειρία κρατήσεων.',
+    pricingBadge: 'Τιμολόγηση',
+    pricingTitle: 'Απλή, ξεκάθαρη τιμολόγηση',
+    pricingSub: 'Ξεκινήστε δωρεάν, αναβαθμίστε όταν είστε έτοιμοι. Χωρίς κρυφές χρεώσεις.',
+    testimonialsBadge: 'Μαρτυρίες',
+    testimonialsTitle: 'Το αγαπούν οι ιδιοκτήτες',
+    testimonialsSub: 'Πραγματικά αποτελέσματα από επαγγελματίες που χρησιμοποιούν το Bookly καθημερινά.'
+  },
     login: {
       title: 'Σύνδεση',
       emailLabel: 'Email',
@@ -789,12 +817,26 @@ export const translations: Record<Language, Translations> = {
       successUpdate: 'Shop updated successfully.',
     },
     home: {
-      headline: 'Run your shop.',
-      headlineAccent: 'Fill your chair.',
-      sub: 'The all-in-one platform to manage bookings, run your shop, and grow your business — without the chaos.',
-      cta: 'Get Started Free',
-      signIn: 'Sign In',
-    },
+    headline: 'Run your shop.',
+    headlineAccent: 'Fill your chair.',
+    sub: 'The all-in-one platform to manage bookings, run your shop, and grow your business — without the chaos.',
+    cta: 'Get Started Free',
+    demo: 'See Demo',
+    signIn: 'Sign In',
+    heroBadge: 'Booking platform for barbershops & salons',
+    featuresBadge: 'Features',
+    featuresTitle: 'Everything you need to run your shop',
+    featuresSub: 'Built for modern barbershops and salons that want to grow without the overhead.',
+    howBadge: 'How It Works',
+    howTitle: 'Up and running in minutes',
+    howSub: 'Three simple steps to a fully automated booking experience.',
+    pricingBadge: 'Pricing',
+    pricingTitle: 'Simple, transparent pricing',
+    pricingSub: "Start free, upgrade when you're ready. No hidden fees, ever.",
+    testimonialsBadge: 'Testimonials',
+    testimonialsTitle: 'Loved by shop owners',
+    testimonialsSub: 'Real results from real barbershops and salons using Bookly every day.'
+  },
     login: {
       title: 'Login',
       emailLabel: 'Email',
