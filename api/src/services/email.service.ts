@@ -162,3 +162,35 @@ export const sendPasswordResetEmail = async (
 
   logger.info(`Password reset email sent to ${email}`);
 };
+
+export const sendInviteEmail = async (
+  recipientEmail: string,
+  plainToken: string,
+  shopName: string,
+  inviterEmail: string,
+  role: string,
+) => {
+  const to = env.inviteEmailOverride ?? recipientEmail;
+  const inviteUrl = `${env.clientUrl}/invite?token=${plainToken}`;
+
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to,
+    subject: `You've been invited to join ${shopName}`,
+    html: baseTemplate(`Invitation to ${shopName}`, `
+      <h1>You're invited!</h1>
+      <p><strong>${inviterEmail}</strong> has invited you to join <strong>${shopName}</strong> as a <strong>${role}</strong>.</p>
+      <p>Click the button below to accept your invitation. This link expires in <strong>7 days</strong>.</p>
+      <a href="${inviteUrl}">
+        <h4 class="btn">Accept Invitation</h4>
+      </a>
+    `),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send invite email to ${recipientEmail}`);
+    throw new Error('Failed to send invite email');
+  }
+
+  logger.info(`Invite email sent to ${recipientEmail} (delivered to ${to})`);
+};

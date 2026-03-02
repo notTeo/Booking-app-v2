@@ -1,7 +1,9 @@
 import client, { refreshClient } from './client';
 
-export const register = (email: string, password: string) =>
-  client.post('/auth/register', { email, password }).then((res) => res.data);
+export const register = (email: string, password: string, inviteToken?: string) =>
+  client
+    .post('/auth/register', { email, password, ...(inviteToken ? { inviteToken } : {}) })
+    .then((res) => res.data);
 
 export const login = (email: string, password: string) =>
   client.post('/auth/login', { email, password }).then((res) => res.data);
@@ -23,6 +25,19 @@ export const verifyEmailChange = (token: string) =>
 
 export const resendVerification = (email: string) =>
   client.post('/auth/resend-verification', { email }).then((res) => res.data);
+
+export interface Session {
+  id: string;
+  family: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export const getSessions = (): Promise<Session[]> =>
+  client.get('/auth/sessions').then((res) => res.data.sessions ?? []);
+
+export const revokeAllSessions = () =>
+  client.delete('/auth/sessions').then((res) => res.data);
 
 let refreshPromise: Promise<any> | null = null;
 

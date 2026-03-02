@@ -279,6 +279,49 @@ export interface Translations {
     removeMemberDesc: string;
     confirmRemovePrompt: string;
   };
+  invites: {
+    title: string;
+    received: string;
+    sent: string;
+    noReceived: string;
+    noSent: string;
+    sendInvite: string;
+    sending: string;
+    emailLabel: string;
+    roleLabel: string;
+    accept: string;
+    accepting: string;
+    decline: string;
+    declining: string;
+    revoke: string;
+    revoking: string;
+    status: { pending: string; accepted: string; expired: string };
+    roles: { owner: string; staff: string };
+    shopLabel: string;
+    invitedBy: string;
+    expiresAt: string;
+    sentAt: string;
+    errorLoad: string;
+    errorSend: string;
+    errorAccept: string;
+    errorDecline: string;
+    errorRevoke: string;
+    sentOk: string;
+    acceptedOk: string;
+    declinedOk: string;
+    revokedOk: string;
+    youreInvited: string;
+    joinAs: string;
+    registerToAccept: string;
+    loginToAccept: string;
+    acceptNow: string;
+    accepting2: string;
+    inviteExpired: string;
+    inviteUsed: string;
+    inviteNotFound: string;
+    emailMismatch: string;
+    inviteFor: string;
+  };
   workingHours: {
     title: string;
     save: string;
@@ -600,6 +643,49 @@ export const translations: Record<Language, Translations> = {
       removeMemberDesc: 'Αφαίρεση αυτού του μέλους από το κατάστημα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       confirmRemovePrompt: 'Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το μέλος;',
     },
+    invites: {
+      title: 'Προσκλήσεις',
+      received: 'Ληφθείσες',
+      sent: 'Απεσταλμένες',
+      noReceived: 'Δεν έχετε εκκρεμείς προσκλήσεις.',
+      noSent: 'Δεν έχετε στείλει προσκλήσεις ακόμα.',
+      sendInvite: 'Αποστολή Πρόσκλησης',
+      sending: 'Αποστολή...',
+      emailLabel: 'Email',
+      roleLabel: 'Ρόλος',
+      accept: 'Αποδοχή',
+      accepting: 'Αποδοχή...',
+      decline: 'Απόρριψη',
+      declining: 'Απόρριψη...',
+      revoke: 'Ανάκληση',
+      revoking: 'Ανάκληση...',
+      status: { pending: 'Εκκρεμής', accepted: 'Αποδεκτή', expired: 'Ληγμένη' },
+      roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
+      shopLabel: 'Κατάστημα',
+      invitedBy: 'Από',
+      expiresAt: 'Λήγει',
+      sentAt: 'Εστάλη',
+      errorLoad: 'Αποτυχία φόρτωσης προσκλήσεων.',
+      errorSend: 'Αποτυχία αποστολής πρόσκλησης.',
+      errorAccept: 'Αποτυχία αποδοχής πρόσκλησης.',
+      errorDecline: 'Αποτυχία απόρριψης πρόσκλησης.',
+      errorRevoke: 'Αποτυχία ανάκλησης πρόσκλησης.',
+      sentOk: 'Η πρόσκληση εστάλη επιτυχώς.',
+      acceptedOk: 'Η πρόσκληση έγινε αποδεκτή.',
+      declinedOk: 'Η πρόσκληση απορρίφθηκε.',
+      revokedOk: 'Η πρόσκληση ανακλήθηκε.',
+      youreInvited: 'Έχετε λάβει πρόσκληση',
+      joinAs: 'Εντάσσεστε ως',
+      registerToAccept: 'Εγγραφή για Αποδοχή',
+      loginToAccept: 'Σύνδεση για Αποδοχή',
+      acceptNow: 'Αποδοχή Πρόσκλησης',
+      accepting2: 'Αποδοχή...',
+      inviteExpired: 'Αυτή η πρόσκληση έχει λήξει.',
+      inviteUsed: 'Αυτή η πρόσκληση έχει ήδη χρησιμοποιηθεί.',
+      inviteNotFound: 'Η πρόσκληση δεν βρέθηκε.',
+      emailMismatch: 'Αυτή η πρόσκληση απευθύνεται σε άλλο email.',
+      inviteFor: 'Πρόσκληση για',
+    },
     workingHours: {
       title: 'Ώρες Λειτουργίας',
       save: 'Αποθήκευση Αλλαγών',
@@ -919,6 +1005,49 @@ export const translations: Record<Language, Translations> = {
       dangerZone: 'Danger Zone',
       removeMemberDesc: 'Remove this member from the shop. This action cannot be undone.',
       confirmRemovePrompt: 'Are you sure you want to remove this member?',
+    },
+    invites: {
+      title: 'Invites',
+      received: 'Received',
+      sent: 'Sent',
+      noReceived: 'You have no pending invites.',
+      noSent: "You haven't sent any invites yet.",
+      sendInvite: 'Send Invite',
+      sending: 'Sending...',
+      emailLabel: 'Email',
+      roleLabel: 'Role',
+      accept: 'Accept',
+      accepting: 'Accepting...',
+      decline: 'Decline',
+      declining: 'Declining...',
+      revoke: 'Revoke',
+      revoking: 'Revoking...',
+      status: { pending: 'Pending', accepted: 'Accepted', expired: 'Expired' },
+      roles: { owner: 'Owner', staff: 'Staff' },
+      shopLabel: 'Shop',
+      invitedBy: 'Invited by',
+      expiresAt: 'Expires',
+      sentAt: 'Sent',
+      errorLoad: 'Failed to load invites.',
+      errorSend: 'Failed to send invite.',
+      errorAccept: 'Failed to accept invite.',
+      errorDecline: 'Failed to decline invite.',
+      errorRevoke: 'Failed to revoke invite.',
+      sentOk: 'Invite sent successfully.',
+      acceptedOk: 'Invite accepted.',
+      declinedOk: 'Invite declined.',
+      revokedOk: 'Invite revoked.',
+      youreInvited: "You've been invited",
+      joinAs: 'Join as',
+      registerToAccept: 'Register to Accept',
+      loginToAccept: 'Log In to Accept',
+      acceptNow: 'Accept Invitation',
+      accepting2: 'Accepting...',
+      inviteExpired: 'This invite has expired.',
+      inviteUsed: 'This invite has already been used.',
+      inviteNotFound: 'Invite not found.',
+      emailMismatch: 'This invite was sent to a different email address.',
+      inviteFor: 'Invitation for',
     },
     workingHours: {
       title: 'Working Hours',

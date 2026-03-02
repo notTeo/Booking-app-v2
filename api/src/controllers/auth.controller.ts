@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { LoginDto, RegisterDto } from '../types/auth.types';
-import { forgotPassword, getSessions, loginUser, logoutUser, refreshAccessToken, registerUser, resendVerificationEmail, resetPassword, revokeAllSessions, verifyEmail, verifyEmailChange } from "../services/auth.service";
+import { forgotPassword, getSessions, loginUser, logoutUser, refreshAccessToken, registerUser, registerUserWithInvite, resendVerificationEmail, resetPassword, revokeAllSessions, verifyEmail, verifyEmailChange } from "../services/auth.service";
 import { successResponse } from "../utils/response";
 import { AppError } from "../middleware/errorHandler";
 import { env } from "../config/env"
@@ -12,7 +12,19 @@ export const register = async (
   next: NextFunction,
 ) => {
   try {
-    const dto: RegisterDto = req.body;
+    const { inviteToken, ...dto }: RegisterDto & { inviteToken?: string } = req.body;
+
+    if (inviteToken) {
+      const { refreshToken, shopSlug, ...result } = await registerUserWithInvite(dto, inviteToken);
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+      return successResponse(res, { ...result, shopSlug }, 200);
+    }
+
     await registerUser(dto);
     successResponse(
       res,

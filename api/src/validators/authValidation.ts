@@ -14,6 +14,10 @@ export const registerValidation = [
     .withMessage('Password must contain at least one number')
     .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
+  body('inviteToken')
+    .optional()
+    .isString()
+    .withMessage('Invite token must be a string'),
 ];
 
 export const loginValidation = [

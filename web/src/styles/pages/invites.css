@@ -1,0 +1,278 @@
+/* ─── Invites Page (global inbox + shop-scoped) ─── */
+
+.invites-page {
+  max-width: 860px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.invites-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.invites-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ─── Tabs ─── */
+
+.invites-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.invites-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: -1px;
+  padding: 0.6rem 1.25rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.invites-tab:hover {
+  color: var(--text);
+}
+
+.invites-tab--active {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ─── Invite Form Card ─── */
+
+.invites-form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+.invites-form-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.invites-form-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.invites-form-row .form-group {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.invites-form-row .form-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.invites-form-row input,
+.invites-form-row select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.6);
+  color: var(--text);
+  font-size: 0.9rem;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+}
+
+.invites-form-row input:focus,
+.invites-form-row select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.invites-form-feedback {
+  font-size: 0.82rem;
+  margin-top: 0.5rem;
+}
+
+.invites-form-feedback--error {
+  color: var(--error, #e53e3e);
+}
+
+.invites-form-feedback--success {
+  color: var(--accent);
+}
+
+/* ─── Table Card ─── */
+
+.invites-table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.invites-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.invites-table th {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.invites-table-row td {
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.9rem;
+  padding: 0.85rem 1.25rem;
+  vertical-align: middle;
+}
+
+.invites-table-row:hover td {
+  background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+
+/* ─── Status Badges ─── */
+
+.invite-status-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.65rem;
+  text-transform: capitalize;
+}
+
+.invite-status-pending {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.invite-status-accepted {
+  background: color-mix(in srgb, #22c55e 12%, transparent);
+  color: #16a34a;
+}
+
+.invite-status-expired {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ─── Role Badge ─── */
+
+.invite-role-badge {
+  background: var(--bg-input);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  text-transform: capitalize;
+}
+
+.invite-role-owner {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+/* ─── Action Buttons ─── */
+
+.invite-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.invites-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+}
+
+/* ─── Accept Invite Page (public, centered) ─── */
+
+.accept-invite-page {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: var(--bg);
+}
+
+.accept-invite-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-width: 480px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  width: 100%;
+}
+
+.accept-invite-card h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.accept-invite-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
+}
+
+.accept-invite-meta strong {
+  color: var(--text);
+}
+
+.accept-invite-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.accept-invite-warning {
+  background: color-mix(in srgb, #f59e0b 10%, transparent);
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+  border-radius: calc(var(--radius) * 0.6);
+  color: #92400e;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.accept-invite-error {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 4rem 1rem;
+}

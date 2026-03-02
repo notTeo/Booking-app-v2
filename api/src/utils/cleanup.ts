@@ -4,16 +4,22 @@ import { logger } from './logger';
 export const cleanupExpiredTokens = async () => {
   const now = new Date();
 
-  const [refreshTokens, pendingRegistrations, passwordResetTokens] = await Promise.all([
-    prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
-    prisma.pendingRegistration.deleteMany({ where: { expiresAt: { lt: now } } }),
-    prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: now } } }),
-  ]);
+  const [refreshTokens, pendingRegistrations, passwordResetTokens, expiredInvites] =
+    await Promise.all([
+      prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+      prisma.pendingRegistration.deleteMany({ where: { expiresAt: { lt: now } } }),
+      prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+      prisma.shopInvite.updateMany({
+        where: { expiresAt: { lt: now }, status: 'pending' },
+        data: { status: 'expired' },
+      }),
+    ]);
 
   logger.info(
     `Cleanup: removed ${refreshTokens.count} refresh tokens, ` +
     `${pendingRegistrations.count} pending registrations, ` +
-    `${passwordResetTokens.count} password reset tokens`,
+    `${passwordResetTokens.count} password reset tokens, ` +
+    `expired ${expiredInvites.count} shop invites`,
   );
 };
 

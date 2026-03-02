@@ -32,6 +32,8 @@ import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
 import ShopWorkingHours from './pages/ShopWorkingHours';
+import InvitesPage from './pages/InvitesPage';
+import AcceptInvitePage from './pages/AcceptInvitePage';
 
 export default function App() {
   return (
@@ -55,6 +57,7 @@ export default function App() {
                 <Route path="/verify-email-change" element={<VerifyEmailChangePage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+                <Route path="/invite" element={<AcceptInvitePage />} />
 
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AppLayout />}>
@@ -63,6 +66,7 @@ export default function App() {
                     <Route path="/shops/new" element={<ShopNewPage />} />
                     <Route path="/billing" element={<BillingPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/invites" element={<InvitesPage />} />
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route index element={<ShopOverviewPage />} />

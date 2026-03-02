@@ -36,10 +36,16 @@ enum ShopRole {
   staff
 }
 
+enum InviteStatus {
+  pending
+  accepted
+  expired
+}
+
 model Shop {
   id          String   @id @default(cuid())
   name        String
-  slug        String   @unique 
+  slug        String   @unique
   description String?
   phone       String?
   address     String?
@@ -52,6 +58,7 @@ model Shop {
 
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
+  invites              ShopInvite[]
 }
 
 model ShopWorkingSchedule {
@@ -136,6 +143,8 @@ model User {
   passwordResetToken     PasswordResetToken?
   pendingEmailChange     PendingEmailChange?
   userShops              UserShop[]
+  sentInvites            ShopInvite[] @relation("InviteCreatedBy")
+  acceptedInvites        ShopInvite[] @relation("InviteAcceptedBy")
 }
 
 model RefreshToken {
@@ -185,4 +194,26 @@ model PendingEmailChange {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ShopInvite {
+  id           String       @id @default(cuid())
+  shopId       String
+  email        String
+  role         ShopRole     @default(staff)
+  status       InviteStatus @default(pending)
+  tokenHash    String       @unique
+  expiresAt    DateTime
+  createdById  String
+  acceptedById String?
+
+  shop       Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdBy  User  @relation("InviteCreatedBy",  fields: [createdById],  references: [id])
+  acceptedBy User? @relation("InviteAcceptedBy", fields: [acceptedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([email])
 }

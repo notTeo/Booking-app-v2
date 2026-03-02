@@ -16,6 +16,7 @@ import {
 } from '../controllers/shop.controller';
 import workingHoursRouter from './workingHours.routes';
 import teamRouter from './team.routes';
+import inviteRouter from './invite.routes';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.delete('/:id', authenticate, shopIdParamValidation, validate, deleteShop)
 
 router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);
+router.use('/:shopId/invites', inviteRouter);
 
 export default router;

@@ -16,7 +16,7 @@ export const createShopValidation = [
   body('timezone')
     .optional()
     .trim()
-    .isIn(Intl.supportedValuesOf('timeZone'))
+    .isIn((Intl as any).supportedValuesOf('timeZone'))
     .withMessage('Invalid timezone'),
 ];
 
@@ -36,7 +36,7 @@ export const updateShopValidation = [
   body('timezone')
     .optional()
     .trim()
-    .isIn(Intl.supportedValuesOf('timeZone'))
+    .isIn((Intl as any).supportedValuesOf('timeZone'))
     .withMessage('Invalid timezone'),
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean'),
 ];

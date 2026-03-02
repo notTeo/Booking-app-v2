@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { LoginDto, RegisterDto } from '../types/auth.types';
@@ -37,9 +38,78 @@ export const registerUser = async ({ email, password }: RegisterDto) => {
   });
 
 
-  await sendVerificationEmail(email, token);
+  //await sendVerificationEmail(email, token);
+  await sendVerificationEmail("nikostheodosis05@gmail.com", token);
 
   logger.info(`Pending registration created for: ${email}`);
+};
+
+export const registerUserWithInvite = async (
+  { email, password }: RegisterDto,
+  plainToken: string,
+) => {
+  const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
+
+  const invite = await prisma.shopInvite.findUnique({
+    where: { tokenHash },
+    include: { shop: { select: { id: true, name: true, slug: true } } },
+  });
+
+  if (!invite) throw new AppError(400, 'Invalid invite token');
+  if (invite.status !== 'pending') throw new AppError(400, 'Invite already used');
+  if (invite.expiresAt < new Date()) throw new AppError(400, 'Invite has expired');
+  if (invite.email.toLowerCase() !== email.toLowerCase())
+    throw new AppError(400, 'Email does not match the invite');
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser)
+    throw new AppError(409, 'Email already in use — please log in and accept the invite');
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const family = randomUUID();
+
+  const accessToken = signAccessToken('placeholder'); // replaced in transaction
+  let finalAccessToken = accessToken;
+  let finalRefreshToken = '';
+  let createdUser: { id: string; email: string; isVerified: boolean; createdAt: Date };
+
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { email, passwordHash, isVerified: true },
+      select: { id: true, email: true, isVerified: true, createdAt: true },
+    });
+
+    await tx.userShop.create({
+      data: { userId: user.id, shopId: invite.shopId, role: invite.role },
+    });
+
+    await tx.shopInvite.update({
+      where: { id: invite.id },
+      data: { status: 'accepted', acceptedById: user.id },
+    });
+
+    const newRefreshToken = signRefreshToken(user.id);
+    await tx.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        family,
+        userId: user.id,
+        expiresAt: getRefreshTokenExpiry(),
+      },
+    });
+
+    finalAccessToken = signAccessToken(user.id);
+    finalRefreshToken = newRefreshToken;
+    createdUser = user;
+  });
+
+  logger.info(`User registered via invite: ${email} → shop ${invite.shopId}`);
+  return {
+    user: createdUser!,
+    accessToken: finalAccessToken,
+    refreshToken: finalRefreshToken,
+    shopSlug: invite.shop!.slug,
+  };
 };
 
 export const loginUser = async ({ email, password }: LoginDto) => {
@@ -294,6 +364,7 @@ export const deleteUser = async (userId: string, password?: string) => {
   if (!user) throw new AppError(404, 'User not found');
 
   if (user.passwordHash) {
+    if (!password) throw new AppError(401, 'Invalid password');
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new AppError(401, 'Invalid password');
   }

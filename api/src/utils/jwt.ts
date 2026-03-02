@@ -47,3 +47,9 @@ export const getPasswordResetTokenExpiry = (): Date => {
   expiry.setHours(expiry.getHours() + 1);
   return expiry;
 };
+
+export const getInviteTokenExpiry = (): Date => {
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + 7);
+  return expiry;
+};

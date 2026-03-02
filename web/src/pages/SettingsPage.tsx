@@ -1,12 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useLang } from '../context/LanguageContext';
 import { updateMe, deleteMe } from '../api/user.api';
+import { getSessions, revokeAllSessions, type Session } from '../api/auth.api';
 import '../styles/pages/settings.css';
-import Toggles from '../components/Toggles';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faEnvelope,
+  faLock,
+  faSlidersH,
+  faShieldHalved,
+  faTriangleExclamation,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
+
+function getInitials(email: string) {
+  return email.charAt(0).toUpperCase();
+}
+
+function formatMemberSince(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+function formatSessionDate(iso: string) {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function SettingsPage() {
   const { user, setUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage } = useLang();
   const navigate = useNavigate();
 
   // Update email
@@ -21,11 +53,25 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
+  // Sessions
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [revokeLoading, setRevokeLoading] = useState(false);
+  const [revokeError, setRevokeError] = useState('');
+  const [revokeSuccess, setRevokeSuccess] = useState('');
+
   // Delete account
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  useEffect(() => {
+    getSessions()
+      .then(setSessions)
+      .catch(() => {})
+      .finally(() => setSessionsLoading(false));
+  }, []);
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +111,21 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRevokeAll = async () => {
+    setRevokeError('');
+    setRevokeSuccess('');
+    setRevokeLoading(true);
+    try {
+      await revokeAllSessions();
+      setSessions([]);
+      setRevokeSuccess('All other sessions have been revoked.');
+    } catch (err: any) {
+      setRevokeError(err.response?.data?.message ?? 'Failed to revoke sessions.');
+    } finally {
+      setRevokeLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setDeleteError('');
@@ -88,10 +149,36 @@ export default function SettingsPage() {
   return (
     <div className="settings-page">
       <h1>Settings</h1>
-      <Toggles/>
-      {/* Update Email */}
+
+      {/* Account Overview */}
+      <div className="settings-section settings-overview">
+        <div className="settings-avatar">
+          {getInitials(user?.email ?? '?')}
+        </div>
+        <div className="settings-overview-info">
+          <p className="settings-overview-email">{user?.email}</p>
+          <div className="settings-overview-badges">
+            <span className={`settings-plan-badge settings-plan-badge--${user?.plan ?? 'free'}`}>
+              {user?.plan === 'pro' ? '★ Pro' : 'Free'}
+            </span>
+            {user?.isVerified ? (
+              <span className="settings-verified-badge">✓ Verified</span>
+            ) : (
+              <span className="settings-unverified-badge">✗ Unverified</span>
+            )}
+          </div>
+          {user?.createdAt && (
+            <p className="settings-overview-since">Member since {formatMemberSince(user.createdAt)}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Email Address */}
       <div className="settings-section">
-        <p className="settings-section-title">Email Address</p>
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faEnvelope} className="settings-section-icon" />
+          Email Address
+        </p>
         <form onSubmit={handleUpdateEmail}>
           <div className="form-group">
             <label htmlFor="settings-email">Email</label>
@@ -115,9 +202,12 @@ export default function SettingsPage() {
         </form>
       </div>
 
-      {/* Update Password */}
+      {/* Change Password */}
       <div className="settings-section">
-        <p className="settings-section-title">Change Password</p>
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faLock} className="settings-section-icon" />
+          Change Password
+        </p>
         <form onSubmit={handleUpdatePassword}>
           <div className="form-group">
             <label htmlFor="settings-password">New Password</label>
@@ -151,9 +241,86 @@ export default function SettingsPage() {
         </form>
       </div>
 
+      {/* Preferences */}
+      <div className="settings-section">
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faSlidersH} className="settings-section-icon" />
+          Preferences
+        </p>
+        <div className="settings-pref-row">
+          <div className="settings-pref-label">
+            <span>Theme</span>
+            <span className="settings-pref-desc">Choose your preferred color scheme</span>
+          </div>
+          <button
+            className="btn btn-ghost settings-pref-btn"
+            onClick={toggleTheme}
+            type="button"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+          </button>
+        </div>
+        <div className="settings-pref-row">
+          <div className="settings-pref-label">
+            <span>Language</span>
+            <span className="settings-pref-desc">Set your display language</span>
+          </div>
+          <button
+            className="btn btn-ghost settings-pref-btn"
+            onClick={toggleLanguage}
+            type="button"
+            aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
+          >
+            {language === 'el' ? '🇬🇧 English' : '🇬🇷 Ελληνικά'}
+          </button>
+        </div>
+      </div>
+
+      {/* Active Sessions */}
+      <div className="settings-section">
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faShieldHalved} className="settings-section-icon" />
+          Active Sessions
+        </p>
+        {sessionsLoading ? (
+          <p className="settings-sessions-hint">Loading sessions...</p>
+        ) : sessions.length === 0 ? (
+          <p className="settings-sessions-hint">No active sessions found.</p>
+        ) : (
+          <>
+            <p className="settings-sessions-hint">
+              {sessions.length} active {sessions.length === 1 ? 'session' : 'sessions'} — most recent: {formatSessionDate(sessions[0].createdAt)}
+            </p>
+            <div className="settings-sessions-list">
+              {sessions.slice(0, 5).map((s) => (
+                <div key={s.id} className="settings-session-row">
+                  <FontAwesomeIcon icon={faUser} className="settings-session-icon" />
+                  <span className="settings-session-date">Session started {formatSessionDate(s.createdAt)}</span>
+                  <span className="settings-session-expiry">Expires {formatSessionDate(s.expiresAt)}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {revokeError && <div className="alert alert-error">{revokeError}</div>}
+        {revokeSuccess && <div className="alert alert-success">{revokeSuccess}</div>}
+        <button
+          className="btn btn-ghost"
+          type="button"
+          onClick={handleRevokeAll}
+          disabled={revokeLoading || sessions.length === 0}
+        >
+          {revokeLoading ? 'Revoking...' : 'Revoke All Sessions'}
+        </button>
+      </div>
+
       {/* Danger Zone */}
       <div className="settings-section settings-section--danger">
-        <p className="settings-section-title">Danger Zone</p>
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
+          Danger Zone
+        </p>
         <p className="settings-danger-desc">
           Permanently delete your account and all associated data. This action cannot be undone.
         </p>

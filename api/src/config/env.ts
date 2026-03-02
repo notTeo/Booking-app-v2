@@ -48,8 +48,9 @@ export const env = {
     callbackUrl: get('GOOGLE_CALLBACK_URL'),
   },
   stripe: {
-  secretKey: get('STRIPE_SECRET_KEY'),
-  webhookSecret: get('STRIPE_WEBHOOK_SECRET'),
-  proPriceId: get('STRIPE_PRO_PRICE_ID'),
-},
+    secretKey: get('STRIPE_SECRET_KEY'),
+    webhookSecret: get('STRIPE_WEBHOOK_SECRET'),
+    proPriceId: get('STRIPE_PRO_PRICE_ID'),
+  },
+  inviteEmailOverride: process.env.INVITE_EMAIL_OVERRIDE ?? null,
 };
