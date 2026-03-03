@@ -1,0 +1,270 @@
+/* ---- Services Page ---- */
+.services-page {
+  max-width: 860px;
+  width: 100%;
+}
+
+.services-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.services-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.services-header .btn {
+  width: auto;
+}
+
+/* ---- Empty state ---- */
+.services-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ---- Service list ---- */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ---- Service card ---- */
+.service-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.service-card-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.service-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.service-card-name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.97rem;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.service-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.service-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.service-card-sep {
+  opacity: 0.4;
+}
+
+/* ---- Status badge ---- */
+.service-status-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.service-status-active {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+.service-status-inactive {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ---- Card actions ---- */
+.service-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.service-action-btn {
+  width: auto !important;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.service-action-active {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.service-delete-btn:hover {
+  color: var(--danger, #e53e3e) !important;
+  border-color: var(--danger, #e53e3e) !important;
+}
+
+.service-confirm-delete {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ---- Staff panel ---- */
+.service-staff-panel {
+  border-top: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  background: color-mix(in srgb, var(--accent) 3%, var(--bg-card));
+}
+
+.service-staff-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.service-staff-loading {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.service-staff-empty {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.service-staff-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.service-staff-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.service-staff-add {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.service-staff-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.7rem;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 180px;
+}
+
+.service-staff-select:focus {
+  border-color: var(--accent);
+}
+
+/* ---- Create / Edit form ---- */
+.service-form.card {
+  max-width: unset;
+  margin-bottom: 0.75rem;
+}
+
+.service-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0 1rem;
+}
+
+.service-form-active {
+  align-self: end;
+  padding-bottom: 1rem;
+}
+
+.service-form-active label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  text-transform: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  padding: 0.7rem 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+}
+
+.service-form-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.service-form-actions .btn {
+  width: auto;
+}

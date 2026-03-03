@@ -59,6 +59,7 @@ model Shop {
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
   invites              ShopInvite[]
+  services Service[]
 }
 
 model ShopWorkingSchedule {
@@ -124,7 +125,35 @@ model UserShop {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
+  staffServices StaffService[]
+
   @@unique([userId, shopId])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  duration    Int      // minutes
+  price       Int      // cents
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staffServices StaffService[]
+}
+
+model StaffService {
+  id          String   @id @default(cuid())
+  userShopId  String
+  serviceId   String
+  userShop    UserShop @relation(fields: [userShopId], references: [id], onDelete: Cascade)
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([userShopId, serviceId])
 }
 
 model User {

@@ -4,6 +4,14 @@ import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getMember, updateMemberRole, removeMember, type TeamMember } from '../api/team.api';
 import * as whApi from '../api/workingHours.api';
+import {
+  getMemberServices,
+  getServices,
+  assignStaff,
+  unassignStaff,
+  type MemberServiceAssignment,
+  type Service,
+} from '../api/service.api';
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
 import '../styles/pages/team.css';
 
@@ -28,6 +36,15 @@ export default function ShopTeamMemberPage() {
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
 
+  // Services
+  const [memberServices, setMemberServices] = useState<MemberServiceAssignment[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [servicesError, setServicesError] = useState('');
+  const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [assigningService, setAssigningService] = useState(false);
+  const [unassigningServiceId, setUnassigningServiceId] = useState<string | null>(null);
+
   const isOwner = shop?.role === 'owner';
 
   useEffect(() => {
@@ -40,6 +57,18 @@ export default function ShopTeamMemberPage() {
       })
       .catch(() => setError(t.team.errorLoad))
       .finally(() => setLoading(false));
+  }, [shop?.id, memberId]);
+
+  useEffect(() => {
+    if (!shop || !memberId) return;
+    setServicesLoading(true);
+    Promise.all([getMemberServices(shop.id, memberId), getServices(shop.id)])
+      .then(([assignments, services]) => {
+        setMemberServices(assignments);
+        setAllServices(services);
+      })
+      .catch(() => setServicesError(t.team.errorLoadServices))
+      .finally(() => setServicesLoading(false));
   }, [shop?.id, memberId]);
 
   const handleSaveRole = async () => {
@@ -70,6 +99,39 @@ export default function ShopTeamMemberPage() {
     } catch {
       setRemoveError(t.team.errorRemove);
       setRemoving(false);
+    }
+  };
+
+  const handleAssignService = async () => {
+    if (!shop || !memberId || !selectedServiceId || !member) return;
+    setAssigningService(true);
+    setServicesError('');
+    try {
+      await assignStaff(shop.id, selectedServiceId, member.id); // member.id = UserShop.id
+      const assignments = await getMemberServices(shop.id, memberId);
+      setMemberServices(assignments);
+      setSelectedServiceId('');
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setServicesError(msg || t.team.errorAssignService);
+    } finally {
+      setAssigningService(false);
+    }
+  };
+
+  const handleUnassignService = async (serviceId: string) => {
+    if (!shop || !memberId || !member) return;
+    setUnassigningServiceId(serviceId);
+    setServicesError('');
+    try {
+      await unassignStaff(shop.id, serviceId, member.id); // member.id = UserShop.id
+      const assignments = await getMemberServices(shop.id, memberId);
+      setMemberServices(assignments);
+    } catch {
+      setServicesError(t.team.errorUnassignService);
+    } finally {
+      setUnassigningServiceId(null);
     }
   };
 
@@ -160,6 +222,66 @@ export default function ShopTeamMemberPage() {
           <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} />
         </div>
       )}
+
+      {/* Assigned services */}
+      <div className="card team-services-card">
+        <h2>{t.team.assignedServices}</h2>
+        {servicesLoading ? (
+          <div className="shops-spinner-wrap">
+            <div className="spinner" style={{ width: 24, height: 24 }} />
+          </div>
+        ) : (
+          <>
+            {servicesError && <div className="alert alert-error">{servicesError}</div>}
+            {memberServices.length === 0 ? (
+              <p className="team-services-empty">{t.team.noAssignedServices}</p>
+            ) : (
+              <ul className="service-staff-list">
+                {memberServices.map((a) => (
+                  <li key={a.serviceId} className="service-staff-item">
+                    <span>{a.service.name}</span>
+                    {isOwner && (
+                      <button
+                        className="btn btn-ghost service-action-btn"
+                        onClick={() => handleUnassignService(a.serviceId)}
+                        disabled={unassigningServiceId === a.serviceId}
+                      >
+                        {unassigningServiceId === a.serviceId ? '...' : t.team.removeService}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {isOwner && (() => {
+              const assignedIds = new Set(memberServices.map((a) => a.serviceId));
+              const available = allServices.filter((s) => !assignedIds.has(s.id));
+              if (available.length === 0) return null;
+              return (
+                <div className="service-staff-add">
+                  <select
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    className="service-staff-select"
+                  >
+                    <option value="">{t.team.selectService}</option>
+                    {available.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-primary service-action-btn"
+                    onClick={handleAssignService}
+                    disabled={!selectedServiceId || assigningService}
+                  >
+                    {assigningService ? t.team.assigningService : t.team.assignService}
+                  </button>
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
 
       {/* Danger zone — owner only */}
       {isOwner && (

@@ -292,6 +292,15 @@ export interface Translations {
     dangerZone: string;
     removeMemberDesc: string;
     confirmRemovePrompt: string;
+    assignedServices: string;
+    noAssignedServices: string;
+    assignService: string;
+    selectService: string;
+    assigningService: string;
+    removeService: string;
+    errorLoadServices: string;
+    errorAssignService: string;
+    errorUnassignService: string;
   };
   invites: {
     title: string;
@@ -335,6 +344,39 @@ export interface Translations {
     inviteNotFound: string;
     emailMismatch: string;
     inviteFor: string;
+  };
+  services: {
+    title: string;
+    addService: string;
+    create: string;
+    name: string;
+    description: string;
+    duration: string;
+    price: string;
+    isActive: string;
+    save: string;
+    saving: string;
+    cancel: string;
+    edit: string;
+    delete: string;
+    deleting: string;
+    confirmDelete: string;
+    active: string;
+    inactive: string;
+    noServices: string;
+    errorLoad: string;
+    errorCreate: string;
+    errorUpdate: string;
+    errorDelete: string;
+    staff: string;
+    assignedStaff: string;
+    noStaff: string;
+    addStaff: string;
+    selectStaff: string;
+    assigning: string;
+    removeStaff: string;
+    errorAssign: string;
+    errorUnassign: string;
   };
   workingHours: {
     title: string;
@@ -670,6 +712,15 @@ home: {
       dangerZone: 'Επικίνδυνη Ζώνη',
       removeMemberDesc: 'Αφαίρεση αυτού του μέλους από το κατάστημα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       confirmRemovePrompt: 'Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το μέλος;',
+      assignedServices: 'Ανατεθειμένες Υπηρεσίες',
+      noAssignedServices: 'Δεν έχουν ανατεθεί υπηρεσίες.',
+      assignService: 'Προσθήκη',
+      selectService: 'Επιλογή υπηρεσίας...',
+      assigningService: 'Προσθήκη...',
+      removeService: 'Αφαίρεση',
+      errorLoadServices: 'Αποτυχία φόρτωσης υπηρεσιών.',
+      errorAssignService: 'Αποτυχία ανάθεσης υπηρεσίας.',
+      errorUnassignService: 'Αποτυχία αφαίρεσης υπηρεσίας.',
     },
     invites: {
       title: 'Προσκλήσεις',
@@ -713,6 +764,39 @@ home: {
       inviteNotFound: 'Η πρόσκληση δεν βρέθηκε.',
       emailMismatch: 'Αυτή η πρόσκληση απευθύνεται σε άλλο email.',
       inviteFor: 'Πρόσκληση για',
+    },
+    services: {
+      title: 'Υπηρεσίες',
+      addService: '+ Νέα Υπηρεσία',
+      create: 'Δημιουργία',
+      name: 'Όνομα',
+      description: 'Περιγραφή',
+      duration: 'Διάρκεια',
+      price: 'Τιμή',
+      isActive: 'Ενεργή',
+      save: 'Αποθήκευση',
+      saving: 'Αποθήκευση...',
+      cancel: 'Ακύρωση',
+      edit: 'Επεξεργασία',
+      delete: 'Διαγραφή',
+      deleting: 'Διαγραφή...',
+      confirmDelete: 'Επιβεβαίωση Διαγραφής',
+      active: 'Ενεργή',
+      inactive: 'Ανενεργή',
+      noServices: 'Δεν υπάρχουν υπηρεσίες ακόμα.',
+      errorLoad: 'Αποτυχία φόρτωσης υπηρεσιών.',
+      errorCreate: 'Αποτυχία δημιουργίας υπηρεσίας.',
+      errorUpdate: 'Αποτυχία ενημέρωσης υπηρεσίας.',
+      errorDelete: 'Αποτυχία διαγραφής υπηρεσίας.',
+      staff: 'Προσωπικό',
+      assignedStaff: 'Ανατεθειμένο Προσωπικό',
+      noStaff: 'Δεν έχει ανατεθεί προσωπικό.',
+      addStaff: 'Προσθήκη',
+      selectStaff: 'Επιλογή μέλους...',
+      assigning: 'Προσθήκη...',
+      removeStaff: 'Αφαίρεση',
+      errorAssign: 'Αποτυχία ανάθεσης προσωπικού.',
+      errorUnassign: 'Αποτυχία αφαίρεσης προσωπικού.',
     },
     workingHours: {
       title: 'Ώρες Λειτουργίας',
@@ -1047,6 +1131,15 @@ home: {
       dangerZone: 'Danger Zone',
       removeMemberDesc: 'Remove this member from the shop. This action cannot be undone.',
       confirmRemovePrompt: 'Are you sure you want to remove this member?',
+      assignedServices: 'Assigned Services',
+      noAssignedServices: 'No services assigned.',
+      assignService: 'Add',
+      selectService: 'Select service...',
+      assigningService: 'Adding...',
+      removeService: 'Remove',
+      errorLoadServices: 'Failed to load services.',
+      errorAssignService: 'Failed to assign service.',
+      errorUnassignService: 'Failed to remove service.',
     },
     invites: {
       title: 'Invites',
@@ -1090,6 +1183,39 @@ home: {
       inviteNotFound: 'Invite not found.',
       emailMismatch: 'This invite was sent to a different email address.',
       inviteFor: 'Invitation for',
+    },
+    services: {
+      title: 'Services',
+      addService: '+ New Service',
+      create: 'Create',
+      name: 'Name',
+      description: 'Description',
+      duration: 'Duration',
+      price: 'Price',
+      isActive: 'Active',
+      save: 'Save',
+      saving: 'Saving...',
+      cancel: 'Cancel',
+      edit: 'Edit',
+      delete: 'Delete',
+      deleting: 'Deleting...',
+      confirmDelete: 'Confirm Delete',
+      active: 'Active',
+      inactive: 'Inactive',
+      noServices: 'No services yet.',
+      errorLoad: 'Failed to load services.',
+      errorCreate: 'Failed to create service.',
+      errorUpdate: 'Failed to update service.',
+      errorDelete: 'Failed to delete service.',
+      staff: 'Staff',
+      assignedStaff: 'Assigned Staff',
+      noStaff: 'No staff assigned.',
+      addStaff: 'Add',
+      selectStaff: 'Select member...',
+      assigning: 'Adding...',
+      removeStaff: 'Remove',
+      errorAssign: 'Failed to assign staff.',
+      errorUnassign: 'Failed to remove staff.',
     },
     workingHours: {
       title: 'Working Hours',
