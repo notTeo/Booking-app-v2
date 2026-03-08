@@ -10,9 +10,10 @@ export const createShopValidation = [
     .trim(),
   body('description').optional().trim(),
   body('phone').optional().trim(),
-  body('address').optional().trim(),
-  body('city').optional().trim(),
-  body('country').optional().trim(),
+  body('lat').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
+  body('lng').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
+  body('formattedAddress').optional().trim(),
+  body('placeId').optional().trim(),
   body('timezone')
     .optional()
     .trim()
@@ -30,9 +31,10 @@ export const updateShopValidation = [
     .trim(),
   body('description').optional().trim(),
   body('phone').optional().trim(),
-  body('address').optional().trim(),
-  body('city').optional().trim(),
-  body('country').optional().trim(),
+  body('lat').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
+  body('lng').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
+  body('formattedAddress').optional().trim(),
+  body('placeId').optional().trim(),
   body('timezone')
     .optional()
     .trim()

@@ -8,9 +8,10 @@ export interface Shop {
   slug: string;
   description?: string;
   phone?: string;
-  address?: string;
-  city?: string;
-  country?: string;
+  lat?: number;
+  lng?: number;
+  formattedAddress?: string;
+  placeId?: string;
   timezone: string;
   isActive: boolean;
   createdAt: string;
@@ -23,12 +24,12 @@ export interface CreateShopDto {
   slug: string;
   description?: string;
   phone?: string;
-  address?: string;
-  city?: string;
-  country?: string;
+  lat?: number;
+  lng?: number;
+  formattedAddress?: string;
+  placeId?: string;
   timezone?: string;
 }
-
 export interface UpdateShopDto extends Partial<CreateShopDto> {
   isActive?: boolean;
 }

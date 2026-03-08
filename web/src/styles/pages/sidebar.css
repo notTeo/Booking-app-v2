@@ -194,9 +194,13 @@
   text-align: left;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
-  margin-top: auto;
   padding-top: 0.75rem;
+}
+
+.sidebar-bottom{
+  border-radius: 0 0 var(--radius) var(--radius);
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 
 .sidebar-logout:hover {

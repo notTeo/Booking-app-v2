@@ -252,6 +252,47 @@
   cursor: pointer;
 }
 
+/* ---- Google Places Autocomplete dropdown ---- */
+.pac-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-family: var(--font);
+  margin-top: 2px;
+}
+
+.pac-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.pac-item:first-child {
+  border-top: none;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.pac-item-query {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.pac-matched {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.pac-icon {
+  display: none;
+}
+
 .shop-form-actions {
   display: flex;
   gap: 0.75rem;

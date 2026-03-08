@@ -155,14 +155,13 @@ function ShopNav({ collapsed, toggle, isOpen, onClose, slug }: ShopNavProps) {
             <FontAwesomeIcon icon={faMagnifyingGlass} />
             <span className="sidebar-link-label">{t.sidebar.customers}</span>
           </NavLink>
-
-          <NavLink to={`${base}/settings`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
-            <FontAwesomeIcon icon={faGear} />
-            <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
-          </NavLink>
           <NavLink to={`${base}/working-hours`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
             <FontAwesomeIcon icon={faClock} />
             <span className="sidebar-link-label">{t.sidebar.shopWorkingHours}</span>
+          </NavLink>
+           <NavLink to={`${base}/settings`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''} sidebar-bottom`} onClick={onClose}>
+            <FontAwesomeIcon icon={faGear} />
+            <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
           </NavLink>
         </>
       )}

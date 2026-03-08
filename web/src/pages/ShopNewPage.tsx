@@ -1,10 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
+
+interface LocationData {
+  lat: number;
+  lng: number;
+  formattedAddress: string;
+  placeId: string;
+}
+
+let mapsPromise: Promise<void> | null = null;
+
+function loadGoogleMaps(): Promise<void> {
+  if (mapsPromise) return mapsPromise;
+
+  mapsPromise = new Promise<void>((resolve, reject) => {
+    if (typeof google !== 'undefined' && google.maps?.places) {
+      resolve();
+      return;
+    }
+
+    (window as any).__googleMapsCallback = () => {
+      delete (window as any).__googleMapsCallback;
+      resolve();
+    };
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${
+      import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+    }&libraries=places&loading=async&callback=__googleMapsCallback`;
+    script.async = true;
+    script.onerror = () => {
+      mapsPromise = null;
+      reject(new Error('Google Maps script failed to load'));
+    };
+    document.head.appendChild(script);
+  });
+
+  return mapsPromise;
+}
 
 export default function ShopNewPage() {
   const { user } = useAuth();
@@ -14,15 +52,121 @@ export default function ShopNewPage() {
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
   const [timezone, setTimezone] = useState('Europe/Athens');
+
+  const [addressInput, setAddressInput] = useState('');
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [mapsReady, setMapsReady] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  const sessionTokenRef = useRef<any>(null);
+
   const isPro = user?.plan === 'pro';
+
+  useEffect(() => {
+    loadGoogleMaps()
+      .then(() => setMapsReady(true))
+      .catch(() => {
+        setError('Address search unavailable. You can still enter an address manually.');
+        setMapsReady(true);
+      });
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchPredictions = useCallback(async (input: string) => {
+    if (input.length < 2) {
+      setPredictions([]);
+      setDropdownOpen(false);
+      return;
+    }
+    try {
+      const { suggestions } =
+      await (google.maps.places as any).AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input,
+        sessionToken: sessionTokenRef.current,
+      });
+
+      const placePredictions = suggestions
+        .filter((s: any) => s.placePrediction)
+        .map((s: any) => s.placePrediction);
+
+      setPredictions(placePredictions);
+      setDropdownOpen(placePredictions.length > 0);
+      setActiveIndex(-1);
+    } catch {
+      setPredictions([]);
+      setDropdownOpen(false);
+    }
+  }, []);
+
+  const handleAddressChange = (value: string) => {
+    setAddressInput(value);
+    setLocation(null);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchPredictions(value), 300);
+  };
+
+  const selectPrediction = async (prediction: any) => {
+    setAddressInput(prediction.text.text);
+    setPredictions([]);
+    setDropdownOpen(false);
+
+    try {
+      const place = prediction.toPlace();
+      await place.fetchFields({
+        fields: ['location', 'formattedAddress', 'id'],
+        sessionToken: sessionTokenRef.current,
+      });
+
+      if (place.location) {
+        setLocation({
+          lat: place.location.lat(),
+          lng: place.location.lng(),
+          formattedAddress: place.formattedAddress ?? prediction.text.text,
+          placeId: place.id,
+        });
+      }
+      sessionTokenRef.current = null;
+    } catch (err) {
+      console.error('Failed to fetch place details:', err);
+      setLocation(null);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!dropdownOpen || predictions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, predictions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      selectPrediction(predictions[activeIndex]);
+    } else if (e.key === 'Escape') {
+      setDropdownOpen(false);
+    }
+  };
 
   if (!isPro) {
     return (
@@ -50,9 +194,13 @@ export default function ShopNewPage() {
         slug,
         ...(description && { description }),
         ...(phone && { phone }),
-        ...(address && { address }),
-        ...(city && { city }),
-        ...(country && { country }),
+        ...(location && {
+          lat: location.lat,
+          lng: location.lng,
+          formattedAddress: location.formattedAddress,
+          placeId: location.placeId,
+        }),
+        ...(!location && addressInput && { formattedAddress: addressInput }),
         timezone,
       };
       const shop = await createShop(dto);
@@ -122,37 +270,7 @@ export default function ShopNewPage() {
                 onChange={(e) => setPhone(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="shop-city">City</label>
-              <input
-                id="shop-city"
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="shop-address">Address</label>
-            <input
-              id="shop-address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-
-          <div className="shop-form-row">
-            <div className="form-group">
-              <label htmlFor="shop-country">Country</label>
-              <input
-                id="shop-country"
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-              />
-            </div>
             <div className="form-group">
               <label htmlFor="shop-timezone">Timezone</label>
               <select
@@ -165,6 +283,82 @@ export default function ShopNewPage() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Address autocomplete */}
+          <div className="form-group" ref={wrapperRef} style={{ position: 'relative' }}>
+            <label htmlFor="shop-address">Address</label>
+            <input
+              id="shop-address"
+              type="text"
+              value={addressInput}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (mapsReady && !sessionTokenRef.current) {
+                  sessionTokenRef.current = new (google.maps.places as any).AutocompleteSessionToken();
+                }
+                predictions.length > 0 && setDropdownOpen(true);
+              }}
+              placeholder="123 Main St, Athens, Greece"
+              autoComplete="off"
+              disabled={!mapsReady}
+            />
+
+            {location && (
+              <span className="shop-field-hint" style={{ color: 'var(--color-success, #22c55e)' }}>
+                ✓ Location confirmed
+              </span>
+            )}
+
+            {dropdownOpen && predictions.length > 0 && (
+              <ul
+                role="listbox"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  zIndex: 50,
+                  margin: '2px 0 0',
+                  padding: 0,
+                  listStyle: 'none',
+                  background: 'var(--color-surface, #1e1e1e)',
+                  border: '1px solid var(--color-border, #333)',
+                  borderRadius: '6px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                  overflow: 'hidden',
+                }}
+              >
+                {predictions.map((p: any, i: number) => (
+                  <li
+                    key={p.placeId}
+                    role="option"
+                    aria-selected={i === activeIndex}
+                    onMouseDown={() => selectPrediction(p)}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    style={{
+                      padding: '10px 14px',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      lineHeight: 1.4,
+                      background: i === activeIndex
+                        ? 'var(--color-primary-muted, rgba(34,197,94,0.12))'
+                        : 'transparent',
+                      color: 'var(--color-text, #e5e5e5)',
+                      borderBottom: i < predictions.length - 1
+                        ? '1px solid var(--color-border, #2a2a2a)'
+                        : 'none',
+                      transition: 'background 0.1s',
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>
+                      {p.text.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {error && <div className="alert alert-error">{error}</div>}

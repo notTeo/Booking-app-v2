@@ -48,9 +48,13 @@ model Shop {
   slug        String   @unique
   description String?
   phone       String?
-  address     String?
-  city        String?
-  country     String?
+
+  // Location
+  lat              Float?
+  lng              Float?
+  formattedAddress String?
+  placeId          String?
+
   timezone    String   @default("Europe/Athens")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -59,7 +63,7 @@ model Shop {
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
   invites              ShopInvite[]
-  services Service[]
+  services             Service[]
 }
 
 model ShopWorkingSchedule {

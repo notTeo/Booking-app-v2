@@ -30,7 +30,7 @@ export default function ShopOverviewPage() {
             <strong>Phone:</strong> {shop.phone}
           </p>
           <p className="shop-card__field">
-            <strong>Address:</strong> {shop.address}, {shop.city}, {shop.country}
+            <strong>Address:</strong> {shop.formattedAddress || '-'}
           </p>
           <p className="shop-card__field">
             <strong>Timezone:</strong> {shop.timezone}
