@@ -14,6 +14,7 @@ export const getMe = async (
       where: { id: req.user!.userId },
       select: {
         id: true,
+        name: true,
         email: true,
         isVerified: true,
         createdAt: true,
@@ -52,8 +53,8 @@ export const updateMe = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password } = req.body;
-    const result = await updateUser(req.user!.userId!, { email, password });
+    const { email, password, name } = req.body;
+    const result = await updateUser(req.user!.userId!, { email, password, name });
     successResponse(res, result);
   } catch (err) {
     next(err);

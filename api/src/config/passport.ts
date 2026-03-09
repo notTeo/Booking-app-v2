@@ -14,12 +14,13 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails?.[0]?.value;
+        const name = profile.displayName || profile.name?.givenName || 'Unknown';
 
         if (!email) {
           return done(new Error('No email found in Google profile'));
         }
 
-        const result = await handleGoogleAuth(profile.id, email);
+        const result = await handleGoogleAuth(profile.id, email, name);
         return done(null, result);
       } catch (err) {
         logger.error(err, 'Google OAuth error');

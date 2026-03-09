@@ -1,5 +1,6 @@
 export interface RegisterDto {
   email: string;
+  name:string;
   password: string;
 }
 
@@ -11,6 +12,7 @@ export interface LoginDto {
 export interface AuthResponse {
   user: {
     id: string;
+    name:string;
     email: string;
     isVerified: boolean;
     createdAt: Date;

@@ -5,6 +5,9 @@ export const registerValidation = [
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
+    body('name')
+    .isLength({ max: 50 })
+    .withMessage('Valid name is required max 50 char'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')

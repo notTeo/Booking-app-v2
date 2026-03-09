@@ -47,6 +47,11 @@ export default function SettingsPage() {
   const [emailError, setEmailError] = useState('');
   const [emailSuccess, setEmailSuccess] = useState('');
 
+  const [name, setName] = useState(user?.name ?? '');
+  const [nameLoading, setNameLoading] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [nameSuccess, setNameSuccess] = useState('');
+
   // Update password
   const [password, setPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -73,7 +78,30 @@ export default function SettingsPage() {
       .finally(() => setSessionsLoading(false));
   }, []);
 
-  const handleUpdateEmail = async (e: React.FormEvent) => {
+  const handleUpdateName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNameError('');
+    setNameSuccess('');
+    if (!name || name === user?.name) return;
+    setNameLoading(true);
+    try {
+      const data = await updateMe({ name });
+    if (data.message) {
+      setNameSuccess(data.message);
+      setUser({ ...user!, name: data.user.name });  // ← update context
+      setName(data.user.name ?? ''); 
+      } else {
+        setUser({ ...user!, name: data.user.name });
+        setNameSuccess('Name updated successfully.');
+      }
+    } catch (err: any) {
+      setNameError(err.response?.data?.message ?? 'Failed to update name.');
+    } finally {
+      setNameLoading(false);
+    }
+  };
+
+    const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
     setEmailSuccess('');
@@ -172,7 +200,34 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-
+      {/* User Name */}
+      <div className="settings-section">
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faEnvelope} className="settings-section-icon" />
+          User Name
+        </p>
+        <form onSubmit={handleUpdateName}>
+          <div className="form-group">
+            <label htmlFor="settings-name">User Name</label>
+            <input
+              id="settings-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          {nameError && <div className="alert alert-error">{nameError}</div>}
+          {nameSuccess && <div className="alert alert-success">{nameSuccess}</div>}
+          <button
+            className="btn btn-primary"
+            type="submit"
+            disabled={nameLoading || name === user?.name}
+          >
+            {nameLoading ? 'Saving...' : 'Save Name'}
+          </button>
+        </form>
+      </div>
       {/* Email Address */}
       <div className="settings-section">
         <p className="settings-section-title">

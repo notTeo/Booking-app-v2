@@ -162,6 +162,7 @@ model StaffService {
 
 model User {
   id               String        @id @default(cuid())
+  name             String
   email            String        @unique
   passwordHash     String?
   isVerified       Boolean       @default(false)
@@ -211,6 +212,7 @@ model PasswordResetToken {
 
 model PendingRegistration {
   id           String   @id @default(cuid())
+  name         String
   email        String   @unique
   passwordHash String
   token        String   @unique

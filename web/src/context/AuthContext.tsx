@@ -5,6 +5,7 @@ import { authStore } from '../store/authStore';
 
 interface User {
   id: string;
+  name:string;
   email: string;
   isVerified: boolean;
   createdAt: string;

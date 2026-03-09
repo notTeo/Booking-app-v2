@@ -8,7 +8,7 @@ import { generateRandomToken, getEmailTokenExpiry, getPasswordResetTokenExpiry, 
 import { randomUUID } from 'crypto';
 import { sendEmailChangeVerification, sendPasswordResetEmail, sendVerificationEmail } from './email.service';
 
-export const registerUser = async ({ email, password }: RegisterDto) => {
+export const registerUser = async ({ name, email, password }: RegisterDto) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     logger.warn(`Registration attempt with existing email: ${email}`);
@@ -30,6 +30,7 @@ export const registerUser = async ({ email, password }: RegisterDto) => {
 
   await prisma.pendingRegistration.create({
     data: {
+      name,
       email,
       passwordHash,
       token,
@@ -45,7 +46,7 @@ export const registerUser = async ({ email, password }: RegisterDto) => {
 };
 
 export const registerUserWithInvite = async (
-  { email, password }: RegisterDto,
+  { name, email, password }: RegisterDto,
   plainToken: string,
 ) => {
   const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
@@ -71,12 +72,12 @@ export const registerUserWithInvite = async (
   const accessToken = signAccessToken('placeholder'); // replaced in transaction
   let finalAccessToken = accessToken;
   let finalRefreshToken = '';
-  let createdUser: { id: string; email: string; isVerified: boolean; createdAt: Date };
+  let createdUser: { id: string; name: string; email: string; isVerified: boolean; createdAt: Date };
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email, passwordHash, isVerified: true },
-      select: { id: true, email: true, isVerified: true, createdAt: true },
+      data: { name, email, passwordHash, isVerified: true },
+      select: { id: true, name:true, email: true, isVerified: true, createdAt: true },
     });
 
     await tx.userShop.create({
@@ -153,6 +154,7 @@ export const loginUser = async ({ email, password }: LoginDto) => {
     user: {
       id: user.id,
       email: user.email,
+      name: user.name,
       isVerified: user.isVerified,
       createdAt: user.createdAt,
     },
@@ -233,6 +235,7 @@ export const verifyEmail = async (token: string) => {
 
   const user = await prisma.user.create({
     data: {
+      name: pending.name,
       email: pending.email,
       passwordHash: pending.passwordHash,
       isVerified: true,
@@ -240,6 +243,7 @@ export const verifyEmail = async (token: string) => {
     select: {
       id: true,
       email: true,
+      name:true,
       isVerified: true,
       createdAt: true,
     },
@@ -293,8 +297,19 @@ export const revokeAllSessions = async (userId: string, currentToken: string) =>
 
 export const updateUser = async (
   userId: string,
-  data: { email?: string; password?: string },
-): Promise<{ user: { id: string; email: string; isVerified: boolean; createdAt: Date } } | { message: string }> => {
+  data: { email?: string; password?: string; name?: string },
+): Promise<{ user: { id: string; name: string | null; email: string; isVerified: boolean; createdAt: Date } } | { message: string }> => {
+  // Handle name change (immediate)
+  if (data.name) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: data.name },
+      select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
+    });
+    logger.info(`Name updated for userId: ${userId}`);
+    return { user };
+  }
+
   // Handle email change — create a pending verification instead of updating directly
   if (data.email) {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
@@ -321,7 +336,7 @@ export const updateUser = async (
     const user = await prisma.user.update({
       where: { id: userId },
       data: { passwordHash },
-      select: { id: true, email: true, isVerified: true, createdAt: true },
+      select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
     });
     logger.info(`Password updated for userId: ${userId}`);
     return { user };
@@ -330,7 +345,7 @@ export const updateUser = async (
   // Nothing to update — return current user
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { id: true, email: true, isVerified: true, createdAt: true },
+    select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
   });
   return { user };
 };

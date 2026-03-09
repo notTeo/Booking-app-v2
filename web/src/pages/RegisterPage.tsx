@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const emailFromInvite = params.get('email') ?? '';
 
   const [email, setEmail] = useState(emailFromInvite);
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -33,7 +34,7 @@ export default function RegisterPage() {
     setSuccess('');
     setIsLoading(true);
     try {
-      const data = await register(email, password, inviteToken || undefined);
+      const data = await register(name, email, password, inviteToken || undefined);
 
       // Invite path: response contains accessToken + user — auto-login and redirect
       if (data.data?.accessToken) {
@@ -97,6 +98,16 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              type="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input

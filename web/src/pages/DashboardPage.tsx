@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faUser,
   faCrown,
   faStar,
   faCircleCheck,
@@ -21,8 +22,9 @@ import '../styles/pages/dashboard.css';
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const sub        = user?.subscription;
-  const isPro      = user?.plan === 'pro';
+  const sub         = user?.subscription;
+  const name        = user?.name;
+  const isPro       = user?.plan === 'pro';
   const isCanceling = isPro && sub?.cancelAtPeriodEnd === true;
   const isRenewing  = isPro && !sub?.cancelAtPeriodEnd;
 
@@ -33,7 +35,7 @@ export default function DashboardPage() {
       day: 'numeric',
     });
 
-  const emailPrefix = user?.email?.split('@')[0] ?? 'there';
+  
 
   return (
     <div className="dashboard-content">
@@ -41,7 +43,7 @@ export default function DashboardPage() {
       {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div className="dash-header">
         <h1 className="dash-title">Overview</h1>
-        <p className="dash-subtitle">Welcome back, {emailPrefix}</p>
+        <p className="dash-subtitle">Welcome back, {name}</p>
       </div>
 
       {/* ── Stats row ───────────────────────────────────────────────────────── */}
@@ -102,6 +104,16 @@ export default function DashboardPage() {
 
         <div className="dash-fields">
 
+          {/* Name */}
+          <div className="dash-field">
+            <div className="dash-field-icon">
+              <FontAwesomeIcon icon={faUser} />
+            </div>
+            <div className="dash-field-body">
+              <p className="dash-field-label">User Name</p>
+              <p className="dash-field-value">{name}</p>
+            </div>
+          </div>
           {/* Email */}
           <div className="dash-field">
             <div className="dash-field-icon">
@@ -112,7 +124,6 @@ export default function DashboardPage() {
               <p className="dash-field-value">{user?.email}</p>
             </div>
           </div>
-
           {/* User ID */}
           <div className="dash-field">
             <div className="dash-field-icon">

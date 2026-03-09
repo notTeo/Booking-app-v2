@@ -2,10 +2,12 @@ import { prisma } from '../utils/prisma';
 import { logger } from '../utils/logger';
 import { signAccessToken, signRefreshToken, getRefreshTokenExpiry } from '../utils/jwt';
 import { randomUUID } from 'crypto';
+import { string } from 'yaml/dist/schema/common/string';
 
 export const handleGoogleAuth = async (
   googleId: string,
   email: string,
+  name:string,
   ) => {
   let user = await prisma.user.findUnique({
     where: { googleId },
@@ -25,6 +27,7 @@ export const handleGoogleAuth = async (
     } else {
       user = await prisma.user.create({
         data: {
+          name,
           email,
           googleId,
           isVerified: true,

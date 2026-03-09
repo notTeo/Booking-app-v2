@@ -1,8 +1,8 @@
 import client, { refreshClient } from './client';
 
-export const register = (email: string, password: string, inviteToken?: string) =>
+export const register = (name:string, email: string, password: string, inviteToken?: string) =>
   client
-    .post('/auth/register', { email, password, ...(inviteToken ? { inviteToken } : {}) })
+    .post('/auth/register', { name, email, password, ...(inviteToken ? { inviteToken } : {}) })
     .then((res) => res.data);
 
 export const login = (email: string, password: string) =>
