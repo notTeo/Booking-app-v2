@@ -16,6 +16,7 @@ import { parse } from 'yaml';
 import billingRoutes from './routes/billing.routes';
 import shopRoutes from './routes/shop.routes';
 import globalInviteRoutes from './routes/globalInvite.routes';
+import publicRoutes from './routes/public.routes'
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use("/auth", authRoutes)
 app.use('/user', userRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/invites', globalInviteRoutes);
+app.use('/public', publicRoutes)
 
 app.use(ErrorHandler);
 

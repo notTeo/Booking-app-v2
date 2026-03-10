@@ -203,7 +203,7 @@ export default function SettingsPage() {
       {/* User Name */}
       <div className="settings-section">
         <p className="settings-section-title">
-          <FontAwesomeIcon icon={faEnvelope} className="settings-section-icon" />
+          <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
           User Name
         </p>
         <form onSubmit={handleUpdateName}>

@@ -1,7 +1,8 @@
 import { AppError } from "../middleware/errorHandler";
 import { prisma } from '../utils/prisma';
 
-const getShopInfo = async ( slug: string) => {
+export const getShopInfoService = async ( slug: string) => {
+  if (!slug) throw new AppError(404, 'Slug is required');
 const shop = await prisma.shop.findUnique({
   where: { slug, isActive: true },
   include: {
