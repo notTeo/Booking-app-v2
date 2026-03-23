@@ -4,12 +4,16 @@ export interface ShopHour {
   id: string;
   openTime: string;
   closeTime: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface ShopDay {
   id: string;
   dayOfWeek: number;
+  day: string;
   hours: ShopHour[];
+  isOpen: boolean;
 }
 
 export interface ShopWorkingSchedule {
@@ -17,6 +21,7 @@ export interface ShopWorkingSchedule {
   isActive: boolean;
   staffId: string | null;
   days: ShopDay[];
+  startDate: string;
 }
 
 export interface Service {

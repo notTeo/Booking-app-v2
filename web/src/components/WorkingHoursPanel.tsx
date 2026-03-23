@@ -28,9 +28,10 @@ type DayState = { isOpen: boolean; hours: HourRange[] };
 type DaysForm = Record<DayOfWeek, DayState>;
 
 function defaultDays(): DaysForm {
-  return Object.fromEntries(
-    DAY_ORDER.map((d) => [d, { isOpen: false, hours: [] }])
-  ) as DaysForm;
+  return DAY_ORDER.reduce((acc, d) => {
+    acc[d] = { isOpen: false, hours: [] };
+    return acc;
+  }, {} as DaysForm);
 }
 
 function initDaysFromSchedule(schedule: Schedule): DaysForm {
@@ -54,6 +55,8 @@ function formatDate(iso: string): string {
 
 interface ScheduleEditState {
   days: DaysForm;
+  startDate: string;
+  endDate: string;
   saving: boolean;
   success: string;
   error: string;
@@ -65,6 +68,8 @@ interface ScheduleEditState {
 function makeEditState(schedule: Schedule): ScheduleEditState {
   return {
     days: initDaysFromSchedule(schedule),
+    startDate: schedule.startDate.slice(0, 10),
+    endDate: schedule.endDate ? schedule.endDate.slice(0, 10) : '',
     saving: false,
     success: '',
     error: '',
@@ -241,9 +246,11 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
     setCreating(true);
     setCreateError('');
     try {
-      const dto: CreateScheduleDto & { endDate?: string } = { startDate: createStart };
-      if (createEnd) (dto as Record<string, string>).endDate = createEnd;
-      const created = await api.createSchedule(dto);
+const dto: CreateScheduleDto = {
+  startDate: createStart,
+  ...(createEnd ? { endDate: createEnd } : {}),
+};
+const created = await api.createSchedule(dto);
       setSchedules((prev) => [created, ...prev]);
       setEditStates((prev) => ({ ...prev, [created.id]: makeEditState(created) }));
       setExpandedId(created.id);
@@ -378,6 +385,26 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
                 {state.success && (
                   <div className="alert alert-success wh-schedule-alert">{state.success}</div>
                 )}
+                    {isOwner && (
+                    <div className="wh-create-fields">
+                      <div className="form-group">
+                        <label>{t.workingHours.startDate}</label>
+                        <input
+                          type="date"
+                          value={state.startDate}
+                          onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>{t.workingHours.endDate}</label>
+                        <input
+                          type="date"
+                          value={state.endDate}
+                          onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
 
                 {/* Day rows */}
                 <div

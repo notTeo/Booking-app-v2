@@ -360,3 +360,7 @@
 .working-hours-actions .btn {
   width: auto;
 }
+
+.wh-create-fields{
+  padding: 1rem 1.25rem;
+}
