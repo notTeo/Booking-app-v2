@@ -117,7 +117,7 @@ export default function PublicPage() {
         email: email || undefined,
         serviceId: selectedServiceId,
         staffId: selectedMemberId ?? '',
-        date: buildISODateTime(date, time),
+        startTime: buildISODateTime(date, time),
         notes: notes || undefined,
       });
       setConfirmed(true);

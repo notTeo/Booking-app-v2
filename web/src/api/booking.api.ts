@@ -22,7 +22,7 @@ export interface Booking {
   customerId: string;
   serviceId: string;
   staffId: string;
-  date: string;          // ISO datetime
+  startTime: string;          // ISO datetime
   status: BookingStatus;
   notes: string | null;
   createdAt: string;

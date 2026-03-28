@@ -215,7 +215,8 @@ model Booking {
   customerId String
   serviceId  String
   staffId    String
-  date       DateTime
+  startTime DateTime
+  endTime   DateTime
   status     BookingStatus @default(CONFIRMED)
   notes      String?
   createdAt  DateTime      @default(now())
@@ -227,8 +228,8 @@ model Booking {
   staff    UserShop @relation(fields: [staffId], references: [id])
 
   @@index([shopId])
-  @@index([shopId, date])
-  @@index([staffId, date])
+  @@index([shopId, startTime])
+  @@index([staffId, startTime])
 }
 
 model RefreshToken {

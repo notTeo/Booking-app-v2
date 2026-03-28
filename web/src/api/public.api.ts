@@ -80,7 +80,7 @@ export interface CreateBookingPayload {
   email?: string;
   serviceId: string;
   staffId: string;
-  date: string;       // ISO 8601 datetime
+  startTime: string;       // ISO 8601 datetime
   notes?: string;
 }
 

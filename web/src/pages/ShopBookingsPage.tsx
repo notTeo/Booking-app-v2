@@ -157,7 +157,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
           <div className="cal-detail-meta">
             <span>{selectedBooking.service.name}</span>
             <span className="cal-detail-sep">·</span>
-            <span>{formatTime(selectedBooking.date)}</span>
+            <span>{formatTime(selectedBooking.startTime)}</span>
             <span className="cal-detail-sep">·</span>
             <span>{formatDuration(selectedBooking.service.duration)}</span>
           </div>
@@ -260,7 +260,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
 
                   {/* Booking blocks */}
                   {(bookingsByStaff[col.id] ?? []).map(b => {
-                    const dt = new Date(b.date);
+                    const dt = new Date(b.startTime);
                     const mins = dt.getHours() * 60 + dt.getMinutes();
                     const top = (mins - GRID_START * 60) * PX_PER_MIN;
                     const height = Math.max(b.service.duration * PX_PER_MIN, MIN_BLOCK_H);
@@ -280,7 +280,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
                           setConfirmDeleteId(null);
                         }}
                       >
-                        <div className="cal-block-time">{formatTime(b.date)}</div>
+                        <div className="cal-block-time">{formatTime(b.startTime)}</div>
                         <div className="cal-block-name">{b.customer.name}</div>
                         <div className="cal-block-service">{b.service.name}</div>
                       </div>

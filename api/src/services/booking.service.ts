@@ -11,33 +11,71 @@ export const createBooking = async (
     phone: string;
     email?: string;
     serviceId: string;
-    staffId: string;
-    date: string;
+    staffId: string | null | undefined;
+    startTime: string; // ISO string — rename from `date`
     notes?: string;
   },
 ) => {
   const shop = await prisma.shop.findUnique({ where: { slug } });
   if (!shop) throw new AppError(404, 'Shop not found');
 
-  const customer = await prisma.customer.upsert({
-    where: { shopId_phone: { shopId: shop.id, phone: data.phone } },
-    update: { name: data.name, email: data.email ?? undefined },
-    create: { shopId: shop.id, name: data.name, phone: data.phone, email: data.email },
-  });
+  const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+  if (!service) throw new AppError(404, 'Service not found');
 
-  const booking = await prisma.booking.create({
-    data: {
+  const startTime = new Date(data.startTime);
+  const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
+  let staffId = data.staffId;
+
+if (!staffId) {
+  const anyStaff = await prisma.userShop.findFirst({
+    where: {
       shopId: shop.id,
-      customerId: customer.id,
-      serviceId: data.serviceId,
-      staffId: data.staffId,
-      date: new Date(data.date),
-      notes: data.notes,
+      staffServices: { some: { serviceId: data.serviceId } },
     },
-    include: { customer: true, service: true },
   });
+  if (!anyStaff) throw new AppError(400, 'No staff available for this service');
+  staffId = anyStaff.id;
+}
+  try {
+    return await prisma.$transaction(
+      async (tx) => {
+        // Overlap check: any booking for same staff where ranges intersect
+        const conflict = await tx.booking.findFirst({
+          where: {
+            staffId,
+            startTime: { lt: endTime },
+            endTime: { gt: startTime },
+          },
+        });
 
-  return booking;
+        if (conflict) throw new AppError(409, 'Time slot is already booked');
+
+        const customer = await tx.customer.upsert({
+          where: { shopId_phone: { shopId: shop.id, phone: data.phone } },
+          update: { name: data.name, email: data.email ?? undefined },
+          create: { shopId: shop.id, name: data.name, phone: data.phone, email: data.email },
+        });
+
+        return tx.booking.create({
+          data: {
+            shopId: shop.id,
+            customerId: customer.id,
+            serviceId: data.serviceId,
+            staffId,
+            startTime,
+            endTime,
+            notes: data.notes,
+          },
+          include: { customer: true, service: true },
+        });
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (err: any) {
+    // P2034 = transaction conflict under Serializable — safe to retry, but for MVP just 409
+    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    throw err;
+  }
 };
 
 // ── Slots (stub — implement yourself) ───────────────────────────────────────
@@ -59,13 +97,13 @@ export const listBookings = async (
 ) => {
   const where: Record<string, unknown> = { shopId };
 
-  if (filters.date) {
-    const start = new Date(filters.date);
-    start.setUTCHours(0, 0, 0, 0);
-    const end = new Date(filters.date);
-    end.setUTCHours(23, 59, 59, 999);
-    where['date'] = { gte: start, lte: end };
-  }
+if (filters.date) {
+  const start = new Date(filters.date);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(filters.date);
+  end.setUTCHours(23, 59, 59, 999);
+  where['startTime'] = { gte: start, lte: end };
+}
 
   if (filters.status) where['status'] = filters.status;
   if (filters.staffId) where['staffId'] = filters.staffId;
@@ -73,7 +111,7 @@ export const listBookings = async (
   return prisma.booking.findMany({
     where,
     include: { customer: true, service: true },
-    orderBy: { date: 'asc' },
+    orderBy: { startTime: 'asc' },
   });
 };
 
