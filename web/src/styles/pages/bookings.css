@@ -1,0 +1,353 @@
+/* ── Bookings Page ───────────────────────────────────────────────────────── */
+
+.bookings-page {
+  max-width: 860px;
+  width: 100%;
+}
+
+.bookings-page--wide {
+  max-width: 100%;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.bookings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.bookings-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* ── Date picker ─────────────────────────────────────────────────────────── */
+
+.bookings-date-picker {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+
+.bookings-date-picker:focus {
+  border-color: var(--accent);
+}
+
+/* ── Detail panel ────────────────────────────────────────────────────────── */
+
+.cal-detail-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: cal-panel-in 0.15s ease;
+}
+
+@keyframes cal-panel-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cal-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cal-detail-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cal-detail-close {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0.2rem;
+  transition: color 0.15s;
+}
+
+.cal-detail-close:hover {
+  color: var(--text);
+}
+
+.cal-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.cal-detail-sep {
+  opacity: 0.4;
+}
+
+.cal-detail-phone {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cal-detail-notes {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Status buttons (all 5, always visible) ──────────────────────────────── */
+
+.cal-detail-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.cal-status-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s, filter 0.15s;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.cal-status-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cal-status-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  opacity: 0.9;
+}
+
+/* Active = solid fill per status color */
+.cal-status-btn--pending.cal-status-btn--active    { background: color-mix(in srgb, #d97706 20%, transparent); border-color: #d97706; color: #d97706; }
+.cal-status-btn--confirmed.cal-status-btn--active  { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: var(--accent); color: var(--accent); }
+.cal-status-btn--completed.cal-status-btn--active  { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; color: #16a34a; }
+.cal-status-btn--canceled.cal-status-btn--active   { background: var(--bg-input); border-color: var(--text-muted); color: var(--text-muted); }
+.cal-status-btn--no_show.cal-status-btn--active    { background: color-mix(in srgb, var(--error, #e53e3e) 15%, transparent); border-color: var(--error, #e53e3e); color: var(--error, #e53e3e); }
+
+/* ── Detail footer (delete) ──────────────────────────────────────────────── */
+
+.cal-detail-footer {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.15rem;
+}
+
+.booking-delete-btn:hover {
+  color: var(--danger, #e53e3e) !important;
+  border-color: var(--danger, #e53e3e) !important;
+}
+
+/* ── Calendar scroll wrapper ─────────────────────────────────────────────── */
+
+.cal-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+
+.cal-grid {
+  min-width: fit-content;
+}
+
+/* ── Column headers row ──────────────────────────────────────────────────── */
+
+.cal-header-row {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 10;
+}
+
+.cal-gutter-cell {
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.cal-col-header {
+  flex: 1;
+  min-width: 140px;
+  text-align: center;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border);
+}
+
+.cal-col-header:last-child {
+  border-right: none;
+}
+
+/* ── Grid body ───────────────────────────────────────────────────────────── */
+
+.cal-body {
+  display: flex;
+}
+
+/* ── Time gutter ─────────────────────────────────────────────────────────── */
+
+.cal-gutter {
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.cal-hour-label {
+  height: 64px; /* matches SLOT_H */
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px 8px 0 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  box-sizing: border-box;
+}
+
+/* ── Staff columns ───────────────────────────────────────────────────────── */
+
+.cal-col {
+  flex: 1;
+  min-width: 140px;
+  position: relative;
+  border-right: 1px solid var(--border);
+}
+
+.cal-col:last-child {
+  border-right: none;
+}
+
+.cal-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px solid var(--border);
+  pointer-events: none;
+}
+
+/* ── Booking blocks ──────────────────────────────────────────────────────── */
+
+.cal-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  transition: filter 0.12s, box-shadow 0.12s;
+  box-sizing: border-box;
+}
+
+.cal-block:hover {
+  filter: brightness(1.06);
+  z-index: 2;
+}
+
+.cal-block--selected {
+  box-shadow: 0 0 0 2px var(--accent);
+  z-index: 3;
+}
+
+/* Status color schemes for blocks */
+.cal-block--pending {
+  background: color-mix(in srgb, #d97706 18%, var(--bg-card));
+  border-left-color: #d97706;
+}
+
+.cal-block--confirmed {
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-card));
+  border-left-color: var(--accent);
+}
+
+.cal-block--completed {
+  background: color-mix(in srgb, #16a34a 18%, var(--bg-card));
+  border-left-color: #16a34a;
+}
+
+.cal-block--canceled {
+  background: var(--bg-input);
+  border-left-color: var(--border);
+  opacity: 0.65;
+}
+
+.cal-block--no_show {
+  background: color-mix(in srgb, var(--error, #e53e3e) 15%, var(--bg-card));
+  border-left-color: var(--error, #e53e3e);
+  opacity: 0.8;
+}
+
+/* Block text */
+.cal-block-time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.cal-block-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.cal-block-service {
+  font-size: 0.70rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}

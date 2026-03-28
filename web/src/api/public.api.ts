@@ -74,3 +74,23 @@ export interface ShopInfo {
 export const getShopInfo = (slug: string) =>
   client.get(`/public/${slug}`).then((r) => r.data.data as ShopInfo);
 
+export interface CreateBookingPayload {
+  name: string;
+  phone: string;
+  email?: string;
+  serviceId: string;
+  staffId: string;
+  date: string;       // ISO 8601 datetime
+  notes?: string;
+}
+
+export interface BookingConfirmation {
+  id: string;
+  date: string;
+  status: string;
+  customer: { id: string; name: string; phone: string; email: string | null };
+  service: { id: string; name: string; duration: number; price: number };
+}
+
+export const createBooking = (slug: string, payload: CreateBookingPayload) =>
+  client.post(`/public/${slug}/book`, payload).then((r) => r.data.data as BookingConfirmation);

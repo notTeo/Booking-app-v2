@@ -18,6 +18,7 @@ import workingHoursRouter from './workingHours.routes';
 import teamRouter from './team.routes';
 import inviteRouter from './invite.routes';
 import serviceRouter from './service.routes';
+import bookingRouter from './booking.routes';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/invites', inviteRouter);
 router.use('/:shopId/services', serviceRouter);
+router.use('/:shopId/bookings', bookingRouter);
 
 export default router;

@@ -7,7 +7,7 @@ export interface UpdateMemberRoleDto {
 }
 
 const WITH_USER = {
-  user: { select: { id: true, email: true } },
+  user: { select: { id: true, email: true, name: true} },
 };
 
 async function requireMembership(userId: string, shopId: string) {

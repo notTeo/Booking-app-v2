@@ -514,3 +514,161 @@
   border-color: var(--text-muted);
   color: var(--text);
 }
+
+/* ── Wizard action row (Back + Continue/Submit side by side) ─────────────── */
+
+.public-wizard-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Primary wizard button (Continue, Confirm Booking) ───────────────────── */
+
+.public-wizard-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.public-wizard-btn--primary:hover:not(:disabled) {
+  opacity: 0.88;
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.public-wizard-btn--primary:disabled,
+.public-wizard-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Date + Time rows ────────────────────────────────────────────────────── */
+
+.public-datetime-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ── Booking form (step 4) ───────────────────────────────────────────────── */
+
+.public-booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.public-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.public-field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.public-field-required {
+  color: var(--accent);
+  margin-left: 0.15rem;
+}
+
+.public-field-optional {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.public-field-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: var(--font);
+  color: var(--text);
+  transition: border-color 0.2s;
+  appearance: none;
+}
+
+.public-field-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.public-field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.public-field-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* ── Submission error ────────────────────────────────────────────────────── */
+
+.public-submit-error {
+  font-size: 0.875rem;
+  color: var(--error);
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+  border-radius: var(--radius);
+}
+
+/* ── Booking confirmed panel ─────────────────────────────────────────────── */
+
+.public-booking-confirmed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.public-booking-confirmed-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.public-booking-confirmed-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.public-booking-confirmed-message {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 480px;
+}
+
+.public-booking-confirmed-contact {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}

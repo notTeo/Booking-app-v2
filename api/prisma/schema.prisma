@@ -42,6 +42,14 @@ enum InviteStatus {
   expired
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
+
 model Shop {
   id          String   @id @default(cuid())
   name        String
@@ -64,6 +72,8 @@ model Shop {
   shopWorkingSchedules ShopWorkingSchedule[]
   invites              ShopInvite[]
   services             Service[]
+  customers            Customer[]
+  bookings             Booking[]
 }
 
 model ShopWorkingSchedule {
@@ -130,6 +140,7 @@ model UserShop {
   shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   staffServices StaffService[]
+  bookings      Booking[]
 
   @@unique([userId, shopId])
 }
@@ -147,6 +158,7 @@ model Service {
   updatedAt   DateTime @updatedAt
 
   staffServices StaffService[]
+  bookings      Booking[]
 }
 
 model StaffService {
@@ -179,6 +191,44 @@ model User {
   userShops              UserShop[]
   sentInvites            ShopInvite[] @relation("InviteCreatedBy")
   acceptedInvites        ShopInvite[] @relation("InviteAcceptedBy")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([shopId, phone])
+  @@index([shopId])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  shopId     String
+  customerId String
+  serviceId  String
+  staffId    String
+  date       DateTime
+  status     BookingStatus @default(CONFIRMED)
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id])
+  staff    UserShop @relation(fields: [staffId], references: [id])
+
+  @@index([shopId])
+  @@index([shopId, date])
+  @@index([staffId, date])
 }
 
 model RefreshToken {
