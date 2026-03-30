@@ -19,6 +19,7 @@ import teamRouter from './team.routes';
 import inviteRouter from './invite.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
+import customerRouter from './customer.routes';
 
 const router = Router();
 
@@ -33,5 +34,6 @@ router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/invites', inviteRouter);
 router.use('/:shopId/services', serviceRouter);
 router.use('/:shopId/bookings', bookingRouter);
+router.use('/:shopId/customers', customerRouter);
 
 export default router;

@@ -30,6 +30,7 @@ import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
 import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
+import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
 import ShopWorkingHours from './pages/ShopWorkingHours';
 import InvitesPage from './pages/InvitesPage';
@@ -80,6 +81,7 @@ export default function App() {
                       <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
                       <Route path="invites" element={<ShopInvitesPage />} />
                       <Route path="customers" element={<ShopCustomersPage />} />
+                      <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
                       <Route path="settings" element={<ShopSettingsPage />} />
                       <Route path="working-hours" element={<ShopWorkingHours />} />
                     </Route>

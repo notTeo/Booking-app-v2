@@ -12,8 +12,8 @@ import '../styles/pages/bookings.css';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
-const GRID_START  = 8;                            // 08:00
-const GRID_END    = 20;                           // 20:00
+const GRID_START  = 7;                            // 07:00
+const GRID_END    = 23;                           // 23:00
 const SLOT_H      = 64;                           // px per hour
 const PX_PER_MIN  = SLOT_H / 60;
 const MIN_BLOCK_H = 28;                           // minimum block height px

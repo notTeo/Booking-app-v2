@@ -133,14 +133,28 @@ export const getBooking = async (shopId: string, bookingId: string) => {
 export const updateBooking = async (
   shopId: string,
   bookingId: string,
-  data: { date?: string; serviceId?: string; staffId?: string; notes?: string },
+  data: { startTime?: string; serviceId?: string; staffId?: string; notes?: string },
 ) => {
-  await getBooking(shopId, bookingId); // throws 404 if not found
+  const existing = await getBooking(shopId, bookingId); // throws 404 if not found
+
+  let startTime: Date | undefined;
+  let endTime: Date | undefined;
+
+  if (data.startTime) {
+    startTime = new Date(data.startTime);
+    let duration = existing.service.duration;
+    if (data.serviceId && data.serviceId !== existing.serviceId) {
+      const newService = await prisma.service.findUnique({ where: { id: data.serviceId } });
+      if (!newService) throw new AppError(404, 'Service not found');
+      duration = newService.duration;
+    }
+    endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+  }
 
   return prisma.booking.update({
     where: { id: bookingId },
     data: {
-      ...(data.date && { date: new Date(data.date) }),
+      ...(startTime && { startTime, endTime }),
       ...(data.serviceId && { serviceId: data.serviceId }),
       ...(data.staffId && { staffId: data.staffId }),
       ...(data.notes !== undefined && { notes: data.notes }),

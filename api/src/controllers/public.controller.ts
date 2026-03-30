@@ -3,7 +3,12 @@ import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 import { getShopInfoService } from '../services/public.service';
 import { createBooking as createBookingService, cancelBookingByToken } from '../services/booking.service';
-import { sendBookingConfirmationEmail } from '../services/email.service';
+import {
+  sendBookingConfirmationEmail,
+  sendCancellationConfirmationEmail,
+  sendNewBookingNotificationEmail,
+} from '../services/email.service';
+import { prisma } from '../utils/prisma';
 
 export const getShopInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -35,6 +40,23 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         cancelToken: booking.cancelToken,
       }).catch((err) => logger.error(err, 'Failed to send booking confirmation email'));
     }
+
+    prisma.userShop
+      .findFirst({ where: { shopId: booking.shopId, role: 'owner' }, include: { user: true } })
+      .then((owner) => {
+        if (!owner?.user.email) return;
+        return sendNewBookingNotificationEmail({
+          email: owner.user.email,
+          customerName: booking.customer.name,
+          customerPhone: booking.customer.phone,
+          shopName: booking.shop.name,
+          serviceName: booking.service.name,
+          staffName: booking.staff.user.name ?? 'Staff',
+          startTime: booking.startTime,
+          timezone: booking.shop.timezone,
+        });
+      })
+      .catch((err) => logger.error(err, 'Failed to send new booking notification email'));
   } catch (err) {
     next(err);
   }
@@ -51,6 +73,17 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
       startTime: booking.startTime,
       customerName: booking.customer.name,
     });
+
+    if (booking.customer.email) {
+      sendCancellationConfirmationEmail({
+        email: booking.customer.email,
+        customerName: booking.customer.name,
+        shopName: booking.shop.name,
+        serviceName: booking.service.name,
+        startTime: booking.startTime,
+        timezone: booking.shop.timezone,
+      }).catch((err) => logger.error(err, 'Failed to send cancellation confirmation email'));
+    }
   } catch (err) {
     next(err);
   }

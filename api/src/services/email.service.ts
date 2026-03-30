@@ -225,6 +225,105 @@ export const sendBookingConfirmationEmail = async (params: {
   logger.info(`Booking confirmation email sent to ${params.email}`);
 };
 
+export const sendCancellationConfirmationEmail = async (params: {
+  email: string;
+  customerName: string;
+  shopName: string;
+  serviceName: string;
+  startTime: Date;
+  timezone: string;
+}) => {
+  const dateStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(params.startTime);
+
+  const timeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(params.startTime);
+
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to: params.email,
+    subject: `Your booking at ${params.shopName} has been cancelled`,
+    html: baseTemplate(`Booking Cancelled — ${params.shopName}`, `
+      <h1>Booking Cancelled</h1>
+      <p>Hi <strong>${params.customerName}</strong>, your appointment has been successfully cancelled.</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Shop</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.shopName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+      </table>
+      <p style="font-size:0.85rem;">If you'd like to book again, visit the shop's booking page.</p>
+    `),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send cancellation email to ${params.email}`);
+    throw new Error('Failed to send cancellation confirmation email');
+  }
+
+  logger.info(`Cancellation confirmation email sent to ${params.email}`);
+};
+
+export const sendNewBookingNotificationEmail = async (params: {
+  email: string;
+  customerName: string;
+  customerPhone: string;
+  shopName: string;
+  serviceName: string;
+  staffName: string;
+  startTime: Date;
+  timezone: string;
+}) => {
+  const dateStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(params.startTime);
+
+  const timeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(params.startTime);
+
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to: params.email,
+    subject: `New booking at ${params.shopName}`,
+    html: baseTemplate(`New Booking — ${params.shopName}`, `
+      <h1>New Booking!</h1>
+      <p>A new appointment has been made at <strong>${params.shopName}</strong>.</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Customer</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.customerName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Phone</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.customerPhone}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Staff</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.staffName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+      </table>
+    `),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send new booking notification to ${params.email}`);
+    throw new Error('Failed to send new booking notification email');
+  }
+
+  logger.info(`New booking notification sent to ${params.email}`);
+};
+
 export const sendInviteEmail = async (
   recipientEmail: string,
   plainToken: string,
