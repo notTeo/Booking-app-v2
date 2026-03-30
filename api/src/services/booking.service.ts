@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
@@ -24,6 +25,7 @@ export const createBooking = async (
 
   const startTime = new Date(data.startTime);
   const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
+  const cancelToken = randomUUID();
   let staffId = data.staffId;
 
 if (!staffId) {
@@ -43,6 +45,7 @@ if (!staffId) {
         const conflict = await tx.booking.findFirst({
           where: {
             staffId,
+            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
             startTime: { lt: endTime },
             endTime: { gt: startTime },
           },
@@ -65,8 +68,9 @@ if (!staffId) {
             startTime,
             endTime,
             notes: data.notes,
+            cancelToken,
           },
-          include: { customer: true, service: true },
+          include: { customer: true, service: true, shop: true, staff: { include: { user: true } } },
         });
       },
       { isolationLevel: 'Serializable' },
@@ -161,5 +165,21 @@ export const updateBookingStatus = async (
     where: { id: bookingId },
     data: { status },
     include: { customer: true, service: true },
+  });
+};
+
+export const cancelBookingByToken = async (token: string) => {
+  const booking = await prisma.booking.findUnique({
+    where: { cancelToken: token },
+    include: { customer: true, service: true, shop: true },
+  });
+
+  if (!booking) throw new AppError(404, 'Booking not found');
+  if (booking.status === BookingStatus.CANCELED) throw new AppError(409, 'Booking is already cancelled');
+
+  return prisma.booking.update({
+    where: { id: booking.id },
+    data: { status: BookingStatus.CANCELED },
+    include: { customer: true, service: true, shop: true },
   });
 };

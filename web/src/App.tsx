@@ -35,6 +35,7 @@ import ShopWorkingHours from './pages/ShopWorkingHours';
 import InvitesPage from './pages/InvitesPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
+import CancelBookingPage from './pages/CancelBookingPage';
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
                 <Route path="/invite" element={<AcceptInvitePage />} />
+                <Route path="/cancel" element={<CancelBookingPage />} />
                 <Route path="/p/:slug" element={<PublicPage />} />
 
                 <Route element={<ProtectedRoute />}>

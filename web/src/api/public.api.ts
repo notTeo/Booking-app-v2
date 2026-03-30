@@ -94,3 +94,15 @@ export interface BookingConfirmation {
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>
   client.post(`/public/${slug}/book`, payload).then((r) => r.data.data as BookingConfirmation);
+
+export interface CancelBookingResult {
+  id: string;
+  status: string;
+  shopName: string;
+  serviceName: string;
+  startTime: string;
+  customerName: string;
+}
+
+export const cancelBooking = (token: string) =>
+  client.post('/public/cancel', { token }).then((r) => r.data.data as CancelBookingResult);

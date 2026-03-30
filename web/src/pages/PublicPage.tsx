@@ -384,6 +384,9 @@ export default function PublicPage() {
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="email"
                     />
+                    <p className="public-field-hint">
+                      Add your email to receive booking details and a cancellation link
+                    </p>
                   </div>
 
                   <div className="public-field-group">

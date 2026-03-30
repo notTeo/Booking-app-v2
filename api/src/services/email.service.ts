@@ -163,6 +163,68 @@ export const sendPasswordResetEmail = async (
   logger.info(`Password reset email sent to ${email}`);
 };
 
+export const sendBookingConfirmationEmail = async (params: {
+  email: string;
+  customerName: string;
+  shopName: string;
+  serviceName: string;
+  staffName: string;
+  startTime: Date;
+  timezone: string;
+  placeId: string | null;
+  formattedAddress: string | null;
+  cancelToken: string;
+}) => {
+  const dateStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(params.startTime);
+
+  const timeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: params.timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(params.startTime);
+
+  const mapsUrl = params.placeId
+    ? `https://www.google.com/maps/place/?q=place_id:${params.placeId}`
+    : params.formattedAddress
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(params.formattedAddress)}`
+      : null;
+
+  const cancelUrl = `${env.clientUrl}/cancel?token=${params.cancelToken}`;
+
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to: params.email,
+    subject: `Your booking at ${params.shopName} is confirmed`,
+    html: baseTemplate(`Booking at ${params.shopName}`, `
+      <h1>Booking Confirmed!</h1>
+      <p>Hi <strong>${params.customerName}</strong>, your appointment is booked.</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Shop</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.shopName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Staff</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.staffName}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
+        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+      </table>
+      ${mapsUrl ? `<a href="${mapsUrl}"><h4 class="btn">Get Directions</h4></a>` : ''}
+      <p style="margin-top:1.5rem;font-size:0.85rem;">Need to cancel? <a href="${cancelUrl}" style="color:#1d503A;font-weight:600;">Cancel this booking</a></p>
+    `),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send booking confirmation email to ${params.email}`);
+    throw new Error('Failed to send booking confirmation email');
+  }
+
+  logger.info(`Booking confirmation email sent to ${params.email}`);
+};
+
 export const sendInviteEmail = async (
   recipientEmail: string,
   plainToken: string,

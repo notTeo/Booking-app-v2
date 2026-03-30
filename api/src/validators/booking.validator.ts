@@ -9,7 +9,7 @@ export const createBookingValidation = [
   body('phone').notEmpty().trim().withMessage('Phone is required'),
   body('email').optional().isEmail().withMessage('Invalid email'),
   body('serviceId').notEmpty().withMessage('serviceId is required'),
-  body('staffId').notEmpty().withMessage('staffId is required'),
+  body('staffId').optional(),
   body('startTime').notEmpty().isISO8601().withMessage('startTime must be a valid ISO 8601 timestamp'),
   body('notes').optional().trim(),
 ];
