@@ -49,3 +49,9 @@ export const updateBookingStatus = (shopId: string, bookingId: string, status: B
 
 export const deleteBooking = (shopId: string, bookingId: string) =>
   client.delete(`${base(shopId)}/${bookingId}`).then((r) => r.data);
+
+export const getAvailableSlots = (  shopId: string,
+  date: string,
+  staffId: string | null,
+  serviceId: string | null,) =>
+client.get(`${base(shopId)}/slots`, { params: { date, staffId, serviceId } }).then((r) => r.data.data);

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import type { ShopInfo } from '../api/public.api';
 import { getShopInfo, createBooking } from '../api/public.api';
 import '../styles/pages/public.css';
+import { getAvailableSlots } from '../api/booking.api';
 
 function formatDuration(mins: number): string {
   if (mins < 60) return `${mins}m`;
@@ -44,6 +45,10 @@ export default function PublicPage() {
   const [submitting, setSubmitting]   = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmed, setConfirmed]     = useState(false);
+
+
+  // -- Slots --
+  const [slots, setSlots] = useState<string[]>([]);
 
   useEffect(() => {
     if (!slug) return;
@@ -87,10 +92,19 @@ export default function PublicPage() {
     setStep(3);
   }
 
-  function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setDate(e.target.value);
-  }
-
+function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const newDate = e.target.value;
+  setDate(newDate);
+  if (!shop || !selectedServiceId) return;  // ← guard here
+  
+  getAvailableSlots(shop.id, newDate, selectedMemberId, selectedServiceId)
+    .then((s) => { console.log('slots:', s); setSlots(Array.isArray(s) ? s : []); })
+    .catch((err) => {
+  console.error('slots error:', err.response?.data ?? err.message);
+  setError('Failed to load available slots');
+})
+    .finally(() => setLoading(false));
+}
   function goBack() {
     if (step === 2) {
       setSelectedServiceId(null);
@@ -130,6 +144,8 @@ export default function PublicPage() {
       setSubmitting(false);
     }
   }
+
+  
 
   // ── Step labels for the progress indicator ──
   const STEPS = ['Service', 'Staff', 'Date & Time', 'Your Details'];
@@ -302,16 +318,17 @@ export default function PublicPage() {
                   />
                 </div>
 
-                <div className="public-datetime-row">
-                  <label className="public-field-label" htmlFor="booking-time">Time</label>
-                  <input
-                    id="booking-time"
-                    className="public-field-input"
-                    type="time"
-                    value={time}
-                    onChange={e => setTime(e.target.value)}
-                  />
-                </div>
+              <div className="public-slots-grid">
+                {slots.map((slot) => (
+                  <button
+                    key={slot}
+                    className={`public-slot-btn${time === slot ? ' public-slot-btn--selected' : ''}`}
+                    onClick={() => setTime(slot)}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
 
                 <div className="public-wizard-actions">
                   <button className="public-wizard-btn" onClick={goBack}>← Back</button>

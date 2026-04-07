@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { BookingStatus } from '../../dist/generated/prisma';
+import { BookingStatus, DayOfWeek, UserShop } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 
@@ -82,15 +82,85 @@ if (!staffId) {
   }
 };
 
-// ── Slots (stub — implement yourself) ───────────────────────────────────────
+// ── Slots ───────────────────────────────────────
 
 export const getAvailableSlots = async (
-  _shopId: string,
-  _date: string,
-  _staffId: string,
-  _serviceId: string,
+  shopId: string,
+  date: string,
+  staffId: string | null,
+  serviceId: string,
 ): Promise<string[]> => {
-  throw new AppError(501, 'Not implemented');
+
+  // 1. Get the day's working hours
+  const DAY_MAP = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
+let resolvedStaffId = staffId;
+
+if (staffId === null) {
+  const randomStaff = await prisma.userShop.findFirst({
+    where: { shopId },
+    select: { id: true },
+  });
+  if (!randomStaff) return [];
+  resolvedStaffId = randomStaff.id;
+}
+
+
+const schedule = await prisma.shopWorkingSchedule.findFirst({
+  where: { shopId, staffId: null, isActive: true },
+  include: {
+    days: {
+      where: { day: dayOfWeek },
+      include: { hours: true },
+    },
+  },
+});
+  if (!schedule) return [];
+
+  // 2. Get service duration
+  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  if (!service) return [];
+
+  // 3. Get existing bookings for that day + staff
+  const existingBookings = await listBookings(shopId, {
+    date,
+    staffId: resolvedStaffId ?? undefined,
+  });
+
+  // 4. Generate slots — YOU write this part
+  const slots: string[] = [];
+
+  const day = schedule.days[0];
+  if (!day || !day.isOpen) return [];
+
+  const toMins = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  const toHHMM = (mins: number) => {
+    const h = Math.floor(mins / 60).toString().padStart(2, '0');
+    const m = (mins % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
+  };
+
+  for (const hourRange of day.hours) {
+    const open = toMins(hourRange.startTime);   // e.g. 540  (09:00)
+    const close = toMins(hourRange.endTime);     // e.g. 1080 (18:00)
+
+    for (let start = open; start + service.duration <= close; start += 30) {
+      const candidateStart = new Date(`${date}T${toHHMM(start)}:00`);
+      const candidateEnd = new Date(`${date}T${toHHMM(start + service.duration)}:00`);
+
+      const hasOverlap = existingBookings.some(
+        (b) => b.startTime < candidateEnd && b.endTime > candidateStart
+      );
+
+      if (!hasOverlap) slots.push(toHHMM(start));
+    }
+  }
+
+  return slots;
 };
 
 // ── Owner / Staff ────────────────────────────────────────────────────────────

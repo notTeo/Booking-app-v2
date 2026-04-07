@@ -679,3 +679,29 @@
   color: var(--text-muted);
   margin: 0;
 }
+
+.public-slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.public-slot-btn {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.public-slot-btn:hover {
+  border-color: #666;
+}
+
+.public-slot-btn--selected {
+  background: var(--accent);
+  color: white;
+  border-color: #000;
+}

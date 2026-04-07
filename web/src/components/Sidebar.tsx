@@ -20,6 +20,7 @@ import {
   faMagnifyingGlass,
   faClock,
   faEnvelopeOpen,
+  faPlusCircle,
 } from '@fortawesome/free-solid-svg-icons';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -135,6 +136,11 @@ function ShopNav({ collapsed, toggle, isOpen, onClose, slug }: ShopNavProps) {
       <NavLink to={`${base}/services`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
         <FontAwesomeIcon icon={faScissors} />
         <span className="sidebar-link-label">{t.sidebar.services}</span>
+      </NavLink>
+
+            <NavLink to={`/p/${slug}`} target="_blank" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
+        <FontAwesomeIcon icon={faPlusCircle} />
+        <span className="sidebar-link-label">Book apointment</span>
       </NavLink>
 
       {isOwner && (
