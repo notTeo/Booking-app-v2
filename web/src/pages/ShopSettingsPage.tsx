@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
+import { useLang } from '../context/LanguageContext';
+import type { Translations } from '../locales/translations';
 import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -52,25 +54,27 @@ interface LocationData {
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+function formatDate(iso: string, language: string) {
+  const locale = language === 'el' ? 'el-GR' : 'en-US';
+  return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function formatRelative(iso: string) {
+function formatRelative(iso: string, t: Translations['shopSettings']) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'today';
-  if (diffDays === 1) return 'yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === 0) return t.relativeToday;
+  if (diffDays === 1) return t.relativeYesterday;
+  if (diffDays < 7) return `${diffDays} ${t.relativeDaysAgo}`;
   const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+  if (diffWeeks < 5) return `${diffWeeks} ${diffWeeks > 1 ? t.relativeWeeksAgo : t.relativeWeekAgo}`;
   const diffMonths = Math.floor(diffDays / 30);
-  return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  return `${diffMonths} ${diffMonths > 1 ? t.relativeMonthsAgo : t.relativeMonthAgo}`;
 }
 
 export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { language, t } = useLang();
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
@@ -323,8 +327,8 @@ export default function ShopSettingsPage() {
           <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
             {shop.isActive ? 'Active' : 'Inactive'}
           </span>
-          <span className="shop-detail-date">Created {formatDate(shop.createdAt)}</span>
-          <span className="shop-detail-date">· Updated {formatRelative(shop.updatedAt)}</span>
+          <span className="shop-detail-date">Created {formatDate(shop.createdAt, language)}</span>
+          <span className="shop-detail-date">· Updated {formatRelative(shop.updatedAt, t.shopSettings)}</span>
         </div>
       </div>
 

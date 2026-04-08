@@ -417,6 +417,21 @@ export interface Translations {
       SUN: string;
     };
   };
+  toggles: {
+    switchToLight: string;
+    switchToDark: string;
+    lightMode: string;
+    darkMode: string;
+  };
+  shopSettings: {
+    relativeToday: string;
+    relativeYesterday: string;
+    relativeDaysAgo: string;
+    relativeWeekAgo: string;
+    relativeWeeksAgo: string;
+    relativeMonthAgo: string;
+    relativeMonthsAgo: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -837,6 +852,21 @@ home: {
         SUN: 'Κυριακή',
       },
     },
+    toggles: {
+      switchToLight: 'Εναλλαγή σε φωτεινή λειτουργία',
+      switchToDark: 'Εναλλαγή σε σκοτεινή λειτουργία',
+      lightMode: 'Φωτεινή λειτουργία',
+      darkMode: 'Σκοτεινή λειτουργία',
+    },
+    shopSettings: {
+      relativeToday: 'σήμερα',
+      relativeYesterday: 'χθες',
+      relativeDaysAgo: 'μέρες πριν',
+      relativeWeekAgo: 'εβδομάδα πριν',
+      relativeWeeksAgo: 'εβδομάδες πριν',
+      relativeMonthAgo: 'μήνας πριν',
+      relativeMonthsAgo: 'μήνες πριν',
+    },
   },
 
   en: {
@@ -1255,6 +1285,21 @@ home: {
         SAT: 'Saturday',
         SUN: 'Sunday',
       },
+    },
+    toggles: {
+      switchToLight: 'Switch to light mode',
+      switchToDark: 'Switch to dark mode',
+      lightMode: 'Light mode',
+      darkMode: 'Dark mode',
+    },
+    shopSettings: {
+      relativeToday: 'today',
+      relativeYesterday: 'yesterday',
+      relativeDaysAgo: 'days ago',
+      relativeWeekAgo: 'week ago',
+      relativeWeeksAgo: 'weeks ago',
+      relativeMonthAgo: 'month ago',
+      relativeMonthsAgo: 'months ago',
     },
   },
 };

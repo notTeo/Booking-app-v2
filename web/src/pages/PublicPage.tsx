@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { ShopInfo } from '../api/public.api';
-import { getShopInfo, createBooking } from '../api/public.api';
+import { getShopInfo, createBooking, getPublicSlots } from '../api/public.api';
 import '../styles/pages/public.css';
-import { getAvailableSlots } from '../api/booking.api';
 
 function formatDuration(mins: number): string {
   if (mins < 60) return `${mins}m`;
@@ -97,7 +96,7 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
   setDate(newDate);
   if (!shop || !selectedServiceId) return;  // ← guard here
   
-  getAvailableSlots(shop.id, newDate, selectedMemberId, selectedServiceId)
+  getPublicSlots(slug!, newDate, selectedMemberId, selectedServiceId)
     .then((s) => { console.log('slots:', s); setSlots(Array.isArray(s) ? s : []); })
     .catch((err) => {
   console.error('slots error:', err.response?.data ?? err.message);

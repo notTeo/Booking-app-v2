@@ -106,3 +106,13 @@ export interface CancelBookingResult {
 
 export const cancelBooking = (token: string) =>
   client.post('/public/cancel', { token }).then((r) => r.data.data as CancelBookingResult);
+
+export const getPublicSlots = (
+  slug: string,
+  date: string,
+  staffId: string | null,
+  serviceId: string | null,
+) =>
+  client
+    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId } })
+    .then((r) => r.data.data as string[]);

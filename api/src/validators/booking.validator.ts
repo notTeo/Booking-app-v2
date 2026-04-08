@@ -14,8 +14,8 @@ export const createBookingValidation = [
   body('notes').optional().trim(),
 ];
 
-export const getSlotsValidation = [
-  param('shopId').notEmpty().withMessage('shopId is required'),
+export const getPublicSlotsValidation = [
+  param('slug').notEmpty().withMessage('slug is required'),
   query('date').notEmpty().isISO8601().withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),

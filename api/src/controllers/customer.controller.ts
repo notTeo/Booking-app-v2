@@ -30,6 +30,18 @@ export const getCustomer = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+export const getCustomerBynNameOrPhone = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const customer = await getCustomerService(userId, shopId, customerId);
+    successResponse(res, customer);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateCustomer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId!;

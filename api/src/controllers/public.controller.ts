@@ -2,13 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 import { getShopInfoService } from '../services/public.service';
-import { createBooking as createBookingService, cancelBookingByToken } from '../services/booking.service';
+import { createBooking as createBookingService, cancelBookingByToken, getAvailableSlots } from '../services/booking.service';
 import {
   sendBookingConfirmationEmail,
   sendCancellationConfirmationEmail,
   sendNewBookingNotificationEmail,
 } from '../services/email.service';
 import { prisma } from '../utils/prisma';
+import { AppError } from '../middleware/errorHandler';
 
 export const getShopInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -84,6 +85,26 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
         timezone: booking.shop.timezone,
       }).catch((err) => logger.error(err, 'Failed to send cancellation confirmation email'));
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getPublicSlots = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const slug = req.params.slug as string;
+    const date = req.query['date'] as string;
+    const staffId = (req.query['staffId'] as string) ?? null;
+    const serviceId = req.query['serviceId'] as string;
+
+    const shop = await prisma.shop.findUnique({
+      where: { slug, isActive: true },
+      select: { id: true },
+    });
+    if (!shop) throw new AppError(404, 'Shop not found');
+
+    const slots = await getAvailableSlots(shop.id, date, staffId, serviceId);
+    successResponse(res, slots);
   } catch (err) {
     next(err);
   }
