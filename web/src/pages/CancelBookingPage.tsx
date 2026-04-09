@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { cancelBooking, type CancelBookingResult } from '../api/public.api';
+import { useLang } from '../context/LanguageContext';
 import '../styles/pages/invites.css';
 
 export default function CancelBookingPage() {
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
+  const { t, language } = useLang();
 
   const called = useRef(false);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export default function CancelBookingPage() {
     called.current = true;
 
     if (!token) {
-      setError('Invalid cancellation link.');
+      setError(t.cancelBooking.invalidLink);
       setLoading(false);
       return;
     }
@@ -28,9 +30,9 @@ export default function CancelBookingPage() {
       })
       .catch((err: any) => {
         const msg: string = err?.response?.data?.error ?? '';
-        if (msg.includes('already')) setError('This booking has already been cancelled.');
-        else if (msg.includes('not found')) setError('Booking not found. The link may be invalid or expired.');
-        else setError('Could not cancel booking. Please try again or contact the shop.');
+        if (msg.includes('already')) setError(t.cancelBooking.alreadyCancelled);
+        else if (msg.includes('not found')) setError(t.cancelBooking.notFound);
+        else setError(t.cancelBooking.errorCancel);
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -41,7 +43,7 @@ export default function CancelBookingPage() {
         <div className="accept-invite-card">
           <div className="spinner" />
           <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Cancelling your booking...
+            {t.cancelBooking.cancelling}
           </p>
         </div>
       </div>
@@ -60,24 +62,25 @@ export default function CancelBookingPage() {
 
   if (!result) return null;
 
-  const formattedDate = new Intl.DateTimeFormat('en-US', {
+  const locale = language === 'el' ? 'el-GR' : 'en-US';
+  const formattedDate = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true,
+    hour12: locale !== 'el-GR',
   }).format(new Date(result.startTime));
 
   return (
     <div className="accept-invite-page">
       <div className="accept-invite-card">
-        <h1 style={{ marginBottom: '0.5rem' }}>Booking Cancelled</h1>
+        <h1 style={{ marginBottom: '0.5rem' }}>{t.cancelBooking.cancelled}</h1>
         <div className="accept-invite-meta">
           <p>
-            Your <strong>{result.serviceName}</strong> appointment at{' '}
-            <strong>{result.shopName}</strong> has been cancelled.
+            {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}
+            <strong>{result.shopName}</strong> {t.cancelBooking.hasCancelled}
           </p>
           <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
             {formattedDate}

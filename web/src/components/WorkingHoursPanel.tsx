@@ -371,7 +371,7 @@ const created = await api.createSchedule(dto);
                 )}
               </div>
               <span className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'}`}>
-                {schedule.isActive ? 'Active' : 'Inactive'}
+                {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
               </span>
               <span className={`wh-chevron ${isExpanded ? 'open' : ''}`}>▼</span>
             </div>
@@ -461,7 +461,7 @@ const created = await api.createSchedule(dto);
                                     type="button"
                                     className="working-hours-remove"
                                     onClick={() => removeSlot(schedule.id, day, idx)}
-                                    aria-label="Remove slot"
+                                    aria-label={t.workingHours.removeSlot}
                                   >
                                     ×
                                   </button>

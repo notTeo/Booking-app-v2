@@ -49,3 +49,16 @@ export const updateBookingStatus = (shopId: string, bookingId: string, status: B
 
 export const deleteBooking = (shopId: string, bookingId: string) =>
   client.delete(`${base(shopId)}/${bookingId}`).then((r) => r.data);
+
+export interface OwnerCreateBookingPayload {
+  name: string;
+  phone: string;
+  email?: string;
+  serviceId: string;
+  staffId?: string;
+  startTime: string; // ISO 8601
+  notes?: string;
+}
+
+export const createOwnerBooking = (shopId: string, payload: OwnerCreateBookingPayload) =>
+  client.post(base(shopId), payload).then((r) => r.data.data as Booking);

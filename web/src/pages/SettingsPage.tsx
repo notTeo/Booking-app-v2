@@ -20,25 +20,27 @@ function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
 }
 
-function formatMemberSince(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+function formatMemberSince(iso: string, lang: string) {
+  const locale = lang === 'el' ? 'el-GR' : 'en-US';
+  return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'long' });
 }
 
-function formatSessionDate(iso: string) {
+function formatSessionDate(iso: string, lang: string) {
+  const locale = lang === 'el' ? 'el-GR' : 'en-US';
   const date = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  if (diffDays < 1) return locale === 'el-GR' ? 'Σήμερα' : 'Today';
+  if (diffDays === 1) return locale === 'el-GR' ? 'Χθες' : 'Yesterday';
+  if (diffDays < 7) return locale === 'el-GR' ? `${diffDays} μέρες πριν` : `${diffDays} days ago`;
+  return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default function SettingsPage() {
   const { user, setUser, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { language, toggleLanguage } = useLang();
+  const { language, toggleLanguage, t } = useLang();
   const navigate = useNavigate();
 
   // Update email
@@ -92,10 +94,10 @@ export default function SettingsPage() {
       setName(data.user.name ?? ''); 
       } else {
         setUser({ ...user!, name: data.user.name });
-        setNameSuccess('Name updated successfully.');
+        setNameSuccess(t.settings.successName);
       }
     } catch (err: any) {
-      setNameError(err.response?.data?.message ?? 'Failed to update name.');
+      setNameError(err.response?.data?.message ?? t.settings.errorName);
     } finally {
       setNameLoading(false);
     }
@@ -114,10 +116,10 @@ export default function SettingsPage() {
         setEmail(user?.email ?? '');
       } else {
         setUser({ ...user!, email: data.user.email });
-        setEmailSuccess('Email updated successfully.');
+        setEmailSuccess(t.settings.successEmail);
       }
     } catch (err: any) {
-      setEmailError(err.response?.data?.message ?? 'Failed to update email.');
+      setEmailError(err.response?.data?.message ?? t.settings.errorEmail);
     } finally {
       setEmailLoading(false);
     }
@@ -131,9 +133,9 @@ export default function SettingsPage() {
     try {
       await updateMe({ password });
       setPassword('');
-      setPasswordSuccess('Password updated successfully.');
+      setPasswordSuccess(t.settings.successPassword);
     } catch (err: any) {
-      setPasswordError(err.response?.data?.message ?? 'Failed to update password.');
+      setPasswordError(err.response?.data?.message ?? t.settings.errorPassword);
     } finally {
       setPasswordLoading(false);
     }
@@ -146,9 +148,9 @@ export default function SettingsPage() {
     try {
       await revokeAllSessions();
       setSessions([]);
-      setRevokeSuccess('All other sessions have been revoked.');
+      setRevokeSuccess(t.settings.successRevoke);
     } catch (err: any) {
-      setRevokeError(err.response?.data?.message ?? 'Failed to revoke sessions.');
+      setRevokeError(err.response?.data?.message ?? t.settings.errorRevoke);
     } finally {
       setRevokeLoading(false);
     }
@@ -176,7 +178,7 @@ export default function SettingsPage() {
 
   return (
     <div className="settings-page">
-      <h1>Settings</h1>
+      <h1>{t.settings.title}</h1>
 
       {/* Account Overview */}
       <div className="settings-section settings-overview">
@@ -187,16 +189,16 @@ export default function SettingsPage() {
           <p className="settings-overview-email">{user?.email}</p>
           <div className="settings-overview-badges">
             <span className={`settings-plan-badge settings-plan-badge--${user?.plan ?? 'free'}`}>
-              {user?.plan === 'pro' ? '★ Pro' : 'Free'}
+              {user?.plan === 'pro' ? t.settings.pro : t.settings.free}
             </span>
             {user?.isVerified ? (
-              <span className="settings-verified-badge">✓ Verified</span>
+              <span className="settings-verified-badge">{t.settings.verified}</span>
             ) : (
-              <span className="settings-unverified-badge">✗ Unverified</span>
+              <span className="settings-unverified-badge">{t.settings.notVerified}</span>
             )}
           </div>
           {user?.createdAt && (
-            <p className="settings-overview-since">Member since {formatMemberSince(user.createdAt)}</p>
+            <p className="settings-overview-since">{t.settings.memberSince} {formatMemberSince(user.createdAt, language)}</p>
           )}
         </div>
       </div>
@@ -204,11 +206,11 @@ export default function SettingsPage() {
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
-          User Name
+          {t.settings.nameSection}
         </p>
         <form onSubmit={handleUpdateName}>
           <div className="form-group">
-            <label htmlFor="settings-name">User Name</label>
+            <label htmlFor="settings-name">{t.settings.nameLabel}</label>
             <input
               id="settings-name"
               type="text"
@@ -224,7 +226,7 @@ export default function SettingsPage() {
             type="submit"
             disabled={nameLoading || name === user?.name}
           >
-            {nameLoading ? 'Saving...' : 'Save Name'}
+            {nameLoading ? t.settings.saving : t.settings.saveName}
           </button>
         </form>
       </div>
@@ -232,11 +234,11 @@ export default function SettingsPage() {
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faEnvelope} className="settings-section-icon" />
-          Email Address
+          {t.settings.emailSection}
         </p>
         <form onSubmit={handleUpdateEmail}>
           <div className="form-group">
-            <label htmlFor="settings-email">Email</label>
+            <label htmlFor="settings-email">{t.settings.emailLabel}</label>
             <input
               id="settings-email"
               type="email"
@@ -252,7 +254,7 @@ export default function SettingsPage() {
             type="submit"
             disabled={emailLoading || email === user?.email}
           >
-            {emailLoading ? 'Saving...' : 'Save Email'}
+            {emailLoading ? t.settings.saving : t.settings.saveEmail}
           </button>
         </form>
       </div>
@@ -261,11 +263,11 @@ export default function SettingsPage() {
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faLock} className="settings-section-icon" />
-          Change Password
+          {t.settings.passwordSection}
         </p>
         <form onSubmit={handleUpdatePassword}>
           <div className="form-group">
-            <label htmlFor="settings-password">New Password</label>
+            <label htmlFor="settings-password">{t.settings.newPasswordLabel}</label>
             <input
               id="settings-password"
               type="password"
@@ -275,11 +277,11 @@ export default function SettingsPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>At least 8 characters</li>
-                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>One uppercase letter</li>
-                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>One number</li>
+                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>{t.settings.pwMin}</li>
+                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>{t.settings.pwUpper}</li>
+                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>{t.settings.pwNumber}</li>
                 <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>
-                  One special character (!@#$%...)
+                  {t.settings.pwSpecial}
                 </li>
               </ul>
             )}
@@ -291,7 +293,7 @@ export default function SettingsPage() {
             type="submit"
             disabled={passwordLoading || !passwordValid}
           >
-            {passwordLoading ? 'Saving...' : 'Update Password'}
+            {passwordLoading ? t.settings.saving : t.settings.updatePassword}
           </button>
         </form>
       </div>
@@ -300,26 +302,26 @@ export default function SettingsPage() {
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faSlidersH} className="settings-section-icon" />
-          Preferences
+          {t.settings.preferencesSection}
         </p>
         <div className="settings-pref-row">
           <div className="settings-pref-label">
-            <span>Theme</span>
-            <span className="settings-pref-desc">Choose your preferred color scheme</span>
+            <span>{t.settings.themeLabel}</span>
+            <span className="settings-pref-desc">{t.settings.themeDesc}</span>
           </div>
           <button
             className="btn btn-ghost settings-pref-btn"
             onClick={toggleTheme}
             type="button"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? t.toggles.switchToLight : t.toggles.switchToDark}
           >
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            {theme === 'dark' ? `☀️ ${t.settings.lightTheme}` : `🌙 ${t.settings.darkTheme}`}
           </button>
         </div>
         <div className="settings-pref-row">
           <div className="settings-pref-label">
-            <span>Language</span>
-            <span className="settings-pref-desc">Set your display language</span>
+            <span>{t.settings.languageLabel}</span>
+            <span className="settings-pref-desc">{t.settings.languageDesc}</span>
           </div>
           <button
             className="btn btn-ghost settings-pref-btn"
@@ -336,23 +338,23 @@ export default function SettingsPage() {
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faShieldHalved} className="settings-section-icon" />
-          Active Sessions
+          {t.settings.activeSessionsSection}
         </p>
         {sessionsLoading ? (
-          <p className="settings-sessions-hint">Loading sessions...</p>
+          <p className="settings-sessions-hint">{t.settings.loadingSessions}</p>
         ) : sessions.length === 0 ? (
-          <p className="settings-sessions-hint">No active sessions found.</p>
+          <p className="settings-sessions-hint">{t.settings.noSessions}</p>
         ) : (
           <>
             <p className="settings-sessions-hint">
-              {sessions.length} active {sessions.length === 1 ? 'session' : 'sessions'} — most recent: {formatSessionDate(sessions[0].createdAt)}
+              {sessions.length} {t.settings.sessions} — {t.settings.mostRecent} {formatSessionDate(sessions[0].createdAt, language)}
             </p>
             <div className="settings-sessions-list">
               {sessions.slice(0, 5).map((s) => (
                 <div key={s.id} className="settings-session-row">
                   <FontAwesomeIcon icon={faUser} className="settings-session-icon" />
-                  <span className="settings-session-date">Session started {formatSessionDate(s.createdAt)}</span>
-                  <span className="settings-session-expiry">Expires {formatSessionDate(s.expiresAt)}</span>
+                  <span className="settings-session-date">{t.settings.sessionStarted} {formatSessionDate(s.createdAt, language)}</span>
+                  <span className="settings-session-expiry">{t.settings.sessionExpires} {formatSessionDate(s.expiresAt, language)}</span>
                 </div>
               ))}
             </div>
@@ -366,7 +368,7 @@ export default function SettingsPage() {
           onClick={handleRevokeAll}
           disabled={revokeLoading || sessions.length === 0}
         >
-          {revokeLoading ? 'Revoking...' : 'Revoke All Sessions'}
+          {revokeLoading ? t.settings.revoking : t.settings.revokeAll}
         </button>
       </div>
 
@@ -374,10 +376,10 @@ export default function SettingsPage() {
       <div className="settings-section settings-section--danger">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
-          Danger Zone
+          {t.settings.dangerZone}
         </p>
         <p className="settings-danger-desc">
-          Permanently delete your account and all associated data. This action cannot be undone.
+          {t.settings.dangerDesc}
         </p>
 
         {!showDeleteConfirm ? (
@@ -386,18 +388,18 @@ export default function SettingsPage() {
             type="button"
             onClick={() => setShowDeleteConfirm(true)}
           >
-            Delete Account
+            {t.settings.deleteAccount}
           </button>
         ) : user?.hasPassword ? (
           <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
             <div className="form-group">
-              <label htmlFor="delete-password">Confirm your password</label>
+              <label htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
               <input
                 id="delete-password"
                 type="password"
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Enter your password to confirm"
+                placeholder={t.settings.confirmPasswordPlaceholder}
                 required
               />
             </div>
@@ -408,21 +410,21 @@ export default function SettingsPage() {
                 type="submit"
                 disabled={deleteLoading || !deletePassword}
               >
-                {deleteLoading ? 'Deleting...' : 'Confirm Delete'}
+                {deleteLoading ? t.settings.deleting : t.settings.confirmDelete}
               </button>
               <button
                 className="btn btn-ghost"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
               >
-                Cancel
+                {t.settings.cancel}
               </button>
             </div>
           </form>
         ) : (
           <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
             <p className="settings-danger-desc">
-              Are you sure? This will permanently delete your account and all associated data. This action cannot be undone.
+              {t.settings.areYouSure}
             </p>
             {deleteError && <div className="alert alert-error">{deleteError}</div>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -431,14 +433,14 @@ export default function SettingsPage() {
                 type="submit"
                 disabled={deleteLoading}
               >
-                {deleteLoading ? 'Deleting...' : 'Yes, Delete My Account'}
+                {deleteLoading ? t.settings.deleting : t.settings.yesDelete}
               </button>
               <button
                 className="btn btn-ghost"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
               >
-                Cancel
+                {t.settings.cancel}
               </button>
             </div>
           </form>

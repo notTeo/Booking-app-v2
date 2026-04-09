@@ -21,6 +21,17 @@ export const getPublicSlotsValidation = [
   query('serviceId').notEmpty().withMessage('serviceId is required'),
 ];
 
+export const ownerCreateBookingValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  body('name').notEmpty().trim().withMessage('Name is required'),
+  body('phone').notEmpty().trim().withMessage('Phone is required'),
+  body('email').optional().isEmail().withMessage('Invalid email'),
+  body('serviceId').notEmpty().withMessage('serviceId is required'),
+  body('staffId').optional(),
+  body('startTime').notEmpty().isISO8601().withMessage('startTime must be a valid ISO 8601 timestamp'),
+  body('notes').optional().trim(),
+];
+
 export const listBookingsValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   query('date').optional().isISO8601().withMessage('date must be a valid ISO 8601 date'),

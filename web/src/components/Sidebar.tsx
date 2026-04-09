@@ -138,9 +138,9 @@ function ShopNav({ collapsed, toggle, isOpen, onClose, slug }: ShopNavProps) {
         <span className="sidebar-link-label">{t.sidebar.services}</span>
       </NavLink>
 
-            <NavLink to={`/p/${slug}`} target="_blank" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
+      <NavLink to={`${base}/bookings/new`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} onClick={onClose}>
         <FontAwesomeIcon icon={faPlusCircle} />
-        <span className="sidebar-link-label">Book apointment</span>
+        <span className="sidebar-link-label">{t.sidebar.bookAppointment}</span>
       </NavLink>
 
       {isOwner && (

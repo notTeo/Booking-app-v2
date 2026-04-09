@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
+import { useLang } from '../context/LanguageContext';
 import { getCustomer, updateCustomer, type CustomerDetail } from '../api/customer.api';
 import type { BookingStatus } from '../api/booking.api';
 import '../styles/pages/team.css';
@@ -38,6 +39,7 @@ export default function ShopCustomerDetailPage() {
   const { slug, customerId } = useParams<{ slug: string; customerId: string }>();
   const { shop, isLoading: shopLoading } = useShop();
   const navigate = useNavigate();
+  const { t } = useLang();
 
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function ShopCustomerDetailPage() {
         setEditPhone(c.phone);
         setEditEmail(c.email ?? '');
       })
-      .catch(() => setError('Failed to load customer'))
+      .catch(() => setError(t.customers.customerErrorLoad))
       .finally(() => setLoading(false));
   }, [shop?.id, customerId]);
 
@@ -76,9 +78,9 @@ export default function ShopCustomerDetailPage() {
         email: editEmail || null,
       });
       setCustomer((prev) => prev ? { ...prev, ...updated } : prev);
-      setSaveSuccess('Customer updated.');
+      setSaveSuccess(t.customers.successUpdate);
     } catch {
-      setSaveError('Failed to save changes.');
+      setSaveError(t.customers.errorUpdate);
     } finally {
       setSaving(false);
     }
@@ -104,9 +106,9 @@ export default function ShopCustomerDetailPage() {
     return (
       <div className="team-member-page">
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
-          ← Back to Customers
+          {t.customers.backToCustomers}
         </button>
-        <div className="alert alert-error">{error || 'Customer not found'}</div>
+        <div className="alert alert-error">{error || t.customers.notFound}</div>
       </div>
     );
   }
@@ -114,7 +116,7 @@ export default function ShopCustomerDetailPage() {
   return (
     <div className="team-member-page">
       <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
-        ← Back to Customers
+        {t.customers.backToCustomers}
       </button>
 
       {/* Customer info */}
@@ -122,35 +124,35 @@ export default function ShopCustomerDetailPage() {
         <h1>{customer.name}</h1>
         <div className="team-member-meta">
           <span className="team-date">
-            Customer since {new Date(customer.createdAt).toLocaleDateString()}
+            {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
           </span>
         </div>
       </div>
 
       {/* Edit card */}
       <div className="card team-role-card">
-        <h2>Edit Info</h2>
+        <h2>{t.customers.editInfo}</h2>
         <div className="form-group">
-          <label>Name</label>
+          <label>{t.customers.nameLabel}</label>
           <input
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
           />
         </div>
         <div className="form-group">
-          <label>Phone</label>
+          <label>{t.customers.phoneLabel}</label>
           <input
             value={editPhone}
             onChange={(e) => setEditPhone(e.target.value)}
           />
         </div>
         <div className="form-group">
-          <label>Email</label>
+          <label>{t.customers.emailLabel}</label>
           <input
             type="email"
             value={editEmail}
             onChange={(e) => setEditEmail(e.target.value)}
-            placeholder="Optional"
+            placeholder={t.customers.emailOptional}
           />
         </div>
         {saveError && <div className="alert alert-error">{saveError}</div>}
@@ -160,23 +162,23 @@ export default function ShopCustomerDetailPage() {
           onClick={handleSave}
           disabled={saving || !isDirty}
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t.customers.saving : t.customers.save}
         </button>
       </div>
 
       {/* Recent bookings */}
       <div className="card team-role-card">
-        <h2>Recent Bookings</h2>
+        <h2>{t.customers.recentBookings}</h2>
         {customer.bookings.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No bookings yet.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.noBookings}</p>
         ) : (
           <div className="team-table-card" style={{ border: 'none', borderRadius: 0 }}>
             <table className="team-table">
               <thead>
                 <tr>
-                  <th>Service</th>
-                  <th>Date & Time</th>
-                  <th>Status</th>
+                  <th>{t.customers.serviceCol}</th>
+                  <th>{t.customers.dateTimeCol}</th>
+                  <th>{t.customers.statusCol}</th>
                 </tr>
               </thead>
               <tbody>

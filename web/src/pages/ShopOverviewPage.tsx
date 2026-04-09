@@ -1,4 +1,5 @@
 import { useShop } from "../context/ShopContext";
+import { useLang } from "../context/LanguageContext";
 import '../styles/pages/shop-overview.css'
 
 
@@ -14,9 +15,10 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function ShopOverviewPage() {
   const { shop, isLoading } = useShop();
+  const { t } = useLang();
 
-  if (isLoading) return <div className="state-view">Loading...</div>;
-  if (!shop) return <div className="state-view">No shop loaded</div>;
+  if (isLoading) return <div className="state-view">{t.overview.loading}</div>;
+  if (!shop) return <div className="state-view">{t.overview.noShop}</div>;
 
   return (
     <div className="overview-page">
@@ -34,7 +36,7 @@ export default function ShopOverviewPage() {
           <div className="shop-card__badges">
             <span className="badge badge--role">{shop.role}</span>
             <span className={`badge badge--status ${shop.isActive ? "badge--active" : "badge--inactive"}`}>
-              {shop.isActive ? "Active" : "Inactive"}
+              {shop.isActive ? t.shops.active : t.shops.inactive}
             </span>
           </div>
         </div>
@@ -43,33 +45,33 @@ export default function ShopOverviewPage() {
         <div className="shop-card__body">
 
           <section className="field-group">
-            <h3 className="field-group__title">Identity</h3>
+            <h3 className="field-group__title">{t.overview.identity}</h3>
             <div className="field-group__grid">
-              <Field label="ID" value={shop.id} />
-              <Field label="Slug" value={`/${shop.slug}`} />
+              <Field label={t.overview.idLabel} value={shop.id} />
+              <Field label={t.overview.slugLabel} value={`/${shop.slug}`} />
             </div>
           </section>
 
           <section className="field-group">
-            <h3 className="field-group__title">Contact</h3>
+            <h3 className="field-group__title">{t.overview.contact}</h3>
             <div className="field-group__grid">
-              <Field label="Phone" value={shop.phone} />
-              <Field label="Address" value={shop.formattedAddress || "—"} />
+              <Field label={t.overview.phoneLabel} value={shop.phone} />
+              <Field label={t.overview.addressLabel} value={shop.formattedAddress || "—"} />
             </div>
           </section>
 
           <section className="field-group">
-            <h3 className="field-group__title">Settings</h3>
+            <h3 className="field-group__title">{t.overview.settingsSection}</h3>
             <div className="field-group__grid">
-              <Field label="Timezone" value={shop.timezone} />
+              <Field label={t.overview.timezoneLabel} value={shop.timezone} />
             </div>
           </section>
 
           <section className="field-group">
-            <h3 className="field-group__title">Timestamps</h3>
+            <h3 className="field-group__title">{t.overview.timestamps}</h3>
             <div className="field-group__grid">
-              <Field label="Created" value={new Date(shop.createdAt).toLocaleString()} />
-              <Field label="Last Updated" value={new Date(shop.updatedAt).toLocaleString()} />
+              <Field label={t.overview.createdLabel} value={new Date(shop.createdAt).toLocaleString()} />
+              <Field label={t.overview.updatedLabel} value={new Date(shop.updatedAt).toLocaleString()} />
             </div>
           </section>
 

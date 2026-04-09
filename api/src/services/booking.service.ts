@@ -82,6 +82,88 @@ if (!staffId) {
   }
 };
 
+// ── Owner / Staff booking creation ──────────────────────────────────────────
+
+export const createBookingForShop = async (
+  userId: string,
+  shopId: string,
+  data: {
+    name: string;
+    phone: string;
+    email?: string;
+    serviceId: string;
+    staffId?: string | null;
+    startTime: string;
+    notes?: string;
+  },
+) => {
+  // Verify caller is a member of the shop
+  const membership = await prisma.userShop.findUnique({
+    where: { userId_shopId: { userId, shopId } },
+  });
+  if (!membership) throw new AppError(404, 'Shop not found');
+
+  const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+  if (!service) throw new AppError(404, 'Service not found');
+
+  const startTime = new Date(data.startTime);
+  const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
+  const cancelToken = randomUUID();
+  let staffId = data.staffId;
+
+  if (!staffId) {
+    const anyStaff = await prisma.userShop.findFirst({
+      where: {
+        shopId,
+        staffServices: { some: { serviceId: data.serviceId } },
+      },
+    });
+    if (!anyStaff) throw new AppError(400, 'No staff available for this service');
+    staffId = anyStaff.id;
+  }
+
+  try {
+    return await prisma.$transaction(
+      async (tx) => {
+        const conflict = await tx.booking.findFirst({
+          where: {
+            staffId,
+            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+            startTime: { lt: endTime },
+            endTime: { gt: startTime },
+          },
+        });
+
+        if (conflict) throw new AppError(409, 'Time slot is already booked');
+
+        const customer = await tx.customer.upsert({
+          where: { shopId_phone: { shopId, phone: data.phone } },
+          update: { name: data.name, email: data.email ?? undefined },
+          create: { shopId, name: data.name, phone: data.phone, email: data.email },
+        });
+
+        return tx.booking.create({
+          data: {
+            shopId,
+            customerId: customer.id,
+            serviceId: data.serviceId,
+            staffId,
+            startTime,
+            endTime,
+            notes: data.notes,
+            cancelToken,
+          },
+          include: { customer: true, service: true, shop: true, staff: { include: { user: true } } },
+        });
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (err: any) {
+    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    throw err;
+  }
+};
+
 // ── Slots ───────────────────────────────────────
 
 export const getAvailableSlots = async (

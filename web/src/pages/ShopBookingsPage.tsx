@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useShop } from '../context/ShopContext';
+import { useLang } from '../context/LanguageContext';
 import {
   listBookings,
   updateBookingStatus,
@@ -39,6 +40,7 @@ const formatDuration = (mins: number) => {
 
 export default function ShopBookingsPage() {
   const { shop, isLoading: shopLoading } = useShop();
+  const { t } = useLang();
   const isOwner = shop?.role === 'owner';
 
   const [bookings, setBookings]               = useState<Booking[]>([]);
@@ -63,7 +65,7 @@ export default function ShopBookingsPage() {
         setBookings(bkgs);
         if (members.length === 0) setMembers(mems);
       })
-      .catch(() => setError('Failed to load bookings.'))
+      .catch(() => setError(t.bookings.errorLoad))
       .finally(() => setLoading(false));
   }, [shop?.id, date]);
 
@@ -129,7 +131,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
 
       {/* ── Header ── */}
       <div className="bookings-header">
-        <h1>Bookings</h1>
+        <h1>{t.bookings.title}</h1>
         <input
           type="date"
           className="bookings-date-picker"
@@ -148,7 +150,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
             <button
               className="cal-detail-close"
               onClick={() => { setSelectedBooking(null); setConfirmDeleteId(null); }}
-              aria-label="Close"
+              aria-label={t.bookings.close}
             >
               ×
             </button>
@@ -193,13 +195,13 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
                     onClick={() => handleDelete(selectedBooking.id)}
                     disabled={deleting}
                   >
-                    {deleting ? 'Deleting…' : 'Delete?'}
+                    {deleting ? t.bookings.deleting : t.bookings.confirmDelete}
                   </button>
                   <button
                     className="btn btn-ghost service-action-btn"
                     onClick={() => setConfirmDeleteId(null)}
                   >
-                    Cancel
+                    {t.bookings.cancel}
                   </button>
                 </>
               ) : (
@@ -207,7 +209,7 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
                   className="btn btn-ghost service-action-btn booking-delete-btn"
                   onClick={() => setConfirmDeleteId(selectedBooking.id)}
                 >
-                  Delete
+                  {t.bookings.delete}
                 </button>
               )}
             </div>

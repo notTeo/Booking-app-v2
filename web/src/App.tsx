@@ -25,6 +25,7 @@ import ShopsPage from './pages/ShopsPage';
 import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
+import ShopNewBookingPage from './pages/ShopNewBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
@@ -75,6 +76,7 @@ export default function App() {
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route index element={<ShopOverviewPage />} />
+                      <Route path="bookings/new" element={<ShopNewBookingPage />} />
                       <Route path="bookings" element={<ShopBookingsPage />} />
                       <Route path="services" element={<ShopServicesPage />} />
                       <Route path="team" element={<ShopTeamPage />} />

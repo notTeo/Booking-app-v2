@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { ShopInfo } from '../api/public.api';
 import { getShopInfo, createBooking, getPublicSlots } from '../api/public.api';
+import { useLang } from '../context/LanguageContext';
 import '../styles/pages/public.css';
 
 function formatDuration(mins: number): string {
@@ -23,6 +24,8 @@ function buildISODateTime(date: string, time: string): string {
 
 export default function PublicPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useLang();
+
   const [shop, setShop]       = useState<ShopInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
@@ -53,7 +56,7 @@ export default function PublicPage() {
     if (!slug) return;
     getShopInfo(slug)
       .then(setShop)
-      .catch(() => setError('Shop not found'))
+      .catch(() => setError(t.public.shopNotFound))
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -62,7 +65,7 @@ export default function PublicPage() {
   }
 
   if (error || !shop) {
-    return <div className="public-error"><p>{error ?? 'Something went wrong'}</p></div>;
+    return <div className="public-error"><p>{error ?? t.public.somethingWrong}</p></div>;
   }
 
   // ── Derived ──
@@ -94,13 +97,13 @@ export default function PublicPage() {
 function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
   const newDate = e.target.value;
   setDate(newDate);
-  if (!shop || !selectedServiceId) return;  // ← guard here
-  
+  if (!shop || !selectedServiceId) return;
+
   getPublicSlots(slug!, newDate, selectedMemberId, selectedServiceId)
     .then((s) => { console.log('slots:', s); setSlots(Array.isArray(s) ? s : []); })
     .catch((err) => {
   console.error('slots error:', err.response?.data ?? err.message);
-  setError('Failed to load available slots');
+  setError(t.public.failedSlots);
 })
     .finally(() => setLoading(false));
 }
@@ -137,17 +140,15 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })
-          ?.response?.data?.message ?? 'Something went wrong. Please try again.';
+          ?.response?.data?.message ?? t.public.somethingWrong;
       setSubmitError(msg);
     } finally {
       setSubmitting(false);
     }
   }
 
-  
-
   // ── Step labels for the progress indicator ──
-  const STEPS = ['Service', 'Staff', 'Date & Time', 'Your Details'];
+  const STEPS = [t.public.service, t.public.staff, t.public.dateTime, t.public.yourDetails];
 
   return (
     <div className="public-page">
@@ -172,11 +173,13 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
           <section className="public-section">
             <div className="public-booking-confirmed">
               <div className="public-booking-confirmed-icon">✓</div>
-              <h2 className="public-booking-confirmed-title">Booking Confirmed!</h2>
+              <h2 className="public-booking-confirmed-title">{t.public.bookingConfirmed}</h2>
               <p className="public-booking-confirmed-message">
-                Thanks, <strong>{name}</strong>. Your appointment for{' '}
-                <strong>{selectedService?.name}</strong> on <strong>{date}</strong> at{' '}
-                <strong>{time}</strong> has been booked. We'll see you then!
+                {t.public.bookingConfirmedMsg
+                  .replace('{name}', name)
+                  .replace('{service}', selectedService?.name ?? '')
+                  .replace('{date}', date)
+                  .replace('{time}', time)}
               </p>
               {(phone || email) && (
                 <p className="public-booking-confirmed-contact">
@@ -189,7 +192,7 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
           </section>
         ) : (
           <section className="public-section">
-            <h2 className="public-section-title">Book an Appointment</h2>
+            <h2 className="public-section-title">{t.public.bookAppointment}</h2>
 
             {/* Step progress indicator */}
             <div className="public-wizard-steps">
@@ -217,7 +220,7 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
             {step === 1 && (
               <div className="public-wizard-panel">
                 {shop.services.length === 0 ? (
-                  <p>No services available.</p>
+                  <p>{t.public.noServices}</p>
                 ) : (
                   <div className="public-services-grid">
                     {shop.services.map(s => (
@@ -244,12 +247,12 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
               <div className="public-wizard-panel">
                 {selectedService && (
                   <p className="public-wizard-context">
-                    Service: <strong>{selectedService.name}</strong>
+                    {t.public.serviceContext} <strong>{selectedService.name}</strong>
                   </p>
                 )}
 
                 {eligibleMembers.length === 0 ? (
-                  <p>No staff available for this service.</p>
+                  <p>{t.public.noStaff}</p>
                 ) : (
                   <div className="public-team-grid">
                     {eligibleMembers.map(m => (
@@ -284,12 +287,12 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
                 >
                   <div className="public-team-avatar">✦</div>
                   <div className="public-team-info">
-                    <h3>No preference</h3>
-                    <p className="public-team-any-subtitle">Any available staff member</p>
+                    <h3>{t.public.noPreference}</h3>
+                    <p className="public-team-any-subtitle">{t.public.anyStaff}</p>
                   </div>
                 </button>
 
-                <button className="public-wizard-btn" onClick={goBack}>← Back</button>
+                <button className="public-wizard-btn" onClick={goBack}>{t.public.back}</button>
               </div>
             )}
 
@@ -298,15 +301,15 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
               <div className="public-wizard-panel">
                 {selectedService && (
                   <p className="public-wizard-context">
-                    Service: <strong>{selectedService.name}</strong>
+                    {t.public.serviceContext} <strong>{selectedService.name}</strong>
                     {selectedMemberId && shop.members.find(m => m.id === selectedMemberId) && (
-                      <> · Staff: <strong>{shop.members.find(m => m.id === selectedMemberId)!.user.name}</strong></>
+                      <> · {t.public.staffContext} <strong>{shop.members.find(m => m.id === selectedMemberId)!.user.name}</strong></>
                     )}
                   </p>
                 )}
 
                 <div className="public-datetime-row">
-                  <label className="public-field-label" htmlFor="booking-date">Date</label>
+                  <label className="public-field-label" htmlFor="booking-date">{t.public.date}</label>
                   <input
                     id="booking-date"
                     className="public-field-input"
@@ -330,13 +333,13 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
               </div>
 
                 <div className="public-wizard-actions">
-                  <button className="public-wizard-btn" onClick={goBack}>← Back</button>
+                  <button className="public-wizard-btn" onClick={goBack}>{t.public.back}</button>
                   {date !== '' && time !== '' && (
                     <button
                       className="public-wizard-btn public-wizard-btn--primary"
                       onClick={() => setStep(4)}
                     >
-                      Continue →
+                      {t.public.continue}
                     </button>
                   )}
                 </div>
@@ -348,24 +351,24 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
               <div className="public-wizard-panel">
                 {selectedService && (
                   <p className="public-wizard-context">
-                    Service: <strong>{selectedService.name}</strong>
+                    {t.public.serviceContext} <strong>{selectedService.name}</strong>
                     {selectedMemberId && shop.members.find(m => m.id === selectedMemberId) && (
-                      <> · Staff: <strong>{shop.members.find(m => m.id === selectedMemberId)!.user.name}</strong></>
+                      <> · {t.public.staffContext} <strong>{shop.members.find(m => m.id === selectedMemberId)!.user.name}</strong></>
                     )}
-                    {' · '}<strong>{date}</strong> at <strong>{time}</strong>
+                    {' · '}<strong>{date}</strong> {t.public.atLabel} <strong>{time}</strong>
                   </p>
                 )}
 
                 <div className="public-booking-form">
                   <div className="public-field-group">
                     <label className="public-field-label" htmlFor="b-name">
-                      Name <span className="public-field-required">*</span>
+                      {t.public.nameLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-name"
                       className="public-field-input"
                       type="text"
-                      placeholder="Your name"
+                      placeholder={t.public.namePlaceholder}
                       value={name}
                       onChange={e => setName(e.target.value)}
                       autoComplete="name"
@@ -374,13 +377,13 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
 
                   <div className="public-field-group">
                     <label className="public-field-label" htmlFor="b-phone">
-                      Phone <span className="public-field-required">*</span>
+                      {t.public.phoneLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-phone"
                       className="public-field-input"
                       type="tel"
-                      placeholder="+1 555 000 0000"
+                      placeholder={t.public.phonePlaceholder}
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       autoComplete="tel"
@@ -389,30 +392,30 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
 
                   <div className="public-field-group">
                     <label className="public-field-label" htmlFor="b-email">
-                      Email <span className="public-field-optional">(optional)</span>
+                      {t.public.emailLabel} <span className="public-field-optional">{t.public.emailOptional}</span>
                     </label>
                     <input
                       id="b-email"
                       className="public-field-input"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={t.public.emailPlaceholder}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="email"
                     />
                     <p className="public-field-hint">
-                      Add your email to receive booking details and a cancellation link
+                      {t.public.emailHint}
                     </p>
                   </div>
 
                   <div className="public-field-group">
                     <label className="public-field-label" htmlFor="b-notes">
-                      Notes <span className="public-field-optional">(optional)</span>
+                      {t.public.notesLabel} <span className="public-field-optional">{t.public.notesOptional}</span>
                     </label>
                     <textarea
                       id="b-notes"
                       className="public-field-input public-field-textarea"
-                      placeholder="Any special requests..."
+                      placeholder={t.public.notesPlaceholder}
                       value={notes}
                       onChange={e => setNotes(e.target.value)}
                       rows={3}
@@ -430,14 +433,14 @@ function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
                     onClick={goBack}
                     disabled={submitting}
                   >
-                    ← Back
+                    {t.public.back}
                   </button>
                   <button
                     className="public-wizard-btn public-wizard-btn--primary"
                     onClick={handleSubmit}
                     disabled={submitting || name.trim() === '' || phone.trim() === ''}
                   >
-                    {submitting ? 'Booking…' : 'Confirm Booking'}
+                    {submitting ? t.public.booking : t.public.confirmBooking}
                   </button>
                 </div>
               </div>

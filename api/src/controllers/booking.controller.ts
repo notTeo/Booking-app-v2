@@ -3,6 +3,17 @@ import { BookingStatus } from '../../dist/generated/prisma';
 import { successResponse } from '../utils/response';
 import * as bookingService from '../services/booking.service';
 
+export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params['shopId'] as string;
+    const booking = await bookingService.createBookingForShop(userId, shopId, req.body);
+    successResponse(res, booking, 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getAvailableSlots = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const shopId = req.params['shopId'] as string;

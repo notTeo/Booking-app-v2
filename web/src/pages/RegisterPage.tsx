@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { register, resendVerification } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 import { authStore } from '../store/authStore';
 import { env } from '../config/env';
 import '../styles/pages/register.css';
@@ -9,6 +10,7 @@ import '../styles/pages/register.css';
 export default function RegisterPage() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLang();
   const [params] = useSearchParams();
 
   const inviteToken = params.get('inviteToken') ?? '';
@@ -93,13 +95,13 @@ export default function RegisterPage() {
 
         {inviteToken && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1rem' }}>
-            Create your account to accept the invitation.
+            {t.register.inviteNotice}
           </p>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">{t.register.nameLabel}</label>
             <input
               id="name"
               type="name"
@@ -131,10 +133,10 @@ export default function RegisterPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>At least 8 characters</li>
-                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>One uppercase letter</li>
-                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>One number</li>
-                <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>One special character (!@#$%...)</li>
+                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>{t.register.pwMin}</li>
+                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwUpper}</li>
+                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwNumber}</li>
+                <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwSpecial}</li>
               </ul>
             )}
           </div>

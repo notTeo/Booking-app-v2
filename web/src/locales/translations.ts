@@ -28,6 +28,7 @@ export interface Translations {
     customers: string;
     shopSettings: string;
     shopWorkingHours: string;
+    bookAppointment: string;
   };
   shops: {
     title: string;
@@ -115,6 +116,8 @@ export interface Translations {
     pwUpper: string;
     pwNumber: string;
     pwSpecial: string;
+    nameLabel: string;
+    inviteNotice: string;
   };
   forgotPassword: {
     title: string;
@@ -211,6 +214,38 @@ export interface Translations {
     pwUpper: string;
     pwNumber: string;
     pwSpecial: string;
+    nameSection: string;
+    nameLabel: string;
+    saveName: string;
+    preferencesSection: string;
+    themeLabel: string;
+    themeDesc: string;
+    lightTheme: string;
+    darkTheme: string;
+    languageLabel: string;
+    languageDesc: string;
+    activeSessionsSection: string;
+    loadingSessions: string;
+    noSessions: string;
+    sessions: string;
+    mostRecent: string;
+    sessionStarted: string;
+    sessionExpires: string;
+    revoking: string;
+    revokeAll: string;
+    memberSince: string;
+    verified: string;
+    notVerified: string;
+    pro: string;
+    free: string;
+    successName: string;
+    errorName: string;
+    successEmail: string;
+    errorEmail: string;
+    successPassword: string;
+    errorPassword: string;
+    successRevoke: string;
+    errorRevoke: string;
   };
   pricing: {
     title: string;
@@ -407,6 +442,7 @@ export interface Translations {
     slotEndBeforeStart: string;
     slotDuplicate: string;
     slotOverlap: string;
+    removeSlot: string;
     days: {
       MON: string;
       TUE: string;
@@ -431,6 +467,132 @@ export interface Translations {
     relativeWeeksAgo: string;
     relativeMonthAgo: string;
     relativeMonthsAgo: string;
+    generalInfo: string;
+    contactLocation: string;
+    configuration: string;
+    activeLabel: string;
+    activeDesc: string;
+    saveChanges: string;
+    saving: string;
+    backToShop: string;
+    created: string;
+    updatedPrefix: string;
+    locationConfirmed: string;
+    descPlaceholder: string;
+    addressPlaceholder: string;
+    notFound: string;
+    errorLoad: string;
+    successUpdate: string;
+    errorUpdate: string;
+    errorDelete: string;
+    yesDeleteShop: string;
+    areYouSure: string;
+  };
+  public: {
+    bookAppointment: string;
+    service: string;
+    staff: string;
+    dateTime: string;
+    yourDetails: string;
+    noServices: string;
+    noStaff: string;
+    noPreference: string;
+    anyStaff: string;
+    back: string;
+    continue: string;
+    date: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    emailLabel: string;
+    emailOptional: string;
+    emailHint: string;
+    emailPlaceholder: string;
+    notesLabel: string;
+    notesOptional: string;
+    notesPlaceholder: string;
+    booking: string;
+    confirmBooking: string;
+    bookingConfirmed: string;
+    bookingConfirmedMsg: string;
+    shopNotFound: string;
+    somethingWrong: string;
+    failedSlots: string;
+    serviceContext: string;
+    staffContext: string;
+    atLabel: string;
+  };
+  overview: {
+    loading: string;
+    noShop: string;
+    identity: string;
+    idLabel: string;
+    slugLabel: string;
+    contact: string;
+    phoneLabel: string;
+    addressLabel: string;
+    settingsSection: string;
+    timezoneLabel: string;
+    timestamps: string;
+    createdLabel: string;
+    updatedLabel: string;
+  };
+  customers: {
+    title: string;
+    searchPlaceholder: string;
+    errorLoad: string;
+    noResults: string;
+    noCustomers: string;
+    nameCol: string;
+    phoneCol: string;
+    emailCol: string;
+    addedCol: string;
+    backToCustomers: string;
+    notFound: string;
+    customerErrorLoad: string;
+    customerSince: string;
+    editInfo: string;
+    nameLabel: string;
+    phoneLabel: string;
+    emailLabel: string;
+    emailOptional: string;
+    saving: string;
+    save: string;
+    recentBookings: string;
+    noBookings: string;
+    serviceCol: string;
+    dateTimeCol: string;
+    statusCol: string;
+    successUpdate: string;
+    errorUpdate: string;
+  };
+  bookings: {
+    title: string;
+    errorLoad: string;
+    close: string;
+    delete: string;
+    deleting: string;
+    confirmDelete: string;
+    cancel: string;
+    newBookingTitle: string;
+    phoneSearchHint: string;
+    newCustomerHint: string;
+    createBooking: string;
+    creating: string;
+    createSuccess: string;
+    createError: string;
+  };
+  cancelBooking: {
+    invalidLink: string;
+    cancelling: string;
+    alreadyCancelled: string;
+    notFound: string;
+    errorCancel: string;
+    cancelled: string;
+    yourText: string;
+    appointmentAt: string;
+    hasCancelled: string;
   };
 }
 
@@ -462,7 +624,8 @@ export const translations: Record<Language, Translations> = {
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
       shopSettings: 'Ρυθμίσεις',
-      shopWorkingHours: "'Ωρες Λειτουργίας"
+      shopWorkingHours: "'Ωρες Λειτουργίας",
+      bookAppointment: 'Νέο Ραντεβού',
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -550,6 +713,8 @@ home: {
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
       pwSpecial: 'Ένας ειδικός χαρακτήρας (!@#$%...)',
+      nameLabel: 'Όνομα',
+      inviteNotice: 'Δημιουργήστε τον λογαριασμό σας για να αποδεχτείτε την πρόσκληση.',
     },
     forgotPassword: {
       title: 'Ξεχάσατε τον Κωδικό',
@@ -646,6 +811,38 @@ home: {
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
       pwSpecial: 'Ένας ειδικός χαρακτήρας (!@#$%...)',
+      nameSection: 'Όνομα Χρήστη',
+      nameLabel: 'Όνομα Χρήστη',
+      saveName: 'Αποθήκευση Ονόματος',
+      preferencesSection: 'Προτιμήσεις',
+      themeLabel: 'Θέμα',
+      themeDesc: 'Επιλέξτε το προτιμώμενο χρωματικό θέμα',
+      lightTheme: 'Φωτεινό',
+      darkTheme: 'Σκοτεινό',
+      languageLabel: 'Γλώσσα',
+      languageDesc: 'Ορίστε τη γλώσσα εμφάνισης',
+      activeSessionsSection: 'Ενεργές Συνεδρίες',
+      loadingSessions: 'Φόρτωση συνεδριών...',
+      noSessions: 'Δεν βρέθηκαν ενεργές συνεδρίες.',
+      sessions: 'συνεδρίες',
+      mostRecent: 'πιο πρόσφατη:',
+      sessionStarted: 'Συνεδρία ξεκίνησε',
+      sessionExpires: 'Λήγει',
+      revoking: 'Ανάκληση...',
+      revokeAll: 'Ανάκληση Όλων των Συνεδριών',
+      memberSince: 'Μέλος από',
+      verified: '✓ Επαληθευμένο',
+      notVerified: '✗ Μη επαληθευμένο',
+      pro: '★ Pro',
+      free: 'Δωρεάν',
+      successName: 'Το όνομα ενημερώθηκε επιτυχώς.',
+      errorName: 'Αποτυχία ενημέρωσης ονόματος.',
+      successEmail: 'Το email ενημερώθηκε επιτυχώς.',
+      errorEmail: 'Αποτυχία ενημέρωσης email.',
+      successPassword: 'Ο κωδικός ενημερώθηκε επιτυχώς.',
+      errorPassword: 'Αποτυχία ενημέρωσης κωδικού.',
+      successRevoke: 'Όλες οι άλλες συνεδρίες ανακλήθηκαν.',
+      errorRevoke: 'Αποτυχία ανάκλησης συνεδριών.',
     },
     pricing: {
       title: 'Απλή, Ειλικρινής Τιμολόγηση',
@@ -842,6 +1039,7 @@ home: {
       slotEndBeforeStart: 'Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.',
       slotDuplicate: 'Διπλό χρονικό πλαίσιο.',
       slotOverlap: 'Τα χρονικά πλαίσια δεν μπορούν να αλληλεπικαλύπτονται.',
+      removeSlot: 'Αφαίρεση χρονικού πλαισίου',
       days: {
         MON: 'Δευτέρα',
         TUE: 'Τρίτη',
@@ -866,6 +1064,132 @@ home: {
       relativeWeeksAgo: 'εβδομάδες πριν',
       relativeMonthAgo: 'μήνας πριν',
       relativeMonthsAgo: 'μήνες πριν',
+      generalInfo: 'Γενικές Πληροφορίες',
+      contactLocation: 'Επικοινωνία & Τοποθεσία',
+      configuration: 'Διαμόρφωση',
+      activeLabel: 'Ενεργό',
+      activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
+      saveChanges: 'Αποθήκευση Αλλαγών',
+      saving: 'Αποθήκευση...',
+      backToShop: '← Πίσω στο Κατάστημα',
+      created: 'Δημιουργήθηκε',
+      updatedPrefix: '· Ενημερώθηκε',
+      locationConfirmed: '✓ Τοποθεσία επιβεβαιώθηκε',
+      descPlaceholder: 'Περιγράψτε το κατάστημά σας...',
+      addressPlaceholder: 'Κεντρική 1, Αθήνα, Ελλάδα',
+      notFound: 'Το κατάστημα δεν βρέθηκε.',
+      errorLoad: 'Αποτυχία φόρτωσης καταστήματος.',
+      successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
+      errorUpdate: 'Αποτυχία ενημέρωσης καταστήματος.',
+      errorDelete: 'Αποτυχία διαγραφής καταστήματος.',
+      yesDeleteShop: 'Ναι, Διαγραφή Καταστήματος',
+      areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το {name} και όλα τα δεδομένα του.',
+    },
+    public: {
+      bookAppointment: 'Κλείστε Ραντεβού',
+      service: 'Υπηρεσία',
+      staff: 'Προσωπικό',
+      dateTime: 'Ημερομηνία & Ώρα',
+      yourDetails: 'Τα Στοιχεία σας',
+      noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
+      noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
+      noPreference: 'Χωρίς προτίμηση',
+      anyStaff: 'Οποιοδήποτε διαθέσιμο μέλος',
+      back: '← Πίσω',
+      continue: 'Συνέχεια →',
+      date: 'Ημερομηνία',
+      nameLabel: 'Όνομα',
+      namePlaceholder: 'Το όνομά σας',
+      phoneLabel: 'Τηλέφωνο',
+      phonePlaceholder: '+30 697 000 0000',
+      emailLabel: 'Email',
+      emailOptional: '(προαιρετικό)',
+      emailHint: 'Προσθέστε email για να λάβετε λεπτομέρειες κράτησης και σύνδεσμο ακύρωσης',
+      emailPlaceholder: 'εσεις@παραδειγμα.com',
+      notesLabel: 'Σημειώσεις',
+      notesOptional: '(προαιρετικό)',
+      notesPlaceholder: 'Ειδικές απαιτήσεις...',
+      booking: 'Κράτηση...',
+      confirmBooking: 'Επιβεβαίωση Κράτησης',
+      bookingConfirmed: 'Κράτηση Επιβεβαιώθηκε!',
+      bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
+      shopNotFound: 'Το κατάστημα δεν βρέθηκε',
+      somethingWrong: 'Κάτι πήγε στραβά',
+      failedSlots: 'Αποτυχία φόρτωσης διαθέσιμων ωρών',
+      serviceContext: 'Υπηρεσία:',
+      staffContext: 'Προσωπικό:',
+      atLabel: 'στις',
+    },
+    overview: {
+      loading: 'Φόρτωση...',
+      noShop: 'Δεν φορτώθηκε κατάστημα',
+      identity: 'Ταυτότητα',
+      idLabel: 'ID',
+      slugLabel: 'Slug',
+      contact: 'Επικοινωνία',
+      phoneLabel: 'Τηλέφωνο',
+      addressLabel: 'Διεύθυνση',
+      settingsSection: 'Ρυθμίσεις',
+      timezoneLabel: 'Ζώνη ώρας',
+      timestamps: 'Χρονοσφραγίδες',
+      createdLabel: 'Δημιουργήθηκε',
+      updatedLabel: 'Τελευταία Ενημέρωση',
+    },
+    customers: {
+      title: 'Πελάτες',
+      searchPlaceholder: 'Αναζήτηση με όνομα ή τηλέφωνο…',
+      errorLoad: 'Αποτυχία φόρτωσης πελατών',
+      noResults: 'Δεν βρέθηκαν πελάτες με αυτά τα κριτήρια.',
+      noCustomers: 'Δεν υπάρχουν πελάτες ακόμα.',
+      nameCol: 'Όνομα',
+      phoneCol: 'Τηλέφωνο',
+      emailCol: 'Email',
+      addedCol: 'Προστέθηκε',
+      backToCustomers: '← Πίσω στους Πελάτες',
+      notFound: 'Ο πελάτης δεν βρέθηκε',
+      customerErrorLoad: 'Αποτυχία φόρτωσης πελάτη',
+      customerSince: 'Πελάτης από',
+      editInfo: 'Επεξεργασία Στοιχείων',
+      nameLabel: 'Όνομα',
+      phoneLabel: 'Τηλέφωνο',
+      emailLabel: 'Email',
+      emailOptional: 'Προαιρετικό',
+      saving: 'Αποθήκευση…',
+      save: 'Αποθήκευση',
+      recentBookings: 'Πρόσφατα Ραντεβού',
+      noBookings: 'Δεν υπάρχουν ραντεβού ακόμα.',
+      serviceCol: 'Υπηρεσία',
+      dateTimeCol: 'Ημερομηνία & Ώρα',
+      statusCol: 'Κατάσταση',
+      successUpdate: 'Ο πελάτης ενημερώθηκε.',
+      errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
+    },
+    bookings: {
+      title: 'Ραντεβού',
+      errorLoad: 'Αποτυχία φόρτωσης ραντεβού.',
+      close: 'Κλείσιμο',
+      delete: 'Διαγραφή',
+      deleting: 'Διαγραφή…',
+      confirmDelete: 'Διαγραφή;',
+      cancel: 'Ακύρωση',
+      newBookingTitle: 'Νέο Ραντεβού',
+      phoneSearchHint: 'Πληκτρολογήστε για αναζήτηση πελάτη…',
+      newCustomerHint: 'Νέος πελάτης',
+      createBooking: 'Δημιουργία Ραντεβού',
+      creating: 'Δημιουργία…',
+      createSuccess: 'Το ραντεβού δημιουργήθηκε!',
+      createError: 'Αποτυχία δημιουργίας ραντεβού.',
+    },
+    cancelBooking: {
+      invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
+      cancelling: 'Ακύρωση ραντεβού...',
+      alreadyCancelled: 'Αυτό το ραντεβού έχει ήδη ακυρωθεί.',
+      notFound: 'Το ραντεβού δεν βρέθηκε. Ο σύνδεσμος μπορεί να είναι άκυρος ή ληγμένος.',
+      errorCancel: 'Αδυναμία ακύρωσης ραντεβού. Δοκιμάστε ξανά ή επικοινωνήστε με το κατάστημα.',
+      cancelled: 'Ραντεβού Ακυρώθηκε',
+      yourText: 'Το',
+      appointmentAt: 'ραντεβού σας στο',
+      hasCancelled: 'ακυρώθηκε.',
     },
   },
 
@@ -896,7 +1220,8 @@ home: {
       invites: 'Invites',
       customers: 'Customers',
       shopSettings: 'Shop Settings',
-      shopWorkingHours: "Working Hours"
+      shopWorkingHours: "Working Hours",
+      bookAppointment: 'Book an Appointment',
     },
     shops: {
       title: 'My Shops',
@@ -984,6 +1309,8 @@ home: {
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',
       pwSpecial: 'One special character (!@#$%...)',
+      nameLabel: 'Name',
+      inviteNotice: 'Create your account to accept the invitation.',
     },
     forgotPassword: {
       title: 'Forgot Password',
@@ -1080,6 +1407,38 @@ home: {
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',
       pwSpecial: 'One special character (!@#$%...)',
+      nameSection: 'User Name',
+      nameLabel: 'User Name',
+      saveName: 'Save Name',
+      preferencesSection: 'Preferences',
+      themeLabel: 'Theme',
+      themeDesc: 'Choose your preferred color scheme',
+      lightTheme: 'Light',
+      darkTheme: 'Dark',
+      languageLabel: 'Language',
+      languageDesc: 'Set your display language',
+      activeSessionsSection: 'Active Sessions',
+      loadingSessions: 'Loading sessions...',
+      noSessions: 'No active sessions found.',
+      sessions: 'sessions',
+      mostRecent: 'most recent:',
+      sessionStarted: 'Session started',
+      sessionExpires: 'Expires',
+      revoking: 'Revoking...',
+      revokeAll: 'Revoke All Sessions',
+      memberSince: 'Member since',
+      verified: '✓ Verified',
+      notVerified: '✗ Unverified',
+      pro: '★ Pro',
+      free: 'Free',
+      successName: 'Name updated successfully.',
+      errorName: 'Failed to update name.',
+      successEmail: 'Email updated successfully.',
+      errorEmail: 'Failed to update email.',
+      successPassword: 'Password updated successfully.',
+      errorPassword: 'Failed to update password.',
+      successRevoke: 'All other sessions have been revoked.',
+      errorRevoke: 'Failed to revoke sessions.',
     },
     pricing: {
       title: 'Simple, Honest Pricing',
@@ -1276,6 +1635,7 @@ home: {
       slotEndBeforeStart: 'End time must be after start time.',
       slotDuplicate: 'Duplicate time slot.',
       slotOverlap: 'Time slots cannot overlap.',
+      removeSlot: 'Remove time slot',
       days: {
         MON: 'Monday',
         TUE: 'Tuesday',
@@ -1300,6 +1660,132 @@ home: {
       relativeWeeksAgo: 'weeks ago',
       relativeMonthAgo: 'month ago',
       relativeMonthsAgo: 'months ago',
+      generalInfo: 'General Info',
+      contactLocation: 'Contact & Location',
+      configuration: 'Configuration',
+      activeLabel: 'Active',
+      activeDesc: "When inactive, your shop won't accept new bookings.",
+      saveChanges: 'Save Changes',
+      saving: 'Saving...',
+      backToShop: '← Back to Shop',
+      created: 'Created',
+      updatedPrefix: '· Updated',
+      locationConfirmed: '✓ Location confirmed',
+      descPlaceholder: 'Describe your shop...',
+      addressPlaceholder: '123 Main St, Athens, Greece',
+      notFound: 'Shop not found.',
+      errorLoad: 'Failed to load shop.',
+      successUpdate: 'Shop updated successfully.',
+      errorUpdate: 'Failed to update shop.',
+      errorDelete: 'Failed to delete shop.',
+      yesDeleteShop: 'Yes, Delete Shop',
+      areYouSure: 'Are you sure? This will permanently delete {name} and all its data.',
+    },
+    public: {
+      bookAppointment: 'Book an Appointment',
+      service: 'Service',
+      staff: 'Staff',
+      dateTime: 'Date & Time',
+      yourDetails: 'Your Details',
+      noServices: 'No services available.',
+      noStaff: 'No staff available for this service.',
+      noPreference: 'No preference',
+      anyStaff: 'Any available staff member',
+      back: '← Back',
+      continue: 'Continue →',
+      date: 'Date',
+      nameLabel: 'Name',
+      namePlaceholder: 'Your name',
+      phoneLabel: 'Phone',
+      phonePlaceholder: '+1 555 000 0000',
+      emailLabel: 'Email',
+      emailOptional: '(optional)',
+      emailHint: 'Add your email to receive booking details and a cancellation link',
+      emailPlaceholder: 'you@example.com',
+      notesLabel: 'Notes',
+      notesOptional: '(optional)',
+      notesPlaceholder: 'Any special requests...',
+      booking: 'Booking…',
+      confirmBooking: 'Confirm Booking',
+      bookingConfirmed: 'Booking Confirmed!',
+      bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
+      shopNotFound: 'Shop not found',
+      somethingWrong: 'Something went wrong',
+      failedSlots: 'Failed to load available slots',
+      serviceContext: 'Service:',
+      staffContext: 'Staff:',
+      atLabel: 'at',
+    },
+    overview: {
+      loading: 'Loading...',
+      noShop: 'No shop loaded',
+      identity: 'Identity',
+      idLabel: 'ID',
+      slugLabel: 'Slug',
+      contact: 'Contact',
+      phoneLabel: 'Phone',
+      addressLabel: 'Address',
+      settingsSection: 'Settings',
+      timezoneLabel: 'Timezone',
+      timestamps: 'Timestamps',
+      createdLabel: 'Created',
+      updatedLabel: 'Last Updated',
+    },
+    customers: {
+      title: 'Customers',
+      searchPlaceholder: 'Search by name or phone…',
+      errorLoad: 'Failed to load customers',
+      noResults: 'No customers match your search.',
+      noCustomers: 'No customers yet.',
+      nameCol: 'Name',
+      phoneCol: 'Phone',
+      emailCol: 'Email',
+      addedCol: 'Added',
+      backToCustomers: '← Back to Customers',
+      notFound: 'Customer not found',
+      customerErrorLoad: 'Failed to load customer',
+      customerSince: 'Customer since',
+      editInfo: 'Edit Info',
+      nameLabel: 'Name',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      emailOptional: 'Optional',
+      saving: 'Saving…',
+      save: 'Save',
+      recentBookings: 'Recent Bookings',
+      noBookings: 'No bookings yet.',
+      serviceCol: 'Service',
+      dateTimeCol: 'Date & Time',
+      statusCol: 'Status',
+      successUpdate: 'Customer updated.',
+      errorUpdate: 'Failed to save changes.',
+    },
+    bookings: {
+      title: 'Bookings',
+      errorLoad: 'Failed to load bookings.',
+      close: 'Close',
+      delete: 'Delete',
+      deleting: 'Deleting…',
+      confirmDelete: 'Delete?',
+      cancel: 'Cancel',
+      newBookingTitle: 'New Booking',
+      phoneSearchHint: 'Type to search customer…',
+      newCustomerHint: 'New customer',
+      createBooking: 'Create Booking',
+      creating: 'Creating…',
+      createSuccess: 'Booking created!',
+      createError: 'Failed to create booking.',
+    },
+    cancelBooking: {
+      invalidLink: 'Invalid cancellation link.',
+      cancelling: 'Cancelling your booking...',
+      alreadyCancelled: 'This booking has already been cancelled.',
+      notFound: 'Booking not found. The link may be invalid or expired.',
+      errorCancel: 'Could not cancel booking. Please try again or contact the shop.',
+      cancelled: 'Booking Cancelled',
+      yourText: 'Your',
+      appointmentAt: 'appointment at',
+      hasCancelled: 'has been cancelled.',
     },
   },
 };

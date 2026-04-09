@@ -154,7 +154,7 @@ export default function ShopSettingsPage() {
           }
         }
       })
-      .catch(() => setLoadError('Failed to load shop.'))
+      .catch(() => setLoadError(t.shopSettings.errorLoad))
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -264,12 +264,12 @@ export default function ShopSettingsPage() {
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
-      setSaveSuccess('Shop updated successfully.');
+      setSaveSuccess(t.shopSettings.successUpdate);
       if (updated.slug !== slug) {
         navigate(`/shops/${updated.slug}/settings`, { replace: true });
       }
     } catch (err: any) {
-      setSaveError(err.response?.data?.message ?? 'Failed to update shop.');
+      setSaveError(err.response?.data?.message ?? t.shopSettings.errorUpdate);
     } finally {
       setSaveLoading(false);
     }
@@ -284,7 +284,7 @@ export default function ShopSettingsPage() {
       await deleteShop(shop.id);
       navigate('/shops');
     } catch (err: any) {
-      setDeleteError(err.response?.data?.message ?? 'Failed to delete shop.');
+      setDeleteError(err.response?.data?.message ?? t.shopSettings.errorDelete);
       setDeleteLoading(false);
     }
   };
@@ -309,10 +309,10 @@ export default function ShopSettingsPage() {
     return (
       <div className="shops-page">
         <button className="card-back" type="button" onClick={() => navigate(`/shops/${slug}`)}>
-          ← Back to Shop
+          {t.shopSettings.backToShop}
         </button>
         <div className="shops-empty">
-          <p>Shop not found.</p>
+          <p>{t.shopSettings.notFound}</p>
         </div>
       </div>
     );
@@ -325,10 +325,10 @@ export default function ShopSettingsPage() {
         <div className="shop-detail-meta">
           <span className="shop-role-badge">{shop.role}</span>
           <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
-            {shop.isActive ? 'Active' : 'Inactive'}
+            {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>
-          <span className="shop-detail-date">Created {formatDate(shop.createdAt, language)}</span>
-          <span className="shop-detail-date">· Updated {formatRelative(shop.updatedAt, t.shopSettings)}</span>
+          <span className="shop-detail-date">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
+          <span className="shop-detail-date">{t.shopSettings.updatedPrefix} {formatRelative(shop.updatedAt, t.shopSettings)}</span>
         </div>
       </div>
 
@@ -337,14 +337,14 @@ export default function ShopSettingsPage() {
         <div className="settings-section shop-settings-section">
           <p className="settings-section-title">
             <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
-            General Info
+            {t.shopSettings.generalInfo}
           </p>
           <div className="form-group">
-            <label htmlFor="detail-name">Name</label>
+            <label htmlFor="detail-name">{t.shops.name}</label>
             <input id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="detail-slug">Slug</label>
+            <label htmlFor="detail-slug">{t.shops.slug}</label>
             <input
               id="detail-slug"
               type="text"
@@ -352,16 +352,16 @@ export default function ShopSettingsPage() {
               onChange={(e) => handleSlugInput(e.target.value)}
               required
             />
-            <span className="shop-field-hint">Lowercase letters, numbers, and hyphens only.</span>
+            <span className="shop-field-hint">{t.shops.slugHint}</span>
           </div>
           <div className="form-group">
-            <label htmlFor="detail-description">Description</label>
+            <label htmlFor="detail-description">{t.shops.description}</label>
             <textarea
               id="detail-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Describe your shop..."
+              placeholder={t.shopSettings.descPlaceholder}
             />
           </div>
         </div>
@@ -370,16 +370,16 @@ export default function ShopSettingsPage() {
         <div className="settings-section shop-settings-section">
           <p className="settings-section-title">
             <FontAwesomeIcon icon={faLocationDot} className="settings-section-icon" />
-            Contact &amp; Location
+            {t.shopSettings.contactLocation}
           </p>
           <div className="form-group">
-            <label htmlFor="detail-phone">Phone</label>
+            <label htmlFor="detail-phone">{t.shops.phone}</label>
             <input id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
 
           {/* Address autocomplete */}
           <div className="form-group" ref={wrapperRef} style={{ position: 'relative' }}>
-            <label htmlFor="detail-address">Address</label>
+            <label htmlFor="detail-address">{t.shops.address}</label>
             <input
               id="detail-address"
               type="text"
@@ -392,14 +392,14 @@ export default function ShopSettingsPage() {
                 }
                 predictions.length > 0 && setDropdownOpen(true);
               }}
-              placeholder="123 Main St, Athens, Greece"
+              placeholder={t.shopSettings.addressPlaceholder}
               autoComplete="off"
               disabled={!mapsReady}
             />
 
             {location && (
               <span className="shop-field-hint" style={{ color: 'var(--color-success, #22c55e)' }}>
-                ✓ Location confirmed
+                {t.shopSettings.locationConfirmed}
               </span>
             )}
 
@@ -452,7 +452,7 @@ export default function ShopSettingsPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="detail-timezone">Timezone</label>
+            <label htmlFor="detail-timezone">{t.shops.timezone}</label>
             <select id="detail-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
@@ -465,12 +465,12 @@ export default function ShopSettingsPage() {
         <div className="settings-section shop-settings-section">
           <p className="settings-section-title">
             <FontAwesomeIcon icon={faGear} className="settings-section-icon" />
-            Configuration
+            {t.shopSettings.configuration}
           </p>
           <div className="shop-active-row">
             <div className="shop-active-label">
-              <label htmlFor="detail-active" className="shop-active-name">Active</label>
-              <span className="shop-active-desc">When inactive, your shop won't accept new bookings.</span>
+              <label htmlFor="detail-active" className="shop-active-name">{t.shopSettings.activeLabel}</label>
+              <span className="shop-active-desc">{t.shopSettings.activeDesc}</span>
             </div>
             <input
               id="detail-active"
@@ -483,7 +483,7 @@ export default function ShopSettingsPage() {
           {saveError && <div className="alert alert-error">{saveError}</div>}
           {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
           <button className="btn btn-primary" type="submit" disabled={saveLoading}>
-            {saveLoading ? 'Saving...' : 'Save Changes'}
+            {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
           </button>
         </div>
       </form>
@@ -493,25 +493,25 @@ export default function ShopSettingsPage() {
         <div className="settings-section settings-section--danger shop-settings-section">
           <p className="settings-section-title">
             <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
-            Danger Zone
+            {t.shops.dangerZone}
           </p>
-          <p className="settings-danger-desc">Permanently delete this shop and all its data. This action cannot be undone.</p>
+          <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
           {!showDeleteConfirm ? (
             <button className="btn btn-danger" type="button" onClick={() => setShowDeleteConfirm(true)}>
-              Delete Shop
+              {t.shops.deleteShop}
             </button>
           ) : (
             <form onSubmit={handleDelete}>
               <p className="settings-danger-desc">
-                Are you sure? This will permanently delete <strong>{shop.name}</strong> and all its data.
+                {t.shopSettings.areYouSure.replace('{name}', shop.name)}
               </p>
               {deleteError && <div className="alert alert-error">{deleteError}</div>}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <button className="btn btn-danger" type="submit" disabled={deleteLoading}>
-                  {deleteLoading ? 'Deleting...' : 'Yes, Delete Shop'}
+                  {deleteLoading ? t.shops.deleting : t.shopSettings.yesDeleteShop}
                 </button>
                 <button className="btn btn-ghost" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
-                  Cancel
+                  {t.shops.cancel}
                 </button>
               </div>
             </form>
