@@ -73,7 +73,7 @@ export const deleteMe = async (
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     successResponse(res, { message: 'Account deleted successfully' });
