@@ -21,6 +21,7 @@ import publicRoutes from './routes/public.routes'
 const app = express();
 
 //Middleware
+app.set('trust proxy', 1);
 app.use(helmet({
   // Strict-Transport-Security: force HTTPS for 1 year in production
   hsts: env.nodeEnv === 'production'
