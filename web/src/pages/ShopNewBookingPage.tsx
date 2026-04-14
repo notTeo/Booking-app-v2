@@ -114,6 +114,7 @@ export default function ShopNewBookingPage() {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (val.trim().length < 2) return;
+    if (!shop) return;
 
     debounceRef.current = setTimeout(() => {
       getCustomers(shop.id, val.trim())
@@ -134,7 +135,7 @@ export default function ShopNewBookingPage() {
   }
 
   async function handleSubmit() {
-    if (!selectedServiceId) return;
+    if (!selectedServiceId || !shop) return;
     setSubmitting(true);
     setSubmitError(null);
     try {

@@ -79,7 +79,7 @@ export default function ShopsPage() {
               )}
               <div className="shop-card-meta">
                 <span className="shop-role-badge">{shop.role}</span>
-                {shop.city && <span className="shop-card-city">{shop.city}</span>}
+                {shop.formattedAddress && <span className="shop-card-city">{shop.formattedAddress}</span>}
               </div>
             </Link>
           ))}
