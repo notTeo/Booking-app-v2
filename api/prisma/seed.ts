@@ -10,7 +10,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const freePlan = await prisma.plan.upsert({
     where: { name: 'free' },
-    update: {},
+    update: {}, // intentional: re-runs do not overwrite; update features manually or via migration
     create: {
       id: 'cm_plan_free_bookly_2026',
       name: 'free',
@@ -30,7 +30,7 @@ async function main() {
 
   const proPlan = await prisma.plan.upsert({
     where: { name: 'pro' },
-    update: {},
+    update: {}, // intentional: re-runs do not overwrite; update features manually or via migration
     create: {
       id: 'cm_plan_pro_bookly_2026_',
       name: 'pro',

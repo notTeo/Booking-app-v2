@@ -17,6 +17,13 @@ export const requireFeature = (feature: Feature) => {
         throw new AppError(404, 'User not found');
       }
 
+      if (!user.plan) {
+        throw new AppError(500, 'User plan configuration is missing');
+      }
+
+      // Only boolean features (CREATE_SHOP, SMS_REMINDERS, ADVANCED_ANALYTICS) work with this
+      // middleware. Numeric quota features (MAX_STAFF, MAX_BOOKINGS_PER_MONTH) require separate
+      // quota-checking logic since their values are numbers, not booleans.
       const features = user.plan.features as Record<string, unknown>;
 
       if (features[feature] !== true) {
