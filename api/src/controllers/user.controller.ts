@@ -20,11 +20,7 @@ export const getMe = async (
         createdAt: true,
         passwordHash: true,
         plan: {
-          select: {
-            name: true,
-            displayName: true,
-            features: true,
-          },
+          select: { name: true },
         },
       },
     });
@@ -33,8 +29,8 @@ export const getMe = async (
       throw new AppError(404, 'User not found');
     }
 
-    const { passwordHash, ...userWithoutHash } = user;
-    successResponse(res, { user: { ...userWithoutHash, hasPassword: !!passwordHash } });
+    const { passwordHash, plan, ...userWithoutHash } = user;
+    successResponse(res, { user: { ...userWithoutHash, plan: plan.name, hasPassword: !!passwordHash } });
   } catch (err) {
     next(err);
   }
