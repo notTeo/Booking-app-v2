@@ -5,18 +5,12 @@ import { authStore } from '../store/authStore';
 
 interface User {
   id: string;
-  name:string;
+  name: string;
   email: string;
   isVerified: boolean;
   createdAt: string;
   plan: 'free' | 'pro';
   hasPassword: boolean;
-  subscription?: {
-    status: string;
-    stripePriceId: string;
-    currentPeriodEnd: string;
-    cancelAtPeriodEnd: boolean;
-  } | null;
 }
 
 interface AuthContextType {

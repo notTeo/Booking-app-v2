@@ -22,11 +22,8 @@ import '../styles/pages/dashboard.css';
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const sub         = user?.subscription;
-  const name        = user?.name;
-  const isPro       = user?.plan === 'pro';
-  const isCanceling = isPro && sub?.cancelAtPeriodEnd === true;
-  const isRenewing  = isPro && !sub?.cancelAtPeriodEnd;
+  const name  = user?.name;
+  const isPro = user?.plan === 'pro';
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-US', {
@@ -172,39 +169,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Renews on — Pro renewing */}
-          {isRenewing && sub?.currentPeriodEnd && (
-            <div className="dash-field">
-              <div className="dash-field-icon">
-                <FontAwesomeIcon icon={faClock} />
-              </div>
-              <div className="dash-field-body">
-                <p className="dash-field-label">Renews On</p>
-                <p className="dash-field-value">{formatDate(sub.currentPeriodEnd)}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Cancellation notice — Pro canceling */}
-          {isCanceling && sub?.currentPeriodEnd && (
-            <div className="dash-field">
-              <div className="dash-field-icon" style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24' }}>
-                <FontAwesomeIcon icon={faTriangleExclamation} />
-              </div>
-              <div className="dash-field-body">
-                <p className="dash-field-label">Subscription</p>
-                <div className="dash-sub-notice">
-                  <FontAwesomeIcon icon={faTriangleExclamation} style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <span>
-                    Your subscription is canceled and will not renew. Access continues until{' '}
-                    <strong>{formatDate(sub.currentPeriodEnd)}</strong>.{' '}
-                    <Link to="/billing">Manage →</Link>
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </div>
