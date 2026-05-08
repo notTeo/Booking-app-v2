@@ -75,8 +75,11 @@ export const registerUserWithInvite = async (
   let createdUser: { id: string; name: string; email: string; isVerified: boolean; createdAt: Date };
 
   await prisma.$transaction(async (tx) => {
+    const freePlan = await tx.plan.findUnique({ where: { name: 'free' } });
+    if (!freePlan) throw new AppError(500, 'Default plan not found');
+
     const user = await tx.user.create({
-      data: { name, email, passwordHash, isVerified: true },
+      data: { name, email, passwordHash, isVerified: true, planId: freePlan.id },
       select: { id: true, name:true, email: true, isVerified: true, createdAt: true },
     });
 
@@ -233,12 +236,16 @@ export const verifyEmail = async (token: string) => {
     throw new AppError(400, 'Verification token expired');
   }
 
+  const freePlan = await prisma.plan.findUnique({ where: { name: 'free' } });
+  if (!freePlan) throw new AppError(500, 'Default plan not found');
+
   const user = await prisma.user.create({
     data: {
       name: pending.name,
       email: pending.email,
       passwordHash: pending.passwordHash,
       isVerified: true,
+      planId: freePlan.id,
     },
     select: {
       id: true,

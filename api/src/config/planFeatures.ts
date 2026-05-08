@@ -1,13 +1,9 @@
-import { env } from './env';
-
-export const PRICE_TO_PLAN: Record<string, string> = {
-  [env.stripe.proPriceId]: 'pro',
-};
-
-export const PLAN_FEATURES = {
-  CREATE_SHOP:        ['pro', 'business'],
-  CUSTOM_DOMAIN:      ['business'],
-  ADVANCED_ANALYTICS: ['business'],
+export const FEATURES = {
+  CREATE_SHOP: 'CREATE_SHOP',
+  MAX_STAFF: 'MAX_STAFF',
+  MAX_BOOKINGS_PER_MONTH: 'MAX_BOOKINGS_PER_MONTH',
+  SMS_REMINDERS: 'SMS_REMINDERS',
+  ADVANCED_ANALYTICS: 'ADVANCED_ANALYTICS',
 } as const;
 
-export type Feature = keyof typeof PLAN_FEATURES;
+export type Feature = keyof typeof FEATURES;

@@ -12,9 +12,6 @@ const REQUIRED_VARS = [
   'GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET',
   'GOOGLE_CALLBACK_URL',
-  'STRIPE_SECRET_KEY',
-  'STRIPE_WEBHOOK_SECRET',
-  'STRIPE_PRO_PRICE_ID',
 ] as const;
 
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
@@ -46,11 +43,6 @@ export const env = {
     clientId: get('GOOGLE_CLIENT_ID'),
     clientSecret: get('GOOGLE_CLIENT_SECRET'),
     callbackUrl: get('GOOGLE_CALLBACK_URL'),
-  },
-  stripe: {
-    secretKey: get('STRIPE_SECRET_KEY'),
-    webhookSecret: get('STRIPE_WEBHOOK_SECRET'),
-    proPriceId: get('STRIPE_PRO_PRICE_ID'),
   },
   inviteEmailOverride: process.env.INVITE_EMAIL_OVERRIDE ?? null,
 };

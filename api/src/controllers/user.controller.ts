@@ -19,12 +19,11 @@ export const getMe = async (
         isVerified: true,
         createdAt: true,
         passwordHash: true,
-        subscription: {
+        plan: {
           select: {
-            status: true,
-            stripePriceId: true,
-            currentPeriodEnd: true,
-            cancelAtPeriodEnd: true,
+            name: true,
+            displayName: true,
+            features: true,
           },
         },
       },
@@ -34,14 +33,8 @@ export const getMe = async (
       throw new AppError(404, 'User not found');
     }
 
-    const plan =
-      user.subscription?.status === 'active' ||
-      user.subscription?.status === 'trialing'
-        ? 'pro'
-        : 'free';
-
     const { passwordHash, ...userWithoutHash } = user;
-    successResponse(res, { user: { ...userWithoutHash, plan, hasPassword: !!passwordHash } });
+    successResponse(res, { user: { ...userWithoutHash, hasPassword: !!passwordHash } });
   } catch (err) {
     next(err);
   }

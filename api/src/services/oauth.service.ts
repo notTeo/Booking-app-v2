@@ -25,12 +25,16 @@ export const handleGoogleAuth = async (
       });
       logger.info(`Google account linked to existing user: ${email}`);
     } else {
+      const freePlan = await prisma.plan.findUnique({ where: { name: 'free' } });
+      if (!freePlan) throw new Error('Default plan not found');
+
       user = await prisma.user.create({
         data: {
           name,
           email,
           googleId,
           isVerified: true,
+          planId: freePlan.id,
         },
       });
       logger.info(`New user created via Google OAuth: ${email}`);
