@@ -7,30 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum SubscriptionStatus {
-  active
-  canceled
-  incomplete
-  incomplete_expired
-  past_due
-  paused
-  trialing
-  unpaid
-}
-
-model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stripeSubscriptionId String             @unique
-  stripePriceId        String
-  status               SubscriptionStatus
-  currentPeriodEnd     DateTime
-  cancelAtPeriodEnd    Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-}
-
 enum ShopRole {
   owner
   staff
@@ -172,6 +148,20 @@ model StaffService {
   @@unique([userShopId, serviceId])
 }
 
+model Plan {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  description String?
+  features    Json
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
+
 model User {
   id               String        @id @default(cuid())
   name             String
@@ -179,8 +169,8 @@ model User {
   passwordHash     String?
   isVerified       Boolean       @default(false)
   googleId         String?       @unique
-  stripeCustomerId String?       @unique
-  subscription     Subscription?
+  planId           String
+  plan             Plan          @relation(fields: [planId], references: [id])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

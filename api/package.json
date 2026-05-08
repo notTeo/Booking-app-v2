@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "seed": "npx tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
