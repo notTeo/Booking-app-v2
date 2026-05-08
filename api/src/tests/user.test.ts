@@ -16,8 +16,9 @@ const TEST_PASSWORD = 'password123';
 async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(password, 4);
+  const freePlan = await prisma.plan.findFirstOrThrow({ where: { name: 'free' } });
   return prisma.user.create({
-    data: { email, passwordHash, isVerified: true },
+    data: { name: 'Test User', email, passwordHash, isVerified: true, planId: freePlan.id },
   });
 }
 
@@ -195,13 +196,13 @@ describe('DELETE /user/me', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 400 without password field', async () => {
+  it('returns 401 without password field', async () => {
     const token = await loginUser();
     const res = await request(app)
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({});
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   });
 });

@@ -39,8 +39,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
   });
 
 
-  //await sendVerificationEmail(email, token);
-  await sendVerificationEmail("nikostheodosis05@gmail.com", token);
+  await sendVerificationEmail(email, token);
 
   logger.info(`Pending registration created for: ${email}`);
 };

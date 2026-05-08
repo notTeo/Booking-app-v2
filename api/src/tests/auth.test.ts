@@ -16,8 +16,9 @@ const TEST_PASSWORD = 'Password123!';
 async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(password, 4); // low rounds for speed in tests
+  const freePlan = await prisma.plan.findFirstOrThrow({ where: { name: 'free' } });
   return prisma.user.create({
-    data: { email, passwordHash, isVerified: true },
+    data: { name: 'Test User', email, passwordHash, isVerified: true, planId: freePlan.id },
   });
 }
 
@@ -42,7 +43,7 @@ describe('POST /auth/register', () => {
 
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
 
     expect(res.status).toBe(201);
     expect(res.body.status).toBe('success');
@@ -57,7 +58,7 @@ describe('POST /auth/register', () => {
 
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
 
     expect(res.status).toBe(409);
     expect(res.body.message).toBe('Email already in use');
@@ -82,7 +83,7 @@ describe('POST /auth/register', () => {
 
 describe('GET /auth/verify-email', () => {
   it('verifies email and creates user', async () => {
-    await request(app).post('/auth/register').send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+    await request(app).post('/auth/register').send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
     const pending = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
 
     const res = await request(app).get(`/auth/verify-email?token=${pending!.token}`);
@@ -103,6 +104,7 @@ describe('GET /auth/verify-email', () => {
   it('returns 400 for expired token', async () => {
     await prisma.pendingRegistration.create({
       data: {
+        name: 'Test User',
         email: TEST_EMAIL,
         passwordHash: 'hash',
         token: 'expiredtoken',
@@ -262,7 +264,7 @@ describe('POST /auth/resend-verification', () => {
     const { sendVerificationEmail } = await import('../services/email.service');
     vi.clearAllMocks();
 
-    await request(app).post('/auth/register').send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+    await request(app).post('/auth/register').send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
     const before = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
 
     await request(app).post('/auth/resend-verification').send({ email: TEST_EMAIL });
