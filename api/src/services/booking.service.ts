@@ -188,14 +188,26 @@ if (staffId === null) {
 }
 
 
+const requestedDate = new Date(`${date}T00:00:00.000Z`);
+
 const schedule = await prisma.shopWorkingSchedule.findFirst({
-  where: { shopId, staffId: null, isActive: true },
+  where: {
+    shopId,
+    staffId: null,
+    isActive: true,
+    startDate: { lte: requestedDate },
+    OR: [
+      { endDate: null },
+      { endDate: { gte: requestedDate } },
+    ],
+  },
   include: {
     days: {
       where: { day: dayOfWeek },
       include: { hours: true },
     },
   },
+  orderBy: { startDate: 'desc' },
 });
   if (!schedule) return [];
 

@@ -57,6 +57,42 @@ async function requireOwner(userId: string, shopId: string) {
   return membership;
 }
 
+async function assertNoActiveOverlap(
+  shopId: string,
+  staffId: string | null | undefined,
+  startDate: Date,
+  endDate: Date | null,
+  excludeScheduleId?: string,
+) {
+  const existingActive = await prisma.shopWorkingSchedule.findMany({
+    where: {
+      shopId,
+      staffId: staffId ?? null,
+      isActive: true,
+      ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
+    },
+    select: { startDate: true, endDate: true },
+  });
+
+  for (const existing of existingActive) {
+    const newStartBeforeExistingEnd = existing.endDate === null || startDate < existing.endDate;
+    const existingStartBeforeNewEnd = endDate === null || existing.startDate < endDate;
+
+    if (newStartBeforeExistingEnd && existingStartBeforeNewEnd) {
+      if (existing.endDate === null) {
+        throw new AppError(
+          409,
+          'An active schedule has no end date. Set an end date on it before creating a new one.',
+        );
+      }
+      throw new AppError(
+        409,
+        'The schedule overlaps with an existing active schedule. Adjust the dates so they do not conflict.',
+      );
+    }
+  }
+}
+
 async function requireScheduleInShop(
   scheduleId: string,
   shopId: string,
@@ -89,13 +125,23 @@ export const createSchedule = async (
     if (!staffMembership) throw new AppError(404, 'Staff member not found in this shop');
   }
 
+  const newIsActive = dto.isActive ?? true;
+  if (newIsActive) {
+    await assertNoActiveOverlap(
+      shopId,
+      staffId,
+      new Date(dto.startDate),
+      dto.endDate ? new Date(dto.endDate) : null,
+    );
+  }
+
   const schedule = await prisma.shopWorkingSchedule.create({
     data: {
       shopId,
       staffId: staffId ?? null,
       startDate: new Date(dto.startDate),
       endDate: dto.endDate ? new Date(dto.endDate) : null,
-      isActive: dto.isActive ?? true,
+      isActive: newIsActive,
       days: dto.days
         ? {
             create: dto.days.map(({ day, isOpen, hours }) => ({
@@ -155,7 +201,18 @@ export const updateSchedule = async (
   staffId?: string | null,
 ) => {
   await requireOwner(userId, shopId);
-  await requireScheduleInShop(scheduleId, shopId, staffId);
+  const target = await requireScheduleInShop(scheduleId, shopId, staffId);
+
+  if (dto.isActive === true && !target.isActive) {
+    const newStart = dto.startDate ? new Date(dto.startDate) : target.startDate;
+    const newEnd =
+      dto.endDate !== undefined
+        ? dto.endDate
+          ? new Date(dto.endDate)
+          : null
+        : target.endDate;
+    await assertNoActiveOverlap(shopId, staffId, newStart, newEnd, scheduleId);
+  }
 
   const schedule = await prisma.shopWorkingSchedule.update({
     where: { id: scheduleId },

@@ -257,8 +257,21 @@ const created = await api.createSchedule(dto);
       setShowCreate(false);
       setCreateStart('');
       setCreateEnd('');
-    } catch {
-      setCreateError(t.workingHours.errorCreate);
+    } catch (err: unknown) {
+      const apiMsg =
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'error' in err.response.data &&
+        typeof (err.response.data as { error: unknown }).error === 'string'
+          ? (err.response.data as { error: string }).error
+          : null;
+      setCreateError(apiMsg ?? t.workingHours.errorCreate);
     } finally {
       setCreating(false);
     }
