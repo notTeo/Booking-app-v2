@@ -58,10 +58,7 @@ export interface ShopInfo {
   slug: string;
   description: string | null;
   phone: string | null;
-  lat: number | null;
-  lng: number | null;
   formattedAddress: string | null;
-  placeId: string | null;
   timezone: string;
   isActive: boolean;
   createdAt: string;

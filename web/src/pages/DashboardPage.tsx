@@ -10,7 +10,6 @@ import {
   faEnvelope,
   faFingerprint,
   faShieldHalved,
-  faCreditCard,
   faGear,
   faStore,
   faArrowRight,
@@ -56,11 +55,6 @@ export default function DashboardPage() {
             <p className={`dash-stat-value${isPro ? ' dash-stat-value--accent' : ''}`}>
               {isPro ? 'Pro' : 'Free'}
             </p>
-            {!isPro && (
-              <Link to="/billing" className="dash-stat-action">
-                Upgrade to Pro <FontAwesomeIcon icon={faArrowRight} />
-              </Link>
-            )}
           </div>
         </div>
 
@@ -161,11 +155,6 @@ export default function DashboardPage() {
                   <FontAwesomeIcon icon={isPro ? faCrown : faStar} />
                   {isPro ? 'Pro' : 'Free'}
                 </span>
-                {!isPro && (
-                  <Link to="/billing" className="dash-upgrade-link">
-                    Upgrade →
-                  </Link>
-                )}
               </div>
             </div>
           </div>
@@ -183,17 +172,6 @@ export default function DashboardPage() {
           <div className="dash-action-text">
             <p className="dash-action-label">My Shops</p>
             <p className="dash-action-sub">Manage your locations</p>
-          </div>
-          <FontAwesomeIcon icon={faArrowRight} className="dash-action-arrow" />
-        </Link>
-
-        <Link to="/billing" className="dash-action-card">
-          <div className="dash-action-icon">
-            <FontAwesomeIcon icon={faCreditCard} />
-          </div>
-          <div className="dash-action-text">
-            <p className="dash-action-label">Billing</p>
-            <p className="dash-action-sub">Plans &amp; subscriptions</p>
           </div>
           <FontAwesomeIcon icon={faArrowRight} className="dash-action-arrow" />
         </Link>

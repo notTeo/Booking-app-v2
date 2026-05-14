@@ -26,11 +26,6 @@ export default function ShopsPage() {
       <div className="shops-header">
         <h1>My Shops</h1>
         <div>
-          {!isPro && (
-            <span className="shops-upgrade-hint">
-              <a href="/pricing">Upgrade to Pro</a> to create shops.
-            </span>
-          )}
           <button
             className="btn btn-primary shops-new-btn"
             onClick={() => navigate('/shops/new')}

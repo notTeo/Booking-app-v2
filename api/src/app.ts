@@ -7,7 +7,6 @@ import { logger } from './utils/logger';
 import authRoutes from "./routes/auth.routes"
 import userRoutes from "./routes/user.routes"
 import cookieParser from 'cookie-parser';
-import passport from 'passport';
 import { startCleanupJob } from './utils/cleanup';
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
@@ -46,7 +45,6 @@ app.use(cors(
     }
 ))
 app.use(cookieParser());
-app.use(passport.initialize());
 
 app.use('/billing', billingRoutes);
 app.use(express.json())

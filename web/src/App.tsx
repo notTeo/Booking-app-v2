@@ -16,10 +16,6 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
-import OAuthCallbackPage from './pages/OAuthCallbackPage';
-import PricingPage from './pages/PricingPage';
-import AboutPage from './pages/AboutPage';
-import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import ShopsPage from './pages/ShopsPage';
 import ShopNewPage from './pages/ShopNewPage';
@@ -48,8 +44,6 @@ export default function App() {
             <ShopContextProvider>
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/about" element={<AboutPage />} />
 
                 <Route element={<PublicRoute />}>
                   <Route path="/login" element={<LoginPage />} />
@@ -60,7 +54,6 @@ export default function App() {
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
                 <Route path="/verify-email-change" element={<VerifyEmailChangePage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
                 <Route path="/invite" element={<AcceptInvitePage />} />
                 <Route path="/cancel" element={<CancelBookingPage />} />
                 <Route path="/p/:slug" element={<PublicPage />} />
@@ -70,7 +63,6 @@ export default function App() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/shops" element={<ShopsPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
-                    <Route path="/billing" element={<BillingPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/invites" element={<InvitesPage />} />
 

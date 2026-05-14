@@ -26,8 +26,6 @@ export default function Navbar() {
 
       {/* Desktop nav links */}
       <div className="navbar-links">
-        <Link to="/pricing" className="navbar-link">{t.nav.pricing}</Link>
-        <Link to="/about" className="navbar-link">{t.nav.about}</Link>
       </div>
 
       {/* Desktop toggles */}
@@ -65,8 +63,6 @@ export default function Navbar() {
       {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="navbar-mobile-menu">
-          <Link to="/pricing" className="navbar-link" onClick={closeMenu}>{t.nav.pricing}</Link>
-          <Link to="/about" className="navbar-link" onClick={closeMenu}>{t.nav.about}</Link>
           <div className="navbar-mobile-divider" />
           <Toggles/>
           <div className="navbar-mobile-divider" />

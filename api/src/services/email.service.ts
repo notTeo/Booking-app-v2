@@ -171,7 +171,6 @@ export const sendBookingConfirmationEmail = async (params: {
   staffName: string;
   startTime: Date;
   timezone: string;
-  placeId: string | null;
   formattedAddress: string | null;
   cancelToken: string;
 }) => {
@@ -190,11 +189,9 @@ export const sendBookingConfirmationEmail = async (params: {
     hour12: true,
   }).format(params.startTime);
 
-  const mapsUrl = params.placeId
-    ? `https://www.google.com/maps/place/?q=place_id:${params.placeId}`
-    : params.formattedAddress
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(params.formattedAddress)}`
-      : null;
+  const mapsUrl = params.formattedAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(params.formattedAddress)}`
+    : null;
 
   const cancelUrl = `${env.clientUrl}/cancel?token=${params.cancelToken}`;
 
