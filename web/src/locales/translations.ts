@@ -436,6 +436,7 @@ export interface Translations {
     from: string;
     to: string;
     saveDays: string;
+    saveDates: string;
     noSchedules: string;
     errorDelete: string;
     errorCreate: string;
@@ -1033,6 +1034,7 @@ home: {
       from: 'Από',
       to: 'έως',
       saveDays: 'Αποθήκευση Ημερών',
+      saveDates: 'Αποθήκευση Ημερομηνιών',
       noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα.',
       errorDelete: 'Αποτυχία διαγραφής προγράμματος.',
       errorCreate: 'Αποτυχία δημιουργίας προγράμματος.',
@@ -1629,6 +1631,7 @@ home: {
       from: 'From',
       to: 'to',
       saveDays: 'Save Days',
+      saveDates: 'Save Dates',
       noSchedules: 'No schedules yet.',
       errorDelete: 'Failed to delete schedule.',
       errorCreate: 'Failed to create schedule.',

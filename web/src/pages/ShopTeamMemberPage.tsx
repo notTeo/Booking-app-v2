@@ -141,6 +141,8 @@ export default function ShopTeamMemberPage() {
       ? {
           getSchedules: () => whApi.getStaffSchedules(shop.id, memberId),
           createSchedule: (dto) => whApi.createStaffSchedule(shop.id, memberId, dto),
+          updateSchedule: (scheduleId, dto) =>
+            whApi.updateStaffSchedule(shop.id, memberId, scheduleId, dto),
           deleteSchedule: (scheduleId) =>
             whApi.deleteStaffSchedule(shop.id, memberId, scheduleId),
           upsertDays: (scheduleId, dto) =>

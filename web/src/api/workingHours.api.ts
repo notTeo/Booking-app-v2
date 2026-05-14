@@ -28,6 +28,7 @@ export interface Schedule {
 
 export interface CreateScheduleDto {
   startDate: string;
+  endDate?: string;
   isActive?: boolean;
 }
 
@@ -72,6 +73,11 @@ export const createStaffSchedule = (shopId: string, memberId: string, dto: Creat
 
 export const deleteStaffSchedule = (shopId: string, memberId: string, scheduleId: string) =>
   client.delete(`/api/shops/${shopId}/team/${memberId}/schedules/${scheduleId}`).then((r) => r.data);
+
+export const updateStaffSchedule = (shopId: string, memberId: string, scheduleId: string, dto: UpdateScheduleDto) =>
+  client
+    .patch(`/api/shops/${shopId}/team/${memberId}/schedules/${scheduleId}`, dto)
+    .then((r) => r.data.data as Schedule);
 
 export const upsertStaffDays = (shopId: string, memberId: string, scheduleId: string, dto: UpsertDaysDto) =>
   client

@@ -20,6 +20,7 @@ export default function ShopWorkingHours() {
   const api: WorkingHoursApi = {
     getSchedules: () => whApi.getSchedules(shop.id),
     createSchedule: (dto) => whApi.createSchedule(shop.id, dto),
+    updateSchedule: (scheduleId, dto) => whApi.updateSchedule(shop.id, scheduleId, dto),
     deleteSchedule: (scheduleId) => whApi.deleteSchedule(shop.id, scheduleId),
     upsertDays: (scheduleId, dto) => whApi.upsertDays(shop.id, scheduleId, dto),
   };
