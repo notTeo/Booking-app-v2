@@ -9,9 +9,6 @@ const REQUIRED_VARS = [
   'JWT_REFRESH_SECRET',
   'RESEND_API_KEY',
   'EMAIL_FROM',
-  'GOOGLE_CLIENT_ID',
-  'GOOGLE_CLIENT_SECRET',
-  'GOOGLE_CALLBACK_URL',
 ] as const;
 
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
@@ -38,11 +35,6 @@ export const env = {
   resend: {
     apiKey: get('RESEND_API_KEY'),
     emailFrom: get('EMAIL_FROM'),
-  },
-  google: {
-    clientId: get('GOOGLE_CLIENT_ID'),
-    clientSecret: get('GOOGLE_CLIENT_SECRET'),
-    callbackUrl: get('GOOGLE_CALLBACK_URL'),
   },
   inviteEmailOverride: process.env.INVITE_EMAIL_OVERRIDE ?? null,
 };

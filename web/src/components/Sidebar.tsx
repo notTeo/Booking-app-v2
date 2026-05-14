@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTableCells,
   faStore,
-  faCreditCard,
   faGear,
   faRightFromBracket,
   faChevronLeft,
@@ -59,11 +58,6 @@ function GlobalNav({ collapsed, toggle, isOpen, onClose }: NavProps) {
       <NavLink to="/shops" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} title={collapsed ? t.sidebar.shops : undefined} onClick={onClose}>
         <FontAwesomeIcon icon={faStore} />
         <span className="sidebar-link-label">{t.sidebar.shops}</span>
-      </NavLink>
-
-      <NavLink to="/billing" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} title={collapsed ? t.sidebar.billing : undefined} onClick={onClose}>
-        <FontAwesomeIcon icon={faCreditCard} />
-        <span className="sidebar-link-label">{t.sidebar.billing}</span>
       </NavLink>
 
       <NavLink to="/invites" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} title={collapsed ? t.sidebar.invites : undefined} onClick={onClose}>

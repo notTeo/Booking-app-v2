@@ -36,7 +36,6 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         staffName: booking.staff.user.name ?? 'Your staff member',
         startTime: booking.startTime,
         timezone: booking.shop.timezone,
-        placeId: booking.shop.placeId,
         formattedAddress: booking.shop.formattedAddress,
         cancelToken: booking.cancelToken,
       }).catch((err) => logger.error(err, 'Failed to send booking confirmation email'));
