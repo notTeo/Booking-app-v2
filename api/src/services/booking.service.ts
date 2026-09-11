@@ -315,16 +315,60 @@ export const updateBooking = async (
     endTime = new Date(startTime.getTime() + duration * 60 * 1000);
   }
 
-  return prisma.booking.update({
-    where: { id: bookingId },
-    data: {
-      ...(startTime && { startTime, endTime }),
-      ...(data.serviceId && { serviceId: data.serviceId }),
-      ...(data.staffId && { staffId: data.staffId }),
-      ...(data.notes !== undefined && { notes: data.notes }),
-    },
-    include: { customer: true, service: true },
-  });
+  const updateData = {
+    ...(startTime && { startTime, endTime }),
+    ...(data.serviceId && { serviceId: data.serviceId }),
+    ...(data.staffId && { staffId: data.staffId }),
+    ...(data.notes !== undefined && { notes: data.notes }),
+  };
+
+  // Only re-run the overlap check when the edit actually touches scheduling
+  // (time and/or staff). Non-scheduling edits (notes, service-only, etc.)
+  // skip straight to a plain update, same as before this fix.
+  const staffChanged = data.staffId !== undefined && data.staffId !== existing.staffId;
+  const schedulingChanged = !!startTime || staffChanged;
+
+  if (!schedulingChanged) {
+    return prisma.booking.update({
+      where: { id: bookingId },
+      data: updateData,
+      include: { customer: true, service: true },
+    });
+  }
+
+  const finalStaffId = data.staffId ?? existing.staffId;
+  const finalStartTime = startTime ?? existing.startTime;
+  const finalEndTime = endTime ?? existing.endTime;
+
+  try {
+    return await prisma.$transaction(
+      async (tx) => {
+        // Same overlap check as createBooking, excluding this booking itself.
+        const conflict = await tx.booking.findFirst({
+          where: {
+            id: { not: bookingId },
+            staffId: finalStaffId,
+            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+            startTime: { lt: finalEndTime },
+            endTime: { gt: finalStartTime },
+          },
+        });
+
+        if (conflict) throw new AppError(409, 'Time slot is already booked');
+
+        return tx.booking.update({
+          where: { id: bookingId },
+          data: updateData,
+          include: { customer: true, service: true },
+        });
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (err: any) {
+    // P2034 = transaction conflict under Serializable — same 409 shape as createBooking
+    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    throw err;
+  }
 };
 
 export const deleteBooking = async (shopId: string, bookingId: string) => {
