@@ -17,11 +17,9 @@ export const getMe = async (
         name: true,
         email: true,
         isVerified: true,
+        isPro: true,
         createdAt: true,
         passwordHash: true,
-        plan: {
-          select: { name: true },
-        },
       },
     });
 
@@ -29,8 +27,8 @@ export const getMe = async (
       throw new AppError(404, 'User not found');
     }
 
-    const { passwordHash, plan, ...userWithoutHash } = user;
-    successResponse(res, { user: { ...userWithoutHash, plan: plan.name, hasPassword: !!passwordHash } });
+    const { passwordHash, ...userWithoutHash } = user;
+    successResponse(res, { user: { ...userWithoutHash, hasPassword: !!passwordHash } });
   } catch (err) {
     next(err);
   }

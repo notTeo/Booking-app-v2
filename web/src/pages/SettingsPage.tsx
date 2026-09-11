@@ -188,9 +188,6 @@ export default function SettingsPage() {
         <div className="settings-overview-info">
           <p className="settings-overview-email">{user?.email}</p>
           <div className="settings-overview-badges">
-            <span className={`settings-plan-badge settings-plan-badge--${user?.plan ?? 'free'}`}>
-              {user?.plan === 'pro' ? t.settings.pro : t.settings.free}
-            </span>
             {user?.isVerified ? (
               <span className="settings-verified-badge">{t.settings.verified}</span>
             ) : (

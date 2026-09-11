@@ -22,6 +22,11 @@ export interface UpdateShopDto {
 }
 
 export const createShop = async (userId: string, dto: CreateShopDto) => {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPro: true } });
+  if (!user?.isPro) {
+    throw new AppError(403, 'Creating a shop requires a Pro account.');
+  }
+
   const existing = await prisma.shop.findUnique({ where: { slug: dto.slug } });
   if (existing) throw new AppError(409, 'A shop with this slug already exists');
 

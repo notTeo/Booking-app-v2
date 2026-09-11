@@ -16,9 +16,8 @@ const TEST_PASSWORD = 'password123';
 async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(password, 4);
-  const freePlan = await prisma.plan.findFirstOrThrow({ where: { name: 'free' } });
   return prisma.user.create({
-    data: { name: 'Test User', email, passwordHash, isVerified: true, planId: freePlan.id },
+    data: { name: 'Test User', email, passwordHash, isVerified: true },
   });
 }
 

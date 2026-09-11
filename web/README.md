@@ -1,6 +1,6 @@
 # Web — Auth Boilerplate
 
-React + Vite frontend. Provides the full authentication UI, dashboard with sidebar navigation, billing management, and account settings.
+React + Vite frontend. Provides the full authentication UI, dashboard with sidebar navigation, and account settings.
 
 Local dev runs on: `http://localhost:5173`
 Docker runs on: `http://localhost` (port 80, served by nginx)
@@ -23,29 +23,25 @@ web/
 │   ├── api/
 │   │   ├── client.ts             ← Axios instance + refresh token interceptor
 │   │   ├── auth.api.ts           ← register, login, logout, forgot/reset, verify, refresh
-│   │   ├── user.api.ts           ← getMe, updateMe, deleteMe
-│   │   └── billing.api.ts        ← createCheckoutSession, createPortalSession
+│   │   └── user.api.ts           ← getMe, updateMe, deleteMe
 │   ├── components/
 │   │   ├── AppLayout.tsx         ← authenticated shell: sidebar + main content
 │   │   ├── Sidebar.tsx           ← collapsible sidebar nav with logout
-│   │   ├── Navbar.tsx            ← public page nav (home, pricing, about)
+│   │   ├── Navbar.tsx            ← public page nav
 │   │   ├── ProtectedRoute.tsx    ← redirects unauthenticated users to /login
 │   │   └── PublicRoute.tsx       ← redirects authenticated users to /dashboard
 │   ├── context/
 │   │   └── AuthContext.tsx       ← user state, login/logout/setUser, session rehydration
 │   ├── pages/
 │   │   ├── HomePage.tsx
-│   │   ├── PricingPage.tsx
-│   │   ├── AboutPage.tsx
 │   │   ├── LoginPage.tsx
 │   │   ├── RegisterPage.tsx
 │   │   ├── VerifyEmailPage.tsx
 │   │   ├── ForgotPasswordPage.tsx
 │   │   ├── ResetPasswordPage.tsx
-│   │   ├── OAuthCallbackPage.tsx ← receives accessToken from Google OAuth redirect
-│   │   ├── DashboardPage.tsx     ← overview: user info + subscription state
-│   │   ├── BillingPage.tsx       ← plan badge, manage/upgrade subscription
+│   │   ├── DashboardPage.tsx     ← overview: user info
 │   │   ├── SettingsPage.tsx      ← update email, change password, delete account
+│   │   ├── ShopsPage.tsx / ShopNewPage.tsx / Shop*.tsx ← shop, booking, and team management
 │   │   └── NotFoundPage.tsx
 │   ├── store/
 │   │   └── authStore.ts          ← in-memory access token (never localStorage)
@@ -60,7 +56,6 @@ web/
 │   │       ├── navbar.css
 │   │       ├── sidebar.css       ← app shell, sidebar + collapsed state
 │   │       ├── dashboard.css
-│   │       ├── billing.css
 │   │       ├── settings.css
 │   │       └── ...               ← per-page styles
 │   ├── index.css                 ← imports shared styles
@@ -118,28 +113,25 @@ VITE_API_URL=http://localhost:5001
 | Route | Protected | Description |
 |---|---|---|
 | `/` | ❌ | Home page |
-| `/pricing` | ❌ | Pricing page with plan comparison |
-| `/about` | ❌ | About page |
-| `/register` | ❌ (redirects if logged in) | Register with email + password or Google |
-| `/login` | ❌ (redirects if logged in) | Login with email + password or Google |
+| `/register` | ❌ (redirects if logged in) | Register with email + password |
+| `/login` | ❌ (redirects if logged in) | Login with email + password |
 | `/verify-email?token=` | ❌ | Verifies email from link |
 | `/forgot-password` | ❌ (redirects if logged in) | Request password reset email |
 | `/reset-password?token=` | ❌ | Set new password from link |
-| `/oauth/callback?accessToken=` | ❌ | Receives tokens after Google OAuth |
-| `/dashboard` | ✅ | Overview: user info, plan, subscription state |
-| `/billing` | ✅ | Manage or upgrade subscription via Stripe |
+| `/dashboard` | ✅ | Overview: user info |
+| `/shops`, `/shops/:slug/...` | ✅ | Shop, booking, staff, and customer management |
 | `/settings` | ✅ | Update email, change password, delete account |
 
 ## App Layout (authenticated pages)
 
-Authenticated pages (`/dashboard`, `/billing`, `/settings`) share `AppLayout`, which renders a collapsible sidebar instead of a top navbar.
+Authenticated pages (`/dashboard`, `/shops`, `/settings`, etc.) share `AppLayout`, which renders a collapsible sidebar instead of a top navbar.
 
 ```
 ┌──────────┬──────────────────────────┐
 │ Sidebar  │  Page content            │
 │          │                          │
 │ Overview │                          │
-│ Billing  │                          │
+│ Shops    │                          │
 │ Settings │                          │
 │          │                          │
 │ Logout   │                          │
@@ -148,7 +140,7 @@ Authenticated pages (`/dashboard`, `/billing`, `/settings`) share `AppLayout`, w
 
 - The sidebar collapses to icon-only mode. State is persisted in `localStorage`.
 - On mobile, the sidebar becomes a horizontal tab strip at the top of the content.
-- Public pages (`/`, `/pricing`, `/about`) use the standard `Navbar`.
+- Public pages (`/`) use the standard `Navbar`.
 
 ## Auth Flow
 

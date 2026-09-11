@@ -4,20 +4,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarCheck,
   faStore,
-  faCreditCard,
   faUsers,
   faMobile,
   faChartLine,
   faUserPlus,
   faGear,
-  faCheck,
-  faXmark,
-  faCrown,
   faArrowRight,
   faStar,
   faBars,
   faSun,
   faMoon,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faTwitter, faFacebookF } from '@fortawesome/free-brands-svg-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -26,44 +23,23 @@ import '../styles/pages/home.css';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const features = [
-  { icon: faCalendarCheck, title: 'Online Booking', desc: 'Let clients book 24/7 from any device. Automated reminders cut no-shows dramatically.' },
-  { icon: faStore, title: 'Shop Management', desc: 'Manage multiple locations, staff, services, and availability from one clean dashboard.' },
-  { icon: faCreditCard, title: 'Subscriptions', desc: 'Offer membership plans to loyal clients and unlock predictable, recurring revenue.' },
+  { icon: faCalendarCheck, title: 'Online Booking', desc: 'Let clients book 24/7 from any device, with instant email confirmations.' },
+  { icon: faStore, title: 'Shop Management', desc: 'Manage staff, services, and availability from one clean dashboard.' },
   { icon: faUsers, title: 'Team Management', desc: 'Assign roles, track performance, and coordinate schedules across your entire team.' },
   { icon: faMobile, title: 'Mobile-Ready', desc: 'A seamless experience on every screen — your clients book on the go, effortlessly.' },
-  { icon: faChartLine, title: 'Analytics', desc: 'Track revenue, peak hours, and client retention with clear, actionable reports.' },
+  { icon: faChartLine, title: 'Analytics', desc: 'Track peak hours and client retention with clear, actionable reports.' },
 ];
 
 const steps = [
-  { num: '1', icon: faUserPlus, title: 'Create your account', desc: 'Sign up in seconds. No credit card required. Get started on the free plan today.' },
+  { num: '1', icon: faUserPlus, title: 'Create your account', desc: 'Sign up in seconds — it\'s free, no credit card required.' },
   { num: '2', icon: faGear, title: 'Set up your shop', desc: 'Add your services, set your hours, and invite your team — all in under 10 minutes.' },
   { num: '3', icon: faCalendarCheck, title: 'Accept bookings', desc: 'Share your booking link and start receiving real appointments immediately.' },
-];
-
-const freePlan = [
-  { label: '1 shop location', included: true },
-  { label: 'Up to 50 bookings / month', included: true },
-  { label: 'Basic analytics', included: true },
-  { label: 'Email notifications', included: true },
-  { label: 'Unlimited bookings', included: false },
-  { label: 'Subscription memberships', included: false },
-  { label: 'Priority support', included: false },
-];
-
-const proPlan = [
-  { label: 'Unlimited shop locations', included: true },
-  { label: 'Unlimited bookings', included: true },
-  { label: 'Advanced analytics', included: true },
-  { label: 'Email & SMS notifications', included: true },
-  { label: 'Subscription memberships', included: true },
-  { label: 'Custom booking page', included: true },
-  { label: 'Priority support', included: true },
 ];
 
 const testimonials = [
   { quote: 'Bookly completely transformed how we run our barbershop. Clients love the easy online booking and we\'ve cut no-shows by over 60%.', name: 'Marcus Thompson', role: 'Owner, The Sharp Cut', initials: 'MT' },
   { quote: 'We went from a messy paper calendar to a fully automated system in one afternoon. The dashboard is clean and our whole team uses it daily.', name: 'Sofia Rivera', role: 'Manager, Studio Glam', initials: 'SR' },
-  { quote: 'The subscription feature alone paid for Pro in the first month. Our regulars love the membership plan and we love the predictable revenue.', name: 'James Okafor', role: 'Owner, Fade Culture', initials: 'JO' },
+  { quote: 'Our clients book themselves in seconds now, and the email confirmations mean almost nobody forgets their appointment anymore.', name: 'James Okafor', role: 'Owner, Fade Culture', initials: 'JO' },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -84,7 +60,6 @@ export default function HomePage() {
           <div className="home-nav-links">
             <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
             <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
-            <a href="#pricing" className="home-nav-link">{t.home.pricingBadge || 'Pricing'}</a>
           </div>
 
           <div className="home-nav-right">
@@ -125,7 +100,6 @@ export default function HomePage() {
             <div className="home-mobile-menu">
               <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
               <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
-              <a href="#pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge || 'Pricing'}</a>
               <div className="home-mobile-divider" />
               <div className="home-mobile-toggles">
                 <button className="home-nav-toggle home-nav-toggle--wide" onClick={toggleTheme}>
@@ -212,69 +186,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="home-section">
-        <div className="home-container">
-          <div className="home-section-header">
-            <span className="home-label">{t.home.pricingBadge || 'Pricing'}</span>
-            <h2 className="home-section-title">{t.home.pricingTitle || 'Simple, transparent pricing'}</h2>
-            <p className="home-section-sub">
-              {t.home.pricingSub || "Start free, upgrade when you're ready. No hidden fees, ever."}
-            </p>
-          </div>
-          <div className="home-pricing-grid">
-            <div className="home-price-card">
-              <p className="home-price-tier">Free</p>
-              <div className="home-price-amount">
-                <span className="currency">$</span>
-                <span className="amount">0</span>
-                <span className="period">/ month</span>
-              </div>
-              <p className="home-price-desc">Perfect for solo barbers or shops just getting started.</p>
-              <hr className="home-price-divider" />
-              <ul className="home-price-features">
-                {freePlan.map(f => (
-                  <li key={f.label} className={f.included ? '' : 'muted'}>
-                    <FontAwesomeIcon icon={f.included ? faCheck : faXmark} className={f.included ? 'feat-check' : 'feat-x'} />
-                    {f.label}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" style={{ display: 'block' }}>
-                <button className="home-btn-ghost home-price-cta">Get Started Free</button>
-              </Link>
-            </div>
-
-            <div className="home-price-card home-price-card--pro">
-              <div className="home-price-badge">
-                <FontAwesomeIcon icon={faCrown} /> Most Popular
-              </div>
-              <p className="home-price-tier">Pro</p>
-              <div className="home-price-amount">
-                <span className="currency">$</span>
-                <span className="amount">29</span>
-                <span className="period">/ month</span>
-              </div>
-              <p className="home-price-desc">For growing shops that need full power and zero limits.</p>
-              <hr className="home-price-divider" />
-              <ul className="home-price-features">
-                {proPlan.map(f => (
-                  <li key={f.label}>
-                    <FontAwesomeIcon icon={faCheck} className="feat-check" />
-                    {f.label}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/register" style={{ display: 'block' }}>
-                <button className="home-btn-primary home-price-cta">
-                  Start Pro Trial <FontAwesomeIcon icon={faArrowRight} />
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── Testimonials ─────────────────────────────────────────────────────── */}
       <section className="home-section">
         <div className="home-container">
@@ -325,7 +236,6 @@ export default function HomePage() {
               <h5>Product</h5>
               <ul className="home-footer-links">
                 <li><a href="#features">{t.home.featuresBadge || 'Features'}</a></li>
-                <li><a href="#pricing">{t.home.pricingBadge || 'Pricing'}</a></li>
                 <li><a href="#how">{t.home.howBadge || 'How It Works'}</a></li>
                 <li><Link to="/register">{t.home.cta}</Link></li>
               </ul>

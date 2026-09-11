@@ -3,7 +3,7 @@ info:
   title: Auth Boilerplate API
   description: |
     A production-ready authentication API with JWT access tokens, refresh token rotation,
-    reuse detection, Google OAuth, email verification, and session management.
+    reuse detection, email verification, and session management.
   version: 1.0.0
 
 servers:
@@ -565,39 +565,6 @@ paths:
                   message: All sessions revoked
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-  /auth/google:
-    get:
-      tags: [auth]
-      summary: Initiate Google OAuth
-      description: |
-        Redirects the user to Google's OAuth consent screen.
-        Not directly callable as a JSON API — navigate the browser to this URL.
-      operationId: googleAuth
-      responses:
-        '302':
-          description: Redirect to Google OAuth
-
-  /auth/google/callback:
-    get:
-      tags: [auth]
-      summary: Google OAuth callback
-      description: |
-        Handles the OAuth callback from Google. On success, sets the refresh token
-        cookie and redirects to the frontend with the access token as a query parameter.
-      operationId: googleCallback
-      parameters:
-        - name: code
-          in: query
-          schema:
-            type: string
-        - name: state
-          in: query
-          schema:
-            type: string
-      responses:
-        '302':
-          description: Redirect to frontend with access token
 
   /user/me:
     get:

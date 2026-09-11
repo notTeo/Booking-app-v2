@@ -20,14 +20,12 @@ export default function ShopNewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const isPro = user?.plan === 'pro';
-
-  if (!isPro) {
+  if (!user?.isPro) {
     return (
       <div className="shops-page">
         <div className="card shops-upgrade-card">
-          <h2>Pro Plan Required</h2>
-          <p>Creating shops requires an active Pro subscription. Contact support to upgrade.</p>
+          <h2>Pro Account Required</h2>
+          <p>Creating a shop requires a Pro account. Contact us to upgrade.</p>
         </div>
       </div>
     );

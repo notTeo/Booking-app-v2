@@ -2,8 +2,6 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
-  faCrown,
-  faStar,
   faCircleCheck,
   faCircleXmark,
   faClock,
@@ -22,7 +20,6 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   const name  = user?.name;
-  const isPro = user?.plan === 'pro';
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-US', {
@@ -44,19 +41,6 @@ export default function DashboardPage() {
 
       {/* ── Stats row ───────────────────────────────────────────────────────── */}
       <div className="dash-stats">
-
-        {/* Plan */}
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">
-            <FontAwesomeIcon icon={isPro ? faCrown : faStar} />
-          </div>
-          <div className="dash-stat-body">
-            <p className="dash-stat-label">Current Plan</p>
-            <p className={`dash-stat-value${isPro ? ' dash-stat-value--accent' : ''}`}>
-              {isPro ? 'Pro' : 'Free'}
-            </p>
-          </div>
-        </div>
 
         {/* Account status */}
         <div className="dash-stat-card">
@@ -140,22 +124,6 @@ export default function DashboardPage() {
                 />
                 {user?.isVerified ? 'Verified' : 'Not verified'}
               </p>
-            </div>
-          </div>
-
-          {/* Plan */}
-          <div className="dash-field">
-            <div className="dash-field-icon">
-              <FontAwesomeIcon icon={isPro ? faCrown : faStar} />
-            </div>
-            <div className="dash-field-body">
-              <p className="dash-field-label">Plan</p>
-              <div className="dash-field-row">
-                <span className={`dash-plan-badge dash-plan-badge--${user?.plan ?? 'free'}`}>
-                  <FontAwesomeIcon icon={isPro ? faCrown : faStar} />
-                  {isPro ? 'Pro' : 'Free'}
-                </span>
-              </div>
             </div>
           </div>
 

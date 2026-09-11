@@ -81,24 +81,6 @@
   flex-wrap: wrap;
 }
 
-.settings-plan-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  line-height: 1;
-}
-
-.settings-plan-badge--free {
-  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
-  color: var(--text-muted);
-}
-
-.settings-plan-badge--pro {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  color: var(--accent);
-}
-
 .settings-verified-badge {
   font-size: 0.75rem;
   font-weight: 600;

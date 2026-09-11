@@ -12,7 +12,7 @@ export default function ShopsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const isPro = user?.plan === 'pro';
+  const isPro = !!user?.isPro;
 
   useEffect(() => {
     getMyShops()
@@ -30,7 +30,7 @@ export default function ShopsPage() {
             className="btn btn-primary shops-new-btn"
             onClick={() => navigate('/shops/new')}
             disabled={!isPro}
-            title={!isPro ? 'Upgrade to Pro to create shops' : undefined}
+            title={!isPro ? 'Upgrade to Pro to create a shop' : undefined}
           >
             + New Shop
           </button>

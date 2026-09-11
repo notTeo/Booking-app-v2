@@ -144,28 +144,13 @@ model StaffService {
   @@unique([userShopId, serviceId])
 }
 
-model Plan {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  displayName String
-  description String?
-  features    Json
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  users User[]
-}
-
 model User {
   id               String        @id @default(cuid())
   name             String
   email            String        @unique
   passwordHash     String?
   isVerified       Boolean       @default(false)
-  planId           String
-  plan             Plan          @relation(fields: [planId], references: [id])
+  isPro            Boolean       @default(false)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

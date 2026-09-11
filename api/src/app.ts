@@ -12,7 +12,6 @@ import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parse } from 'yaml';
-import billingRoutes from './routes/billing.routes';
 import shopRoutes from './routes/shop.routes';
 import globalInviteRoutes from './routes/globalInvite.routes';
 import publicRoutes from './routes/public.routes'
@@ -45,8 +44,6 @@ app.use(cors(
     }
 ))
 app.use(cookieParser());
-
-app.use('/billing', billingRoutes);
 app.use(express.json())
 
 app.get('/health', (_req, res) => {

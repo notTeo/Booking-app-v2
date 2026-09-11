@@ -192,33 +192,6 @@ select:focus {
   border-top: 1px solid var(--border);
 }
 
-/* --- Google button --- */
-.btn-google {
-  align-items: center;
-  background: #fff;
-  border-radius: var(--radius);
-  color: #1f1f1f;
-  display: flex;
-  font-family: var(--font);
-  font-size: 0.95rem;
-  font-weight: 600;
-  gap: 0.6rem;
-  justify-content: center;
-  padding: 0.7rem 1.25rem;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  width: 100%;
-}
-
-.btn-google:hover {
-  opacity: 0.9;
-}
-
-.btn-google svg {
-  flex-shrink: 0;
-}
-
 /* --- Card back link --- */
 .card-back {
   display: inline-flex;
