@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -11,7 +11,6 @@ import {
   faGear,
   faArrowRight,
   faStar,
-  faBars,
   faSun,
   faMoon,
   faXmark,
@@ -44,19 +43,102 @@ const testimonials = [
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
 export default function HomePage() {
   const { theme, toggleTheme } = useTheme();
   const { t, language, toggleLanguage } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
+  const heroRef = useRef<HTMLElement>(null);
+  const navWrapperRef = useRef<HTMLElement>(null);
+  const navRowRef = useRef<HTMLDivElement>(null);
+  const navLogoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const metrics = {
+      active: false,
+      slimHeight: 64,
+      giantHeight: 500,
+      width: 1100,
+      slimFontSize: 15.2, giantFontSize: 112,
+      triggerDistance: 1,
+    };
+
+    const measure = () => {
+      const wrapper = navWrapperRef.current;
+      const row = navRowRef.current;
+      const logo = navLogoRef.current;
+      if (!wrapper || !row || !logo) return;
+
+      metrics.active = true;
+      wrapper.classList.add('is-morphing');
+
+      metrics.slimHeight = row.getBoundingClientRect().height;
+      metrics.width = Math.min(Math.max(window.innerWidth * 0.8, 280), 1400);
+
+      metrics.giantHeight = Math.min(window.innerHeight * 0.5, 620);
+
+      metrics.slimFontSize = 24;
+      metrics.giantFontSize = Math.min(112, window.innerWidth * 0.28);
+
+      // Tied to the pill's own shrink distance (not the whole hero section) so the
+      // page content below scrolls up in lockstep — the pill never overlaps it.
+      metrics.triggerDistance = Math.max(metrics.giantHeight - metrics.slimHeight, 1);
+
+      wrapper.style.width = `${metrics.width}px`;
+      applyFrame();
+    };
+
+    const applyFrame = () => {
+      const wrapper = navWrapperRef.current;
+      const logo = navLogoRef.current;
+      if (!wrapper || !logo || !metrics.active) return;
+
+      const progress = Math.min(Math.max(window.scrollY / metrics.triggerDistance, 0), 1);
+
+      wrapper.style.height = `${lerp(metrics.giantHeight, metrics.slimHeight, progress)}px`;
+      logo.style.fontSize = `${lerp(metrics.giantFontSize, metrics.slimFontSize, progress)}px`;
+    };
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        applyFrame();
+        ticking = false;
+      });
+    };
+
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 150);
+    };
+
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      clearTimeout(resizeTimer);
+    };
+  }, []);
+
   return (
     <div className="home-page">
 
-      {/* ── Floating Nav ───────────────────────────────────────────────────────── */}
-      <nav className="home-nav-wrapper">
-        <div className="home-container home-nav">
-          
+      {/* ── Floating Nav (doubles as the hero's giant pill at the top of the page) ── */}
+      <nav className="home-nav-wrapper" ref={navWrapperRef}>
+        <div className="home-nav-logo" ref={navLogoRef} aria-hidden="true">
+          <span className="home-logo-text">Bookly</span>
+        </div>
+
+        <div className="home-container home-nav" ref={navRowRef}>
+
           <div className="home-nav-links">
             <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
             <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
@@ -76,12 +158,12 @@ export default function HomePage() {
               onClick={toggleLanguage}
               aria-label="Toggle language"
             >
-              {language === 'el' ? '🇬🇷' : '🇬🇧'}
+              {language === 'el' ? 'EL' : 'EN'}
             </button>
 
             <Link to="/login" className="home-nav-link">{t.home.signIn}</Link>
             <Link to="/register">
-              <button className="home-btn-primary">{t.home.cta}</button>
+              <button className="home-btn-primary home-btn-primary--sm">{t.home.cta}</button>
             </Link>
           </div>
 
@@ -90,45 +172,52 @@ export default function HomePage() {
             onClick={() => setMenuOpen(o => !o)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
-            <FontAwesomeIcon icon={menuOpen ? faXmark : faBars} />
+            <span className="home-hamburger-bar home-hamburger-bar--top" />
+            <span className="home-hamburger-bar home-hamburger-bar--bottom" />
           </button>
         </div>
-
-        {menuOpen && (
-          <>
-            <div className="home-mobile-backdrop" onClick={closeMenu} />
-            <div className="home-mobile-menu">
-              <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
-              <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
-              <div className="home-mobile-divider" />
-              <div className="home-mobile-toggles">
-                <button className="home-nav-toggle home-nav-toggle--wide" onClick={toggleTheme}>
-                  <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
-                  {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-                </button>
-                <button className="home-nav-toggle home-nav-toggle--wide" onClick={toggleLanguage}>
-                  {language === 'el' ? '🇬🇷 Ελληνικά' : '🇬🇧 English'}
-                </button>
-              </div>
-              <div className="home-mobile-divider" />
-              <Link to="/login" className="home-mobile-link" onClick={closeMenu}>{t.home.signIn}</Link>
-              <Link to="/register" onClick={closeMenu} style={{ display: 'block', marginTop: '1rem' }}>
-                <button className="home-btn-primary home-btn--full">
-                  {t.home.cta} <FontAwesomeIcon icon={faArrowRight} />
-                </button>
-              </Link>
-            </div>
-          </>
-        )}
       </nav>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="home-hero">
-        <div className="home-hero-badge">
-          {t.home.heroBadge || 'Booking platform for barbershops & salons'}
+      {/* ── Mobile sidebar (slides in right-to-left) ─────────────────────────────── */}
+      <div className={`home-mobile-backdrop${menuOpen ? ' is-open' : ''}`} onClick={closeMenu} />
+      <div className={`home-mobile-menu${menuOpen ? ' is-open' : ''}`}>
+        <button className="home-mobile-close" onClick={closeMenu} aria-label="Close menu">
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+
+        <div className="home-mobile-links">
+          <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
+          <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
         </div>
-        <h1 className="home-wordmark">BOOKLY</h1>
-        <p className="home-tagline">{t.home.sub}</p>
+
+        <div className="home-mobile-bottom">
+          <div className="home-mobile-actions">
+            <Link to="/login" className="home-mobile-link" onClick={closeMenu}>{t.home.signIn}</Link>
+            <Link to="/register" onClick={closeMenu}>
+              <button className="home-btn-primary home-btn-primary--sm">
+                {t.home.cta} <FontAwesomeIcon icon={faArrowRight} />
+              </button>
+            </Link>
+          </div>
+
+          <div className="home-mobile-toggles">
+            <button
+              className="home-nav-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
+            </button>
+            <button className="home-nav-toggle home-nav-toggle--lang" onClick={toggleLanguage} aria-label="Toggle language">
+              {language === 'el' ? 'EL' : 'EN'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <section className="home-hero" ref={heroRef}>
+        <h1 className="home-tagline">{t.home.sub}</h1>
         <div className="home-hero-ctas">
           <Link to="/register">
             <button className="home-btn-primary">
