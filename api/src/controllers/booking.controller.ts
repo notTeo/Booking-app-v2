@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { successResponse } from '../utils/response';
+import { logger } from '../utils/logger';
+import { sendBookingConfirmationEmail } from '../services/email.service';
 import * as bookingService from '../services/booking.service';
 
 export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
@@ -9,6 +11,22 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     const shopId = req.params['shopId'] as string;
     const booking = await bookingService.createBookingForShop(userId, shopId, req.body);
     successResponse(res, booking, 201);
+
+    // Owner/staff created this booking themselves, so only the customer needs
+    // a confirmation email — no "new booking" notification back to the owner.
+    if (booking.customer.email && booking.cancelToken) {
+      sendBookingConfirmationEmail({
+        email: booking.customer.email,
+        customerName: booking.customer.name,
+        shopName: booking.shop.name,
+        serviceName: booking.service.name,
+        staffName: booking.staff.user.name ?? 'Your staff member',
+        startTime: booking.startTime,
+        timezone: booking.shop.timezone,
+        formattedAddress: booking.shop.formattedAddress,
+        cancelToken: booking.cancelToken,
+      }).catch((err) => logger.error(err, 'Failed to send booking confirmation email'));
+    }
   } catch (err) {
     next(err);
   }
