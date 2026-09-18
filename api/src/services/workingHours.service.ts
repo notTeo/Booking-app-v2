@@ -118,9 +118,10 @@ export const createSchedule = async (
   await requireOwner(userId, shopId);
 
   // If creating for a staff member, verify that member exists in the shop
+  // (staffId here is UserShop.id, not User.id — a member may not have a login yet)
   if (staffId) {
-    const staffMembership = await prisma.userShop.findUnique({
-      where: { userId_shopId: { userId: staffId, shopId } },
+    const staffMembership = await prisma.userShop.findFirst({
+      where: { id: staffId, shopId },
     });
     if (!staffMembership) throw new AppError(404, 'Staff member not found in this shop');
   }

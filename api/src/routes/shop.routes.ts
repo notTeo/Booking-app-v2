@@ -15,7 +15,6 @@ import {
 } from '../controllers/shop.controller';
 import workingHoursRouter from './workingHours.routes';
 import teamRouter from './team.routes';
-import inviteRouter from './invite.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
 import customerRouter from './customer.routes';
@@ -30,7 +29,6 @@ router.delete('/:id', authenticate, shopIdParamValidation, validate, deleteShop)
 
 router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);
-router.use('/:shopId/invites', inviteRouter);
 router.use('/:shopId/services', serviceRouter);
 router.use('/:shopId/bookings', bookingRouter);
 router.use('/:shopId/customers', customerRouter);

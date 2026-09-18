@@ -15,53 +15,13 @@
 
 .team-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
-/* ---- Table card ---- */
-.team-table-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.team-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.team-table th {
-  text-align: left;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.team-table-row td {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-.team-table-row:last-child td {
-  border-bottom: none;
-}
-
-.team-table-row {
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.team-table-row:hover {
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
-}
+/* Table look (card/table/th/row) comes from the shared .data-table system
+   in components.css — see ShopTeamPage/ShopCustomersPage/ShopCustomerDetailPage
+   for the className usage. */
 
 /* ---- Role badges ---- */
 .team-role-badge {
@@ -134,7 +94,7 @@
 
 .team-member-card h1 {
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.75rem;
   word-break: break-all;
 }
@@ -190,4 +150,62 @@
 
 .team-member-schedules .working-hours-header h1 {
   display: none; /* title shown by the section h2 above */
+}
+
+.team-invite-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.team-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.75rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.team-switch-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.team-switch-label > span:first-child {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.team-switch-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.team-no-login-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pagination-status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }

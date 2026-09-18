@@ -11,7 +11,9 @@ export const listCustomers = async (req: Request, res: Response, next: NextFunct
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
     const search = req.query.search as string | undefined;
-    const customers = await listCustomersService(userId, shopId, search);
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
+    const customers = await listCustomersService(userId, shopId, search, page, limit);
     successResponse(res, customers);
   } catch (err) {
     next(err);

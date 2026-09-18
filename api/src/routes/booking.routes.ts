@@ -14,6 +14,7 @@ const router = Router({ mergeParams: true });
 
 router.post('/', authenticate, ownerCreateBookingValidation, validate, bookingController.createBooking);
 router.get('/', authenticate, listBookingsValidation, validate, bookingController.listBookings);
+router.get('/stats', authenticate, bookingController.getBookingStats);
 router.get('/:bookingId', authenticate, bookingParamsValidation, validate, bookingController.getBooking);
 router.patch('/:bookingId', authenticate, updateBookingValidation, validate, bookingController.updateBooking);
 router.delete('/:bookingId', authenticate, bookingParamsValidation, validate, bookingController.deleteBooking);

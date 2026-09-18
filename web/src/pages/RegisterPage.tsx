@@ -4,6 +4,7 @@ import { register, resendVerification } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { authStore } from '../store/authStore';
+import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/register.css';
 
 export default function RegisterPage() {
@@ -70,7 +71,7 @@ export default function RegisterPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← BOOKLY</Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark">BOOKLY</span></Link>
         <h1>Register</h1>
 
         {inviteToken && (
@@ -113,10 +114,10 @@ export default function RegisterPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>{t.register.pwMin}</li>
-                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwUpper}</li>
-                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwNumber}</li>
-                <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>{t.register.pwSpecial}</li>
+                <PasswordRequirement met={password.length >= 8} label={t.register.pwMin} />
+                <PasswordRequirement met={/[A-Z]/.test(password)} label={t.register.pwUpper} />
+                <PasswordRequirement met={/[0-9]/.test(password)} label={t.register.pwNumber} />
+                <PasswordRequirement met={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)} label={t.register.pwSpecial} />
               </ul>
             )}
           </div>

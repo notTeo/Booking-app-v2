@@ -33,8 +33,9 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         customerName: booking.customer.name,
         shopName: booking.shop.name,
         serviceName: booking.service.name,
-        staffName: booking.staff.user.name ?? 'Your staff member',
+        staffName: booking.staff.name ?? 'Your staff member',
         startTime: booking.startTime,
+        endTime: booking.endTime,
         timezone: booking.shop.timezone,
         formattedAddress: booking.shop.formattedAddress,
         cancelToken: booking.cancelToken,
@@ -42,16 +43,16 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
     }
 
     prisma.userShop
-      .findFirst({ where: { shopId: booking.shopId, role: 'owner' }, include: { user: true } })
+      .findFirst({ where: { shopId: booking.shopId, role: 'owner' } })
       .then((owner) => {
-        if (!owner?.user.email) return;
+        if (!owner?.email) return;
         return sendNewBookingNotificationEmail({
-          email: owner.user.email,
+          email: owner.email,
           customerName: booking.customer.name,
           customerPhone: booking.customer.phone,
           shopName: booking.shop.name,
           serviceName: booking.service.name,
-          staffName: booking.staff.user.name ?? 'Staff',
+          staffName: booking.staff.name ?? 'Staff',
           startTime: booking.startTime,
           timezone: booking.shop.timezone,
         });

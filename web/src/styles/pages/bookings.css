@@ -22,7 +22,7 @@
 
 .bookings-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -43,6 +43,31 @@
 
 .bookings-date-picker:focus {
   border-color: var(--accent);
+}
+
+.bookings-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bookings-date-nav-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  width: 2.1rem;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.bookings-date-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ── Detail panel ────────────────────────────────────────────────────────── */
@@ -72,6 +97,7 @@
 }
 
 .cal-detail-title {
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 700;
   color: var(--text);
@@ -84,7 +110,9 @@
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0 0.2rem;
+  padding: 0.6rem;
+  margin: -0.6rem;
+  border-radius: var(--radius);
   transition: color 0.15s;
 }
 
@@ -150,12 +178,13 @@
   opacity: 0.9;
 }
 
-/* Active = solid fill per status color */
-.cal-status-btn--pending.cal-status-btn--active    { background: color-mix(in srgb, #d97706 20%, transparent); border-color: #d97706; color: #d97706; }
+/* Active = solid fill per status color — same tokens as the shared
+   .status-badge (status.css), just with a border to match this button's shape. */
+.cal-status-btn--pending.cal-status-btn--active    { background: color-mix(in srgb, var(--warning) 20%, transparent); border-color: var(--warning); color: var(--warning); }
 .cal-status-btn--confirmed.cal-status-btn--active  { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: var(--accent); color: var(--accent); }
-.cal-status-btn--completed.cal-status-btn--active  { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; color: #16a34a; }
+.cal-status-btn--completed.cal-status-btn--active  { background: color-mix(in srgb, var(--success) 20%, transparent); border-color: var(--success); color: var(--success); }
 .cal-status-btn--canceled.cal-status-btn--active   { background: var(--bg-input); border-color: var(--text-muted); color: var(--text-muted); }
-.cal-status-btn--no_show.cal-status-btn--active    { background: color-mix(in srgb, var(--error, #e53e3e) 15%, transparent); border-color: var(--error, #e53e3e); color: var(--error, #e53e3e); }
+.cal-status-btn--no_show.cal-status-btn--active    { background: color-mix(in srgb, var(--error) 15%, transparent); border-color: var(--error); color: var(--error); }
 
 /* ── Detail footer (delete) ──────────────────────────────────────────────── */
 
@@ -169,8 +198,8 @@
 }
 
 .booking-delete-btn:hover {
-  color: var(--danger, #e53e3e) !important;
-  border-color: var(--danger, #e53e3e) !important;
+  color: var(--error) !important;
+  border-color: var(--error) !important;
 }
 
 /* ── Calendar scroll wrapper ─────────────────────────────────────────────── */
@@ -258,6 +287,11 @@
   border-right: 1px solid var(--border);
 }
 
+/* Owners can click an empty part of a column to start a booking there. */
+.cal-col--creatable {
+  cursor: pointer;
+}
+
 .cal-col:last-child {
   border-right: none;
 }
@@ -296,10 +330,10 @@
   z-index: 3;
 }
 
-/* Status color schemes for blocks */
+/* Status color schemes for blocks — same tokens as the shared .status-badge */
 .cal-block--pending {
-  background: color-mix(in srgb, #d97706 18%, var(--bg-card));
-  border-left-color: #d97706;
+  background: color-mix(in srgb, var(--warning) 18%, var(--bg-card));
+  border-left-color: var(--warning);
 }
 
 .cal-block--confirmed {
@@ -308,8 +342,8 @@
 }
 
 .cal-block--completed {
-  background: color-mix(in srgb, #16a34a 18%, var(--bg-card));
-  border-left-color: #16a34a;
+  background: color-mix(in srgb, var(--success) 18%, var(--bg-card));
+  border-left-color: var(--success);
 }
 
 .cal-block--canceled {
@@ -319,8 +353,8 @@
 }
 
 .cal-block--no_show {
-  background: color-mix(in srgb, var(--error, #e53e3e) 15%, var(--bg-card));
-  border-left-color: var(--error, #e53e3e);
+  background: color-mix(in srgb, var(--error) 15%, var(--bg-card));
+  border-left-color: var(--error);
   opacity: 0.8;
 }
 

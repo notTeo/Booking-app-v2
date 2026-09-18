@@ -13,6 +13,7 @@ import {
   type ServiceWithStaff,
 } from '../api/service.api';
 import { getMembers, type TeamMember } from '../api/team.api';
+import Switch from '../components/Switch';
 import '../styles/pages/services.css';
 
 // ── helpers ────────────────────────────────────────────────
@@ -259,12 +260,7 @@ export default function ShopServicesPage() {
         </div>
         <div className="form-group service-form-active">
           <label>
-            <input
-              type="checkbox"
-              checked={form.isActive}
-              onChange={(e) => onChange('isActive', e.target.checked)}
-              style={{ width: 'auto' }}
-            />
+            <Switch checked={form.isActive} onChange={(v) => onChange('isActive', v)} label={t.services.isActive} />
             {' '}{t.services.isActive}
           </label>
         </div>
@@ -444,7 +440,7 @@ export default function ShopServicesPage() {
                             <ul className="service-staff-list">
                               {serviceDetail.staffServices.map((ss) => (
                                 <li key={ss.userShopId} className="service-staff-item">
-                                  <span>{ss.userShop.user.email}</span>
+                                  <span>{ss.userShop.name}</span>
                                   <button
                                     className="btn btn-ghost service-action-btn"
                                     onClick={() => handleUnassign(ss.userShopId)}
@@ -474,7 +470,7 @@ export default function ShopServicesPage() {
                                   <option value="">{t.services.selectStaff}</option>
                                   {available.map((m) => (
                                     <option key={m.id} value={m.id}>
-                                      {m.user.email}
+                                      {m.name}
                                     </option>
                                   ))}
                                 </select>

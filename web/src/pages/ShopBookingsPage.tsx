@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -9,6 +12,7 @@ import {
   type BookingStatus,
 } from '../api/booking.api';
 import { getMembers, type TeamMember } from '../api/team.api';
+import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
 import '../styles/pages/bookings.css';
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -26,6 +30,19 @@ const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CAN
 
 const todayISO = () => new Date().toISOString().split('T')[0];
 
+const shiftDateStr = (date: string, delta: number) => {
+  const d = new Date(date + 'T00:00:00'); // force local-time parsing
+  d.setDate(d.getDate() + delta);
+  // Build the string from local getters, not toISOString() — that converts
+  // to UTC first, which can roll the date back a day depending on the
+  // local UTC offset (most visible right at local midnight, exactly what
+  // this produces).
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -36,9 +53,22 @@ const formatDuration = (mins: number) => {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 };
 
+const toHHMM = (mins: number) => {
+  const h = Math.floor(mins / 60).toString().padStart(2, '0');
+  const m = (mins % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+};
+
+interface CreatingSlot {
+  staffId: string;
+  timeHint: string;
+}
+
 // ── component ────────────────────────────────────────────────────────────────
 
 export default function ShopBookingsPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
   const isOwner = shop?.role === 'owner';
@@ -47,11 +77,22 @@ export default function ShopBookingsPage() {
   const [members, setMembers]                 = useState<TeamMember[]>([]);
   const [loading, setLoading]                 = useState(true);
   const [error, setError]                     = useState('');
-  const [date, setDate]                       = useState(todayISO);
+  const [date, setDate]                       = useState(() => searchParams.get('date') || todayISO());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [creatingSlot, setCreatingSlot]       = useState<CreatingSlot | null>(null);
   const [updatingId, setUpdatingId]           = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting]               = useState(false);
+
+  const refetchBookings = () => {
+    if (!shop) return;
+    setLoading(true);
+    setError('');
+    listBookings(shop.id, { date })
+      .then(setBookings)
+      .catch(() => setError(t.bookings.errorLoad))
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     if (!shop) return;
@@ -104,9 +145,21 @@ export default function ShopBookingsPage() {
     }
   };
 
+  const openBookingDetail = (b: Booking, isSelected: boolean) => {
+    setSelectedBooking(isSelected ? null : b);
+    setConfirmDeleteId(null);
+    setCreatingSlot(null);
+  };
+
+  const openCreateSlot = (staffId: string, timeHint: string) => {
+    setCreatingSlot({ staffId, timeHint });
+    setSelectedBooking(null);
+    setConfirmDeleteId(null);
+  };
+
   // ── derived ──────────────────────────────────────────────────────────────
 
-const columns = members.map(m => ({ id: m.id, label: m.user.name }));
+const columns = members.map(m => ({ id: m.id, label: m.name }));
 
   const bookingsByStaff = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
     const key = members.some(m => m.id === b.staffId) ? b.staffId : 'unassigned';
@@ -132,27 +185,75 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
       {/* ── Header ── */}
       <div className="bookings-header">
         <h1>{t.bookings.title}</h1>
-        <input
-          type="date"
-          className="bookings-date-picker"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-        />
+        <div className="bookings-date-nav">
+          <button
+            type="button"
+            className="bookings-date-nav-btn"
+            onClick={() => setDate(d => shiftDateStr(d, -1))}
+            aria-label="Previous day"
+          >
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </button>
+          <label htmlFor="bookings-date" className="visually-hidden">
+            {t.bookings.viewDateLabel}
+          </label>
+          <input
+            id="bookings-date"
+            type="date"
+            className="bookings-date-picker"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+          />
+          <button
+            type="button"
+            className="bookings-date-nav-btn"
+            onClick={() => setDate(d => shiftDateStr(d, 1))}
+            aria-label="Next day"
+          >
+            <FontAwesomeIcon icon={faChevronRight} />
+          </button>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       {/* ── Detail panel ── */}
-      {selectedBooking && (
+      {creatingSlot ? (
         <div className="cal-detail-panel">
           <div className="cal-detail-header">
-            <div className="cal-detail-title">{selectedBooking.customer.name}</div>
+            <div className="cal-detail-title">{t.bookings.newBookingTitle}</div>
+            <button
+              className="cal-detail-close"
+              onClick={() => setCreatingSlot(null)}
+              aria-label={t.bookings.close}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+          {shop && slug && (
+            <OwnerBookingWizard
+              shopId={shop.id}
+              slug={slug}
+              initialMemberId={creatingSlot.staffId}
+              initialDate={date}
+              timeHint={creatingSlot.timeHint}
+              hideTitle
+              onDone={() => { setCreatingSlot(null); refetchBookings(); }}
+            />
+          )}
+        </div>
+      ) : selectedBooking && (
+        <div className="cal-detail-panel">
+          <div className="cal-detail-header">
+            <div className="cal-detail-title">
+              {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
+            </div>
             <button
               className="cal-detail-close"
               onClick={() => { setSelectedBooking(null); setConfirmDeleteId(null); }}
               aria-label={t.bookings.close}
             >
-              ×
+              <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
 
@@ -164,7 +265,9 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
             <span>{formatDuration(selectedBooking.service.duration)}</span>
           </div>
 
-          <div className="cal-detail-phone">{selectedBooking.customer.phone}</div>
+          {!selectedBooking.customer.contactHidden && (
+            <div className="cal-detail-phone">{selectedBooking.customer.phone}</div>
+          )}
           {selectedBooking.notes && (
             <div className="cal-detail-notes">{selectedBooking.notes}</div>
           )}
@@ -248,8 +351,15 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
               {columns.map(col => (
                 <div
                   key={col.id}
-                  className="cal-col"
+                  className={`cal-col${isOwner ? ' cal-col--creatable' : ''}`}
                   style={{ height: HOURS.length * SLOT_H }}
+                  onClick={isOwner ? (e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const y = e.clientY - rect.top;
+                    const rawMinutes = GRID_START * 60 + y / PX_PER_MIN;
+                    const rounded = Math.max(GRID_START * 60, Math.round(rawMinutes / 30) * 30);
+                    openCreateSlot(col.id, toHHMM(rounded));
+                  } : undefined}
                 >
                   {/* Hour lines */}
                   {HOURS.map((h, i) => (
@@ -277,13 +387,15 @@ const columns = members.map(m => ({ id: m.id, label: m.user.name }));
                           isSelected ? 'cal-block--selected' : '',
                         ].join(' ').trim()}
                         style={{ top, height }}
-                        onClick={() => {
-                          setSelectedBooking(isSelected ? null : b);
-                          setConfirmDeleteId(null);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openBookingDetail(b, isSelected);
                         }}
                       >
                         <div className="cal-block-time">{formatTime(b.startTime)}</div>
-                        <div className="cal-block-name">{b.customer.name}</div>
+                        <div className="cal-block-name">
+                          {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                        </div>
                         <div className="cal-block-service">{b.service.name}</div>
                       </div>
                     );

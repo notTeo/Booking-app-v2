@@ -1,0 +1,47 @@
+.legal-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.legal-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.legal-back:hover {
+  color: var(--accent);
+}
+
+.legal-title {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+.legal-updated {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0 0 1.75rem;
+}
+
+.legal-body {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+}
+
+.legal-contact {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.legal-contact a {
+  color: var(--accent);
+  text-decoration: none;
+}

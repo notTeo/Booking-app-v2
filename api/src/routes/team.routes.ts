@@ -1,12 +1,19 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
-import { memberIdParamValidation, updateMemberRoleValidation } from '../validators/team.validator';
+import {
+  memberIdParamValidation,
+  updateMemberRoleValidation,
+  createTeamMemberValidation,
+} from '../validators/team.validator';
 import {
   getMembers,
   getMember,
+  createTeamMember,
   updateMemberRole,
   removeMember,
+  sendLoginInvite,
+  cancelLoginInvite,
 } from '../controllers/team.controller';
 import { getMemberServices } from '../controllers/service.controller';
 import workingHoursRouter from './workingHours.routes';
@@ -15,9 +22,12 @@ import workingHoursRouter from './workingHours.routes';
 const router = Router({ mergeParams: true });
 
 router.get('/', authenticate, getMembers);
+router.post('/', authenticate, createTeamMemberValidation, validate, createTeamMember);
 router.get('/:memberId', authenticate, memberIdParamValidation, validate, getMember);
 router.patch('/:memberId', authenticate, updateMemberRoleValidation, validate, updateMemberRole);
 router.delete('/:memberId', authenticate, memberIdParamValidation, validate, removeMember);
+router.post('/:memberId/invite', authenticate, memberIdParamValidation, validate, sendLoginInvite);
+router.delete('/:memberId/invite', authenticate, memberIdParamValidation, validate, cancelLoginInvite);
 
 // Staff services
 router.get('/:memberId/services', authenticate, memberIdParamValidation, validate, getMemberServices);

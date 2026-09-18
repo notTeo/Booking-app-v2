@@ -13,8 +13,6 @@ export interface Translations {
     shops: string;
     settings: string;
     logout: string;
-    expand: string;
-    collapse: string;
     backToShops: string;
     shopSection: string;
     manageSection: string;
@@ -26,6 +24,16 @@ export interface Translations {
     shopSettings: string;
     shopWorkingHours: string;
     bookAppointment: string;
+  };
+  dashboard: {
+    title: string;
+    subtitle: string;
+    errorLoad: string;
+    noShops: string;
+    todayCount: string;
+    upcomingCount: string;
+    upcomingAcrossShops: string;
+    noUpcoming: string;
   };
   shops: {
     title: string;
@@ -72,9 +80,32 @@ export interface Translations {
     howBadge: string;
     howTitle: string;
     howSub: string;
-    testimonialsBadge:string ;
-    testimonialsTitle: string;
-    testimonialsSub:string;
+    aboutBadge: string;
+    aboutTitle: string;
+    aboutSub: string;
+    pricingBadge: string;
+    pricingTitle: string;
+    pricingSub: string;
+    pricingPlanName: string;
+    pricingPlanDesc: string;
+    pricingFeature1: string;
+    pricingFeature2: string;
+    pricingFeature3: string;
+    pricingCta: string;
+  };
+  privacy: {
+    linkLabel: string;
+    title: string;
+    lastUpdated: string;
+    body: string;
+    contact: string;
+  };
+  terms: {
+    linkLabel: string;
+    title: string;
+    lastUpdated: string;
+    body: string;
+    contact: string;
   };
   login: {
     title: string;
@@ -240,6 +271,25 @@ export interface Translations {
     errorLoadServices: string;
     errorAssignService: string;
     errorUnassignService: string;
+    noLoginYet: string;
+    loginAccess: string;
+    inviteAlreadySent: string;
+    noInviteSentYet: string;
+    sendInvite: string;
+    resendInvite: string;
+    cancelInvite: string;
+    inviteSent: string;
+    errorSendInvite: string;
+    errorCancelInvite: string;
+    canViewCustomerDetails: string;
+    canViewCustomerDetailsDesc: string;
+    confirmContinue: string;
+    confirmPromoteOwner: string;
+    confirmDemoteOwner: string;
+    emailLabel: string;
+    saveEmail: string;
+    addEmailFirst: string;
+    errorSaveEmail: string;
   };
   invites: {
     title: string;
@@ -283,6 +333,25 @@ export interface Translations {
     inviteNotFound: string;
     emailMismatch: string;
     inviteFor: string;
+    addMember: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    canViewCustomerDetails: string;
+    canViewCustomerDetailsDesc: string;
+    sendEmailNow: string;
+    sendEmailNowDesc: string;
+    confirmOwnerInvite: string;
+    createdNoEmail: string;
+    pendingLogins: string;
+    noPendingLogins: string;
+    notSentYet: string;
+    resend: string;
+    cancelInvite: string;
+    confirmCancel: string;
+    errorResend: string;
+    errorCancel: string;
+    statusLabel: string;
+    optional: string;
   };
   services: {
     title: string;
@@ -429,19 +498,16 @@ export interface Translations {
     atLabel: string;
   };
   overview: {
+    title: string;
     loading: string;
     noShop: string;
-    identity: string;
-    idLabel: string;
-    slugLabel: string;
-    contact: string;
-    phoneLabel: string;
-    addressLabel: string;
-    settingsSection: string;
-    timezoneLabel: string;
-    timestamps: string;
-    createdLabel: string;
-    updatedLabel: string;
+    teamLabel: string;
+    servicesLabel: string;
+    customersLabel: string;
+    todaysBookings: string;
+    noBookingsToday: string;
+    upcomingBookings: string;
+    noUpcoming: string;
   };
   customers: {
     title: string;
@@ -462,8 +528,12 @@ export interface Translations {
     phoneLabel: string;
     emailLabel: string;
     emailOptional: string;
+    notesLabel: string;
+    notesOptional: string;
     saving: string;
     save: string;
+    totalVisitsLabel: string;
+    totalSpentLabel: string;
     recentBookings: string;
     noBookings: string;
     serviceCol: string;
@@ -471,9 +541,15 @@ export interface Translations {
     statusCol: string;
     successUpdate: string;
     errorUpdate: string;
+    hiddenLabel: string;
+    contactHiddenNotice: string;
+    prevPage: string;
+    nextPage: string;
+    pageOf: string;
   };
   bookings: {
     title: string;
+    viewDateLabel: string;
     errorLoad: string;
     close: string;
     delete: string;
@@ -515,9 +591,7 @@ export const translations: Record<Language, Translations> = {
       shops: 'Καταστήματα',
       settings: 'Ρυθμίσεις',
       logout: 'Αποσύνδεση',
-      expand: 'Ανάπτυξη πλευρικής μπάρας',
-      collapse: 'Σύμπτυξη πλευρικής μπάρας',
-      backToShops: '← ',
+      backToShops: 'Τα Καταστήματά μου',
       shopSection: 'Κατάστημα',
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
@@ -526,8 +600,18 @@ export const translations: Record<Language, Translations> = {
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
       shopSettings: 'Ρυθμίσεις',
-      shopWorkingHours: "'Ωρες Λειτουργίας",
+      shopWorkingHours: "'Ωρες",
       bookAppointment: 'Νέο Ραντεβού',
+    },
+    dashboard: {
+      title: 'Επισκόπηση',
+      subtitle: 'Τα ραντεβού και οι καταστήματά σου, με μια ματιά.',
+      errorLoad: 'Αποτυχία φόρτωσης δεδομένων.',
+      noShops: 'Δεν έχεις ακόμα κανένα κατάστημα.',
+      todayCount: 'Σήμερα: {count}',
+      upcomingCount: 'Επόμενα: {count}',
+      upcomingAcrossShops: 'Επόμενα Ραντεβού',
+      noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -574,9 +658,32 @@ home: {
     howBadge: 'Πώς Λειτουργεί',
     howTitle: 'Έτοιμο σε λίγα λεπτά',
     howSub: 'Τρία απλά βήματα για μια πλήρως αυτοματοποιημένη εμπειρία κρατήσεων.',
-    testimonialsBadge: 'Μαρτυρίες',
-    testimonialsTitle: 'Το αγαπούν οι ιδιοκτήτες',
-    testimonialsSub: 'Πραγματικά αποτελέσματα από επαγγελματίες που χρησιμοποιούν το Bookly καθημερινά.'
+    aboutBadge: 'Σχετικά',
+    aboutTitle: 'Φτιαγμένο από ανθρώπους που έχουν σταθεί πίσω από τον πάγκο',
+    aboutSub: 'Το Bookly ξεκίνησε ως ένα απλό πρόγραμμα ραντεβού για το κουρείο ενός φίλου. Σήμερα είναι η πλατφόρμα κρατήσεων που εμπιστεύονται εκατοντάδες καταστήματα για να γεμίζουν το πρόγραμμά τους, να διαχειρίζονται την ομάδα τους και να κρατούν τους πελάτες τους πιστούς.',
+    pricingBadge: 'Τιμές',
+    pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
+    pricingSub: 'Είμαστε ακόμα στα πρώτα βήματα — επικοινωνήστε μαζί μας για να ξεκινήσετε.',
+    pricingPlanName: 'Δωρεάν κατά τη διάρκεια του beta',
+    pricingPlanDesc: 'Πλήρη πρόσβαση σε όλα τα χαρακτηριστικά όσο βρισκόμαστε σε πρώιμο στάδιο. Καμία χρέωση, καμία δέσμευση.',
+    pricingFeature1: 'Απεριόριστες κρατήσεις',
+    pricingFeature2: 'Δημόσια σελίδα κρατήσεων για τους πελάτες σου',
+    pricingFeature3: 'Διαχείριση ομάδας, υπηρεσιών και πελατών',
+    pricingCta: 'Επικοινωνήστε μαζί μας',
+  },
+  privacy: {
+    linkLabel: 'Πολιτική Απορρήτου',
+    title: 'Πολιτική Απορρήτου',
+    lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
+    body: 'Αυτή η σελίδα είναι προσωρινή. Η πλήρης πολιτική απορρήτου του Bookly βρίσκεται υπό επεξεργασία και θα δημοσιευτεί εδώ σύντομα, πριν από τη γενική διάθεση της υπηρεσίας.',
+    contact: 'Για ερωτήσεις σχετικά με τα δεδομένα σου, επικοινώνησε στο',
+  },
+  terms: {
+    linkLabel: 'Όροι Χρήσης',
+    title: 'Όροι Χρήσης',
+    lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
+    body: 'Αυτή η σελίδα είναι προσωρινή. Οι πλήρεις όροι χρήσης του Bookly βρίσκονται υπό επεξεργασία και θα δημοσιευτούν εδώ σύντομα, πριν από τη γενική διάθεση της υπηρεσίας.',
+    contact: 'Για ερωτήσεις σχετικά με τους όρους χρήσης, επικοινώνησε στο',
   },
     login: {
       title: 'Σύνδεση',
@@ -742,6 +849,25 @@ home: {
       errorLoadServices: 'Αποτυχία φόρτωσης υπηρεσιών.',
       errorAssignService: 'Αποτυχία ανάθεσης υπηρεσίας.',
       errorUnassignService: 'Αποτυχία αφαίρεσης υπηρεσίας.',
+      noLoginYet: 'Χωρίς σύνδεση ακόμα',
+      loginAccess: 'Πρόσβαση Σύνδεσης',
+      inviteAlreadySent: 'Έχει σταλεί πρόσκληση σύνδεσης. Περιμένουμε να την αποδεχτεί.',
+      noInviteSentYet: 'Δεν έχει σταλεί ακόμα πρόσκληση σύνδεσης σε αυτό το μέλος.',
+      sendInvite: 'Αποστολή Πρόσκλησης Σύνδεσης',
+      resendInvite: 'Επαναποστολή Πρόσκλησης',
+      cancelInvite: 'Ακύρωση Πρόσκλησης',
+      inviteSent: 'Η πρόσκληση σύνδεσης εστάλη.',
+      errorSendInvite: 'Αποτυχία αποστολής πρόσκλησης.',
+      errorCancelInvite: 'Αποτυχία ακύρωσης πρόσκλησης.',
+      canViewCustomerDetails: 'Προβολή στοιχείων πελατών',
+      canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, το μέλος βλέπει μόνο τη λέξη «Πελάτης», χωρίς όνομα, τηλέφωνο ή email.',
+      confirmContinue: 'Επιβεβαίωση & Συνέχεια',
+      confirmPromoteOwner: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων, καθώς και δυνατότητα υποβιβασμού άλλων ιδιοκτητών. Πατήστε ξανά για να συνεχίσετε.',
+      confirmDemoteOwner: 'Αυτό το άτομο θα χάσει την πρόσβαση ιδιοκτήτη. Πατήστε ξανά για να συνεχίσετε.',
+      emailLabel: 'Email',
+      saveEmail: 'Αποθήκευση Email',
+      addEmailFirst: 'Προσθέστε email πριν στείλετε πρόσκληση σύνδεσης',
+      errorSaveEmail: 'Αποτυχία αποθήκευσης email.',
     },
     invites: {
       title: 'Προσκλήσεις',
@@ -785,6 +911,25 @@ home: {
       inviteNotFound: 'Η πρόσκληση δεν βρέθηκε.',
       emailMismatch: 'Αυτή η πρόσκληση απευθύνεται σε άλλο email.',
       inviteFor: 'Πρόσκληση για',
+      addMember: 'Προσθήκη Μέλους',
+      nameLabel: 'Όνομα',
+      namePlaceholder: 'π.χ. Μαρία Παπαδοπούλου',
+      canViewCustomerDetails: 'Προβολή στοιχείων πελατών',
+      canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, θα βλέπει μόνο τη λέξη «Πελάτης» στα ραντεβού, χωρίς όνομα, τηλέφωνο ή email. Μπορείτε να το αλλάξετε αργότερα.',
+      sendEmailNow: 'Αποστολή πρόσκλησης σύνδεσης τώρα',
+      sendEmailNowDesc: 'Το μέλος δημιουργείται άμεσα και μπορεί να δεχτεί ραντεβού ό,τι κι αν επιλέξετε εδώ. Αν είναι ανενεργό, μπορείτε να στείλετε την πρόσκληση αργότερα από τη σελίδα του μέλους.',
+      confirmOwnerInvite: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων. Πατήστε ξανά για να συνεχίσετε.',
+      createdNoEmail: 'Το μέλος δημιουργήθηκε. Δεν στάλθηκε πρόσκληση σύνδεσης.',
+      pendingLogins: 'Μέλη χωρίς σύνδεση',
+      noPendingLogins: 'Όλα τα μέλη έχουν σύνδεση.',
+      notSentYet: 'Δεν έχει σταλεί',
+      resend: 'Επαναποστολή',
+      cancelInvite: 'Ακύρωση Πρόσκλησης',
+      confirmCancel: 'Επιβεβαίωση Ακύρωσης',
+      errorResend: 'Αποτυχία αποστολής πρόσκλησης.',
+      errorCancel: 'Αποτυχία ακύρωσης πρόσκλησης.',
+      statusLabel: 'Κατάσταση',
+      optional: 'προαιρετικό',
     },
     services: {
       title: 'Υπηρεσίες',
@@ -931,19 +1076,16 @@ home: {
       atLabel: 'στις',
     },
     overview: {
+      title: 'Επισκόπηση',
       loading: 'Φόρτωση...',
       noShop: 'Δεν φορτώθηκε κατάστημα',
-      identity: 'Ταυτότητα',
-      idLabel: 'ID',
-      slugLabel: 'Slug',
-      contact: 'Επικοινωνία',
-      phoneLabel: 'Τηλέφωνο',
-      addressLabel: 'Διεύθυνση',
-      settingsSection: 'Ρυθμίσεις',
-      timezoneLabel: 'Ζώνη ώρας',
-      timestamps: 'Χρονοσφραγίδες',
-      createdLabel: 'Δημιουργήθηκε',
-      updatedLabel: 'Τελευταία Ενημέρωση',
+      teamLabel: 'Ομάδα',
+      servicesLabel: 'Υπηρεσίες',
+      customersLabel: 'Πελάτες',
+      todaysBookings: 'Σημερινά Ραντεβού',
+      noBookingsToday: 'Δεν υπάρχουν ραντεβού σήμερα.',
+      upcomingBookings: 'Προσεχή Ραντεβού',
+      noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
     },
     customers: {
       title: 'Πελάτες',
@@ -964,8 +1106,12 @@ home: {
       phoneLabel: 'Τηλέφωνο',
       emailLabel: 'Email',
       emailOptional: 'Προαιρετικό',
+      notesLabel: 'Σημειώσεις',
+      notesOptional: 'Προαιρετικό',
       saving: 'Αποθήκευση…',
       save: 'Αποθήκευση',
+      totalVisitsLabel: 'Συνολικές επισκέψεις',
+      totalSpentLabel: 'Συνολική δαπάνη',
       recentBookings: 'Πρόσφατα Ραντεβού',
       noBookings: 'Δεν υπάρχουν ραντεβού ακόμα.',
       serviceCol: 'Υπηρεσία',
@@ -973,9 +1119,15 @@ home: {
       statusCol: 'Κατάσταση',
       successUpdate: 'Ο πελάτης ενημερώθηκε.',
       errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
+      hiddenLabel: 'Πελάτης',
+      contactHiddenNotice: 'Δεν έχετε δικαίωμα προβολής ή επεξεργασίας των στοιχείων επικοινωνίας αυτού του πελάτη.',
+      prevPage: '← Προηγούμενη',
+      nextPage: 'Επόμενη →',
+      pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
       title: 'Ραντεβού',
+      viewDateLabel: 'Προβολή ημερομηνίας',
       errorLoad: 'Αποτυχία φόρτωσης ραντεβού.',
       close: 'Κλείσιμο',
       delete: 'Διαγραφή',
@@ -1016,19 +1168,27 @@ home: {
       shops: 'Shops',
       settings: 'Settings',
       logout: 'Logout',
-      expand: 'Expand sidebar',
-      collapse: 'Collapse sidebar',
-      backToShops: '← My Shops',
+      backToShops: 'My Shops',
       shopSection: 'Shop',
       manageSection: 'Manage',
       bookings: 'Bookings',
       services: 'Services',
-      team: 'Team Members',
+      team: 'Team',
       invites: 'Invites',
       customers: 'Customers',
-      shopSettings: 'Shop Settings',
-      shopWorkingHours: "Working Hours",
-      bookAppointment: 'Book an Appointment',
+      shopSettings: 'Settings',
+      shopWorkingHours: "Hours",
+      bookAppointment: 'New Booking',
+    },
+    dashboard: {
+      title: 'Overview',
+      subtitle: 'Your bookings and shops, at a glance.',
+      errorLoad: 'Failed to load your data.',
+      noShops: "You don't have any shops yet.",
+      todayCount: 'Today: {count}',
+      upcomingCount: 'Upcoming: {count}',
+      upcomingAcrossShops: 'Upcoming Bookings',
+      noUpcoming: 'No upcoming bookings.',
     },
     shops: {
       title: 'My Shops',
@@ -1065,7 +1225,7 @@ home: {
     headline: 'Run your shop.',
     headlineAccent: 'Fill your chair.',
     sub: 'The all-in-one platform to manage bookings, run your shop, and grow your business — without the chaos.',
-    cta: 'Get Started Free',
+    cta: 'Start Free',
     demo: 'See Demo',
     signIn: 'Sign In',
     heroBadge: 'Booking platform for barbershops & salons',
@@ -1075,9 +1235,32 @@ home: {
     howBadge: 'How It Works',
     howTitle: 'Up and running in minutes',
     howSub: 'Three simple steps to a fully automated booking experience.',
-    testimonialsBadge: 'Testimonials',
-    testimonialsTitle: 'Loved by shop owners',
-    testimonialsSub: 'Real results from real barbershops and salons using Bookly every day.'
+    aboutBadge: 'About',
+    aboutTitle: 'Built by people who\'ve stood behind the counter',
+    aboutSub: 'Bookly started as a simple scheduling sheet for a friend\'s barbershop. Today it\'s the booking platform hundreds of shops rely on to fill their calendar, manage their team, and keep clients coming back.',
+    pricingBadge: 'Pricing',
+    pricingTitle: 'Simple, with no surprises',
+    pricingSub: "We're still early — reach out and we'll get you set up.",
+    pricingPlanName: 'Free during beta',
+    pricingPlanDesc: "Full access to every feature while we're in early access. No charge, no commitment.",
+    pricingFeature1: 'Unlimited bookings',
+    pricingFeature2: 'A public booking page for your clients',
+    pricingFeature3: 'Team, service, and customer management',
+    pricingCta: 'Contact us',
+  },
+  privacy: {
+    linkLabel: 'Privacy Policy',
+    title: 'Privacy Policy',
+    lastUpdated: 'Last updated: September 2026',
+    body: "This page is a placeholder. Bookly's full privacy policy is being finalized and will be published here before general availability.",
+    contact: 'For questions about your data, reach out to',
+  },
+  terms: {
+    linkLabel: 'Terms of Service',
+    title: 'Terms of Service',
+    lastUpdated: 'Last updated: September 2026',
+    body: "This page is a placeholder. Bookly's full terms of service are being finalized and will be published here before general availability.",
+    contact: 'For questions about these terms, reach out to',
   },
     login: {
       title: 'Login',
@@ -1243,6 +1426,25 @@ home: {
       errorLoadServices: 'Failed to load services.',
       errorAssignService: 'Failed to assign service.',
       errorUnassignService: 'Failed to remove service.',
+      noLoginYet: 'No login yet',
+      loginAccess: 'Login Access',
+      inviteAlreadySent: "A login invite has been sent. Waiting for them to accept it.",
+      noInviteSentYet: 'No login invite has been sent to this member yet.',
+      sendInvite: 'Send Login Invite',
+      resendInvite: 'Resend Invite',
+      cancelInvite: 'Cancel Invite',
+      inviteSent: 'Login invite sent.',
+      errorSendInvite: 'Failed to send invite.',
+      errorCancelInvite: 'Failed to cancel invite.',
+      canViewCustomerDetails: 'View customer details',
+      canViewCustomerDetailsDesc: "When off, this member sees just the word \"Customer\" — no name, phone, or email.",
+      confirmContinue: 'Confirm & Continue',
+      confirmPromoteOwner: 'This person will become an owner, with full access to team, invites, customers, and settings — including the ability to demote other owners. Click again to continue.',
+      confirmDemoteOwner: 'This person will lose owner access. Click again to continue.',
+      emailLabel: 'Email',
+      saveEmail: 'Save Email',
+      addEmailFirst: 'Add an email before sending a login invite',
+      errorSaveEmail: 'Failed to save email.',
     },
     invites: {
       title: 'Invites',
@@ -1286,6 +1488,25 @@ home: {
       inviteNotFound: 'Invite not found.',
       emailMismatch: 'This invite was sent to a different email address.',
       inviteFor: 'Invitation for',
+      addMember: 'Add Team Member',
+      nameLabel: 'Name',
+      namePlaceholder: 'e.g. Maria Papadopoulou',
+      canViewCustomerDetails: 'View customer details',
+      canViewCustomerDetailsDesc: "When off, they'll see just the word \"Customer\" on bookings — no name, phone, or email. You can change this later.",
+      sendEmailNow: 'Send login invite now',
+      sendEmailNowDesc: "The member is created right away and can be booked either way. If off, you can send the invite later from the member's page.",
+      confirmOwnerInvite: 'This person will become an owner, with full access to team, invites, customers, and settings. Click again to continue.',
+      createdNoEmail: 'Team member created. No login invite was sent.',
+      pendingLogins: 'Members Without a Login',
+      noPendingLogins: 'Every member has a login.',
+      notSentYet: 'Not sent',
+      resend: 'Resend',
+      cancelInvite: 'Cancel Invite',
+      confirmCancel: 'Confirm Cancel',
+      errorResend: 'Failed to send invite.',
+      errorCancel: 'Failed to cancel invite.',
+      statusLabel: 'Status',
+      optional: 'optional',
     },
     services: {
       title: 'Services',
@@ -1432,19 +1653,16 @@ home: {
       atLabel: 'at',
     },
     overview: {
+      title: 'Overview',
       loading: 'Loading...',
       noShop: 'No shop loaded',
-      identity: 'Identity',
-      idLabel: 'ID',
-      slugLabel: 'Slug',
-      contact: 'Contact',
-      phoneLabel: 'Phone',
-      addressLabel: 'Address',
-      settingsSection: 'Settings',
-      timezoneLabel: 'Timezone',
-      timestamps: 'Timestamps',
-      createdLabel: 'Created',
-      updatedLabel: 'Last Updated',
+      teamLabel: 'Team',
+      servicesLabel: 'Services',
+      customersLabel: 'Customers',
+      todaysBookings: "Today's Bookings",
+      noBookingsToday: 'No bookings today.',
+      upcomingBookings: 'Upcoming Bookings',
+      noUpcoming: 'No upcoming bookings.',
     },
     customers: {
       title: 'Customers',
@@ -1465,8 +1683,12 @@ home: {
       phoneLabel: 'Phone',
       emailLabel: 'Email',
       emailOptional: 'Optional',
+      notesLabel: 'Notes',
+      notesOptional: 'Optional',
       saving: 'Saving…',
       save: 'Save',
+      totalVisitsLabel: 'Total visits',
+      totalSpentLabel: 'Total spent',
       recentBookings: 'Recent Bookings',
       noBookings: 'No bookings yet.',
       serviceCol: 'Service',
@@ -1474,9 +1696,15 @@ home: {
       statusCol: 'Status',
       successUpdate: 'Customer updated.',
       errorUpdate: 'Failed to save changes.',
+      hiddenLabel: 'Customer',
+      contactHiddenNotice: "You don't have permission to view or edit this customer's contact details.",
+      prevPage: '← Previous',
+      nextPage: 'Next →',
+      pageOf: 'Page {page} of {total}',
     },
     bookings: {
       title: 'Bookings',
+      viewDateLabel: 'View date',
       errorLoad: 'Failed to load bookings.',
       close: 'Close',
       delete: 'Delete',

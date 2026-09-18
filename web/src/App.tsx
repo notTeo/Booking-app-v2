@@ -34,6 +34,8 @@ import InvitesPage from './pages/InvitesPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 
 export default function App() {
   return (
@@ -56,6 +58,8 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/invite" element={<AcceptInvitePage />} />
                 <Route path="/cancel" element={<CancelBookingPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
                 <Route path="/p/:slug" element={<PublicPage />} />
 
                 <Route element={<ProtectedRoute />}>

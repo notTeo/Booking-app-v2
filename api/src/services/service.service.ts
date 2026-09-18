@@ -65,7 +65,7 @@ export const getServiceById = async (userId: string, shopId: string, serviceId: 
       staffServices: {
         include: {
           userShop: {
-            include: { user: { select: { id: true, email: true } } },
+            select: { id: true, name: true, email: true },
           },
         },
       },
@@ -137,9 +137,9 @@ export const unassignStaffFromService = async (userId: string, shopId: string, s
 export const getMemberServices = async (userId: string, shopId: string, memberId: string) => {
   await getMembership(userId, shopId);
 
-  // memberId is User.id — resolve to the UserShop record to get UserShop.id
-  const targetMembership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId: memberId, shopId } },
+  // memberId is UserShop.id
+  const targetMembership = await prisma.userShop.findFirst({
+    where: { id: memberId, shopId },
   });
   if (!targetMembership) throw new AppError(404, 'Staff member not found in this shop');
 

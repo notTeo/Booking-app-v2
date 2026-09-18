@@ -7,7 +7,8 @@
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
-  min-height: 100vh;
+  min-height: 100vh; /* fallback for browsers without dvh support */
+  min-height: 100dvh; /* accounts for mobile browser chrome (address bar/toolbar) showing/hiding */
   position: relative;
 }
 
@@ -17,7 +18,15 @@
 .home-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 64px;
+}
+
+/* The nav row's content should span the pill's actual width, not get
+   boxed into the shared 1200px content column — otherwise on wide screens
+   the logo/links/buttons sit inset from the pill's own edges. */
+.home-nav-bar .home-container {
+  max-width: none;
+  margin: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -33,6 +42,7 @@
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.75rem 1.75rem;
+  white-space: nowrap;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
@@ -47,8 +57,8 @@
 
 /* Nav-bar CTA (desktop nav + mobile sidebar) — smaller than the hero's version */
 .home-btn-primary--sm {
-  font-size: 0.85rem;
-  padding: 0.55rem 1.35rem;
+  font-size: 0.82rem;
+  padding: 0.5rem 1.1rem;
 }
 
 .home-btn-ghost {
@@ -71,6 +81,22 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
    FLOATING NAV
 ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Transparent shell for the nav row — always fixed at the very top, above
+   both the pill body and the preview card, so the logo/links/CTA can never
+   end up hidden behind either of them. Purely a positioning layer: it has
+   no background of its own, so the pill body's chrome shows through it. */
+.home-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
+  width: 95%;
+  z-index: 200;
+}
+
 .home-nav-wrapper {
   position: fixed;
   top: 0;
@@ -78,7 +104,8 @@
   transform: translateX(-50%);
   margin: 0;
   padding: 0;
-  width: calc(100% - 3rem);
+  width: 95%;
+  height: 64px; /* JS drives this per scroll frame; this is just the pre-JS fallback */
   z-index: 100;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(20px);
@@ -92,31 +119,48 @@
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* While JS is driving top/height/width off scroll position, those properties
-   must update instantly per frame — no transition lag chasing the scroll. */
-.home-nav-wrapper.is-morphing {
-  transition: none;
+/* Colorful gradient fill for the pill, only while it's tall — fades out via
+   inline opacity (driven by scroll progress) as it shrinks into the navbar. */
+.home-nav-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 20%, color-mix(in srgb, var(--warning) 30%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 30%, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
 }
 
+/* Two groups — logo+links on the left, actions on the right. */
 .home-nav {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.home-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  min-width: 0;
 }
 
 .home-nav-links {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.25rem;
 }
 .home-nav-link {
   color: var(--text-muted);
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
+  white-space: nowrap;
   transition: color 0.2s;
 }
 .home-nav-link:hover { color: var(--text); }
@@ -124,7 +168,7 @@
 .home-nav-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .home-nav-toggle {
@@ -206,7 +250,8 @@
   position: fixed;
   top: 0;
   right: 0;
-  height: 100vh;
+  height: 100vh; /* fallback for browsers without dvh support */
+  height: 100dvh; /* accounts for mobile browser chrome (address bar/toolbar) showing/hiding */
   width: min(78vw, 320px);
   z-index: 200;
   display: flex;
@@ -215,6 +260,8 @@
   text-align: left;
   background: var(--bg);
   border-left: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
   padding: 5.5rem 1.5rem 2.5rem;
   transform: translateX(100%);
@@ -275,64 +322,96 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   HERO
+   HERO (lives inside the pill — see .home-nav-hero)
 ═══════════════════════════════════════════════════════════════════════════════ */
-.home-hero {
+
+/* Wraps the badge/headline/tagline/CTAs inside the giant pill, below the nav
+   row. Clipped by the pill's own overflow:hidden as it shrinks on scroll. */
+.home-nav-hero {
   position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: calc(min(50vh, 620px) + 3rem) 2rem 8rem; /* matches the pill's giant height + a fixed gap, so content scrolls in lockstep with it as it shrinks */
-  overflow: hidden;
-}
-.home-hero::before {
-  content: '';
-  position: absolute;
-  top: -10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80vw;
-  height: 80vh;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--accent) 15%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 5%, transparent) 40%,
-    transparent 70%
-  );
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: 0;
+  padding: 1.5rem 2rem 1rem;
 }
 
-/* "Bookly" logo mark — centered inside the nav pill. While the pill is
-   still huge (page top), it floats in the empty space below the nav row;
-   as the pill shrinks on scroll, it lands in the middle of the slim bar. */
-.home-nav-logo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* Social-proof badge above the headline */
+.home-hero-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: 50px;
+  padding: 0.4rem 1.1rem 0.4rem 0.4rem;
+  margin-bottom: 1.1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.home-hero-badge-avatars {
+  display: flex;
+}
+
+.home-hero-badge-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-card);
+  margin-left: -8px;
+}
+
+.home-hero-badge-avatar:first-child {
+  margin-left: 0;
+}
+
+/* Big bold marketing headline */
+.home-headline {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+}
+
+.home-headline-accent {
+  display: block;
+  color: var(--accent);
+}
+
+/* "Bookly" logo mark — sits at the left of the nav pill. */
+.home-nav-logo-link {
   display: inline-flex;
   align-items: center;
   color: var(--accent);
-  font-size: 0.95rem;
+  font-size: 1.3rem;
   white-space: nowrap;
-  pointer-events: none;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
 .home-logo-text {
-  font-family: 'Lobster', cursive;
-  font-weight: 400;
+  font-family: var(--font-logo);
+  font-weight: 700;
   line-height: 1;
-}
-
-.home-tagline {
-  position: relative;
-  z-index: 1;
-  color: var(--text-muted);
-  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-  font-weight: 400;
-  max-width: 600px;
-  margin: 0 auto 3.5rem;
-  line-height: 1.6;
 }
 
 .home-hero-ctas { 
@@ -345,14 +424,249 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   DASHBOARD PREVIEW CARD
+═══════════════════════════════════════════════════════════════════════════════ */
+.home-preview {
+  position: relative;
+  /* JS lifts this above the nav pill (z-index: 100) while the pill is
+     still tall, so the card overlaps on top of its bottom edge. Once the
+     pill has shrunk into the slim navbar, JS drops it back down so the
+     nav stays usable as the page scrolls beneath it. */
+  z-index: 1;
+  padding: 0 0 6rem;
+}
+
+.home-preview-card {
+  /* Lets descendants size text off the CARD's own width (cqw) instead of
+     the viewport, so the mockup reads the same at any rendered size
+     instead of text looking oversized once the card shrinks. */
+  container-type: inline-size;
+  max-width: 1100px;
+  min-height: 500px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: 10px; /* actual macOS window corner radius */
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.home-preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: clamp(0.5rem, 1.45cqw, 1rem) clamp(0.65rem, 1.8cqw, 1.25rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-preview-dot {
+  width: clamp(6px, 1cqw, 11px);
+  height: clamp(6px, 1cqw, 11px);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text) 15%, transparent);
+}
+.home-preview-dot--red    { background: #f87171; }
+.home-preview-dot--yellow { background: #fbbf24; }
+.home-preview-dot--green  { background: #34d399; }
+
+/* Mobile-only — the real app's own mobile header (AppLayout.tsx / sidebar.css),
+   reused exactly for visual accuracy, just repositioned for the card context
+   (not position:sticky, and shown at the card's own breakpoint below). */
+.home-preview-card .app-mobile-header {
+  display: none;
+  position: static;
+  width: 190px; /* matches .home-preview-sidebar's mobile drawer width */
+  z-index: auto;
+  gap: clamp(0.35rem, 1cqw, 0.6rem);
+  padding: clamp(0.45rem, 1.3cqw, 0.75rem);
+  /* Sits at z-index 10, under the drawer's z-index 20 — the drawer
+     physically covers it while open, so this shadow only ever reads as
+     visible while the drawer is closed, with no extra state needed. */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.home-preview-card .app-mobile-brand {
+  font-size: clamp(0.9rem, 1.9cqw, 1.3rem);
+}
+
+.home-preview-card .hamburger-btn {
+  width: clamp(20px, 2.9cqw, 32px);
+  height: clamp(20px, 2.9cqw, 32px);
+}
+
+.home-preview-card .hamburger-btn svg {
+  width: clamp(12px, 1.8cqw, 20px);
+  height: clamp(12px, 1.8cqw, 20px);
+}
+
+.home-preview-card-body {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%; /* stays in sync with the card's own width as it resizes */
+  /* Matches a real screenshot's proportions (1920×1080) at any rendered
+     width, instead of a fixed min-height. */
+  aspect-ratio: 16 / 9;
+  min-height: 500px;
+}
+
+/* Clickable, non-functional mockup of the real sidebar (components/Sidebar.tsx)
+   — reuses its CSS classes (.sidebar-header, .sidebar-link, etc. from
+   sidebar.css) for visual accuracy, just not the root .sidebar positioning. */
+.home-preview-sidebar {
+  width: clamp(110px, 18cqw, 200px);
+  flex-shrink: 0;
+  padding: clamp(0.6rem, 1.8cqw, 1.25rem) clamp(0.4rem, 1.1cqw, 0.75rem);
+  border-right: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.1rem, 0.3cqw, 0.2rem);
+  overflow-y: auto;
+}
+
+/* Without this, a short card (mobile aspect-ratio) squashes every row to
+   fit instead of scrolling — flex items shrink by default in a column
+   flex container that's shorter than its content. */
+.home-preview-sidebar > * {
+  flex-shrink: 0;
+}
+
+.home-preview-sidebar .sidebar-link {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  /* Scales off the card's own width (container query units) so the mockup
+     reads the same whether the card renders huge or shrunk on mobile —
+     both the text and the row's own padding/gap. */
+  font-size: clamp(0.65rem, 1.4cqw, 0.95rem);
+  padding: clamp(0.35rem, 1cqw, 0.55rem) clamp(0.45rem, 1.1cqw, 0.75rem);
+  gap: clamp(0.35rem, 1cqw, 0.6rem);
+}
+
+.home-preview-sidebar .sidebar-section-label {
+  font-size: clamp(0.55rem, 1cqw, 0.75rem);
+  padding: 0 clamp(0.4rem, 1.1cqw, 0.75rem);
+  margin: clamp(0.4rem, 1.1cqw, 0.75rem) 0 clamp(0.2rem, 0.6cqw, 0.4rem);
+}
+
+.home-preview-sidebar .sidebar-shop-name {
+  font-size: clamp(0.65rem, 1.4cqw, 1rem);
+  padding: clamp(0.15rem, 0.4cqw, 0.25rem) clamp(0.4rem, 1.1cqw, 0.75rem) clamp(0.3rem, 0.8cqw, 0.5rem);
+}
+
+.home-preview-sidebar .sidebar-header {
+  gap: clamp(0.35rem, 1cqw, 0.6rem);
+  margin-bottom: clamp(0.55rem, 1.6cqw, 1rem);
+}
+
+.home-preview-sidebar .sidebar-header h4 {
+  font-size: clamp(0.9rem, 1.9cqw, 1.35rem);
+}
+
+/* Re-declared at higher specificity than the plain reset above — its equal
+   specificity to sidebar.css's own :hover/.active rules meant load order
+   alone decided the winner, which silently cancelled both states. */
+.home-preview-sidebar .sidebar-link:hover {
+  background: var(--bg-input);
+  color: var(--text);
+}
+.home-preview-sidebar .sidebar-link.active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+.home-preview-sidebar .sidebar-logout:hover {
+  background: var(--bg-input);
+  color: var(--red);
+}
+
+.home-preview-sidebar .sidebar-back-link {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  width: clamp(20px, 2.9cqw, 32px);
+  height: clamp(20px, 2.9cqw, 32px);
+  font-size: clamp(0.55rem, 1.2cqw, 0.85rem);
+}
+
+.home-preview-main {
+  flex: 1;
+  min-width: 0;
+  padding: clamp(1rem, 2.9cqw, 2rem) clamp(1.1rem, 3.3cqw, 2.25rem) clamp(1.2rem, 3.6cqw, 2.5rem);
+}
+
+.home-preview-greeting {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.45cqw, 1rem);
+  margin-bottom: clamp(1rem, 2.9cqw, 2rem);
+}
+
+.home-preview-avatar {
+  width: clamp(28px, 4.4cqw, 48px);
+  height: clamp(28px, 4.4cqw, 48px);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.7rem, 1.6cqw, 1.1rem);
+  flex-shrink: 0;
+}
+
+.home-preview-greeting h3 { margin: 0 0 0.2rem; font-size: clamp(0.9rem, 1.7cqw, 1.25rem); font-weight: 700; color: var(--text); }
+.home-preview-greeting p  { margin: 0; font-size: clamp(0.8rem, 1.45cqw, 1rem); color: var(--text-muted); }
+
+.home-preview-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(0.6rem, 1.8cqw, 1.25rem);
+}
+
+.home-preview-tile {
+  display: flex;
+  gap: clamp(0.5rem, 1.45cqw, 1rem);
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg-input));
+  border: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+  border-radius: clamp(10px, 1.6cqw, 18px);
+  padding: clamp(0.75rem, 2.2cqw, 1.5rem);
+}
+
+.home-preview-tile-icon {
+  width: clamp(12px, 1.8cqw, 20px);
+  color: var(--accent);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.home-preview-tile h4 { margin: 0 0 0.35rem; font-size: clamp(0.75rem, 1.4cqw, 1rem); font-weight: 700; color: var(--text); }
+.home-preview-tile p  { margin: 0; font-size: clamp(0.7rem, 1.25cqw, 0.9rem); color: var(--text-muted); line-height: 1.5; }
+
+.home-preview-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.home-preview-hint svg { font-size: 0.8rem; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    SECTIONS
 ═══════════════════════════════════════════════════════════════════════════════ */
 .home-section {
-  padding: 8rem 0;
+  padding: 5rem 0;
   position: relative;
 }
 
-.home-section-header { text-align: center; margin-bottom: 4.5rem; }
+.home-section-header { text-align: center; margin-bottom: 3.5rem; }
 
 .home-label {
   display: inline-block;
@@ -369,7 +683,7 @@
 
 .home-section-title {
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.2;
   color: var(--text);
@@ -385,48 +699,254 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   FEATURES (Bento Grid Style)
+   ABOUT
 ═══════════════════════════════════════════════════════════════════════════════ */
-.home-features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+.home-about-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 1.5rem;
 }
 
-.home-feature-card {
+.home-about-stat {
+  flex: 1 1 200px;
+  max-width: 260px;
+  text-align: center;
   background: color-mix(in srgb, var(--bg-card) 60%, transparent);
   backdrop-filter: blur(10px);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: 24px;
-  padding: 2.5rem 2rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.home-feature-card:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.05), inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
-  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  padding: 2rem 1.5rem;
 }
 
-.home-feature-icon {
-  width: 52px;
-  height: 52px;
+.home-about-stat-num {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.home-about-stat-label {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FEATURES (Bento Grid Style)
+═══════════════════════════════════════════════════════════════════════════════ */
+.home-features-bento {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 0.9fr;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+}
+
+.home-feature-bento {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.home-feature-bento:hover {
+  transform: translateY(-4px);
+}
+
+.home-feature-bento-text { margin-top: auto; }
+.home-feature-bento-text h3 { font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 0; }
+.home-feature-bento-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+/* ── Card 1: tall, live booking notifications ── */
+.home-feature-bento--alerts {
+  grid-row: 1 / 3;
+  grid-column: 1;
+  gap: 1.5rem;
+  color: #fff;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent) 92%, black 8%) 0%,
+    var(--accent) 55%,
+    color-mix(in srgb, var(--accent) 70%, black 30%) 100%
+  );
+  box-shadow: 0 20px 45px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.home-feature-bento-bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.home-feature-bubble {
+  align-self: flex-start;
+  max-width: 90%;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 0.6rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+}
+
+.home-feature-bubble--out {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.home-feature-bubble-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.home-feature-bento--alerts .home-feature-bento-text h3 {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+.home-feature-bento--alerts .home-feature-bento-text p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Cards 2, 3, 5: plain surface ── */
+.home-feature-bento--services,
+.home-feature-bento--stat,
+.home-feature-bento--channels {
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-feature-bento--services { grid-row: 1; grid-column: 2; }
+.home-feature-bento--stat     { grid-row: 1; grid-column: 3; }
+.home-feature-bento--reminders{ grid-row: 2; grid-column: 2; }
+.home-feature-bento--channels { grid-row: 2; grid-column: 3; }
+
+/* ── Card 2: service type chips ── */
+.home-feature-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.home-feature-chip {
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  background: var(--bg-input);
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.home-feature-chip--on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Card 3: stat ── */
+.home-feature-bento-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  border-radius: 14px;
   background: color-mix(in srgb, var(--accent) 15%, transparent);
-  border-radius: 16px;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent);
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
-  transition: transform 0.3s ease;
-}
-.home-feature-card:hover .home-feature-icon {
-  transform: scale(1.1) rotate(-5deg);
+  font-size: 1.2rem;
 }
 
-.home-feature-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 0 0 0.75rem; }
-.home-feature-desc  { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0; }
+.home-feature-bento-number {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2.4rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.home-feature-bento-caption {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Card 4: reminders checklist, warm/cool gradient ── */
+.home-feature-bento--reminders {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--warning) 18%, var(--bg-card)),
+    color-mix(in srgb, #38bdf8 18%, var(--bg-card))
+  );
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-feature-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.home-feature-check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  background: var(--bg-card);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.home-feature-check-item svg { color: var(--accent); flex-shrink: 0; }
+
+/* ── Card 5: channel icons ── */
+.home-feature-bento-icons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.home-feature-mini-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    HOW IT WORKS
@@ -488,6 +1008,15 @@
   gap: 2rem;
   max-width: 840px;
   margin: 0 auto;
+}
+
+.home-pricing-single {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.home-pricing-single .home-price-cta {
+  display: flex;
 }
 
 .home-price-card {
@@ -563,7 +1092,7 @@
   flex-direction: column;
 }
 
-.home-testimonial-stars { color: #F59E0B; font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 1.25rem; }
+.home-testimonial-stars { color: var(--warning); font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 1.25rem; }
 .home-testimonial-quote { color: var(--text); font-size: 1rem; line-height: 1.7; margin: 0 0 2rem; font-style: italic; flex-grow: 1;}
 .home-testimonial-author { display: flex; align-items: center; gap: 1rem; margin-top: auto;}
 .home-testimonial-avatar {
@@ -580,6 +1109,129 @@
 .home-testimonial-role { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   FAQ
+═══════════════════════════════════════════════════════════════════════════════ */
+.home-faq {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.home-faq-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0 0 1.25rem;
+}
+
+.home-faq-sub {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin: 0 0 2rem;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.home-faq-contact {
+  display: inline-flex;
+  align-items: center;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.home-faq-contact:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.home-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.home-faq-item {
+  background: color-mix(in srgb, var(--bg-card) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: 20px;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-faq-item--open {
+  background: var(--bg-card);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.home-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  padding: 1.15rem 1.5rem;
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.home-faq-toggle {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 0.85rem;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.3s ease;
+}
+
+/* Plus rotates 45° into an X instead of swapping icons — keeps the morph
+   smooth and CSS-driven rather than an abrupt icon swap. */
+.home-faq-item--open .home-faq-toggle {
+  background: var(--accent);
+  color: #fff;
+  transform: rotate(45deg);
+}
+
+/* Animated via max-height (the real height is unknown/variable per answer,
+   so a generous cap is used) rather than height:auto, which can't transition. */
+.home-faq-answer-wrap {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+
+.home-faq-answer-wrap--open {
+  max-height: 240px;
+  opacity: 1;
+  transition: max-height 0.35s ease, opacity 0.3s ease 0.05s;
+}
+
+.home-faq-answer {
+  margin: 0;
+  padding: 0 1.5rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    FOOTER
 ═══════════════════════════════════════════════════════════════════════════════ */
 .home-footer { 
@@ -590,12 +1242,12 @@
 
 .home-footer-inner {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 4rem;
   margin-bottom: 4rem;
 }
 
-.home-footer-wordmark { font-family: 'Lobster', cursive; font-size: 2rem; color: var(--accent); margin: 0 0 1rem; font-weight: 400; }
+.home-footer-wordmark { font-family: var(--font-logo); font-size: 2rem; color: var(--accent); margin: 0 0 1rem; font-weight: 700; }
 .home-footer-brand-desc { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0 0 2rem; max-width: 280px; }
 
 .home-footer-socials { display: flex; gap: 0.75rem; }
@@ -616,15 +1268,12 @@
 .home-footer-links a:hover { color: var(--accent); }
 
 .home-footer-bottom {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: center;
   border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   padding-top: 2rem;
   flex-wrap: wrap; gap: 1rem;
 }
 .home-footer-copy { color: var(--text-muted); font-size: 0.9rem; }
-.home-footer-bottom-links { display: flex; gap: 2rem; }
-.home-footer-bottom-links a { color: var(--text-muted); font-size: 0.9rem; text-decoration: none; transition: color 0.2s; }
-.home-footer-bottom-links a:hover { color: var(--text); }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    RESPONSIVE
@@ -636,14 +1285,78 @@
   .home-footer-inner  { grid-template-columns: 1fr 1fr; gap: 3rem; }
   .home-footer-brand  { grid-column: span 2; }
   .home-footer-brand-desc { max-width: 100%; }
+
+  .home-features-bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+  .home-feature-bento--alerts    { grid-row: 1 / 3; grid-column: 1; }
+  .home-feature-bento--services  { grid-row: 1; grid-column: 2; }
+  .home-feature-bento--stat      { grid-row: 2; grid-column: 2; }
+  .home-feature-bento--reminders { grid-row: 3; grid-column: 1; }
+  .home-feature-bento--channels  { grid-row: 3; grid-column: 2; }
+}
+
+/* Nav collapses into the hamburger earlier than the rest of the tablet layout,
+   since the nav links + toggles + CTA run out of room before the page content does. */
+@media (max-width: 850px) {
+  .home-nav-links, .home-nav-right { display: none; }
+  .home-hamburger { display: inline-flex; }
+}
+
+/* Preview card switches to its "mobile" treatment (drawer sidebar, app's
+   own mobile header) at 700px. */
+@media (max-width: 700px) {
+  /* Sidebar becomes a toggleable drawer instead of disappearing, matching
+     the real app's mobile pattern (components/Sidebar.tsx + AppLayout.tsx).
+     The header is taken out of flow (position:absolute) so the drawer,
+     sitting above it in z-index, can slide out and overlap it completely —
+     same relationship as the real app's sidebar (z-index 200) covering its
+     mobile header (no explicit z-index, effectively lower). */
+  /* No macOS chrome bar on mobile — the app's own mobile header takes over
+     as the top of the "screen". */
+  .home-preview-card-header { display: none; }
+
+  .home-preview-card .app-mobile-header {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+  }
+  .home-preview-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 20;
+    width: 190px;
+    background: var(--bg-card);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .home-preview-sidebar.is-open {
+    transform: translateX(0);
+    border-top-right-radius: calc(var(--radius) * 2);
+    border-bottom-right-radius: calc(var(--radius) * 2);
+  }
+
+  .home-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  /* Extra top padding clears the absolutely-positioned mobile header
+     (.app-mobile-header), which no longer takes up flow space to sit above it. */
+  .home-preview-main      { padding: 4rem 1.25rem 1.75rem; overflow-y: auto; }
+  .home-preview-tiles     { grid-template-columns: 1fr; gap: 1rem; }
+  .home-preview-tile      { padding: 1.25rem; }
 }
 
 /* Small tablet / large phone */
 @media (max-width: 768px) {
-  .home-nav-links, .home-nav-right { display: none; }
-  .home-nav { justify-content: flex-end; }
-  .home-hamburger { display: inline-flex; }
-
   .home-mobile-link {
     color: var(--text-muted); font-size: 1.1rem; font-weight: 600;
     text-decoration: none; padding: 0.5rem 0;
@@ -651,9 +1364,7 @@
   }
   .home-mobile-link:hover { color: var(--text); }
 
-  .home-hero    { padding-left: 1.5rem; padding-right: 1.5rem; padding-bottom: 6rem; }
-  .home-section { padding: 5rem 0; }
-  .home-section-header { margin-bottom: 3.5rem; }
+  .home-nav-hero { padding-left: 1.5rem; padding-right: 1.5rem; }
 
   .home-steps { grid-template-columns: 1fr; gap: 1rem; }
   .home-steps::before { display: none; }
@@ -661,6 +1372,21 @@
 
   .home-pricing-grid      { grid-template-columns: 1fr; }
   .home-testimonials-grid { grid-template-columns: 1fr; }
+
+  .home-faq      { grid-template-columns: 1fr; gap: 2.5rem; }
+  .home-faq-sub  { max-width: none; }
+
+  .home-features-bento {
+    grid-template-columns: 1fr;
+  }
+  .home-feature-bento--alerts,
+  .home-feature-bento--services,
+  .home-feature-bento--stat,
+  .home-feature-bento--reminders,
+  .home-feature-bento--channels {
+    grid-row: auto;
+    grid-column: 1;
+  }
 }
 
 /* Small phones */
@@ -668,10 +1394,9 @@
   .home-container { padding: 0 1.25rem; }
   .home-nav       { padding: 1rem 1.25rem; }
 
-  .home-hero        { padding-left: 1.25rem; padding-right: 1.25rem; padding-bottom: 4rem; }
+  .home-nav-hero    { padding-left: 1.25rem; padding-right: 1.25rem; }
 
-  .home-hero-ctas .home-btn-primary,
-  .home-hero-ctas .home-btn-ghost {
+  .home-hero-ctas .home-btn-primary {
     width: 100%; justify-content: center;
   }
 

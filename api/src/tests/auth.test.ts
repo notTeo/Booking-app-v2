@@ -46,7 +46,7 @@ describe('POST /auth/register', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.status).toBe('success');
-    expect(sendVerificationEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String));
+    expect(sendVerificationEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String), 'Test User');
 
     const pending = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
     expect(pending).not.toBeNull();
@@ -220,7 +220,7 @@ describe('POST /auth/forgot-password', () => {
 
     await request(app).post('/auth/forgot-password').send({ email: TEST_EMAIL });
 
-    expect(sendPasswordResetEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String));
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String), 'Test User');
   });
 });
 

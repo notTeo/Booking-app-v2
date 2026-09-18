@@ -6,34 +6,15 @@ import { getCustomer, updateCustomer, type CustomerDetail } from '../api/custome
 import type { BookingStatus } from '../api/booking.api';
 import '../styles/pages/team.css';
 
-const STATUS_COLORS: Record<BookingStatus, { bg: string; color: string }> = {
-  PENDING:   { bg: 'color-mix(in srgb, #d97706 15%, transparent)', color: '#d97706' },
-  CONFIRMED: { bg: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent)' },
-  COMPLETED: { bg: 'color-mix(in srgb, #16a34a 15%, transparent)', color: '#16a34a' },
-  CANCELED:  { bg: 'var(--bg-input)', color: 'var(--text-muted)' },
-  NO_SHOW:   { bg: 'color-mix(in srgb, #e53e3e 12%, transparent)', color: '#e53e3e' },
-};
-
 function StatusBadge({ status }: { status: BookingStatus }) {
-  const { bg, color } = STATUS_COLORS[status] ?? STATUS_COLORS.PENDING;
   return (
-    <span
-      style={{
-        background: bg,
-        color,
-        fontSize: '0.72rem',
-        fontWeight: 700,
-        padding: '0.2rem 0.6rem',
-        borderRadius: 999,
-        textTransform: 'capitalize',
-        letterSpacing: '0.04em',
-        display: 'inline-block',
-      }}
-    >
+    <span className={`status-badge status-badge--${status.toLowerCase()}`}>
       {status.replace('_', ' ').toLowerCase()}
     </span>
   );
 }
+
+const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 export default function ShopCustomerDetailPage() {
   const { slug, customerId } = useParams<{ slug: string; customerId: string }>();
@@ -48,6 +29,7 @@ export default function ShopCustomerDetailPage() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [editNotes, setEditNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -61,6 +43,7 @@ export default function ShopCustomerDetailPage() {
         setEditName(c.name);
         setEditPhone(c.phone);
         setEditEmail(c.email ?? '');
+        setEditNotes(c.notes ?? '');
       })
       .catch(() => setError(t.customers.customerErrorLoad))
       .finally(() => setLoading(false));
@@ -76,6 +59,7 @@ export default function ShopCustomerDetailPage() {
         name: editName,
         phone: editPhone,
         email: editEmail || null,
+        notes: editNotes || null,
       });
       setCustomer((prev) => prev ? { ...prev, ...updated } : prev);
       setSaveSuccess(t.customers.successUpdate);
@@ -90,7 +74,8 @@ export default function ShopCustomerDetailPage() {
     customer &&
     (editName !== customer.name ||
       editPhone !== customer.phone ||
-      editEmail !== (customer.email ?? ''));
+      editEmail !== (customer.email ?? '') ||
+      editNotes !== (customer.notes ?? ''));
 
   if (shopLoading || loading) {
     return (
@@ -121,50 +106,70 @@ export default function ShopCustomerDetailPage() {
 
       {/* Customer info */}
       <div className="card team-member-card">
-        <h1>{customer.name}</h1>
+        <h1>{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
         <div className="team-member-meta">
           <span className="team-date">
             {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
           </span>
         </div>
+        <div className="team-member-meta">
+          <span className="team-date">{t.customers.totalVisitsLabel}: {customer.totalVisits}</span>
+          <span className="team-date">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+        </div>
       </div>
 
       {/* Edit card */}
-      <div className="card team-role-card">
-        <h2>{t.customers.editInfo}</h2>
-        <div className="form-group">
-          <label>{t.customers.nameLabel}</label>
-          <input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-          />
+      {customer.contactHidden ? (
+        <div className="card team-role-card">
+          <h2>{t.customers.editInfo}</h2>
+          <p className="team-empty">{t.customers.contactHiddenNotice}</p>
         </div>
-        <div className="form-group">
-          <label>{t.customers.phoneLabel}</label>
-          <input
-            value={editPhone}
-            onChange={(e) => setEditPhone(e.target.value)}
-          />
+      ) : (
+        <div className="card team-role-card">
+          <h2>{t.customers.editInfo}</h2>
+          <div className="form-group">
+            <label>{t.customers.nameLabel}</label>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>{t.customers.phoneLabel}</label>
+            <input
+              value={editPhone}
+              onChange={(e) => setEditPhone(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>{t.customers.emailLabel}</label>
+            <input
+              type="email"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              placeholder={t.customers.emailOptional}
+            />
+          </div>
+          <div className="form-group">
+            <label>{t.customers.notesLabel}</label>
+            <textarea
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              placeholder={t.customers.notesOptional}
+              rows={3}
+            />
+          </div>
+          {saveError && <div className="alert alert-error">{saveError}</div>}
+          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
+          <button
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={saving || !isDirty}
+          >
+            {saving ? t.customers.saving : t.customers.save}
+          </button>
         </div>
-        <div className="form-group">
-          <label>{t.customers.emailLabel}</label>
-          <input
-            type="email"
-            value={editEmail}
-            onChange={(e) => setEditEmail(e.target.value)}
-            placeholder={t.customers.emailOptional}
-          />
-        </div>
-        {saveError && <div className="alert alert-error">{saveError}</div>}
-        {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
-        <button
-          className="btn btn-primary"
-          onClick={handleSave}
-          disabled={saving || !isDirty}
-        >
-          {saving ? t.customers.saving : t.customers.save}
-        </button>
-      </div>
+      )}
 
       {/* Recent bookings */}
       <div className="card team-role-card">
@@ -172,8 +177,8 @@ export default function ShopCustomerDetailPage() {
         {customer.bookings.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.noBookings}</p>
         ) : (
-          <div className="team-table-card" style={{ border: 'none', borderRadius: 0 }}>
-            <table className="team-table">
+          <div className="data-table-card" style={{ border: 'none', borderRadius: 0 }}>
+            <table className="data-table">
               <thead>
                 <tr>
                   <th>{t.customers.serviceCol}</th>
@@ -183,7 +188,7 @@ export default function ShopCustomerDetailPage() {
               </thead>
               <tbody>
                 {customer.bookings.map((b) => (
-                  <tr key={b.id} className="team-table-row" style={{ cursor: 'default' }}>
+                  <tr key={b.id} className="data-table-row">
                     <td>{b.service.name}</td>
                     <td className="team-date">
                       {new Date(b.startTime).toLocaleString([], {

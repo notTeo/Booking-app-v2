@@ -1,36 +1,40 @@
 /* ─── Page ──────────────────────────────────────────────────────── */
 
 .overview-page {
-  padding: 2rem;
   max-width: 780px;
 }
 
+/* Same size/weight as every other page's title (services-header h1,
+   team-header h1, etc.) — .app-main already provides the page padding, so
+   this page shouldn't add its own on top of it. */
 .overview-page__title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: var(--color-text-primary, #111827);
-  margin: 0 0 1.5rem;
+  color: var(--text);
+  margin: 0 0 1.75rem;
 }
 
 /* ─── Card Shell ─────────────────────────────────────────────────── */
+/* Named shop-overview-card (not shop-card) so it doesn't collide with the
+   unrelated .shop-card list-item class defined in shops.css — both
+   stylesheets end up in the same global bundle. */
 
-.shop-card {
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 14px;
+.shop-overview-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* ─── Header ─────────────────────────────────────────────────────── */
 
-.shop-card__header {
+.shop-overview-card__header {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
-  background: var(--color-surface-raised, #f9fafb);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-input);
 }
 
 /* Avatar */
@@ -38,8 +42,8 @@
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: 12px;
-  background: var(--color-accent, #2563eb);
+  border-radius: var(--radius);
+  background: var(--accent);
   color: #fff;
   font-size: 1.1rem;
   font-weight: 700;
@@ -50,32 +54,32 @@
 }
 
 /* Name + description */
-.shop-card__header-text {
+.shop-overview-card__header-text {
   flex: 1;
   min-width: 0;
 }
 
-.shop-card__name {
+.shop-overview-card__name {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--color-text-primary, #111827);
+  color: var(--text);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.shop-card__description {
+.shop-overview-card__description {
   margin: 0.2rem 0 0;
   font-size: 0.875rem;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* Badges */
-.shop-card__badges {
+.shop-overview-card__badges {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -94,23 +98,23 @@
 }
 
 .badge--role {
-  background: var(--color-accent-subtle, #dbeafe);
-  color: var(--color-accent, #1d4ed8);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
 }
 
 .badge--active {
-  background: #dcfce7;
-  color: #15803d;
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
 }
 
 .badge--inactive {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
 }
 
 /* ─── Body ───────────────────────────────────────────────────────── */
 
-.shop-card__body {
+.shop-overview-card__body {
   padding: 0.5rem 0;
 }
 
@@ -121,7 +125,7 @@
 }
 
 .field-group + .field-group {
-  border-top: 1px solid var(--color-border, #e5e7eb);
+  border-top: 1px solid var(--border);
 }
 
 .field-group__title {
@@ -129,7 +133,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--text-muted);
   margin: 0 0 0.85rem;
 }
 
@@ -153,12 +157,12 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .field__value {
   font-size: 0.9rem;
-  color: var(--color-text-primary, #111827);
+  color: var(--text);
   word-break: break-word;
 }
 
@@ -167,21 +171,17 @@
 .state-view {
   padding: 2rem;
   font-size: 0.9rem;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────── */
 
 @media (max-width: 560px) {
-  .overview-page {
-    padding: 1rem;
-  }
-
-  .shop-card__header {
+  .shop-overview-card__header {
     flex-wrap: wrap;
   }
 
-  .shop-card__badges {
+  .shop-overview-card__badges {
     flex-direction: row;
     align-items: center;
     width: 100%;

@@ -102,17 +102,28 @@ model ShopWorkingHourRange {
 }
 
 model UserShop {
-  id        String   @id @default(cuid())
-  userId    String
-  shopId    String
-  role      ShopRole @default(staff)
+  id     String  @id @default(cuid())
+  userId String? // null = team member has no login yet (not-yet-accepted invite)
+  shopId String
+  role   ShopRole @default(staff)
+
+  // Durable display identity for this membership, set once when the member
+  // is created and never overwritten by whatever the person later registers
+  // with — bookings/services already reference this row by id, not by user.
+  // email is only required if/when a login invite is actually sent.
+  name  String
+  email String?
+
+  canViewCustomerDetails Boolean @default(true)
+
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   staffServices StaffService[]
   bookings      Booking[]
+  invites       ShopInvite[]
 
   @@unique([userId, shopId])
 }
@@ -169,6 +180,7 @@ model Customer {
   name      String
   phone     String
   email     String?
+  notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,6 +269,7 @@ model PendingEmailChange {
 model ShopInvite {
   id           String       @id @default(cuid())
   shopId       String
+  userShopId   String       // the placeholder team member this invite grants a login to
   email        String
   role         ShopRole     @default(staff)
   status       InviteStatus @default(pending)
@@ -265,13 +278,15 @@ model ShopInvite {
   createdById  String
   acceptedById String?
 
-  shop       Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  createdBy  User  @relation("InviteCreatedBy",  fields: [createdById],  references: [id])
-  acceptedBy User? @relation("InviteAcceptedBy", fields: [acceptedById], references: [id])
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  userShop   UserShop @relation(fields: [userShopId], references: [id], onDelete: Cascade)
+  createdBy  User     @relation("InviteCreatedBy",  fields: [createdById],  references: [id])
+  acceptedBy User?    @relation("InviteAcceptedBy", fields: [acceptedById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([shopId])
   @@index([email])
+  @@index([userShopId])
 }

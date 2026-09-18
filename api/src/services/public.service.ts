@@ -19,10 +19,12 @@ const shop = await prisma.shop.findUnique({
       }
     },
     members: {
-      include: {
-        user: {
-          select: { id: true, name: true }
-        },
+      select: {
+        id: true,
+        shopId: true,
+        role: true,
+        name: true,
+        createdAt: true,
         staffServices: {
           include: {
             service: {

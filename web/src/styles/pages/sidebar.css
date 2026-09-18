@@ -10,23 +10,31 @@
   display: flex;
 }
 
-/* ─── Mobile-only top header ─── */
+/* ─── Mobile-only top header ───
+   Same width, side padding, and right-corner radius as the sidebar drawer
+   (.sidebar below) so the logo lines up exactly with the sidebar's own logo
+   when the drawer opens on top of this bar — same left inset, same
+   button-then-logo layout, same 32px button size + gap. */
 .app-mobile-header {
   display: none;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: 0.6rem;
+  width: 240px;
+  padding: 0.75rem;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
+  border-top-right-radius: calc(var(--radius) * 2);
+  border-bottom-right-radius: calc(var(--radius) * 2);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .app-mobile-brand {
-  font-size: 1rem;
+  font-family: var(--font-logo);
   font-weight: 700;
-  color: var(--text);
+  font-size: 1.3rem;
+  color: var(--accent);
 }
 
 .hamburger-btn {
@@ -34,7 +42,9 @@
   border: none;
   cursor: pointer;
   color: var(--text);
-  padding: 0.25rem;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,39 +59,32 @@
 .sidebar {
   position: sticky;
   top: 0;
-  width: 220px;
+  width: var(--sidebar-width, 220px);
   height: 100vh;
   flex-shrink: 0;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
+  border-top-right-radius: calc(var(--radius) * 2);
+  border-bottom-right-radius: calc(var(--radius) * 2);
   padding: 1.25rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  transition: width 0.2s ease, padding 0.2s ease;
   overflow-y: auto;
 }
 
-/* ─── Toggle button ─── */
-.sidebar-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-    padding:0.75rem;
-  border-radius: var(--radius);
-  align-self: flex-end;
-  transition: color 0.15s, background 0.15s;
-  margin-bottom: 0.35rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar-toggle:hover {
-  color: var(--text);
-  background: var(--bg-input);
+/* ─── Resize handle — drag the right edge, like Claude's sidebar ───
+   Width is clamped in JS (useSidebarWidth: 180–360px); this is just the
+   drag surface. Sits flush with the edge (not offset outside it) since
+   .sidebar's overflow-y:auto makes overflow-x effectively 'auto' too. */
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
 }
 
 /* ─── Section labels ─── */
@@ -104,15 +107,56 @@
 /* ─── Header ─── */
 .sidebar-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 0.6rem;
   margin-bottom: 1rem;
 }
 
 .sidebar-header h4 {
   white-space: nowrap;
-    font-family: 'Lobster', cursive;
-    padding:0.75rem;
+  font-family: var(--font-logo);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--accent);
+  padding: 0;
+}
+
+/* GlobalNav has no leading button (nothing to go back to) — this holds the
+   logo at the same x-position as ShopNav's and the mobile top bar's
+   button-then-logo headers (matches .sidebar-back-link/.hamburger-btn's
+   32px size). */
+.sidebar-header-spacer {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+/* Close the drawer — mobile only (desktop's sidebar isn't a drawer, there's
+   nothing to close); shown in the mobile media query below. */
+/* Pinned to .sidebar.drawer-open's own padding-box origin (12px top,
+   0.75rem left) — not part of the header's normal flex flow — so it lines
+   up with the logo/header row at the same height. */
+.sidebar-close-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  z-index: 201;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--bg-input);
+  color: var(--text);
 }
 
 /* ─── Nav links ─── */
@@ -150,21 +194,25 @@
   opacity: 1;
 }
 
-/* ─── Back link (shop mode) ─── */
+/* ─── Back link (shop mode) — icon-only, gray chip ─── */
 .sidebar-back-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: var(--bg-input);
   color: var(--text-muted);
+  font-size: 0.85rem;
   text-decoration: none;
-  transition: color 0.15s;
-  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
 }
 
 .sidebar-back-link:hover {
-  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -208,39 +256,6 @@
   color: var(--red);
 }
 
-/* ─── Collapsed state (desktop only) ─── */
-.sidebar.collapsed {
-  width: 54px;
-  padding: 1.25rem 0.5rem;
-  align-items: center;
-}
-
-.sidebar.collapsed .sidebar-toggle {
-  align-self: center;
-}
-
-.sidebar.collapsed .sidebar-section-label {
-  display: none;
-}
-
-.sidebar.collapsed .sidebar-link {
-  justify-content: center;
-  padding: 0.55rem;
-  width: 100%;
-}
-
-.sidebar.collapsed .sidebar-link-label {
-  display: none;
-}
-
-.sidebar.collapsed .sidebar-shop-name {
-  display: none;
-}
-
-.sidebar.collapsed .sidebar-back-link .sidebar-link-label {
-  display: none;
-}
-
 /* ─── Main content ─── */
 .app-main {
   flex: 1;
@@ -266,6 +281,7 @@
 
   .sidebar.drawer-open {
     left: 0;
+    padding-top: 12px;
   }
 
   .sidebar-backdrop {
@@ -275,8 +291,15 @@
     z-index: 199;
   }
 
-  .sidebar-toggle {
+  .sidebar-resize-handle {
     display: none;
+  }
+
+  /* Only when the drawer is actually open (.sidebar-close-btn is a direct
+     child of <aside class="sidebar drawer-open">) — otherwise this sits on
+     top of the top bar's hamburger even while the drawer is closed. */
+  .sidebar.drawer-open .sidebar-close-btn {
+    display: flex;
   }
 
   .app-main {

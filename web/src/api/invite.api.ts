@@ -26,26 +26,11 @@ export interface InviteLookup {
   expiresAt: string;
 }
 
-export interface CreateInviteDto {
-  email: string;
-  role: ShopRole;
-}
-
 export interface AcceptInviteResult {
   shopId: string;
   shopSlug: string;
   role: ShopRole;
 }
-
-// Shop-scoped
-export const createInvite = (shopId: string, dto: CreateInviteDto) =>
-  client.post(`/api/shops/${shopId}/invites`, dto).then((r) => r.data.data as ShopInvite);
-
-export const getShopInvites = (shopId: string) =>
-  client.get(`/api/shops/${shopId}/invites`).then((r) => r.data.data as ShopInvite[]);
-
-export const revokeInvite = (shopId: string, inviteId: string) =>
-  client.delete(`/api/shops/${shopId}/invites/${inviteId}`).then((r) => r.data);
 
 // Global inbox
 export const getMyInvites = () =>

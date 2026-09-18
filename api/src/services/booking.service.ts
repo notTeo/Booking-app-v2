@@ -2,6 +2,17 @@ import { randomUUID } from 'crypto';
 import { BookingStatus, DayOfWeek, UserShop } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
+import { redactCustomer } from '../utils/customerVisibility';
+
+// Whether the calling member can see customer contact info — owners always
+// can; staff only when their own membership flag allows it.
+export const canViewCustomerDetails = async (userId: string, shopId: string) => {
+  const membership = await prisma.userShop.findUnique({
+    where: { userId_shopId: { userId, shopId } },
+  });
+  if (!membership) throw new AppError(404, 'Shop not found');
+  return membership.role === 'owner' || membership.canViewCustomerDetails;
+};
 
 // ── Public ──────────────────────────────────────────────────────────────────
 
@@ -70,7 +81,7 @@ if (!staffId) {
             notes: data.notes,
             cancelToken,
           },
-          include: { customer: true, service: true, shop: true, staff: { include: { user: true } } },
+          include: { customer: true, service: true, shop: true, staff: { select: { id: true, name: true, email: true } } },
         });
       },
       { isolationLevel: 'Serializable' },
@@ -153,7 +164,7 @@ export const createBookingForShop = async (
             notes: data.notes,
             cancelToken,
           },
-          include: { customer: true, service: true, shop: true, staff: { include: { user: true } } },
+          include: { customer: true, service: true, shop: true, staff: { select: { id: true, name: true, email: true } } },
         });
       },
       { isolationLevel: 'Serializable' },
@@ -215,11 +226,14 @@ const schedule = await prisma.shopWorkingSchedule.findFirst({
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
   if (!service) return [];
 
-  // 3. Get existing bookings for that day + staff
-  const existingBookings = await listBookings(shopId, {
+  // 3. Get existing bookings for that day + staff — excluding statuses that
+  // don't actually hold the slot (matches the create-time conflict check's
+  // exclusion set), so a canceled/no-show booking doesn't keep blocking its
+  // old time from being offered again.
+  const existingBookings = (await listBookings(shopId, {
     date,
     staffId: resolvedStaffId ?? undefined,
-  });
+  })).filter((b) => !['CANCELED', 'NO_SHOW', 'COMPLETED'].includes(b.status));
 
   // 4. Generate slots — YOU write this part
   const slots: string[] = [];
@@ -262,6 +276,7 @@ const schedule = await prisma.shopWorkingSchedule.findFirst({
 export const listBookings = async (
   shopId: string,
   filters: { date?: string; status?: BookingStatus; staffId?: string },
+  canViewCustomer = true,
 ) => {
   const where: Record<string, unknown> = { shopId };
 
@@ -276,14 +291,57 @@ if (filters.date) {
   if (filters.status) where['status'] = filters.status;
   if (filters.staffId) where['staffId'] = filters.staffId;
 
-  return prisma.booking.findMany({
+  const bookings = await prisma.booking.findMany({
     where,
     include: { customer: true, service: true },
     orderBy: { startTime: 'asc' },
   });
+
+  return bookings.map((b) => ({ ...b, customer: redactCustomer(b.customer, canViewCustomer) }));
 };
 
-export const getBooking = async (shopId: string, bookingId: string) => {
+export const getBookingStats = async (shopId: string, canViewCustomer = true) => {
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const endOfToday = new Date(now);
+  endOfToday.setUTCHours(23, 59, 59, 999);
+
+  const [todayCount, upcomingCount, upcoming] = await Promise.all([
+    prisma.booking.count({
+      where: {
+        shopId,
+        startTime: { gte: startOfToday, lte: endOfToday },
+        status: { notIn: ['CANCELED'] },
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        shopId,
+        startTime: { gte: now },
+        status: { notIn: ['CANCELED', 'NO_SHOW'] },
+      },
+    }),
+    prisma.booking.findMany({
+      where: {
+        shopId,
+        startTime: { gte: now },
+        status: { notIn: ['CANCELED', 'NO_SHOW'] },
+      },
+      include: { customer: true, service: true, staff: { select: { id: true, name: true, email: true } } },
+      orderBy: { startTime: 'asc' },
+      take: 5,
+    }),
+  ]);
+
+  return {
+    todayCount,
+    upcomingCount,
+    upcoming: upcoming.map((b) => ({ ...b, customer: redactCustomer(b.customer, canViewCustomer) })),
+  };
+};
+
+export const getBooking = async (shopId: string, bookingId: string, canViewCustomer = true) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: { customer: true, service: true },
@@ -291,13 +349,14 @@ export const getBooking = async (shopId: string, bookingId: string) => {
 
   if (!booking || booking.shopId !== shopId) throw new AppError(404, 'Booking not found');
 
-  return booking;
+  return { ...booking, customer: redactCustomer(booking.customer, canViewCustomer) };
 };
 
 export const updateBooking = async (
   shopId: string,
   bookingId: string,
   data: { startTime?: string; serviceId?: string; staffId?: string; notes?: string },
+  canViewCustomer = true,
 ) => {
   const existing = await getBooking(shopId, bookingId); // throws 404 if not found
 
@@ -329,11 +388,12 @@ export const updateBooking = async (
   const schedulingChanged = !!startTime || staffChanged;
 
   if (!schedulingChanged) {
-    return prisma.booking.update({
+    const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: updateData,
       include: { customer: true, service: true },
     });
+    return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
   }
 
   const finalStaffId = data.staffId ?? existing.staffId;
@@ -356,11 +416,12 @@ export const updateBooking = async (
 
         if (conflict) throw new AppError(409, 'Time slot is already booked');
 
-        return tx.booking.update({
+        const updated = await tx.booking.update({
           where: { id: bookingId },
           data: updateData,
           include: { customer: true, service: true },
         });
+        return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
       },
       { isolationLevel: 'Serializable' },
     );
@@ -380,14 +441,16 @@ export const updateBookingStatus = async (
   shopId: string,
   bookingId: string,
   status: BookingStatus,
+  canViewCustomer = true,
 ) => {
   await getBooking(shopId, bookingId); // throws 404 if not found
 
-  return prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id: bookingId },
     data: { status },
     include: { customer: true, service: true },
   });
+  return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
 };
 
 export const cancelBookingByToken = async (token: string) => {

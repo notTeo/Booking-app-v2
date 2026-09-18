@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLang } from '../context/LanguageContext';
 import { updateMe, deleteMe } from '../api/user.api';
 import { getSessions, revokeAllSessions, type Session } from '../api/auth.api';
+import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,6 +15,8 @@ import {
   faShieldHalved,
   faTriangleExclamation,
   faUser,
+  faSun,
+  faMoon,
 } from '@fortawesome/free-solid-svg-icons';
 
 function getInitials(email: string) {
@@ -274,12 +277,10 @@ export default function SettingsPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>{t.settings.pwMin}</li>
-                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>{t.settings.pwUpper}</li>
-                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>{t.settings.pwNumber}</li>
-                <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>
-                  {t.settings.pwSpecial}
-                </li>
+                <PasswordRequirement met={password.length >= 8} label={t.settings.pwMin} />
+                <PasswordRequirement met={/[A-Z]/.test(password)} label={t.settings.pwUpper} />
+                <PasswordRequirement met={/[0-9]/.test(password)} label={t.settings.pwNumber} />
+                <PasswordRequirement met={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)} label={t.settings.pwSpecial} />
               </ul>
             )}
           </div>
@@ -312,7 +313,8 @@ export default function SettingsPage() {
             type="button"
             aria-label={theme === 'dark' ? t.toggles.switchToLight : t.toggles.switchToDark}
           >
-            {theme === 'dark' ? `☀️ ${t.settings.lightTheme}` : `🌙 ${t.settings.darkTheme}`}
+            <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
+            {' '}{theme === 'dark' ? t.settings.lightTheme : t.settings.darkTheme}
           </button>
         </div>
         <div className="settings-pref-row">
@@ -326,7 +328,7 @@ export default function SettingsPage() {
             type="button"
             aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
           >
-            {language === 'el' ? '🇬🇧 English' : '🇬🇷 Ελληνικά'}
+            {language === 'el' ? 'English' : 'Ελληνικά'}
           </button>
         </div>
       </div>

@@ -20,8 +20,9 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         customerName: booking.customer.name,
         shopName: booking.shop.name,
         serviceName: booking.service.name,
-        staffName: booking.staff.user.name ?? 'Your staff member',
+        staffName: booking.staff.name ?? 'Your staff member',
         startTime: booking.startTime,
+        endTime: booking.endTime,
         timezone: booking.shop.timezone,
         formattedAddress: booking.shop.formattedAddress,
         cancelToken: booking.cancelToken,
@@ -47,12 +48,26 @@ export const getAvailableSlots = async (req: Request, res: Response, next: NextF
 
 export const listBookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const date = req.query['date'] as string | undefined;
     const status = req.query['status'] as BookingStatus | undefined;
     const staffId = req.query['staffId'] as string | undefined;
-    const bookings = await bookingService.listBookings(shopId, { date, status, staffId });
+    const canView = await bookingService.canViewCustomerDetails(userId, shopId);
+    const bookings = await bookingService.listBookings(shopId, { date, status, staffId }, canView);
     successResponse(res, bookings);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getBookingStats = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params['shopId'] as string;
+    const canView = await bookingService.canViewCustomerDetails(userId, shopId);
+    const stats = await bookingService.getBookingStats(shopId, canView);
+    successResponse(res, stats);
   } catch (err) {
     next(err);
   }
@@ -60,9 +75,11 @@ export const listBookings = async (req: Request, res: Response, next: NextFuncti
 
 export const getBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const bookingId = req.params['bookingId'] as string;
-    const booking = await bookingService.getBooking(shopId, bookingId);
+    const canView = await bookingService.canViewCustomerDetails(userId, shopId);
+    const booking = await bookingService.getBooking(shopId, bookingId, canView);
     successResponse(res, booking);
   } catch (err) {
     next(err);
@@ -71,9 +88,11 @@ export const getBooking = async (req: Request, res: Response, next: NextFunction
 
 export const updateBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const bookingId = req.params['bookingId'] as string;
-    const booking = await bookingService.updateBooking(shopId, bookingId, req.body);
+    const canView = await bookingService.canViewCustomerDetails(userId, shopId);
+    const booking = await bookingService.updateBooking(shopId, bookingId, req.body, canView);
     successResponse(res, booking);
   } catch (err) {
     next(err);
@@ -93,10 +112,12 @@ export const deleteBooking = async (req: Request, res: Response, next: NextFunct
 
 export const updateBookingStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const bookingId = req.params['bookingId'] as string;
     const { status } = req.body as { status: BookingStatus };
-    const booking = await bookingService.updateBookingStatus(shopId, bookingId, status);
+    const canView = await bookingService.canViewCustomerDetails(userId, shopId);
+    const booking = await bookingService.updateBookingStatus(shopId, bookingId, status, canView);
     successResponse(res, booking);
   } catch (err) {
     next(err);

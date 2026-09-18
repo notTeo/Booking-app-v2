@@ -22,7 +22,7 @@ export interface UpdateShopDto {
 }
 
 export const createShop = async (userId: string, dto: CreateShopDto) => {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPro: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPro: true, name: true, email: true } });
   if (!user?.isPro) {
     throw new AppError(403, 'Creating a shop requires a Pro account.');
   }
@@ -34,7 +34,7 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
     data: {
       ...dto,
       members: {
-        create: { userId, role: 'owner' },
+        create: { userId, role: 'owner', name: user.name, email: user.email },
       },
     },
     include: { members: { where: { userId } } },

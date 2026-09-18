@@ -1,0 +1,41 @@
+/* ── Booking status badge ──────────────────────────────────────────────────
+   Single source of truth for booking-status colors (pending / confirmed /
+   completed / canceled / no_show), used by the bookings calendar
+   (bookings.css) and the customer detail page's booking history table.
+   All colors come from the shared tokens in variables.css so they stay
+   correct in dark mode instead of duplicating raw hex per consumer. */
+
+.status-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+}
+
+.status-badge--pending {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning);
+}
+
+.status-badge--confirmed {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+
+.status-badge--completed {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.status-badge--canceled {
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.status-badge--no_show {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
+}

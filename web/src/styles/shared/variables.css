@@ -11,9 +11,12 @@
   --success:      #15803d;
   --radius:       12px;
   --font:         'Poppins', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-logo:    'Clash Display', sans-serif;
     --red: #c0392b;
   --red-hover: #a93226;
   --error: #e74c3c;
+  --warning: #d97706;
 }
 
 [data-theme="dark"] {
@@ -27,4 +30,5 @@
   --accent-hover: #a3bba5;
   --success:      #8ba88e;
   --error:        #e57373; /* Muted red to match the chill vibe */
+  --warning:      #f5b662; /* Brighter amber for legibility on dark backgrounds */
 }

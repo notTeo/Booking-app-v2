@@ -41,14 +41,10 @@ export interface StaffService {
 
 export interface ShopMember {
   id: string;
-  userId: string;
   shopId: string;
   role: 'owner' | 'staff';
   createdAt: string;
-  user: {
-    id: string;
-    name: string;
-  };
+  name: string;
   staffServices: StaffService[];
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -6,100 +6,186 @@ import {
   faStore,
   faUsers,
   faMobile,
-  faChartLine,
   faUserPlus,
   faGear,
   faArrowRight,
-  faStar,
+  faXmark,
+  faPlus,
+  faTableCells,
+  faCalendar,
+  faScissors,
+  faCheck,
+  faGlobe,
+  faEnvelope,
   faSun,
   faMoon,
-  faXmark,
+  faChevronLeft,
+  faPlusCircle,
+  faClock,
+  faMagnifyingGlass,
+  faArrowUp,
+  faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
-import { faInstagram, faTwitter, faFacebookF } from '@fortawesome/free-brands-svg-icons';
-import { useTheme } from '../context/ThemeContext';
 import { useLang } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/pages/home.css';
+import '../styles/pages/sidebar.css';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const features = [
-  { icon: faCalendarCheck, title: 'Online Booking', desc: 'Let clients book 24/7 from any device, with instant email confirmations.' },
-  { icon: faStore, title: 'Shop Management', desc: 'Manage staff, services, and availability from one clean dashboard.' },
-  { icon: faUsers, title: 'Team Management', desc: 'Assign roles, track performance, and coordinate schedules across your entire team.' },
-  { icon: faMobile, title: 'Mobile-Ready', desc: 'A seamless experience on every screen — your clients book on the go, effortlessly.' },
-  { icon: faChartLine, title: 'Analytics', desc: 'Track peak hours and client retention with clear, actionable reports.' },
-];
-
 const steps = [
   { num: '1', icon: faUserPlus, title: 'Create your account', desc: 'Sign up in seconds — it\'s free, no credit card required.' },
   { num: '2', icon: faGear, title: 'Set up your shop', desc: 'Add your services, set your hours, and invite your team — all in under 10 minutes.' },
   { num: '3', icon: faCalendarCheck, title: 'Accept bookings', desc: 'Share your booking link and start receiving real appointments immediately.' },
 ];
 
-const testimonials = [
-  { quote: 'Bookly completely transformed how we run our barbershop. Clients love the easy online booking and we\'ve cut no-shows by over 60%.', name: 'Marcus Thompson', role: 'Owner, The Sharp Cut', initials: 'MT' },
-  { quote: 'We went from a messy paper calendar to a fully automated system in one afternoon. The dashboard is clean and our whole team uses it daily.', name: 'Sofia Rivera', role: 'Manager, Studio Glam', initials: 'SR' },
-  { quote: 'Our clients book themselves in seconds now, and the email confirmations mean almost nobody forgets their appointment anymore.', name: 'James Okafor', role: 'Owner, Fade Culture', initials: 'JO' },
+const faqs = [
+  { q: 'How does the free trial work?', a: 'Create your account and use every feature free for 14 days — no credit card required. You can invite your team and start taking real bookings right away.' },
+  { q: 'Can my clients book without creating an account?', a: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.' },
+  { q: 'How do I cancel my subscription?', a: 'Cancel any time from your account settings. You\'ll keep access through the end of your current billing period, and your data stays exportable.' },
+  { q: 'What happens after the free plan limit?', a: 'You\'ll get a heads-up before you hit the limit. Upgrade to keep accepting bookings without interruption, or stay on the free plan and pick up next month.' },
 ];
+
+// Dashboard preview mockup — a clickable, non-functional stand-in for the
+// real app, matching components/Sidebar.tsx's link set and classes.
+type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'hours' | 'customers' | 'settings';
+
+const previewNavSections: { label: string; items: { id: PreviewPageId; label: string; icon: typeof faTableCells }[] }[] = [
+  { label: 'Shop', items: [
+    { id: 'overview', label: 'Overview', icon: faTableCells },
+    { id: 'bookings', label: 'Bookings', icon: faCalendar },
+    { id: 'newBooking', label: 'New Booking', icon: faPlusCircle },
+    { id: 'services', label: 'Services', icon: faScissors },
+  ]},
+  { label: 'Manage', items: [
+    { id: 'team', label: 'Team', icon: faUsers },
+    { id: 'invites', label: 'Invites', icon: faUserPlus },
+    { id: 'hours', label: 'Hours', icon: faClock },
+    { id: 'customers', label: 'Customers', icon: faMagnifyingGlass },
+  ]},
+];
+
+const previewPages: Record<PreviewPageId, { title: string; subtitle: string; rows: { icon: typeof faTableCells; label: string; sub: string }[] }> = {
+  overview: { title: 'Hi, Marcus!', subtitle: "Here's what's happening at your shop today.", rows: [
+    { icon: faCalendarCheck, label: "Today's Bookings", sub: '12 appointments scheduled, 3 open slots left.' },
+    { icon: faUsers, label: 'Your Team', sub: '5 staff members active, all synced to the calendar.' },
+  ]},
+  bookings: { title: 'Bookings', subtitle: 'Everything on the calendar this week.', rows: [
+    { icon: faCalendarCheck, label: 'Sarah M. — Haircut', sub: 'Today, 3:00 PM' },
+    { icon: faCalendarCheck, label: 'James O. — Beard Trim', sub: 'Today, 4:30 PM' },
+  ]},
+  newBooking: { title: 'New Booking', subtitle: 'Book a client in under a minute.', rows: [
+    { icon: faScissors, label: 'Choose a service', sub: 'Haircut, color, beard trim & more' },
+    { icon: faCalendar, label: 'Pick a time', sub: 'See live availability for your team' },
+  ]},
+  services: { title: 'Services', subtitle: 'What your shop offers.', rows: [
+    { icon: faScissors, label: 'Haircut', sub: '30 min · €25' },
+    { icon: faScissors, label: 'Beard Trim', sub: '15 min · €12' },
+  ]},
+  team: { title: 'Your Team', subtitle: '5 staff members active.', rows: [
+    { icon: faUsers, label: 'Marcus Thompson', sub: 'Owner' },
+    { icon: faUsers, label: 'Sofia Rivera', sub: 'Stylist' },
+  ]},
+  invites: { title: 'Invites', subtitle: 'Bring your team onto Bookly.', rows: [
+    { icon: faUserPlus, label: 'Pending invite', sub: 'james@fadeculture.com' },
+    { icon: faUserPlus, label: 'Invite a teammate', sub: 'Send a link to join your shop' },
+  ]},
+  hours: { title: 'Working Hours', subtitle: 'When your shop is open.', rows: [
+    { icon: faClock, label: 'Mon – Fri', sub: '9:00 AM – 7:00 PM' },
+    { icon: faClock, label: 'Sat', sub: '10:00 AM – 4:00 PM' },
+  ]},
+  customers: { title: 'Customers', subtitle: '312 clients on file.', rows: [
+    { icon: faMagnifyingGlass, label: 'Search customers', sub: 'Find by name, phone, or email' },
+    { icon: faUsers, label: 'Sarah M.', sub: '14 visits · last seen 2 weeks ago' },
+  ]},
+  settings: { title: 'Settings', subtitle: 'Shop details & preferences.', rows: [
+    { icon: faGear, label: 'Shop profile', sub: 'Name, address, contact info' },
+    { icon: faGear, label: 'Notifications', sub: 'Email & SMS preferences' },
+  ]},
+};
+
+// Same icon as AppLayout.tsx's IconMenu, so the mockup's mobile header
+// matches the real one exactly (not FontAwesome's evenly-spaced bars icon).
+function PreviewMenuIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <line x1="3" y1="7" x2="17" y2="7" />
+      <line x1="3" y1="13" x2="13.5" y2="13" />
+    </svg>
+  );
+}
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+/** How far (in px) the preview card overlaps up into the bottom of the giant pill. */
+const PREVIEW_OVERLAP = 380;
+
 export default function HomePage() {
-  const { theme, toggleTheme } = useTheme();
   const { t, language, toggleLanguage } = useLang();
+  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
+  const [previewPage, setPreviewPage] = useState<PreviewPageId>('overview');
 
-  const heroRef = useRef<HTMLElement>(null);
-  const navWrapperRef = useRef<HTMLElement>(null);
+  const navWrapperRef = useRef<HTMLDivElement>(null);
   const navRowRef = useRef<HTMLDivElement>(null);
-  const navLogoRef = useRef<HTMLDivElement>(null);
+  const navGlowRef = useRef<HTMLDivElement>(null);
+  const navHeroRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const metrics = {
-      active: false,
-      slimHeight: 64,
-      giantHeight: 500,
-      width: 1100,
-      slimFontSize: 15.2, giantFontSize: 112,
-      triggerDistance: 1,
-    };
+    let metrics = { slimHeight: 64, giantHeight: 600, triggerDistance: 1 };
 
     const measure = () => {
-      const wrapper = navWrapperRef.current;
       const row = navRowRef.current;
-      const logo = navLogoRef.current;
-      if (!wrapper || !row || !logo) return;
+      if (!row) return;
 
-      metrics.active = true;
-      wrapper.classList.add('is-morphing');
+      const slimHeight = row.getBoundingClientRect().height;
+      // The pill starts tall (most of the viewport height) at the top of the
+      // page and shrinks back to the slim navbar as the user scrolls past it.
+      const giantHeight = Math.min(window.innerHeight * 0.8, 820);
+      const triggerDistance = Math.max(giantHeight - slimHeight, 1);
+      metrics = { slimHeight, giantHeight, triggerDistance };
 
-      metrics.slimHeight = row.getBoundingClientRect().height;
-      metrics.width = Math.min(Math.max(window.innerWidth * 0.8, 280), 1400);
+      // The nav row now floats in its own always-on-top layer, decoupled
+      // from the pill body — push the hero copy down so it starts below it
+      // instead of underneath it.
+      if (navHeroRef.current) {
+        navHeroRef.current.style.paddingTop = `${slimHeight + 24}px`;
+      }
 
-      metrics.giantHeight = Math.min(window.innerHeight * 0.5, 620);
+      if (previewRef.current) {
+        // Natural (unclipped) bottom of the pill's own content, plus a small
+        // gap — the card is never allowed to start above this, so it can
+        // overlap the pill's empty bottom margin but can never crowd the
+        // CTA button.
+        const contentBottom = (navHeroRef.current?.getBoundingClientRect().height ?? 0) + 32;
+        const topPad = Math.max(giantHeight - PREVIEW_OVERLAP, contentBottom, slimHeight + 24);
+        previewRef.current.style.paddingTop = `${topPad}px`;
+      }
 
-      metrics.slimFontSize = 24;
-      metrics.giantFontSize = Math.min(112, window.innerWidth * 0.28);
-
-      // Tied to the pill's own shrink distance (not the whole hero section) so the
-      // page content below scrolls up in lockstep — the pill never overlaps it.
-      metrics.triggerDistance = Math.max(metrics.giantHeight - metrics.slimHeight, 1);
-
-      wrapper.style.width = `${metrics.width}px`;
       applyFrame();
     };
 
     const applyFrame = () => {
       const wrapper = navWrapperRef.current;
-      const logo = navLogoRef.current;
-      if (!wrapper || !logo || !metrics.active) return;
+      const glow = navGlowRef.current;
+      if (!wrapper || !glow) return;
 
       const progress = Math.min(Math.max(window.scrollY / metrics.triggerDistance, 0), 1);
 
       wrapper.style.height = `${lerp(metrics.giantHeight, metrics.slimHeight, progress)}px`;
-      logo.style.fontSize = `${lerp(metrics.giantFontSize, metrics.slimFontSize, progress)}px`;
+      glow.style.opacity = `${1 - progress}`;
+
+      // The preview card overlaps on top of the pill body while it's tall,
+      // then settles back behind the (always-on-top) nav row. Since the nav
+      // row is its own independent layer above both, it's never covered.
+      if (previewRef.current) {
+        previewRef.current.style.zIndex = progress < 1 ? '150' : '1';
+      }
     };
 
     let ticking = false;
@@ -131,17 +217,23 @@ export default function HomePage() {
   return (
     <div className="home-page">
 
-      {/* ── Floating Nav (doubles as the hero's giant pill at the top of the page) ── */}
-      <nav className="home-nav-wrapper" ref={navWrapperRef}>
-        <div className="home-nav-logo" ref={navLogoRef} aria-hidden="true">
-          <span className="home-logo-text">Bookly</span>
-        </div>
-
+      {/* ── Nav row — its own always-on-top layer, decoupled from the pill body
+           below so it (and its links/buttons) can never end up hidden behind
+           the preview card while it overlaps the pill. ─────────────────────── */}
+      <nav className="home-nav-bar">
         <div className="home-container home-nav" ref={navRowRef}>
 
-          <div className="home-nav-links">
-            <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
-            <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
+          <div className="home-nav-left">
+            <Link to="/" className="home-nav-logo-link" aria-label="Bookly home">
+              <span className="home-logo-text">Bookly</span>
+            </Link>
+
+            <div className="home-nav-links">
+              <a href="#about" className="home-nav-link">{t.home.aboutBadge || 'About'}</a>
+              <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
+              <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
+              <a href="#pricing" className="home-nav-link">{t.home.pricingBadge}</a>
+            </div>
           </div>
 
           <div className="home-nav-right">
@@ -149,6 +241,7 @@ export default function HomePage() {
               className="home-nav-toggle"
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
             </button>
@@ -178,6 +271,34 @@ export default function HomePage() {
         </div>
       </nav>
 
+      {/* ── Pill body (gradient + hero copy) — shrinks away behind the nav row on scroll ── */}
+      <div className="home-nav-wrapper" ref={navWrapperRef}>
+        <div className="home-nav-glow" ref={navGlowRef} />
+
+        <div className="home-nav-hero" ref={navHeroRef}>
+          <div className="home-hero-badge">
+            <div className="home-hero-badge-avatars">
+              <span className="home-hero-badge-avatar">M</span>
+              <span className="home-hero-badge-avatar">S</span>
+              <span className="home-hero-badge-avatar">J</span>
+            </div>
+            <span>{t.home.heroBadge}</span>
+          </div>
+          <h1 className="home-headline">
+            {t.home.headline}
+            <span className="home-headline-accent">{t.home.headlineAccent}</span>
+          </h1>
+          <div className="home-hero-ctas">
+            <Link to="/register">
+              <button className="home-btn-primary">
+                {t.home.cta}
+                <FontAwesomeIcon icon={faArrowRight} />
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* ── Mobile sidebar (slides in right-to-left) ─────────────────────────────── */}
       <div className={`home-mobile-backdrop${menuOpen ? ' is-open' : ''}`} onClick={closeMenu} />
       <div className={`home-mobile-menu${menuOpen ? ' is-open' : ''}`}>
@@ -186,8 +307,10 @@ export default function HomePage() {
         </button>
 
         <div className="home-mobile-links">
+          <a href="#about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</a>
           <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
           <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
+          <a href="#pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</a>
         </div>
 
         <div className="home-mobile-bottom">
@@ -205,6 +328,7 @@ export default function HomePage() {
               className="home-nav-toggle"
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
             </button>
@@ -215,17 +339,126 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="home-hero" ref={heroRef}>
-        <h1 className="home-tagline">{t.home.sub}</h1>
-        <div className="home-hero-ctas">
-          <Link to="/register">
-            <button className="home-btn-primary">
-              {t.home.cta}
-              <FontAwesomeIcon icon={faArrowRight} />
-            </button>
-          </Link>
-          <button className="home-btn-ghost">{t.home.demo || 'See Demo'}</button>
+      {/* ── Dashboard preview (overlaps up into the bottom of the pill) ─────────── */}
+      <section className="home-preview" ref={previewRef}>
+        <div className="home-container">
+          <div className="home-preview-card">
+            <div className="home-preview-card-header">
+              <span className="home-preview-dot home-preview-dot--red" />
+              <span className="home-preview-dot home-preview-dot--yellow" />
+              <span className="home-preview-dot home-preview-dot--green" />
+            </div>
+
+            <div className="home-preview-card-body">
+              {/* Mobile-only — the real app's own mobile top header
+                  (components/AppLayout.tsx), reused exactly: hamburger button +
+                  BOOKLY wordmark in a pill rounded only on the right, flush left.
+                  Positioned so the drawer (below) can overlap it, same as the
+                  real app's z-index relationship between the two. */}
+              <header className="app-mobile-header">
+                <button
+                  className="hamburger-btn"
+                  onClick={() => setPreviewMenuOpen(o => !o)}
+                  aria-label={previewMenuOpen ? 'Close menu' : 'Open menu'}
+                  aria-expanded={previewMenuOpen}
+                >
+                  <PreviewMenuIcon />
+                </button>
+                <span className="app-mobile-brand">BOOKLY</span>
+              </header>
+
+              {/* Clickable, non-functional mockup of the real app sidebar — same
+                  classes/CSS as components/Sidebar.tsx, for visual accuracy. */}
+              <div className={`home-preview-sidebar${previewMenuOpen ? ' is-open' : ''}`}>
+                <div className="sidebar-header">
+                  <button
+                    className="sidebar-back-link"
+                    aria-label="Close menu"
+                    onClick={() => setPreviewMenuOpen(false)}
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </button>
+                  <h4 className="sidebar-link-label">BOOKLY</h4>
+                </div>
+
+                <div className="sidebar-shop-name">hairology</div>
+
+                {previewNavSections.map(section => (
+                  <div key={section.label}>
+                    <span className="sidebar-section-label">{section.label}</span>
+                    {section.items.map(item => (
+                      <button
+                        key={item.id}
+                        className={`sidebar-link${previewPage === item.id ? ' active' : ''}`}
+                        onClick={() => { setPreviewPage(item.id); setPreviewMenuOpen(false); }}
+                      >
+                        <FontAwesomeIcon icon={item.icon} />
+                        <span className="sidebar-link-label">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                ))}
+
+                <button
+                  className={`sidebar-link sidebar-bottom${previewPage === 'settings' ? ' active' : ''}`}
+                  onClick={() => { setPreviewPage('settings'); setPreviewMenuOpen(false); }}
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                  <span className="sidebar-link-label">Settings</span>
+                </button>
+                <button className="sidebar-logout sidebar-link">
+                  <FontAwesomeIcon icon={faRightFromBracket} />
+                  <span className="sidebar-link-label">Logout</span>
+                </button>
+              </div>
+
+              {/* Backdrop — mobile only, closes the drawer on click. */}
+              {previewMenuOpen && (
+                <div className="home-preview-backdrop" onClick={() => setPreviewMenuOpen(false)} />
+              )}
+
+              <div className="home-preview-main">
+                <div className="home-preview-greeting">
+                  <div className="home-preview-avatar">
+                    <FontAwesomeIcon icon={faStore} />
+                  </div>
+                  <div>
+                    <h3>{previewPages[previewPage].title}</h3>
+                    <p>{previewPages[previewPage].subtitle}</p>
+                  </div>
+                </div>
+                <div className="home-preview-tiles">
+                  {previewPages[previewPage].rows.map(row => (
+                    <div key={row.label} className="home-preview-tile">
+                      <FontAwesomeIcon icon={row.icon} className="home-preview-tile-icon" />
+                      <div>
+                        <h4>{row.label}</h4>
+                        <p>{row.sub}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="home-preview-hint">
+            <FontAwesomeIcon icon={faArrowUp} />
+            <span>Go ahead, click around — it's interactive</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── About ────────────────────────────────────────────────────────────── */}
+      <section id="about" className="home-section">
+        <div className="home-container">
+          <div className="home-section-header">
+            <span className="home-label">{t.home.aboutBadge || 'About'}</span>
+            <h2 className="home-section-title">{t.home.aboutTitle || 'Built by people who\'ve stood behind the counter'}</h2>
+            <p className="home-section-sub">
+              {t.home.aboutSub || 'Bookly started as a simple scheduling sheet for a friend\'s barbershop. Today it\'s the booking platform hundreds of shops rely on to fill their calendar, manage their team, and keep clients coming back.'}
+            </p>
+          </div>
         </div>
       </section>
 
@@ -239,16 +472,74 @@ export default function HomePage() {
               {t.home.featuresSub || 'Built for modern barbershops and salons that want to grow without the overhead.'}
             </p>
           </div>
-          <div className="home-features-grid">
-            {features.map(f => (
-              <div key={f.title} className="home-feature-card">
-                <div className="home-feature-icon">
-                  <FontAwesomeIcon icon={f.icon} />
+          <div className="home-features-bento">
+
+            {/* Tall left card — live booking notifications */}
+            <div className="home-feature-bento home-feature-bento--alerts">
+              <div className="home-feature-bento-bubbles">
+                <div className="home-feature-bubble home-feature-bubble--in">
+                  <span className="home-feature-bubble-avatar">S</span>
+                  New booking request from Sarah M.
                 </div>
-                <h3 className="home-feature-title">{f.title}</h3>
-                <p className="home-feature-desc">{f.desc}</p>
+                <div className="home-feature-bubble home-feature-bubble--out">
+                  Confirmed — see you at 3:00 PM 👋
+                </div>
               </div>
-            ))}
+              <div className="home-feature-bento-text">
+                <h3>Real-time booking alerts</h3>
+                <p>Get notified the moment a client books, reschedules, or cancels — no refreshing required.</p>
+              </div>
+            </div>
+
+            {/* Every service type, synced to one calendar */}
+            <div className="home-feature-bento home-feature-bento--services">
+              <div className="home-feature-chip-row">
+                <span className="home-feature-chip">Haircut</span>
+                <span className="home-feature-chip">Color</span>
+                <span className="home-feature-chip home-feature-chip--on">Beard Trim</span>
+                <span className="home-feature-chip">Massage</span>
+              </div>
+              <div className="home-feature-bento-text">
+                <span className="home-feature-bento-label">Set up once</span>
+                <h3>Every service, synced</h3>
+              </div>
+            </div>
+
+            {/* Always-open booking page */}
+            <div className="home-feature-bento home-feature-bento--stat">
+              <div className="home-feature-bento-icon">
+                <FontAwesomeIcon icon={faClock} />
+              </div>
+              <div className="home-feature-bento-number">24/7</div>
+              <p className="home-feature-bento-caption">Your booking page, always open</p>
+            </div>
+
+            {/* Confirmation & cancellation emails */}
+            <div className="home-feature-bento home-feature-bento--reminders">
+              <div className="home-feature-checklist">
+                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> Auto-synced to your calendar</span>
+                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> Instant email confirmation on every booking</span>
+              </div>
+              <div className="home-feature-bento-text">
+                <span className="home-feature-bento-label">Zero manual work</span>
+                <h3>Booking confirmations</h3>
+              </div>
+            </div>
+
+            {/* Any device, any time */}
+            <div className="home-feature-bento home-feature-bento--channels">
+              <div className="home-feature-bento-icons">
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faGlobe} /></span>
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faEnvelope} /></span>
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faMobile} /></span>
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
+              </div>
+              <div className="home-feature-bento-text">
+                <span className="home-feature-bento-label">Book from</span>
+                <h3>Any device, any time</h3>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -275,32 +566,65 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ─────────────────────────────────────────────────────── */}
-      <section className="home-section">
+      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
+      <section id="pricing" className="home-section">
         <div className="home-container">
           <div className="home-section-header">
-            <span className="home-label">{t.home.testimonialsBadge || 'Testimonials'}</span>
-            <h2 className="home-section-title">{t.home.testimonialsTitle || 'Loved by shop owners'}</h2>
-            <p className="home-section-sub">
-              {t.home.testimonialsSub || 'Real results from real barbershops and salons using Bookly every day.'}
-            </p>
+            <span className="home-label">{t.home.pricingBadge}</span>
+            <h2 className="home-section-title">{t.home.pricingTitle}</h2>
+            <p className="home-section-sub">{t.home.pricingSub}</p>
           </div>
-          <div className="home-testimonials-grid">
-            {testimonials.map(t => (
-              <div key={t.name} className="home-testimonial-card">
-                <div className="home-testimonial-stars">
-                  {[...Array(5)].map((_, i) => <FontAwesomeIcon key={i} icon={faStar} style={{ marginRight: '0.2rem' }} />)}
-                </div>
-                <p className="home-testimonial-quote">"{t.quote}"</p>
-                <div className="home-testimonial-author">
-                  <div className="home-testimonial-avatar">{t.initials}</div>
-                  <div>
-                    <p className="home-testimonial-name">{t.name}</p>
-                    <p className="home-testimonial-role">{t.role}</p>
+          <div className="home-pricing-single">
+            <div className="home-price-card home-price-card--pro">
+              <h3 className="home-price-tier">{t.home.pricingPlanName}</h3>
+              <p className="home-price-desc">{t.home.pricingPlanDesc}</p>
+              <hr className="home-price-divider" />
+              <ul className="home-price-features">
+                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature1}</li>
+                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature2}</li>
+                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature3}</li>
+              </ul>
+              <a href="mailto:hello@bookly.com" className="home-btn-primary home-price-cta">
+                {t.home.pricingCta}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────────── */}
+      <section id="faq" className="home-section">
+        <div className="home-container home-faq">
+          <div className="home-faq-intro">
+            <h2 className="home-faq-title">Frequently<br />Asked<br />Questions</h2>
+            <p className="home-faq-sub">Find answers to frequently asked questions.</p>
+            <a href="mailto:hello@bookly.com" className="home-faq-contact">Contact us</a>
+          </div>
+
+          <div className="home-faq-list">
+            {faqs.map((f, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <div
+                  key={f.q}
+                  className={`home-faq-item${isOpen ? ' home-faq-item--open' : ''}`}
+                >
+                  <button
+                    className="home-faq-question"
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                  >
+                    <span>{f.q}</span>
+                    <span className="home-faq-toggle">
+                      <FontAwesomeIcon icon={faPlus} />
+                    </span>
+                  </button>
+                  <div className={`home-faq-answer-wrap${isOpen ? ' home-faq-answer-wrap--open' : ''}`}>
+                    <p className="home-faq-answer">{f.a}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -314,11 +638,6 @@ export default function HomePage() {
               <p className="home-footer-brand-desc">
                 The booking platform built for barbershops and salons that take their business seriously.
               </p>
-              <div className="home-footer-socials">
-                <a href="#" className="home-footer-social" aria-label="Instagram"><FontAwesomeIcon icon={faInstagram} /></a>
-                <a href="#" className="home-footer-social" aria-label="Twitter"><FontAwesomeIcon icon={faTwitter} /></a>
-                <a href="#" className="home-footer-social" aria-label="Facebook"><FontAwesomeIcon icon={faFacebookF} /></a>
-              </div>
             </div>
 
             <div className="home-footer-col">
@@ -326,6 +645,8 @@ export default function HomePage() {
               <ul className="home-footer-links">
                 <li><a href="#features">{t.home.featuresBadge || 'Features'}</a></li>
                 <li><a href="#how">{t.home.howBadge || 'How It Works'}</a></li>
+                <li><a href="#pricing">{t.home.pricingBadge}</a></li>
+                <li><a href="#faq">FAQ</a></li>
                 <li><Link to="/register">{t.home.cta}</Link></li>
               </ul>
             </div>
@@ -333,30 +654,23 @@ export default function HomePage() {
             <div className="home-footer-col">
               <h5>Company</h5>
               <ul className="home-footer-links">
-                <li><a href="#">About</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="#about">{t.home.aboutBadge || 'About'}</a></li>
+                <li><a href="mailto:hello@bookly.com">Contact</a></li>
+                <li><Link to="/login">{t.home.signIn}</Link></li>
               </ul>
             </div>
 
             <div className="home-footer-col">
               <h5>Legal</h5>
               <ul className="home-footer-links">
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Terms of Service</a></li>
-                <li><a href="#">Cookie Policy</a></li>
+                <li><Link to="/privacy">{t.privacy.linkLabel}</Link></li>
+                <li><Link to="/terms">{t.terms.linkLabel}</Link></li>
               </ul>
             </div>
           </div>
 
           <div className="home-footer-bottom">
             <span className="home-footer-copy">© {new Date().getFullYear()} Bookly. All rights reserved.</span>
-            <div className="home-footer-bottom-links">
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">Contact</a>
-            </div>
           </div>
         </div>
       </footer>

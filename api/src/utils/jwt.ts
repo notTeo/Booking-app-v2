@@ -36,6 +36,9 @@ export const generateRandomToken = (): string => {
   return crypto.randomBytes(32).toString('hex');
 };
 
+export const hashToken = (token: string): string =>
+  crypto.createHash('sha256').update(token).digest('hex');
+
 export const getEmailTokenExpiry = (): Date => {
   const expiry = new Date();
   expiry.setHours(expiry.getHours() + 24);

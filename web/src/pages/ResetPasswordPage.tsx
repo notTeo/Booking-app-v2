@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api/auth.api';
+import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/reset-password.css';
 
 export default function ResetPasswordPage() {
@@ -41,7 +42,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← BOOKLY</Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark">BOOKLY</span></Link>
         <h1>Reset Password</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -55,10 +56,10 @@ export default function ResetPasswordPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <li className={password.length >= 8 ? 'req-met' : 'req-unmet'}>At least 8 characters</li>
-                <li className={/[A-Z]/.test(password) ? 'req-met' : 'req-unmet'}>One uppercase letter</li>
-                <li className={/[0-9]/.test(password) ? 'req-met' : 'req-unmet'}>One number</li>
-                <li className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'req-met' : 'req-unmet'}>One special character (!@#$%...)</li>
+                <PasswordRequirement met={password.length >= 8} label="At least 8 characters" />
+                <PasswordRequirement met={/[A-Z]/.test(password)} label="One uppercase letter" />
+                <PasswordRequirement met={/[0-9]/.test(password)} label="One number" />
+                <PasswordRequirement met={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)} label="One special character (!@#$%...)" />
               </ul>
             )}
           </div>

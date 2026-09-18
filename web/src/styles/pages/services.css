@@ -15,7 +15,7 @@
 
 .services-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -132,8 +132,8 @@
 }
 
 .service-delete-btn:hover {
-  color: var(--danger, #e53e3e) !important;
-  border-color: var(--danger, #e53e3e) !important;
+  color: var(--error) !important;
+  border-color: var(--error) !important;
 }
 
 .service-confirm-delete {

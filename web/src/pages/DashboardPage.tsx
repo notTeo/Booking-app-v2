@@ -1,162 +1,127 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faUser,
-  faCircleCheck,
-  faCircleXmark,
-  faClock,
-  faEnvelope,
-  faFingerprint,
-  faShieldHalved,
-  faGear,
-  faStore,
-  faArrowRight,
-  faTriangleExclamation,
-} from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../context/AuthContext';
+import { faCalendarCheck, faStore, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { getMyShops, type Shop } from '../api/shop.api';
+import { getBookingStats, type BookingWithStaff } from '../api/booking.api';
+import { useLang } from '../context/LanguageContext';
 import '../styles/pages/dashboard.css';
+import '../styles/pages/shops.css';
+
+interface ShopStat {
+  shop: Shop;
+  todayCount: number;
+  upcomingCount: number;
+  upcoming: BookingWithStaff[];
+}
+
+interface UpcomingRow extends BookingWithStaff {
+  shopName: string;
+  shopSlug: string;
+}
+
+const dateOf = (iso: string) => iso.split('T')[0];
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { t } = useLang();
+  const [shopStats, setShopStats] = useState<ShopStat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const name  = user?.name;
+  useEffect(() => {
+    getMyShops()
+      .then((shops) =>
+        Promise.all(
+          shops.map((shop) =>
+            getBookingStats(shop.id)
+              .then((stats) => ({ shop, ...stats }))
+              .catch(() => null),
+          ),
+        ),
+      )
+      .then((results) => setShopStats(results.filter((r): r is ShopStat => r !== null)))
+      .catch(() => setError(t.dashboard.errorLoad))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  const upcoming: UpcomingRow[] = shopStats
+    .flatMap((s) => s.upcoming.map((b) => ({ ...b, shopName: s.shop.name, shopSlug: s.shop.slug })))
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .slice(0, 8);
 
-  
+  if (loading) {
+    return (
+      <div className="dashboard-content">
+        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-content">
-
-      {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div className="dash-header">
-        <h1 className="dash-title">Overview</h1>
-        <p className="dash-subtitle">Welcome back, {name}</p>
+        <h1 className="dash-title">{t.dashboard.title}</h1>
+        <p className="dash-subtitle">{t.dashboard.subtitle}</p>
       </div>
 
-      {/* ── Stats row ───────────────────────────────────────────────────────── */}
-      <div className="dash-stats">
+      {error && <div className="alert alert-error">{error}</div>}
 
-        {/* Account status */}
-        <div className="dash-stat-card">
-          <div className={`dash-stat-icon${user?.isVerified ? '' : ' dash-stat-icon--warning'}`}>
-            <FontAwesomeIcon icon={user?.isVerified ? faCircleCheck : faTriangleExclamation} />
-          </div>
-          <div className="dash-stat-body">
-            <p className="dash-stat-label">Account Status</p>
-            <p
-              className="dash-stat-value"
-              style={{ color: user?.isVerified ? 'var(--success)' : '#fbbf24' }}
-            >
-              {user?.isVerified ? 'Verified' : 'Unverified'}
-            </p>
-          </div>
+      {shopStats.length === 0 ? (
+        <div className="shops-empty">
+          <p>{t.dashboard.noShops}</p>
         </div>
-
-        {/* Member since */}
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">
-            <FontAwesomeIcon icon={faClock} />
-          </div>
-          <div className="dash-stat-body">
-            <p className="dash-stat-label">Member Since</p>
-            <p className="dash-stat-value dash-stat-value--sm">
-              {user?.createdAt ? formatDate(user.createdAt) : '—'}
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* ── Account details card ─────────────────────────────────────────────── */}
-      <div className="dash-card">
-        <p className="dash-card-title">Account Details</p>
-
-        <div className="dash-fields">
-
-          {/* Name */}
-          <div className="dash-field">
-            <div className="dash-field-icon">
-              <FontAwesomeIcon icon={faUser} />
-            </div>
-            <div className="dash-field-body">
-              <p className="dash-field-label">User Name</p>
-              <p className="dash-field-value">{name}</p>
-            </div>
-          </div>
-          {/* Email */}
-          <div className="dash-field">
-            <div className="dash-field-icon">
-              <FontAwesomeIcon icon={faEnvelope} />
-            </div>
-            <div className="dash-field-body">
-              <p className="dash-field-label">Email Address</p>
-              <p className="dash-field-value">{user?.email}</p>
-            </div>
-          </div>
-          {/* User ID */}
-          <div className="dash-field">
-            <div className="dash-field-icon">
-              <FontAwesomeIcon icon={faFingerprint} />
-            </div>
-            <div className="dash-field-body">
-              <p className="dash-field-label">User ID</p>
-              <p className="dash-field-value--muted">{user?.id}</p>
-            </div>
+      ) : (
+        <>
+          {/* Per-shop quick stats */}
+          <div className="dash-actions">
+            {shopStats.map(({ shop, todayCount, upcomingCount }) => (
+              <Link key={shop.id} to={`/shops/${shop.slug}`} className="dash-action-card">
+                <div className="dash-action-icon">
+                  <FontAwesomeIcon icon={faStore} />
+                </div>
+                <div className="dash-action-text">
+                  <p className="dash-action-label">{shop.name}</p>
+                  <p className="dash-action-sub">
+                    {t.dashboard.todayCount.replace('{count}', String(todayCount))}
+                    {' · '}
+                    {t.dashboard.upcomingCount.replace('{count}', String(upcomingCount))}
+                  </p>
+                </div>
+                <FontAwesomeIcon icon={faArrowRight} className="dash-action-arrow" />
+              </Link>
+            ))}
           </div>
 
-          {/* Verification */}
-          <div className="dash-field">
-            <div className="dash-field-icon">
-              <FontAwesomeIcon icon={faShieldHalved} />
-            </div>
-            <div className="dash-field-body">
-              <p className="dash-field-label">Email Verified</p>
-              <p className={`dash-field-value dash-field-value--${user?.isVerified ? 'success' : 'error'}`}>
-                <FontAwesomeIcon
-                  icon={user?.isVerified ? faCircleCheck : faCircleXmark}
-                  style={{ marginRight: '0.4rem', fontSize: '0.85rem' }}
-                />
-                {user?.isVerified ? 'Verified' : 'Not verified'}
-              </p>
-            </div>
+          {/* Upcoming across all shops */}
+          <div className="dash-card">
+            <p className="dash-card-title">{t.dashboard.upcomingAcrossShops}</p>
+            {upcoming.length === 0 ? (
+              <p className="dash-field-value--muted">{t.dashboard.noUpcoming}</p>
+            ) : (
+              <div className="dash-fields">
+                {upcoming.map((b) => (
+                  <Link
+                    key={b.id}
+                    to={`/shops/${b.shopSlug}/bookings?date=${dateOf(b.startTime)}`}
+                    className="dash-field dash-field--link"
+                  >
+                    <div className="dash-field-icon">
+                      <FontAwesomeIcon icon={faCalendarCheck} />
+                    </div>
+                    <div className="dash-field-body">
+                      <p className="dash-field-label">{b.shopName} · {b.customer.name}</p>
+                      <p className="dash-field-value">
+                        {b.service.name} —{' '}
+                        {new Date(b.startTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-
-        </div>
-      </div>
-
-      {/* ── Quick actions ────────────────────────────────────────────────────── */}
-      <div className="dash-actions">
-
-        <Link to="/shops" className="dash-action-card">
-          <div className="dash-action-icon">
-            <FontAwesomeIcon icon={faStore} />
-          </div>
-          <div className="dash-action-text">
-            <p className="dash-action-label">My Shops</p>
-            <p className="dash-action-sub">Manage your locations</p>
-          </div>
-          <FontAwesomeIcon icon={faArrowRight} className="dash-action-arrow" />
-        </Link>
-
-        <Link to="/settings" className="dash-action-card">
-          <div className="dash-action-icon">
-            <FontAwesomeIcon icon={faGear} />
-          </div>
-          <div className="dash-action-text">
-            <p className="dash-action-label">Settings</p>
-            <p className="dash-action-sub">Account preferences</p>
-          </div>
-          <FontAwesomeIcon icon={faArrowRight} className="dash-action-arrow" />
-        </Link>
-
-      </div>
-
+        </>
+      )}
     </div>
   );
 }

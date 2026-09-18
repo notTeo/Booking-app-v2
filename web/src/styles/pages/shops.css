@@ -15,7 +15,7 @@
 
 .shops-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -74,7 +74,7 @@
 
 .shop-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
   text-decoration: none;
 }
 
@@ -179,7 +179,7 @@
 
 .shop-detail-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 0.5rem;
 }
 
@@ -196,14 +196,10 @@
 }
 
 /* ---- Form card ---- */
+/* h1 size/weight/margin comes from the shared .card h1 rule (components.css)
+   — same 1.6rem/800 as every other page title. */
 .shop-form-card {
   max-width: 600px;
-  margin-bottom: 1.5rem;
-}
-
-.shop-form-card h1 {
-  font-size: 1.4rem;
-  font-weight: 800;
   margin-bottom: 1.5rem;
 }
 
@@ -326,14 +322,6 @@
 .shop-active-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-.shop-active-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
-  accent-color: var(--accent);
 }
 
 .shop-settings-section .btn {

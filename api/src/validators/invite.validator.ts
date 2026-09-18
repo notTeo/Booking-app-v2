@@ -1,9 +1,4 @@
-import { body, param, query } from 'express-validator';
-
-export const createInviteValidation = [
-  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
-  body('role').isIn(['owner', 'staff']).withMessage('Role must be owner or staff'),
-];
+import { param, query } from 'express-validator';
 
 export const inviteIdParamValidation = [
   param('inviteId').notEmpty().withMessage('Invite ID is required'),

@@ -17,7 +17,9 @@ export interface StaffAssignment {
   userShopId: string;
   serviceId: string;
   userShop: {
-    user: { id: string; email: string };
+    id: string;
+    name: string;
+    email: string;
   };
   createdAt: string;
 }

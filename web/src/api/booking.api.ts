@@ -7,6 +7,7 @@ export interface BookingCustomer {
   name: string;
   phone: string;
   email: string | null;
+  contactHidden?: boolean;
 }
 
 export interface BookingService {
@@ -37,10 +38,23 @@ export interface ListBookingsParams {
   staffId?: string;
 }
 
+export interface BookingWithStaff extends Booking {
+  staff: { id: string; name: string; email: string };
+}
+
+export interface BookingStats {
+  todayCount: number;
+  upcomingCount: number;
+  upcoming: BookingWithStaff[];
+}
+
 const base = (shopId: string) => `/api/shops/${shopId}/bookings`;
 
 export const listBookings = (shopId: string, params?: ListBookingsParams) =>
   client.get(base(shopId), { params }).then((r) => r.data.data as Booking[]);
+
+export const getBookingStats = (shopId: string) =>
+  client.get(`${base(shopId)}/stats`).then((r) => r.data.data as BookingStats);
 
 export const updateBookingStatus = (shopId: string, bookingId: string, status: BookingStatus) =>
   client

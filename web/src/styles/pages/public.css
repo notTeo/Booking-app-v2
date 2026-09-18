@@ -48,7 +48,7 @@
 
 .public-shop-name {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text);
   margin: 0 0 0.5rem;
   line-height: 1.2;
@@ -161,7 +161,7 @@
 
 .public-service-header h3 {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   margin: 0;
   line-height: 1.3;
@@ -291,7 +291,7 @@
 
 .public-team-info h3 {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   margin: 0;
   white-space: nowrap;
@@ -459,7 +459,7 @@
 .public-service-card--selectable:hover,
 .public-team-card--selectable:hover {
   border-color: var(--accent);
-  background: var(--bg-input);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
 .public-service-card--selectable:focus-visible,
@@ -493,26 +493,15 @@
   margin: 0;
 }
 
-/* ── Back button ─────────────────────────────────────────────────────────── */
+/* ── Wizard buttons ──────────────────────────────────────────────────────── */
+/* The wizard's Back/Continue/Confirm buttons use the shared .btn / .btn-ghost /
+   .btn-primary system (components.css) — this just un-stretches them (.btn
+   defaults to width:100%) the same way other inline buttons do elsewhere in
+   the app (e.g. .service-action-btn in services.css). */
 
-.public-wizard-btn {
+.wizard-btn {
+  width: auto;
   align-self: flex-start;
-  margin: 0.3rem;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.45rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  font: inherit;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.public-wizard-btn:hover {
-  border-color: var(--text-muted);
-  color: var(--text);
 }
 
 /* ── Wizard action row (Back + Continue/Submit side by side) ─────────────── */
@@ -522,26 +511,6 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-}
-
-/* ── Primary wizard button (Continue, Confirm Booking) ───────────────────── */
-
-.public-wizard-btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.public-wizard-btn--primary:hover:not(:disabled) {
-  opacity: 0.88;
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.public-wizard-btn--primary:disabled,
-.public-wizard-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 /* ── Date + Time rows ────────────────────────────────────────────────────── */
@@ -661,7 +630,7 @@
 
 .public-booking-confirmed-title {
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text);
   margin: 0;
 }
@@ -688,22 +657,30 @@
 }
 
 .public-slot-btn {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: white;
+  background: var(--bg-input);
+  color: var(--text);
   cursor: pointer;
-  font-size: 14px;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .public-slot-btn:hover {
-  border-color: #666;
+  border-color: var(--accent);
+}
+
+.public-slot-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .public-slot-btn--selected {
   background: var(--accent);
-  color: white;
-  border-color: #000;
+  color: #fff;
+  border-color: var(--accent);
 }
 
 /* ── Customer search dropdown (owner booking) ────────────────────────────── */
@@ -717,10 +694,10 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e0e0e0);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-height: 200px;
   overflow-y: auto;
 }
@@ -729,17 +706,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: none;
+  background: none;
   cursor: pointer;
-  font-size: 14px;
-  gap: 12px;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  text-align: left;
+  gap: 0.75rem;
 }
 
-.customer-search-item:hover {
-  background: var(--bg-hover, #f5f5f5);
+.customer-search-item:hover,
+.customer-search-item:focus-visible {
+  background: var(--bg-input);
+}
+
+.customer-search-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .customer-search-phone {
-  color: var(--text-muted, #888);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }

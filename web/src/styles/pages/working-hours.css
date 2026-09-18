@@ -15,7 +15,7 @@
 
 .working-hours-header h1 {
   font-size: 1.6rem;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -91,6 +91,11 @@
 
 .wh-schedule-header:hover {
   background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.wh-schedule-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .wh-date-range {
@@ -222,55 +227,6 @@
   padding-top: 0.35rem;
 }
 
-.working-hours-switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 22px;
-  flex-shrink: 0;
-}
-
-.working-hours-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-
-.working-hours-slider {
-  position: absolute;
-  inset: 0;
-  background: var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.working-hours-switch input:checked + .working-hours-slider {
-  background: var(--accent);
-}
-
-.working-hours-switch input:disabled + .working-hours-slider {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.working-hours-slider::before {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  left: 3px;
-  top: 3px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.2s;
-}
-
-.working-hours-switch input:checked + .working-hours-slider::before {
-  transform: translateX(18px);
-}
-
 .working-hours-status {
   font-size: 0.78rem;
   font-weight: 600;
@@ -322,7 +278,8 @@
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
-  padding: 0.2rem 0.4rem;
+  padding: 0.65rem;
+  margin: -0.45rem -0.25rem;
   border-radius: var(--radius);
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;

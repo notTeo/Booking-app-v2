@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
 import { useLang } from '../context/LanguageContext';
 import type { Translations } from '../locales/translations';
+import Switch from '../components/Switch';
 import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -243,13 +244,7 @@ export default function ShopSettingsPage() {
               <label htmlFor="detail-active" className="shop-active-name">{t.shopSettings.activeLabel}</label>
               <span className="shop-active-desc">{t.shopSettings.activeDesc}</span>
             </div>
-            <input
-              id="detail-active"
-              type="checkbox"
-              className="shop-active-checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-            />
+            <Switch id="detail-active" checked={isActive} onChange={setIsActive} label={t.shopSettings.activeLabel} />
           </div>
           {saveError && <div className="alert alert-error">{saveError}</div>}
           {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}

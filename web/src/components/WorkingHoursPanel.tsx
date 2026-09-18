@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import {
   type DayOfWeek,
@@ -8,6 +10,8 @@ import {
   type UpdateScheduleDto,
   type UpsertDaysDto,
 } from '../api/workingHours.api';
+import { handleActivateKeyDown } from '../utils/a11y';
+import Switch from './Switch';
 import '../styles/pages/working-hours.css';
 
 // API bundle — callers build this with the correct shopId / memberId baked in
@@ -420,10 +424,15 @@ const created = await api.createSchedule(dto);
 
         return (
           <div key={schedule.id} className="wh-schedule-card">
-            {/* Header */}
+            {/* Header — role="button" (not a real <button>) since it wraps the
+                nested active/inactive toggle button; buttons can't contain buttons. */}
             <div
               className="wh-schedule-header"
+              role="button"
+              tabIndex={0}
+              aria-expanded={isExpanded}
               onClick={() => setExpandedId(isExpanded ? null : schedule.id)}
+              onKeyDown={handleActivateKeyDown(() => setExpandedId(isExpanded ? null : schedule.id))}
             >
               <div className="wh-date-range">
                 {t.workingHours.from} {formatDate(schedule.startDate)}
@@ -442,6 +451,7 @@ const created = await api.createSchedule(dto);
                 <button
                   className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'} wh-active-toggle`}
                   onClick={(e) => { e.stopPropagation(); handleToggleActive(schedule); }}
+                  onKeyDown={(e) => e.stopPropagation()}
                   disabled={editStates[schedule.id]?.saving}
                   title={schedule.isActive ? t.workingHours.closed : t.workingHours.open}
                 >
@@ -452,7 +462,9 @@ const created = await api.createSchedule(dto);
                   {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
                 </span>
               )}
-              <span className={`wh-chevron ${isExpanded ? 'open' : ''}`}>▼</span>
+              <span className={`wh-chevron ${isExpanded ? 'open' : ''}`} aria-hidden="true">
+                <FontAwesomeIcon icon={faChevronDown} />
+              </span>
             </div>
 
             {/* Body */}
@@ -507,15 +519,12 @@ const created = await api.createSchedule(dto);
                         <div className="working-hours-day-label">{t.workingHours.days[day]}</div>
 
                         <div className="working-hours-toggle">
-                          <label className="working-hours-switch">
-                            <input
-                              type="checkbox"
-                              checked={dayState.isOpen}
-                              onChange={() => toggleDay(schedule.id, day)}
-                              disabled={!isOwner}
-                            />
-                            <span className="working-hours-slider" />
-                          </label>
+                          <Switch
+                            checked={dayState.isOpen}
+                            onChange={() => toggleDay(schedule.id, day)}
+                            disabled={!isOwner}
+                            label={t.workingHours.days[day]}
+                          />
                           <span
                             className={`working-hours-status ${dayState.isOpen ? 'open' : 'closed'}`}
                           >
@@ -551,7 +560,7 @@ const created = await api.createSchedule(dto);
                                     onClick={() => removeSlot(schedule.id, day, idx)}
                                     aria-label={t.workingHours.removeSlot}
                                   >
-                                    ×
+                                    <FontAwesomeIcon icon={faXmark} />
                                   </button>
                                 )}
                               </div>

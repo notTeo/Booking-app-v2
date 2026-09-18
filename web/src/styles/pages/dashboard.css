@@ -12,11 +12,10 @@
 }
 
 .dash-title {
-  font-size: 1.65rem;
-  font-weight: 800;
+  font-size: 1.6rem;
+  font-weight: 700;
   color: var(--text);
   margin: 0 0 0.25rem;
-  letter-spacing: -0.025em;
 }
 
 .dash-subtitle {
@@ -41,18 +40,12 @@
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  transition: border-color 0.25s, box-shadow 0.25s;
-}
-
-.dash-stat-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
 .dash-stat-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: calc(var(--radius) * 0.75);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   display: flex;
   align-items: center;
@@ -63,8 +56,8 @@
 }
 
 .dash-stat-icon--warning {
-  background: rgba(251, 191, 36, 0.1);
-  color: #fbbf24;
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  color: var(--warning);
 }
 
 .dash-stat-icon--error {
@@ -97,6 +90,14 @@
   color: var(--accent);
 }
 
+.dash-stat-value--warning {
+  color: var(--warning);
+}
+
+.dash-stat-value--success {
+  color: var(--success);
+}
+
 .dash-stat-value--sm {
   font-size: 0.95rem;
 }
@@ -123,11 +124,6 @@
   border-radius: var(--radius);
   padding: 1.6rem 1.75rem;
   margin-bottom: 1.25rem;
-  transition: border-color 0.25s;
-}
-
-.dash-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .dash-card-title {
@@ -167,7 +163,7 @@
 .dash-field-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: calc(var(--radius) * 0.75);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   display: flex;
   align-items: center;
@@ -219,6 +215,16 @@
   color: var(--error);
 }
 
+.dash-field--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dash-field--link:hover .dash-field-label {
+  color: var(--accent);
+}
+
 .dash-field-row {
   display: flex;
   align-items: center;
@@ -254,7 +260,7 @@
 .dash-action-icon {
   width: 38px;
   height: 38px;
-  border-radius: 9px;
+  border-radius: calc(var(--radius) * 0.75);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   display: flex;
   align-items: center;

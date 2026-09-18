@@ -39,7 +39,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
   });
 
 
-  await sendVerificationEmail(email, token);
+  await sendVerificationEmail(email, token, name);
 
   logger.info(`Pending registration created for: ${email}`);
 };
@@ -79,8 +79,12 @@ export const registerUserWithInvite = async (
       select: { id: true, name:true, email: true, isVerified: true, createdAt: true },
     });
 
-    await tx.userShop.create({
-      data: { userId: user.id, shopId: invite.shopId, role: invite.role },
+    // Link the new login to the placeholder team member this invite grants
+    // access to, instead of creating a new membership — the member (and
+    // their booking history) already exists from before the invite was sent.
+    await tx.userShop.update({
+      where: { id: invite.userShopId },
+      data: { userId: user.id },
     });
 
     await tx.shopInvite.update({
@@ -273,7 +277,7 @@ export const forgotPassword = async (email: string) => {
     },
   });
 
-  await sendPasswordResetEmail(email, token);
+  await sendPasswordResetEmail(email, token, user.name);
 
   logger.info(`Password reset token created for: ${email}`);
 };
@@ -410,7 +414,7 @@ export const resendVerificationEmail = async (email: string) => {
     },
   });
 
-  await sendVerificationEmail(email, token);
+  await sendVerificationEmail(email, token, pending.name);
 
   logger.info(`Verification email resent to: ${email}`);
 };

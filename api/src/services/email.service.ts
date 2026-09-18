@@ -4,100 +4,125 @@ import { logger } from '../utils/logger';
 
 const resend = new Resend(env.resend.apiKey);
 
-const baseTemplate = (title: string, content: string) => `
+// Emails render customer/staff/shop-supplied strings (names, addresses) —
+// escape them before interpolating into HTML.
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Email clients are unreliable with <style> blocks and never load external
+// fonts (Gmail strips the <link> tags), so every visual property below is
+// inlined and font stacks stick to system-safe fallbacks. Gmail also forces
+// its own blue/underline on <a> tags unless the inline color is marked
+// !important — that's why every link/button color below has it.
+const FONT = 'Helvetica, Arial, sans-serif';
+const TEXT = '#064e3b';
+const MUTED = '#475569';
+const ACCENT = '#166534';
+const BORDER = '#e2e8e2';
+
+const styles = {
+  body: `background:#ffffff;color:${TEXT};font-family:${FONT};margin:0;padding:0;`,
+  wrapper: `max-width:520px;margin:0 auto;padding:40px 24px;`,
+  brand: `font-family:${FONT};font-weight:800;font-size:20px;color:${ACCENT};letter-spacing:0.5px;`,
+  pageLabel: `font-family:${FONT};font-size:15px;color:${MUTED};padding-left:10px;`,
+  h1: `font-family:${FONT};font-size:26px;font-weight:700;line-height:1.3;color:${TEXT};margin:0 0 14px;`,
+  p: `font-family:${FONT};color:${MUTED};font-size:15px;line-height:1.6;margin:0 0 20px;`,
+  note: `font-family:${FONT};font-size:13px;color:${MUTED};line-height:1.5;margin:0 0 12px;`,
+  fallbackLink: `font-family:${FONT};font-size:13px;color:${ACCENT} !important;word-break:break-all;`,
+  detailLabel: `padding:9px 0;font-size:14px;color:${MUTED};border-bottom:1px solid ${BORDER};font-family:${FONT};`,
+  detailValue: `padding:9px 0;font-size:14px;font-weight:700;color:${TEXT};text-align:right;border-bottom:1px solid ${BORDER};font-family:${FONT};`,
+  footer: `font-family:${FONT};color:${MUTED};font-size:13px;margin-top:40px;`,
+  strong: `color:${TEXT};`,
+};
+
+/** Outlined pill button — text lives in a nested <span> with its own
+ * !important color, since some Gmail contexts only override the anchor
+ * element's own color and leave a child element alone. */
+const btnOutline = (href: string, label: string) => `
+  <a href="${href}" style="display:inline-block;border:1.5px solid ${ACCENT};border-radius:50px;padding:10px 22px;margin:0 10px 10px 0;text-decoration:none;background:#ffffff;">
+    <span style="font-family:${FONT};font-size:14px;font-weight:700;color:${ACCENT} !important;">${label}</span>
+  </a>
+`;
+
+const inlineLink = (href: string, label: string) =>
+  `<a href="${href}" style="color:${ACCENT} !important;font-weight:700;text-decoration:underline;">${label}</a>`;
+
+const detailRow = (label: string, value: string) => `
+  <tr>
+    <td style="${styles.detailLabel}">${label}</td>
+    <td style="${styles.detailValue}">${value}</td>
+  </tr>
+`;
+
+const baseTemplate = (title: string, pageLabel: string, content: string) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #FAF5EE;
-      color: #1d503A;
-      font-family: 'Poppins', sans-serif;
-      padding: 2rem 1rem;
-    }
-    .wrapper {
-      max-width: 480px;
-      margin: 0 auto;
-    }
-    .brand {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #1d503A;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.04em;
-    }
-    .card {
-      background: #ffffff;
-      border: 1px solid #D5C9B6;
-      border-radius: 10px;
-      padding: 2rem 1.5rem;
-    }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin-bottom: 0.75rem;
-      color: #1d503A;
-    }
-    p {
-      color: #5C7A68;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      margin-bottom: 1.25rem;
-    }
-    .btn {
-      background: #1d503A;
-      border-radius: 10px;
-      color: #FAF5EE;
-      display: inline-block;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 0.75rem 1.75rem;
-      text-decoration: none;
-    }
-    .footer {
-      color: #5C7A68;
-      font-size: 0.8rem;
-      margin-top: 1.25rem;
-      text-align: center;
-    }
-    strong {
-      color: #1d503A;
-    }
-  </style>
 </head>
-<body>
-  <div class="wrapper">
-    <div class="brand">BOOKLY</div>
-    <div class="card">
-      ${content}
-    </div>
-    <p class="footer">If you didn't request this, you can safely ignore this email.</p>
+<body style="${styles.body}">
+  <div style="${styles.wrapper}">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr>
+        <td style="${styles.brand}">BOOKLY</td>
+        <td style="${styles.pageLabel}">${pageLabel}</td>
+      </tr>
+    </table>
+    ${content}
+    <p style="${styles.footer}">&copy; ${new Date().getFullYear()} Bookly. All rights reserved.</p>
   </div>
 </body>
 </html>
 `;
 
+/** Google Calendar "add event" link — no attachment/dependency needed, same
+ * pattern as the existing Google Maps "Get Directions" link below. */
+const buildCalendarUrl = (params: {
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  details: string;
+  location?: string | null;
+}) => {
+  const toUtcBasic = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const search = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: params.title,
+    dates: `${toUtcBasic(params.startTime)}/${toUtcBasic(params.endTime)}`,
+    details: params.details,
+    ...(params.location ? { location: params.location } : {}),
+  });
+  return `https://calendar.google.com/calendar/render?${search.toString()}`;
+};
+
 export const sendVerificationEmail = async (
   email: string,
   token: string,
+  name?: string,
 ) => {
   const verificationUrl = `${env.clientUrl}/verify-email?token=${token}`;
+  const heading = name ? `Verify your email, ${escapeHtml(name)}.` : 'Verify your email.';
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: email,
     subject: 'Verify your email',
-    html: baseTemplate('Verify your email', `
-      <h1>Verify your email</h1>
-      <p>Thanks for signing up! Click the button below to verify your email address. This link expires in <strong>24 hours</strong>.</p>
-      <a href="${verificationUrl}">
-        <h4 class="btn">Verify Email</h4>
-      </a>
+    html: baseTemplate('Verify your email', 'Verify', `
+      <h1 style="${styles.h1}">${heading}</h1>
+      <p style="${styles.p}">Confirm this email to activate your account and keep your access secure.</p>
+      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>. If you didn't create a Bookly account, you can ignore this email.</p>
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(verificationUrl, 'Verify email')}
+      </div>
+      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
+      <p style="${styles.fallbackLink}">${verificationUrl}</p>
     `),
   });
 
@@ -119,12 +144,15 @@ export const sendEmailChangeVerification = async (
     from: env.resend.emailFrom,
     to: newEmail,
     subject: 'Verify your new email address',
-    html: baseTemplate('Verify your new email address', `
-      <h1>Verify your new email</h1>
-      <p>You requested to change your email address. Click the button below to confirm this change. This link expires in <strong>24 hours</strong>.</p>
-      <a href="${verifyUrl}">
-        <h4 class="btn"> Verify New Email</h4>
-      </a>
+    html: baseTemplate('Verify your new email address', 'Verify email change', `
+      <h1 style="${styles.h1}">Verify your new email.</h1>
+      <p style="${styles.p}">You requested to change your account's email address. Confirm this address to complete the change.</p>
+      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>.</p>
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(verifyUrl, 'Verify new email')}
+      </div>
+      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
+      <p style="${styles.fallbackLink}">${verifyUrl}</p>
     `),
   });
 
@@ -139,19 +167,24 @@ export const sendEmailChangeVerification = async (
 export const sendPasswordResetEmail = async (
   email: string,
   token: string,
+  name?: string,
 ) => {
   const resetUrl = `${env.clientUrl}/reset-password?token=${token}`;
+  const heading = name ? `Reset your password, ${escapeHtml(name)}.` : 'Reset your password.';
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: email,
     subject: 'Reset your password',
-    html: baseTemplate('Reset your password', `
-      <h1>Reset your password</h1>
-      <p>We received a request to reset your password. Click the button below to set a new one. This link expires in <strong>1 hour</strong>.</p>
-      <a href="${resetUrl}">
-        <h4 class="btn">Reset Password</h4>
-      </a>
+    html: baseTemplate('Reset your password', 'Reset password', `
+      <h1 style="${styles.h1}">${heading}</h1>
+      <p style="${styles.p}">We received a request to reset your password. Set a new one below.</p>
+      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">1 hour</strong>. If you didn't request this, you can ignore this email.</p>
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(resetUrl, 'Reset password')}
+      </div>
+      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
+      <p style="${styles.fallbackLink}">${resetUrl}</p>
     `),
   });
 
@@ -170,6 +203,7 @@ export const sendBookingConfirmationEmail = async (params: {
   serviceName: string;
   staffName: string;
   startTime: Date;
+  endTime: Date;
   timezone: string;
   formattedAddress: string | null;
   cancelToken: string;
@@ -193,24 +227,36 @@ export const sendBookingConfirmationEmail = async (params: {
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(params.formattedAddress)}`
     : null;
 
+  const calendarUrl = buildCalendarUrl({
+    title: `${params.serviceName} at ${params.shopName}`,
+    startTime: params.startTime,
+    endTime: params.endTime,
+    details: `Appointment with ${params.staffName} at ${params.shopName}.`,
+    location: params.formattedAddress,
+  });
+
   const cancelUrl = `${env.clientUrl}/cancel?token=${params.cancelToken}`;
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} is confirmed`,
-    html: baseTemplate(`Booking at ${params.shopName}`, `
-      <h1>Booking Confirmed!</h1>
-      <p>Hi <strong>${params.customerName}</strong>, your appointment is booked.</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Shop</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.shopName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Staff</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.staffName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+    html: baseTemplate(`Booking at ${params.shopName}`, 'Booked', `
+      <h1 style="${styles.h1}">Booking confirmed, ${escapeHtml(params.customerName)}.</h1>
+      <p style="${styles.p}">Your appointment is locked in. We'll see you soon.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
+        ${detailRow('Date', dateStr)}
+        ${detailRow('Time', timeStr)}
+        ${detailRow('Service', escapeHtml(params.serviceName))}
+        ${detailRow('Provider', escapeHtml(params.staffName))}
+        ${detailRow('Location', escapeHtml(params.formattedAddress ?? params.shopName))}
       </table>
-      ${mapsUrl ? `<a href="${mapsUrl}"><h4 class="btn">Get Directions</h4></a>` : ''}
-      <p style="margin-top:1.5rem;font-size:0.85rem;">Need to cancel? <a href="${cancelUrl}" style="color:#1d503A;font-weight:600;">Cancel this booking</a></p>
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(calendarUrl, 'Save to calendar')}
+        ${mapsUrl ? btnOutline(mapsUrl, 'Get directions') : ''}
+      </div>
+      <p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>
+      <p style="${styles.note}">Need to cancel? ${inlineLink(cancelUrl, 'Cancel this booking')}.</p>
     `),
   });
 
@@ -249,16 +295,16 @@ export const sendCancellationConfirmationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} has been cancelled`,
-    html: baseTemplate(`Booking Cancelled — ${params.shopName}`, `
-      <h1>Booking Cancelled</h1>
-      <p>Hi <strong>${params.customerName}</strong>, your appointment has been successfully cancelled.</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Shop</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.shopName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+    html: baseTemplate(`Booking Cancelled — ${params.shopName}`, 'Cancelled', `
+      <h1 style="${styles.h1}">Booking cancelled, ${escapeHtml(params.customerName)}.</h1>
+      <p style="${styles.p}">Your appointment has been successfully cancelled.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
+        ${detailRow('Date', dateStr)}
+        ${detailRow('Time', timeStr)}
+        ${detailRow('Service', escapeHtml(params.serviceName))}
+        ${detailRow('Location', escapeHtml(params.shopName))}
       </table>
-      <p style="font-size:0.85rem;">If you'd like to book again, visit the shop's booking page.</p>
+      <p style="${styles.note}">If you'd like to book again, visit the shop's booking page.</p>
     `),
   });
 
@@ -299,16 +345,16 @@ export const sendNewBookingNotificationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `New booking at ${params.shopName}`,
-    html: baseTemplate(`New Booking — ${params.shopName}`, `
-      <h1>New Booking!</h1>
-      <p>A new appointment has been made at <strong>${params.shopName}</strong>.</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem;">
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Customer</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.customerName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Phone</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.customerPhone}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Service</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.serviceName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Staff</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${params.staffName}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Date</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${dateStr}</td></tr>
-        <tr><td style="padding:0.4rem 0;color:#5C7A68;font-size:0.9rem;">Time</td><td style="padding:0.4rem 0;font-weight:600;color:#1d503A;font-size:0.9rem;">${timeStr}</td></tr>
+    html: baseTemplate(`New Booking — ${params.shopName}`, 'New booking', `
+      <h1 style="${styles.h1}">New booking at ${escapeHtml(params.shopName)}.</h1>
+      <p style="${styles.p}">A new appointment has just been made.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
+        ${detailRow('Customer', escapeHtml(params.customerName))}
+        ${detailRow('Phone', escapeHtml(params.customerPhone))}
+        ${detailRow('Service', escapeHtml(params.serviceName))}
+        ${detailRow('Provider', escapeHtml(params.staffName))}
+        ${detailRow('Date', dateStr)}
+        ${detailRow('Time', timeStr)}
       </table>
     `),
   });
@@ -335,13 +381,15 @@ export const sendInviteEmail = async (
     from: env.resend.emailFrom,
     to,
     subject: `You've been invited to join ${shopName}`,
-    html: baseTemplate(`Invitation to ${shopName}`, `
-      <h1>You're invited!</h1>
-      <p><strong>${inviterEmail}</strong> has invited you to join <strong>${shopName}</strong> as a <strong>${role}</strong>.</p>
-      <p>Click the button below to accept your invitation. This link expires in <strong>7 days</strong>.</p>
-      <a href="${inviteUrl}">
-        <h4 class="btn">Accept Invitation</h4>
-      </a>
+    html: baseTemplate(`Invitation to ${shopName}`, 'Invite', `
+      <h1 style="${styles.h1}">You're invited to ${escapeHtml(shopName)}.</h1>
+      <p style="${styles.p}"><strong style="${styles.strong}">${escapeHtml(inviterEmail)}</strong> has invited you to join as a <strong style="${styles.strong}">${escapeHtml(role)}</strong>.</p>
+      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">7 days</strong>.</p>
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(inviteUrl, 'Accept invitation')}
+      </div>
+      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
+      <p style="${styles.fallbackLink}">${inviteUrl}</p>
     `),
   });
 
