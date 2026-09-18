@@ -434,9 +434,18 @@
      nav stays usable as the page scrolls beneath it. */
   z-index: 1;
   padding: 0 0 6rem;
+  /* The padding-top above is computed from a measured height that can be
+     briefly too small (fonts/icons/locale text not yet at final layout),
+     letting this box's empty top padding geometrically overlap the hero
+     CTA button while z-index is lifted, swallowing its clicks even though
+     the button is still visibly rendered underneath. Since only the card
+     itself is ever meant to be interactive, disable hits on the wrapper
+     and re-enable them just on the card. */
+  pointer-events: none;
 }
 
 .home-preview-card {
+  pointer-events: auto;
   /* Lets descendants size text off the CARD's own width (cqw) instead of
      the viewport, so the mockup reads the same at any rendered size
      instead of text looking oversized once the card shrinks. */
@@ -492,6 +501,15 @@
 .home-preview-card .hamburger-btn {
   width: clamp(20px, 2.9cqw, 32px);
   height: clamp(20px, 2.9cqw, 32px);
+  /* Draws the eye to the mockup's own hamburger — scoped to the preview
+     card only, so the real app's sidebar toggle (same .hamburger-btn
+     class, in AppLayout.tsx) is unaffected. */
+  animation: home-preview-hamburger-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes home-preview-hamburger-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.4); }
 }
 
 .home-preview-card .hamburger-btn svg {
@@ -664,6 +682,9 @@
 .home-section {
   padding: 5rem 0;
   position: relative;
+  /* Keeps anchor-scrolled headings clear of the fixed nav bar (z-index: 200)
+     when a nav/footer link smooth-scrolls one of these into view. */
+  scroll-margin-top: 90px;
 }
 
 .home-section-header { text-align: center; margin-bottom: 3.5rem; }
@@ -784,42 +805,72 @@
   box-shadow: 0 20px 45px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-.home-feature-bento-bubbles {
+.home-feature-bento-emails {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
 }
 
-.home-feature-bubble {
-  align-self: flex-start;
-  max-width: 90%;
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.4;
-  padding: 0.6rem 0.9rem;
+.home-feature-email {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(6px);
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.home-feature-bubble--out {
-  align-self: flex-end;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--accent);
-  font-weight: 700;
+.home-feature-email-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
-.home-feature-bubble-avatar {
+.home-feature-email-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  margin-right: 0.4rem;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  font-size: 0.65rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.home-feature-email--confirmed .home-feature-email-icon {
+  background: color-mix(in srgb, var(--accent) 90%, black 10%);
+  color: #fff;
+}
+
+.home-feature-email-from {
+  font-size: 0.75rem;
   font-weight: 700;
+}
+
+.home-feature-email-time {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.home-feature-email-subject {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.home-feature-email-preview {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 .home-feature-bento--alerts .home-feature-bento-text h3 {
@@ -904,7 +955,7 @@
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--warning) 18%, var(--bg-card)),
-    color-mix(in srgb, #38bdf8 18%, var(--bg-card))
+    color-mix(in srgb, var(--accent) 18%, var(--bg-card))
   );
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
 }
@@ -1242,9 +1293,22 @@
 
 .home-footer-inner {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 3fr;
   gap: 4rem;
   margin-bottom: 4rem;
+}
+
+/* Product / Company / Legal sit together as one row, closer to each other
+   than they are to the brand column. */
+.home-footer-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.home-footer-cols .home-footer-col {
+  flex: 1;
+  min-width: 110px;
 }
 
 .home-footer-wordmark { font-family: var(--font-logo); font-size: 2rem; color: var(--accent); margin: 0 0 1rem; font-weight: 700; }
@@ -1282,8 +1346,7 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .home-pricing-grid { max-width: 100%; }
-  .home-footer-inner  { grid-template-columns: 1fr 1fr; gap: 3rem; }
-  .home-footer-brand  { grid-column: span 2; }
+  .home-footer-inner  { grid-template-columns: 1fr; gap: 2.5rem; }
   .home-footer-brand-desc { max-width: 100%; }
 
   .home-features-bento {
@@ -1402,7 +1465,5 @@
 
   .home-price-card    { padding: 2.5rem 1.5rem; }
 
-  .home-footer-inner  { grid-template-columns: 1fr; gap: 2.5rem; }
-  .home-footer-brand  { grid-column: span 1; }
   .home-footer-bottom { flex-direction: column; align-items: flex-start; }
 }

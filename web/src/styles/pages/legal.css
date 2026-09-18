@@ -36,6 +36,13 @@
   margin: 0 0 1.5rem;
 }
 
+.legal-section-heading {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
 .legal-contact {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -44,4 +51,18 @@
 .legal-contact a {
   color: var(--accent);
   text-decoration: none;
+}
+
+.about-badge {
+  display: block;
+  width: fit-content;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 2rem 0 1rem;
 }

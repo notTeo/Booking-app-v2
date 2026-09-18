@@ -28,80 +28,83 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import Footer from '../components/Footer';
 import '../styles/pages/home.css';
 import '../styles/pages/sidebar.css';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const steps = [
-  { num: '1', icon: faUserPlus, title: 'Create your account', desc: 'Sign up in seconds — it\'s free, no credit card required.' },
-  { num: '2', icon: faGear, title: 'Set up your shop', desc: 'Add your services, set your hours, and invite your team — all in under 10 minutes.' },
-  { num: '3', icon: faCalendarCheck, title: 'Accept bookings', desc: 'Share your booking link and start receiving real appointments immediately.' },
-];
-
-const faqs = [
-  { q: 'How does the free trial work?', a: 'Create your account and use every feature free for 14 days — no credit card required. You can invite your team and start taking real bookings right away.' },
-  { q: 'Can my clients book without creating an account?', a: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.' },
-  { q: 'How do I cancel my subscription?', a: 'Cancel any time from your account settings. You\'ll keep access through the end of your current billing period, and your data stays exportable.' },
-  { q: 'What happens after the free plan limit?', a: 'You\'ll get a heads-up before you hit the limit. Upgrade to keep accepting bookings without interruption, or stay on the free plan and pick up next month.' },
-];
-
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
 // real app, matching components/Sidebar.tsx's link set and classes.
 type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'hours' | 'customers' | 'settings';
 
-const previewNavSections: { label: string; items: { id: PreviewPageId; label: string; icon: typeof faTableCells }[] }[] = [
-  { label: 'Shop', items: [
-    { id: 'overview', label: 'Overview', icon: faTableCells },
-    { id: 'bookings', label: 'Bookings', icon: faCalendar },
-    { id: 'newBooking', label: 'New Booking', icon: faPlusCircle },
-    { id: 'services', label: 'Services', icon: faScissors },
+type T = ReturnType<typeof useLang>['t'];
+
+const getSteps = (t: T) => [
+  { num: '1', icon: faUserPlus, title: t.home.step1Title, desc: t.home.step1Desc },
+  { num: '2', icon: faGear, title: t.home.step2Title, desc: t.home.step2Desc },
+  { num: '3', icon: faCalendarCheck, title: t.home.step3Title, desc: t.home.step3Desc },
+];
+
+const getFaqs = (t: T) => [
+  { q: t.home.faq1Q, a: t.home.faq1A },
+  { q: t.home.faq2Q, a: t.home.faq2A },
+  { q: t.home.faq3Q, a: t.home.faq3A },
+  { q: t.home.faq4Q, a: t.home.faq4A },
+];
+
+const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageId; label: string; icon: typeof faTableCells }[] }[] => [
+  { label: t.sidebar.shopSection, items: [
+    { id: 'overview', label: t.sidebar.overview, icon: faTableCells },
+    { id: 'bookings', label: t.sidebar.bookings, icon: faCalendar },
+    { id: 'newBooking', label: t.sidebar.bookAppointment, icon: faPlusCircle },
+    { id: 'services', label: t.sidebar.services, icon: faScissors },
   ]},
-  { label: 'Manage', items: [
-    { id: 'team', label: 'Team', icon: faUsers },
-    { id: 'invites', label: 'Invites', icon: faUserPlus },
-    { id: 'hours', label: 'Hours', icon: faClock },
-    { id: 'customers', label: 'Customers', icon: faMagnifyingGlass },
+  { label: t.sidebar.manageSection, items: [
+    { id: 'team', label: t.sidebar.team, icon: faUsers },
+    { id: 'invites', label: t.sidebar.invites, icon: faUserPlus },
+    { id: 'hours', label: t.sidebar.shopWorkingHours, icon: faClock },
+    { id: 'customers', label: t.sidebar.customers, icon: faMagnifyingGlass },
   ]},
 ];
 
-const previewPages: Record<PreviewPageId, { title: string; subtitle: string; rows: { icon: typeof faTableCells; label: string; sub: string }[] }> = {
-  overview: { title: 'Hi, Marcus!', subtitle: "Here's what's happening at your shop today.", rows: [
-    { icon: faCalendarCheck, label: "Today's Bookings", sub: '12 appointments scheduled, 3 open slots left.' },
-    { icon: faUsers, label: 'Your Team', sub: '5 staff members active, all synced to the calendar.' },
+const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle: string; rows: { icon: typeof faTableCells; label: string; sub: string }[] }> => ({
+  overview: { title: t.home.previewGreeting, subtitle: t.home.previewGreetingSub, rows: [
+    { icon: faCalendarCheck, label: t.home.previewTodayLabel, sub: t.home.previewTodaySub },
+    { icon: faUsers, label: t.home.previewTeamLabel, sub: t.home.previewTeamSub },
   ]},
-  bookings: { title: 'Bookings', subtitle: 'Everything on the calendar this week.', rows: [
-    { icon: faCalendarCheck, label: 'Sarah M. — Haircut', sub: 'Today, 3:00 PM' },
-    { icon: faCalendarCheck, label: 'James O. — Beard Trim', sub: 'Today, 4:30 PM' },
+  bookings: { title: t.sidebar.bookings, subtitle: t.home.previewBookingsSubtitle, rows: [
+    { icon: faCalendarCheck, label: t.home.previewBooking1Label, sub: t.home.previewBooking1Sub },
+    { icon: faCalendarCheck, label: t.home.previewBooking2Label, sub: t.home.previewBooking2Sub },
   ]},
-  newBooking: { title: 'New Booking', subtitle: 'Book a client in under a minute.', rows: [
-    { icon: faScissors, label: 'Choose a service', sub: 'Haircut, color, beard trim & more' },
-    { icon: faCalendar, label: 'Pick a time', sub: 'See live availability for your team' },
+  newBooking: { title: t.sidebar.bookAppointment, subtitle: t.home.previewNewBookingSubtitle, rows: [
+    { icon: faScissors, label: t.home.previewNewBookingStep1Label, sub: t.home.previewNewBookingStep1Sub },
+    { icon: faCalendar, label: t.home.previewNewBookingStep2Label, sub: t.home.previewNewBookingStep2Sub },
   ]},
-  services: { title: 'Services', subtitle: 'What your shop offers.', rows: [
-    { icon: faScissors, label: 'Haircut', sub: '30 min · €25' },
-    { icon: faScissors, label: 'Beard Trim', sub: '15 min · €12' },
+  services: { title: t.sidebar.services, subtitle: t.home.previewServicesSubtitle, rows: [
+    { icon: faScissors, label: t.home.previewService1Label, sub: t.home.previewService1Sub },
+    { icon: faScissors, label: t.home.previewService2Label, sub: t.home.previewService2Sub },
   ]},
-  team: { title: 'Your Team', subtitle: '5 staff members active.', rows: [
-    { icon: faUsers, label: 'Marcus Thompson', sub: 'Owner' },
-    { icon: faUsers, label: 'Sofia Rivera', sub: 'Stylist' },
+  team: { title: t.sidebar.team, subtitle: t.home.previewTeamPageSubtitle, rows: [
+    { icon: faUsers, label: t.home.previewTeamMember1Label, sub: t.home.previewTeamMember1Sub },
+    { icon: faUsers, label: t.home.previewTeamMember2Label, sub: t.home.previewTeamMember2Sub },
   ]},
-  invites: { title: 'Invites', subtitle: 'Bring your team onto Bookly.', rows: [
-    { icon: faUserPlus, label: 'Pending invite', sub: 'james@fadeculture.com' },
-    { icon: faUserPlus, label: 'Invite a teammate', sub: 'Send a link to join your shop' },
+  invites: { title: t.sidebar.invites, subtitle: t.home.previewInvitesSubtitle, rows: [
+    { icon: faUserPlus, label: t.home.previewInvite1Label, sub: t.home.previewInvite1Sub },
+    { icon: faUserPlus, label: t.home.previewInvite2Label, sub: t.home.previewInvite2Sub },
   ]},
-  hours: { title: 'Working Hours', subtitle: 'When your shop is open.', rows: [
-    { icon: faClock, label: 'Mon – Fri', sub: '9:00 AM – 7:00 PM' },
-    { icon: faClock, label: 'Sat', sub: '10:00 AM – 4:00 PM' },
+  hours: { title: t.sidebar.shopWorkingHours, subtitle: t.home.previewHoursSubtitle, rows: [
+    { icon: faClock, label: t.home.previewHours1Label, sub: t.home.previewHours1Sub },
+    { icon: faClock, label: t.home.previewHours2Label, sub: t.home.previewHours2Sub },
   ]},
-  customers: { title: 'Customers', subtitle: '312 clients on file.', rows: [
-    { icon: faMagnifyingGlass, label: 'Search customers', sub: 'Find by name, phone, or email' },
-    { icon: faUsers, label: 'Sarah M.', sub: '14 visits · last seen 2 weeks ago' },
+  customers: { title: t.sidebar.customers, subtitle: t.home.previewCustomersSubtitle, rows: [
+    { icon: faMagnifyingGlass, label: t.home.previewCustomer1Label, sub: t.home.previewCustomer1Sub },
+    { icon: faUsers, label: t.home.previewCustomer2Label, sub: t.home.previewCustomer2Sub },
   ]},
-  settings: { title: 'Settings', subtitle: 'Shop details & preferences.', rows: [
-    { icon: faGear, label: 'Shop profile', sub: 'Name, address, contact info' },
-    { icon: faGear, label: 'Notifications', sub: 'Email & SMS preferences' },
+  settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle, rows: [
+    { icon: faGear, label: t.home.previewSetting1Label, sub: t.home.previewSetting1Sub },
+    { icon: faGear, label: t.home.previewSetting2Label, sub: t.home.previewSetting2Sub },
   ]},
-};
+});
 
 // Same icon as AppLayout.tsx's IconMenu, so the mockup's mobile header
 // matches the real one exactly (not FontAwesome's evenly-spaced bars icon).
@@ -129,6 +132,11 @@ export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
   const [previewPage, setPreviewPage] = useState<PreviewPageId>('overview');
+
+  const steps = getSteps(t);
+  const faqs = getFaqs(t);
+  const previewNavSections = getPreviewNavSections(t);
+  const previewPages = getPreviewPages(t);
 
   const navWrapperRef = useRef<HTMLDivElement>(null);
   const navRowRef = useRef<HTMLDivElement>(null);
@@ -229,7 +237,7 @@ export default function HomePage() {
             </Link>
 
             <div className="home-nav-links">
-              <a href="#about" className="home-nav-link">{t.home.aboutBadge || 'About'}</a>
+              <Link to="/about" className="home-nav-link">{t.home.aboutBadge || 'About'}</Link>
               <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
               <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
               <a href="#pricing" className="home-nav-link">{t.home.pricingBadge}</a>
@@ -255,9 +263,7 @@ export default function HomePage() {
             </button>
 
             <Link to="/login" className="home-nav-link">{t.home.signIn}</Link>
-            <Link to="/register">
-              <button className="home-btn-primary home-btn-primary--sm">{t.home.cta}</button>
-            </Link>
+            <Link to="/register" className="home-btn-primary home-btn-primary--sm">{t.home.cta}</Link>
           </div>
 
           <button
@@ -289,11 +295,9 @@ export default function HomePage() {
             <span className="home-headline-accent">{t.home.headlineAccent}</span>
           </h1>
           <div className="home-hero-ctas">
-            <Link to="/register">
-              <button className="home-btn-primary">
-                {t.home.cta}
-                <FontAwesomeIcon icon={faArrowRight} />
-              </button>
+            <Link to="/register" className="home-btn-primary">
+              {t.home.cta}
+              <FontAwesomeIcon icon={faArrowRight} />
             </Link>
           </div>
         </div>
@@ -307,7 +311,7 @@ export default function HomePage() {
         </button>
 
         <div className="home-mobile-links">
-          <a href="#about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</a>
+          <Link to="/about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</Link>
           <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
           <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
           <a href="#pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</a>
@@ -316,10 +320,8 @@ export default function HomePage() {
         <div className="home-mobile-bottom">
           <div className="home-mobile-actions">
             <Link to="/login" className="home-mobile-link" onClick={closeMenu}>{t.home.signIn}</Link>
-            <Link to="/register" onClick={closeMenu}>
-              <button className="home-btn-primary home-btn-primary--sm">
-                {t.home.cta} <FontAwesomeIcon icon={faArrowRight} />
-              </button>
+            <Link to="/register" className="home-btn-primary home-btn-primary--sm" onClick={closeMenu}>
+              {t.home.cta} <FontAwesomeIcon icon={faArrowRight} />
             </Link>
           </div>
 
@@ -404,11 +406,11 @@ export default function HomePage() {
                   onClick={() => { setPreviewPage('settings'); setPreviewMenuOpen(false); }}
                 >
                   <FontAwesomeIcon icon={faGear} />
-                  <span className="sidebar-link-label">Settings</span>
+                  <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
                 </button>
                 <button className="sidebar-logout sidebar-link">
                   <FontAwesomeIcon icon={faRightFromBracket} />
-                  <span className="sidebar-link-label">Logout</span>
+                  <span className="sidebar-link-label">{t.sidebar.logout}</span>
                 </button>
               </div>
 
@@ -444,20 +446,7 @@ export default function HomePage() {
 
           <div className="home-preview-hint">
             <FontAwesomeIcon icon={faArrowUp} />
-            <span>Go ahead, click around — it's interactive</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── About ────────────────────────────────────────────────────────────── */}
-      <section id="about" className="home-section">
-        <div className="home-container">
-          <div className="home-section-header">
-            <span className="home-label">{t.home.aboutBadge || 'About'}</span>
-            <h2 className="home-section-title">{t.home.aboutTitle || 'Built by people who\'ve stood behind the counter'}</h2>
-            <p className="home-section-sub">
-              {t.home.aboutSub || 'Bookly started as a simple scheduling sheet for a friend\'s barbershop. Today it\'s the booking platform hundreds of shops rely on to fill their calendar, manage their team, and keep clients coming back.'}
-            </p>
+            <span>{t.home.previewHint}</span>
           </div>
         </div>
       </section>
@@ -474,34 +463,50 @@ export default function HomePage() {
           </div>
           <div className="home-features-bento">
 
-            {/* Tall left card — live booking notifications */}
+            {/* Tall left card — live booking notifications, styled as email
+                notifications (subject + sender + preview), not chat bubbles */}
             <div className="home-feature-bento home-feature-bento--alerts">
-              <div className="home-feature-bento-bubbles">
-                <div className="home-feature-bubble home-feature-bubble--in">
-                  <span className="home-feature-bubble-avatar">S</span>
-                  New booking request from Sarah M.
+              <div className="home-feature-bento-emails">
+                <div className="home-feature-email">
+                  <div className="home-feature-email-header">
+                    <span className="home-feature-email-icon">
+                      <FontAwesomeIcon icon={faEnvelope} />
+                    </span>
+                    <span className="home-feature-email-from">Bookly</span>
+                    <span className="home-feature-email-time">{t.home.featureAlertsTimeAgo}</span>
+                  </div>
+                  <div className="home-feature-email-subject">{t.home.featureAlertsIncomingSubject}</div>
+                  <div className="home-feature-email-preview">{t.home.featureAlertsIncoming}</div>
                 </div>
-                <div className="home-feature-bubble home-feature-bubble--out">
-                  Confirmed — see you at 3:00 PM 👋
+                <div className="home-feature-email home-feature-email--confirmed">
+                  <div className="home-feature-email-header">
+                    <span className="home-feature-email-icon">
+                      <FontAwesomeIcon icon={faEnvelope} />
+                    </span>
+                    <span className="home-feature-email-from">Bookly</span>
+                    <span className="home-feature-email-time">{t.home.featureAlertsTimeNow}</span>
+                  </div>
+                  <div className="home-feature-email-subject">{t.home.featureAlertsConfirmedSubject}</div>
+                  <div className="home-feature-email-preview">{t.home.featureAlertsConfirmed}</div>
                 </div>
               </div>
               <div className="home-feature-bento-text">
-                <h3>Real-time booking alerts</h3>
-                <p>Get notified the moment a client books, reschedules, or cancels — no refreshing required.</p>
+                <h3>{t.home.featureAlertsTitle}</h3>
+                <p>{t.home.featureAlertsDesc}</p>
               </div>
             </div>
 
             {/* Every service type, synced to one calendar */}
             <div className="home-feature-bento home-feature-bento--services">
               <div className="home-feature-chip-row">
-                <span className="home-feature-chip">Haircut</span>
-                <span className="home-feature-chip">Color</span>
-                <span className="home-feature-chip home-feature-chip--on">Beard Trim</span>
-                <span className="home-feature-chip">Massage</span>
+                <span className="home-feature-chip">{t.home.featureChip1}</span>
+                <span className="home-feature-chip">{t.home.featureChip2}</span>
+                <span className="home-feature-chip home-feature-chip--on">{t.home.featureChip3}</span>
+                <span className="home-feature-chip">{t.home.featureChip4}</span>
               </div>
               <div className="home-feature-bento-text">
-                <span className="home-feature-bento-label">Set up once</span>
-                <h3>Every service, synced</h3>
+                <span className="home-feature-bento-label">{t.home.featureServicesLabel}</span>
+                <h3>{t.home.featureServicesTitle}</h3>
               </div>
             </div>
 
@@ -511,18 +516,18 @@ export default function HomePage() {
                 <FontAwesomeIcon icon={faClock} />
               </div>
               <div className="home-feature-bento-number">24/7</div>
-              <p className="home-feature-bento-caption">Your booking page, always open</p>
+              <p className="home-feature-bento-caption">{t.home.featureStatCaption}</p>
             </div>
 
             {/* Confirmation & cancellation emails */}
             <div className="home-feature-bento home-feature-bento--reminders">
               <div className="home-feature-checklist">
-                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> Auto-synced to your calendar</span>
-                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> Instant email confirmation on every booking</span>
+                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> {t.home.featureRemindersCheck1}</span>
+                <span className="home-feature-check-item"><FontAwesomeIcon icon={faCheck} /> {t.home.featureRemindersCheck2}</span>
               </div>
               <div className="home-feature-bento-text">
-                <span className="home-feature-bento-label">Zero manual work</span>
-                <h3>Booking confirmations</h3>
+                <span className="home-feature-bento-label">{t.home.featureRemindersLabel}</span>
+                <h3>{t.home.featureRemindersTitle}</h3>
               </div>
             </div>
 
@@ -535,8 +540,8 @@ export default function HomePage() {
                 <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
               </div>
               <div className="home-feature-bento-text">
-                <span className="home-feature-bento-label">Book from</span>
-                <h3>Any device, any time</h3>
+                <span className="home-feature-bento-label">{t.home.featureChannelsLabel}</span>
+                <h3>{t.home.featureChannelsTitle}</h3>
               </div>
             </div>
 
@@ -584,7 +589,7 @@ export default function HomePage() {
                 <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature2}</li>
                 <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature3}</li>
               </ul>
-              <a href="mailto:hello@bookly.com" className="home-btn-primary home-price-cta">
+              <a href="mailto:nikostheodosis05@gmail.com" className="home-btn-primary home-price-cta">
                 {t.home.pricingCta}
               </a>
             </div>
@@ -596,9 +601,9 @@ export default function HomePage() {
       <section id="faq" className="home-section">
         <div className="home-container home-faq">
           <div className="home-faq-intro">
-            <h2 className="home-faq-title">Frequently<br />Asked<br />Questions</h2>
-            <p className="home-faq-sub">Find answers to frequently asked questions.</p>
-            <a href="mailto:hello@bookly.com" className="home-faq-contact">Contact us</a>
+            <h2 className="home-faq-title">{t.home.faqHeading}</h2>
+            <p className="home-faq-sub">{t.home.faqSub}</p>
+            <a href="mailto:nikostheodosis05@gmail.com" className="home-faq-contact">{t.home.faqContact}</a>
           </div>
 
           <div className="home-faq-list">
@@ -629,51 +634,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="home-footer">
-        <div className="home-container">
-          <div className="home-footer-inner">
-            <div className="home-footer-brand">
-              <h3 className="home-footer-wordmark">BOOKLY</h3>
-              <p className="home-footer-brand-desc">
-                The booking platform built for barbershops and salons that take their business seriously.
-              </p>
-            </div>
-
-            <div className="home-footer-col">
-              <h5>Product</h5>
-              <ul className="home-footer-links">
-                <li><a href="#features">{t.home.featuresBadge || 'Features'}</a></li>
-                <li><a href="#how">{t.home.howBadge || 'How It Works'}</a></li>
-                <li><a href="#pricing">{t.home.pricingBadge}</a></li>
-                <li><a href="#faq">FAQ</a></li>
-                <li><Link to="/register">{t.home.cta}</Link></li>
-              </ul>
-            </div>
-
-            <div className="home-footer-col">
-              <h5>Company</h5>
-              <ul className="home-footer-links">
-                <li><a href="#about">{t.home.aboutBadge || 'About'}</a></li>
-                <li><a href="mailto:hello@bookly.com">Contact</a></li>
-                <li><Link to="/login">{t.home.signIn}</Link></li>
-              </ul>
-            </div>
-
-            <div className="home-footer-col">
-              <h5>Legal</h5>
-              <ul className="home-footer-links">
-                <li><Link to="/privacy">{t.privacy.linkLabel}</Link></li>
-                <li><Link to="/terms">{t.terms.linkLabel}</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="home-footer-bottom">
-            <span className="home-footer-copy">© {new Date().getFullYear()} Bookly. All rights reserved.</span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

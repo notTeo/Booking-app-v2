@@ -36,12 +36,15 @@ import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import AboutPage from './pages/AboutPage';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <ShopContextProvider>
               <Routes>
@@ -60,6 +63,7 @@ export default function App() {
                 <Route path="/cancel" element={<CancelBookingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/p/:slug" element={<PublicPage />} />
 
                 <Route element={<ProtectedRoute />}>

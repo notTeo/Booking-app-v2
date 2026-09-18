@@ -69,10 +69,8 @@ export interface Translations {
   home: {
     headline: string;
     headlineAccent: string;
-    sub: string;
     cta: string;
     signIn: string;
-    demo: string;
     heroBadge: string;
      featuresBadge: string;
     featuresTitle: string;
@@ -81,8 +79,6 @@ export interface Translations {
     howTitle: string;
     howSub: string;
     aboutBadge: string;
-    aboutTitle: string;
-    aboutSub: string;
     pricingBadge: string;
     pricingTitle: string;
     pricingSub: string;
@@ -92,20 +88,147 @@ export interface Translations {
     pricingFeature2: string;
     pricingFeature3: string;
     pricingCta: string;
+    previewHint: string;
+    step1Title: string;
+    step1Desc: string;
+    step2Title: string;
+    step2Desc: string;
+    step3Title: string;
+    step3Desc: string;
+    faqHeading: string;
+    faqSub: string;
+    faqContact: string;
+    faq1Q: string;
+    faq1A: string;
+    faq2Q: string;
+    faq2A: string;
+    faq3Q: string;
+    faq3A: string;
+    faq4Q: string;
+    faq4A: string;
+    featureAlertsIncoming: string;
+    featureAlertsIncomingSubject: string;
+    featureAlertsConfirmed: string;
+    featureAlertsConfirmedSubject: string;
+    featureAlertsTimeNow: string;
+    featureAlertsTimeAgo: string;
+    featureAlertsTitle: string;
+    featureAlertsDesc: string;
+    featureChip1: string;
+    featureChip2: string;
+    featureChip3: string;
+    featureChip4: string;
+    featureServicesLabel: string;
+    featureServicesTitle: string;
+    featureStatCaption: string;
+    featureRemindersCheck1: string;
+    featureRemindersCheck2: string;
+    featureRemindersLabel: string;
+    featureRemindersTitle: string;
+    featureChannelsLabel: string;
+    featureChannelsTitle: string;
+    previewGreeting: string;
+    previewGreetingSub: string;
+    previewTodayLabel: string;
+    previewTodaySub: string;
+    previewTeamLabel: string;
+    previewTeamSub: string;
+    previewBookingsSubtitle: string;
+    previewBooking1Label: string;
+    previewBooking1Sub: string;
+    previewBooking2Label: string;
+    previewBooking2Sub: string;
+    previewNewBookingSubtitle: string;
+    previewNewBookingStep1Label: string;
+    previewNewBookingStep1Sub: string;
+    previewNewBookingStep2Label: string;
+    previewNewBookingStep2Sub: string;
+    previewServicesSubtitle: string;
+    previewService1Label: string;
+    previewService1Sub: string;
+    previewService2Label: string;
+    previewService2Sub: string;
+    previewTeamPageSubtitle: string;
+    previewTeamMember1Label: string;
+    previewTeamMember1Sub: string;
+    previewTeamMember2Label: string;
+    previewTeamMember2Sub: string;
+    previewInvitesSubtitle: string;
+    previewInvite1Label: string;
+    previewInvite1Sub: string;
+    previewInvite2Label: string;
+    previewInvite2Sub: string;
+    previewHoursSubtitle: string;
+    previewHours1Label: string;
+    previewHours1Sub: string;
+    previewHours2Label: string;
+    previewHours2Sub: string;
+    previewCustomersSubtitle: string;
+    previewCustomer1Label: string;
+    previewCustomer1Sub: string;
+    previewCustomer2Label: string;
+    previewCustomer2Sub: string;
+    previewSettingsSubtitle: string;
+    previewSetting1Label: string;
+    previewSetting1Sub: string;
+    previewSetting2Label: string;
+    previewSetting2Sub: string;
   };
   privacy: {
     linkLabel: string;
     title: string;
     lastUpdated: string;
-    body: string;
+    intro: string;
+    collectHeading: string;
+    collectBody: string;
+    useHeading: string;
+    useBody: string;
+    cookiesHeading: string;
+    cookiesBody: string;
+    sharingHeading: string;
+    sharingBody: string;
+    rightsHeading: string;
+    rightsBody: string;
+    changesHeading: string;
+    changesBody: string;
     contact: string;
   };
   terms: {
     linkLabel: string;
     title: string;
     lastUpdated: string;
-    body: string;
+    intro: string;
+    useHeading: string;
+    useBody: string;
+    accountsHeading: string;
+    accountsBody: string;
+    acceptableHeading: string;
+    acceptableBody: string;
+    availabilityHeading: string;
+    availabilityBody: string;
+    liabilityHeading: string;
+    liabilityBody: string;
+    changesHeading: string;
+    changesBody: string;
     contact: string;
+  };
+  about: {
+    badge: string;
+    title: string;
+    intro: string;
+    storyHeading: string;
+    storyBody: string;
+    githubLabel: string;
+    contactLabel: string;
+  };
+  footer: {
+    brandDesc: string;
+    productHeading: string;
+    companyHeading: string;
+    legalHeading: string;
+    faq: string;
+    contact: string;
+    copyright: string;
   };
   login: {
     title: string;
@@ -645,11 +768,9 @@ export const translations: Record<Language, Translations> = {
       successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
     },
 home: {
-    headline: 'Διαχειρίσου το κατάστημά σου.',
-    headlineAccent: 'Γέμισε την καρέκλα.',
-    sub: 'Η ολοκληρωμένη πλατφόρμα για κρατήσεις, διαχείριση καταστήματος και ανάπτυξη — χωρίς τον χαμό.',
+    headline: 'Το πρόγραμμά σου,',
+    headlineAccent: 'οργανωμένο.',
     cta: 'Ξεκίνα Δωρεάν',
-    demo: 'Δείτε το Demo',
     signIn: 'Σύνδεση',
     heroBadge: 'Η πλατφόρμα κρατήσεων για κουρεία & σαλόνια ομορφιάς',
     featuresBadge: 'Χαρακτηριστικά',
@@ -659,8 +780,6 @@ home: {
     howTitle: 'Έτοιμο σε λίγα λεπτά',
     howSub: 'Τρία απλά βήματα για μια πλήρως αυτοματοποιημένη εμπειρία κρατήσεων.',
     aboutBadge: 'Σχετικά',
-    aboutTitle: 'Φτιαγμένο από ανθρώπους που έχουν σταθεί πίσω από τον πάγκο',
-    aboutSub: 'Το Bookly ξεκίνησε ως ένα απλό πρόγραμμα ραντεβού για το κουρείο ενός φίλου. Σήμερα είναι η πλατφόρμα κρατήσεων που εμπιστεύονται εκατοντάδες καταστήματα για να γεμίζουν το πρόγραμμά τους, να διαχειρίζονται την ομάδα τους και να κρατούν τους πελάτες τους πιστούς.',
     pricingBadge: 'Τιμές',
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
     pricingSub: 'Είμαστε ακόμα στα πρώτα βήματα — επικοινωνήστε μαζί μας για να ξεκινήσετε.',
@@ -670,20 +789,147 @@ home: {
     pricingFeature2: 'Δημόσια σελίδα κρατήσεων για τους πελάτες σου',
     pricingFeature3: 'Διαχείριση ομάδας, υπηρεσιών και πελατών',
     pricingCta: 'Επικοινωνήστε μαζί μας',
+    previewHint: 'Έλα, κάνε κλικ τριγύρω — είναι διαδραστικό',
+    step1Title: 'Δημιούργησε τον λογαριασμό σου',
+    step1Desc: 'Εγγράψου σε δευτερόλεπτα — είναι δωρεάν, χωρίς πιστωτική κάρτα.',
+    step2Title: 'Στήσε το κατάστημά σου',
+    step2Desc: 'Πρόσθεσε τις υπηρεσίες σου, όρισε το ωράριό σου και κάλεσε την ομάδα σου — όλα σε λιγότερο από 10 λεπτά.',
+    step3Title: 'Δέξου κρατήσεις',
+    step3Desc: 'Μοιράσου τον σύνδεσμο κρατήσεων και ξεκίνα να δέχεσαι πραγματικά ραντεβού αμέσως.',
+    faqHeading: 'Συχνές Ερωτήσεις',
+    faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
+    faqContact: 'Επικοινώνησε μαζί μας',
+    faq1Q: 'Πώς λειτουργεί η δωρεάν δοκιμή;',
+    faq1A: 'Δημιούργησε τον λογαριασμό σου και χρησιμοποίησε κάθε δυνατότητα δωρεάν για 14 ημέρες — χωρίς πιστωτική κάρτα. Μπορείς να καλέσεις την ομάδα σου και να ξεκινήσεις να δέχεσαι πραγματικά ραντεβού αμέσως.',
+    faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
+    faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
+    faq3Q: 'Πώς ακυρώνω τη συνδρομή μου;',
+    faq3A: 'Ακύρωσε ανά πάσα στιγμή από τις ρυθμίσεις του λογαριασμού σου. Θα διατηρήσεις πρόσβαση μέχρι το τέλος της τρέχουσας περιόδου χρέωσης και τα δεδομένα σου παραμένουν εξαγώγιμα.',
+    faq4Q: 'Τι συμβαίνει μετά το όριο του δωρεάν πλάνου;',
+    faq4A: 'Θα ενημερωθείς πριν φτάσεις στο όριο. Αναβάθμισε για να συνεχίσεις να δέχεσαι κρατήσεις χωρίς διακοπή, ή μείνε στο δωρεάν πλάνο και συνέχισε τον επόμενο μήνα.',
+    featureAlertsIncoming: 'Η Σάρα Μ. ζήτησε ραντεβού για Κούρεμα, σήμερα στις 3:00 μμ.',
+    featureAlertsIncomingSubject: 'Νέα αίτηση κράτησης',
+    featureAlertsConfirmed: 'Το ραντεβού της Σάρα Μ. επιβεβαιώθηκε για τις 3:00 μμ 👋',
+    featureAlertsConfirmedSubject: 'Το ραντεβού επιβεβαιώθηκε',
+    featureAlertsTimeNow: 'μόλις τώρα',
+    featureAlertsTimeAgo: 'πριν 1 λεπτό',
+    featureAlertsTitle: 'Ειδοποιήσεις κρατήσεων σε πραγματικό χρόνο',
+    featureAlertsDesc: 'Ενημερώσου τη στιγμή που ένας πελάτης κλείνει, αλλάζει ή ακυρώνει ραντεβού — χωρίς να χρειάζεται ανανέωση σελίδας.',
+    featureChip1: 'Κούρεμα',
+    featureChip2: 'Βαφή',
+    featureChip3: 'Φορμάρισμα Γενειάδας',
+    featureChip4: 'Μασάζ',
+    featureServicesLabel: 'Ρύθμισέ το μία φορά',
+    featureServicesTitle: 'Κάθε υπηρεσία, συγχρονισμένη',
+    featureStatCaption: 'Η σελίδα κρατήσεών σου, πάντα ανοιχτή',
+    featureRemindersCheck1: 'Αυτόματος συγχρονισμός με το ημερολόγιό σου',
+    featureRemindersCheck2: 'Άμεση επιβεβαίωση email σε κάθε κράτηση',
+    featureRemindersLabel: 'Καμία χειροκίνητη δουλειά',
+    featureRemindersTitle: 'Επιβεβαιώσεις κρατήσεων',
+    featureChannelsLabel: 'Κράτησε από',
+    featureChannelsTitle: 'Οποιαδήποτε συσκευή, οποιαδήποτε ώρα',
+    previewGreeting: 'Γεια σου, Μάρκο!',
+    previewGreetingSub: 'Δες τι συμβαίνει σήμερα στο κατάστημά σου.',
+    previewTodayLabel: 'Σημερινές Κρατήσεις',
+    previewTodaySub: '12 ραντεβού προγραμματισμένα, 3 ελεύθερες θέσεις.',
+    previewTeamLabel: 'Η Ομάδα σου',
+    previewTeamSub: '5 μέλη προσωπικού ενεργά, όλα συγχρονισμένα με το ημερολόγιο.',
+    previewBookingsSubtitle: 'Όλα στο ημερολόγιο αυτή την εβδομάδα.',
+    previewBooking1Label: 'Σάρα Μ. — Κούρεμα',
+    previewBooking1Sub: 'Σήμερα, 3:00 μμ',
+    previewBooking2Label: 'Γιάννης Ο. — Φορμάρισμα Γενειάδας',
+    previewBooking2Sub: 'Σήμερα, 4:30 μμ',
+    previewNewBookingSubtitle: 'Κλείσε ραντεβού πελάτη σε λιγότερο από ένα λεπτό.',
+    previewNewBookingStep1Label: 'Επίλεξε υπηρεσία',
+    previewNewBookingStep1Sub: 'Κούρεμα, βαφή, φορμάρισμα γενειάδας & άλλα',
+    previewNewBookingStep2Label: 'Επίλεξε ώρα',
+    previewNewBookingStep2Sub: 'Δες τη διαθεσιμότητα της ομάδας σου σε πραγματικό χρόνο',
+    previewServicesSubtitle: 'Τι προσφέρει το κατάστημά σου.',
+    previewService1Label: 'Κούρεμα',
+    previewService1Sub: '30 λεπτά · 25€',
+    previewService2Label: 'Φορμάρισμα Γενειάδας',
+    previewService2Sub: '15 λεπτά · 12€',
+    previewTeamPageSubtitle: '5 μέλη προσωπικού ενεργά.',
+    previewTeamMember1Label: 'Μάρκος Θεοδώρου',
+    previewTeamMember1Sub: 'Ιδιοκτήτης',
+    previewTeamMember2Label: 'Σοφία Ριβέρα',
+    previewTeamMember2Sub: 'Κομμώτρια',
+    previewInvitesSubtitle: 'Φέρε την ομάδα σου στο Bookly.',
+    previewInvite1Label: 'Εκκρεμής πρόσκληση',
+    previewInvite1Sub: 'james@fadeculture.com',
+    previewInvite2Label: 'Κάλεσε συνάδελφο',
+    previewInvite2Sub: 'Στείλε σύνδεσμο για να μπει στο κατάστημά σου',
+    previewHoursSubtitle: 'Πότε είναι ανοιχτό το κατάστημά σου.',
+    previewHours1Label: 'Δευ – Παρ',
+    previewHours1Sub: '9:00 πμ – 7:00 μμ',
+    previewHours2Label: 'Σαβ',
+    previewHours2Sub: '10:00 πμ – 4:00 μμ',
+    previewCustomersSubtitle: '312 πελάτες καταχωρημένοι.',
+    previewCustomer1Label: 'Αναζήτηση πελατών',
+    previewCustomer1Sub: 'Αναζήτησε με όνομα, τηλέφωνο ή email',
+    previewCustomer2Label: 'Σάρα Μ.',
+    previewCustomer2Sub: '14 επισκέψεις · τελευταία πριν 2 εβδομάδες',
+    previewSettingsSubtitle: 'Στοιχεία καταστήματος & προτιμήσεις.',
+    previewSetting1Label: 'Προφίλ καταστήματος',
+    previewSetting1Sub: 'Όνομα, διεύθυνση, στοιχεία επικοινωνίας',
+    previewSetting2Label: 'Ειδοποιήσεις',
+    previewSetting2Sub: 'Προτιμήσεις email & SMS',
   },
   privacy: {
     linkLabel: 'Πολιτική Απορρήτου',
     title: 'Πολιτική Απορρήτου',
     lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
-    body: 'Αυτή η σελίδα είναι προσωρινή. Η πλήρης πολιτική απορρήτου του Bookly βρίσκεται υπό επεξεργασία και θα δημοσιευτεί εδώ σύντομα, πριν από τη γενική διάθεση της υπηρεσίας.',
+    intro: 'Η ιδιωτικότητά σου έχει σημασία. Αυτή η σελίδα εξηγεί, σε απλά λόγια, τι δεδομένα συλλέγει το Bookly και πώς τα χρησιμοποιεί. Δεν αποτελεί νομική συμβουλή — βρισκόμαστε σε πρώιμο στάδιο και θα ενημερώνουμε αυτή τη σελίδα καθώς η υπηρεσία μεγαλώνει.',
+    collectHeading: 'Ποια δεδομένα συλλέγουμε',
+    collectBody: 'Συλλέγουμε τα στοιχεία που μας δίνεις όταν δημιουργείς λογαριασμό ή κλείνεις ραντεβού μέσω μιας δημόσιας σελίδας καταστήματος: όνομα, email, τηλέφωνο και βασικά στοιχεία του καταστήματός σου (όνομα, διεύθυνση, υπηρεσίες, ωράριο). Δεν συλλέγουμε στοιχεία πληρωμής, καθώς το Bookly δεν επεξεργάζεται πληρωμές.',
+    useHeading: 'Πώς τα χρησιμοποιούμε',
+    useBody: 'Χρησιμοποιούμε τα δεδομένα σου για να λειτουργήσει η υπηρεσία: να δημιουργούμε και να διαχειριζόμαστε ραντεβού, να στέλνουμε emails επιβεβαίωσης ή ειδοποιήσεων και να σου παρέχουμε υποστήριξη όταν τη χρειάζεσαι. Δεν πουλάμε ούτε νοικιάζουμε τα δεδομένα σου σε τρίτους.',
+    cookiesHeading: 'Cookies και τοπική αποθήκευση',
+    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
+    sharingHeading: 'Κοινοποίηση δεδομένων',
+    sharingBody: 'Δεν μοιραζόμαστε τα δεδομένα σου με τρίτους, εκτός από τους παρόχους υπηρεσιών που χρειαζόμαστε για να λειτουργήσει το Bookly (π.χ. αποστολή email, φιλοξενία). Αυτοί οι πάροχοι έχουν πρόσβαση μόνο στα δεδομένα που χρειάζονται για να παρέχουν την υπηρεσία τους.',
+    rightsHeading: 'Τα δικαιώματά σου',
+    rightsBody: 'Μπορείς να ζητήσεις πρόσβαση, διόρθωση ή διαγραφή των δεδομένων σου ανά πάσα στιγμή, επικοινωνώντας μαζί μας. Διατηρούμε τα δεδομένα σου όσο ο λογαριασμός σου παραμένει ενεργός, εκτός αν μας ζητήσεις κάτι διαφορετικό.',
+    changesHeading: 'Αλλαγές σε αυτή την πολιτική',
+    changesBody: 'Καθώς το Bookly εξελίσσεται, ενδέχεται να ενημερώσουμε αυτή τη σελίδα. Θα αναφέρουμε πάντα εδώ την ημερομηνία τελευταίας ενημέρωσης.',
     contact: 'Για ερωτήσεις σχετικά με τα δεδομένα σου, επικοινώνησε στο',
   },
   terms: {
     linkLabel: 'Όροι Χρήσης',
     title: 'Όροι Χρήσης',
     lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
-    body: 'Αυτή η σελίδα είναι προσωρινή. Οι πλήρεις όροι χρήσης του Bookly βρίσκονται υπό επεξεργασία και θα δημοσιευτούν εδώ σύντομα, πριν από τη γενική διάθεση της υπηρεσίας.',
+    intro: 'Χρησιμοποιώντας το Bookly, συμφωνείς με τους παρακάτω όρους. Βρισκόμαστε σε πρώιμο στάδιο ανάπτυξης, οπότε αυτοί οι όροι μπορεί να αλλάξουν καθώς η υπηρεσία ωριμάζει.',
+    useHeading: 'Χρήση του Bookly',
+    useBody: 'Το Bookly είναι μια πλατφόρμα διαχείρισης ραντεβού για καταστήματα όπως κουρεία και σαλόνια ομορφιάς. Μπορείς να το χρησιμοποιήσεις για να διαχειρίζεσαι το κατάστημά σου, την ομάδα σου και τους πελάτες σου, εφόσον το κάνεις νόμιμα και με καλή πίστη.',
+    accountsHeading: 'Λογαριασμοί και ευθύνη',
+    accountsBody: 'Είσαι υπεύθυνος/η για τη διατήρηση της ασφάλειας του λογαριασμού σου και για κάθε ενέργεια που πραγματοποιείται μέσω αυτού. Ενημέρωσέ μας άμεσα αν υποψιαστείς μη εξουσιοδοτημένη πρόσβαση.',
+    acceptableHeading: 'Αποδεκτή χρήση',
+    acceptableBody: 'Δεν επιτρέπεται η χρήση του Bookly για παράνομες δραστηριότητες, την αποστολή ανεπιθύμητων μηνυμάτων ή οποιαδήποτε ενέργεια που θα μπορούσε να βλάψει την υπηρεσία ή άλλους χρήστες.',
+    availabilityHeading: 'Διαθεσιμότητα υπηρεσίας',
+    availabilityBody: 'Το Bookly βρίσκεται σε φάση beta. Καταβάλλουμε κάθε προσπάθεια ώστε η υπηρεσία να είναι διαθέσιμη και αξιόπιστη, αλλά δεν μπορούμε να εγγυηθούμε αδιάλειπτη λειτουργία κατά τη διάρκεια αυτού του σταδίου.',
+    liabilityHeading: 'Περιορισμός ευθύνης',
+    liabilityBody: 'Το Bookly παρέχεται "ως έχει", χωρίς καμία εγγύηση. Στον μέγιστο βαθμό που επιτρέπει ο νόμος, δεν φέρουμε ευθύνη για έμμεσες ζημιές που μπορεί να προκύψουν από τη χρήση της υπηρεσίας.',
+    changesHeading: 'Αλλαγές σε αυτούς τους όρους',
+    changesBody: 'Μπορεί να ενημερώνουμε αυτούς τους όρους καθώς εξελίσσεται το Bookly. Η συνέχιση της χρήσης της υπηρεσίας μετά από μια ενημέρωση σημαίνει ότι αποδέχεσαι τους νέους όρους.',
     contact: 'Για ερωτήσεις σχετικά με τους όρους χρήσης, επικοινώνησε στο',
+  },
+  about: {
+    badge: 'Η ιστορία',
+    title: 'Γεια, είμαι ο Νίκος — έφτιαξα το Bookly για τη μαμά μου 🧡.',
+    intro: 'Το Bookly ξεκίνησε ως ένα μικρό εργαλείο για να βοηθήσω τη μαμά μου να διαχειρίζεται τα ραντεβού στο δικό της κατάστημα, χωρίς το χάος των τηλεφωνημάτων και των σημειώσεων σε χαρτί.',
+    storyHeading: 'Γιατί το έφτιαξα',
+    storyBody: 'Έβλεπα τη μαμά μου να παλεύει κάθε μέρα με ένα τετράδιο ραντεβού, να χάνει κρατήσεις και να ξοδεύει ώρες στο τηλέφωνο. Έφτιαξα το Bookly για να λύσω αυτό ακριβώς το πρόβλημα — για εκείνη, αλλά και για κάθε κατάστημα σαν το δικό της. Σήμερα το χτίζω, το συντηρώ και το βελτιώνω μόνος μου, κομμάτι-κομμάτι.',
+    githubLabel: 'Δες τον κώδικα στο GitHub',
+    contactLabel: 'Επικοινώνησε μαζί μου',
+  },
+  footer: {
+    brandDesc: 'Η πλατφόρμα κρατήσεων φτιαγμένη για κουρεία και σαλόνια ομορφιάς που παίρνουν την επιχείρησή τους στα σοβαρά.',
+    productHeading: 'Προϊόν',
+    companyHeading: 'Εταιρεία',
+    legalHeading: 'Νομικά',
+    faq: 'Συχνές Ερωτήσεις',
+    contact: 'Επικοινωνία',
+    copyright: 'Με επιφύλαξη παντός δικαιώματος.',
   },
     login: {
       title: 'Σύνδεση',
@@ -1224,9 +1470,7 @@ home: {
     home: {
     headline: 'Run your shop.',
     headlineAccent: 'Fill your chair.',
-    sub: 'The all-in-one platform to manage bookings, run your shop, and grow your business — without the chaos.',
     cta: 'Start Free',
-    demo: 'See Demo',
     signIn: 'Sign In',
     heroBadge: 'Booking platform for barbershops & salons',
     featuresBadge: 'Features',
@@ -1236,8 +1480,6 @@ home: {
     howTitle: 'Up and running in minutes',
     howSub: 'Three simple steps to a fully automated booking experience.',
     aboutBadge: 'About',
-    aboutTitle: 'Built by people who\'ve stood behind the counter',
-    aboutSub: 'Bookly started as a simple scheduling sheet for a friend\'s barbershop. Today it\'s the booking platform hundreds of shops rely on to fill their calendar, manage their team, and keep clients coming back.',
     pricingBadge: 'Pricing',
     pricingTitle: 'Simple, with no surprises',
     pricingSub: "We're still early — reach out and we'll get you set up.",
@@ -1247,20 +1489,147 @@ home: {
     pricingFeature2: 'A public booking page for your clients',
     pricingFeature3: 'Team, service, and customer management',
     pricingCta: 'Contact us',
+    previewHint: "Go ahead, click around — it's interactive",
+    step1Title: 'Create your account',
+    step1Desc: "Sign up in seconds — it's free, no credit card required.",
+    step2Title: 'Set up your shop',
+    step2Desc: 'Add your services, set your hours, and invite your team — all in under 10 minutes.',
+    step3Title: 'Accept bookings',
+    step3Desc: 'Share your booking link and start receiving real appointments immediately.',
+    faqHeading: 'Frequently Asked Questions',
+    faqSub: 'Find answers to frequently asked questions.',
+    faqContact: 'Contact us',
+    faq1Q: 'How does the free trial work?',
+    faq1A: 'Create your account and use every feature free for 14 days — no credit card required. You can invite your team and start taking real bookings right away.',
+    faq2Q: 'Can my clients book without creating an account?',
+    faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
+    faq3Q: 'How do I cancel my subscription?',
+    faq3A: "Cancel any time from your account settings. You'll keep access through the end of your current billing period, and your data stays exportable.",
+    faq4Q: 'What happens after the free plan limit?',
+    faq4A: "You'll get a heads-up before you hit the limit. Upgrade to keep accepting bookings without interruption, or stay on the free plan and pick up next month.",
+    featureAlertsIncoming: 'Sarah M. requested a Haircut, today at 3:00 PM.',
+    featureAlertsIncomingSubject: 'New booking request',
+    featureAlertsConfirmed: "Sarah M.'s booking is confirmed for 3:00 PM 👋",
+    featureAlertsConfirmedSubject: 'Booking confirmed',
+    featureAlertsTimeNow: 'just now',
+    featureAlertsTimeAgo: '1 min ago',
+    featureAlertsTitle: 'Real-time booking alerts',
+    featureAlertsDesc: 'Get notified the moment a client books, reschedules, or cancels — no refreshing required.',
+    featureChip1: 'Haircut',
+    featureChip2: 'Color',
+    featureChip3: 'Beard Trim',
+    featureChip4: 'Massage',
+    featureServicesLabel: 'Set up once',
+    featureServicesTitle: 'Every service, synced',
+    featureStatCaption: 'Your booking page, always open',
+    featureRemindersCheck1: 'Auto-synced to your calendar',
+    featureRemindersCheck2: 'Instant email confirmation on every booking',
+    featureRemindersLabel: 'Zero manual work',
+    featureRemindersTitle: 'Booking confirmations',
+    featureChannelsLabel: 'Book from',
+    featureChannelsTitle: 'Any device, any time',
+    previewGreeting: 'Hi, Marcus!',
+    previewGreetingSub: "Here's what's happening at your shop today.",
+    previewTodayLabel: "Today's Bookings",
+    previewTodaySub: '12 appointments scheduled, 3 open slots left.',
+    previewTeamLabel: 'Your Team',
+    previewTeamSub: '5 staff members active, all synced to the calendar.',
+    previewBookingsSubtitle: 'Everything on the calendar this week.',
+    previewBooking1Label: 'Sarah M. — Haircut',
+    previewBooking1Sub: 'Today, 3:00 PM',
+    previewBooking2Label: 'James O. — Beard Trim',
+    previewBooking2Sub: 'Today, 4:30 PM',
+    previewNewBookingSubtitle: 'Book a client in under a minute.',
+    previewNewBookingStep1Label: 'Choose a service',
+    previewNewBookingStep1Sub: 'Haircut, color, beard trim & more',
+    previewNewBookingStep2Label: 'Pick a time',
+    previewNewBookingStep2Sub: 'See live availability for your team',
+    previewServicesSubtitle: 'What your shop offers.',
+    previewService1Label: 'Haircut',
+    previewService1Sub: '30 min · €25',
+    previewService2Label: 'Beard Trim',
+    previewService2Sub: '15 min · €12',
+    previewTeamPageSubtitle: '5 staff members active.',
+    previewTeamMember1Label: 'Marcus Thompson',
+    previewTeamMember1Sub: 'Owner',
+    previewTeamMember2Label: 'Sofia Rivera',
+    previewTeamMember2Sub: 'Stylist',
+    previewInvitesSubtitle: 'Bring your team onto Bookly.',
+    previewInvite1Label: 'Pending invite',
+    previewInvite1Sub: 'james@fadeculture.com',
+    previewInvite2Label: 'Invite a teammate',
+    previewInvite2Sub: 'Send a link to join your shop',
+    previewHoursSubtitle: 'When your shop is open.',
+    previewHours1Label: 'Mon – Fri',
+    previewHours1Sub: '9:00 AM – 7:00 PM',
+    previewHours2Label: 'Sat',
+    previewHours2Sub: '10:00 AM – 4:00 PM',
+    previewCustomersSubtitle: '312 clients on file.',
+    previewCustomer1Label: 'Search customers',
+    previewCustomer1Sub: 'Find by name, phone, or email',
+    previewCustomer2Label: 'Sarah M.',
+    previewCustomer2Sub: '14 visits · last seen 2 weeks ago',
+    previewSettingsSubtitle: 'Shop details & preferences.',
+    previewSetting1Label: 'Shop profile',
+    previewSetting1Sub: 'Name, address, contact info',
+    previewSetting2Label: 'Notifications',
+    previewSetting2Sub: 'Email & SMS preferences',
   },
   privacy: {
     linkLabel: 'Privacy Policy',
     title: 'Privacy Policy',
     lastUpdated: 'Last updated: September 2026',
-    body: "This page is a placeholder. Bookly's full privacy policy is being finalized and will be published here before general availability.",
+    intro: "Your privacy matters. This page explains, in plain language, what data Bookly collects and how it's used. It isn't legal advice — we're early-stage and will keep this page updated as the service grows.",
+    collectHeading: 'What We Collect',
+    collectBody: "We collect the information you give us when you create an account or book an appointment through a shop's public page: name, email, phone number, and basic shop details (name, address, services, hours). We don't collect payment information — Bookly doesn't process payments.",
+    useHeading: 'How We Use It',
+    useBody: "We use your data to run the service: creating and managing bookings, sending confirmation or notification emails, and providing support when you need it. We don't sell or rent your data to third parties.",
+    cookiesHeading: 'Cookies & Local Storage',
+    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. We don't use third-party cookies for advertising or tracking.",
+    sharingHeading: 'Data Sharing',
+    sharingBody: "We don't share your data with third parties, except the service providers we rely on to run Bookly (e.g. email delivery, hosting). Those providers only get access to what they need to provide their service.",
+    rightsHeading: 'Your Rights',
+    rightsBody: "You can request access to, correction of, or deletion of your data at any time by reaching out to us. We keep your data for as long as your account is active, unless you ask us to do otherwise.",
+    changesHeading: 'Changes to This Policy',
+    changesBody: "As Bookly evolves, we may update this page. We'll always note the last-updated date here.",
     contact: 'For questions about your data, reach out to',
   },
   terms: {
     linkLabel: 'Terms of Service',
     title: 'Terms of Service',
     lastUpdated: 'Last updated: September 2026',
-    body: "This page is a placeholder. Bookly's full terms of service are being finalized and will be published here before general availability.",
+    intro: "By using Bookly, you agree to the terms below. We're early-stage, so these terms may change as the service matures.",
+    useHeading: 'Using Bookly',
+    useBody: 'Bookly is a booking management platform for shops like barbershops and beauty salons. You can use it to manage your shop, your team, and your customers, as long as you do so lawfully and in good faith.',
+    accountsHeading: 'Accounts & Responsibility',
+    accountsBody: "You're responsible for keeping your account secure and for any activity that happens through it. Let us know right away if you suspect unauthorized access.",
+    acceptableHeading: 'Acceptable Use',
+    acceptableBody: 'You may not use Bookly for unlawful activity, sending unsolicited messages, or anything that could harm the service or other users.',
+    availabilityHeading: 'Service Availability',
+    availabilityBody: "Bookly is in beta. We do our best to keep the service available and reliable, but we can't guarantee uninterrupted operation during this stage.",
+    liabilityHeading: 'Limitation of Liability',
+    liabilityBody: 'Bookly is provided "as is", without warranties of any kind. To the maximum extent permitted by law, we aren\'t liable for indirect damages arising from your use of the service.',
+    changesHeading: 'Changes to These Terms',
+    changesBody: 'We may update these terms as Bookly evolves. Continuing to use the service after an update means you accept the new terms.',
     contact: 'For questions about these terms, reach out to',
+  },
+  about: {
+    badge: 'The Story',
+    title: "Hi, I'm Nick — I built Bookly for my mum 🧡.",
+    intro: 'Bookly started as a small tool to help my mum manage bookings at her own shop, without the chaos of phone calls and paper notebooks.',
+    storyHeading: 'Why I built it',
+    storyBody: 'I watched my mum wrestle with an appointment notebook every day, lose bookings, and spend hours on the phone. I built Bookly to solve exactly that problem — for her, and for every shop like hers. Today I build, run, and improve it myself, one piece at a time.',
+    githubLabel: 'View the code on GitHub',
+    contactLabel: 'Get in touch',
+  },
+  footer: {
+    brandDesc: 'The booking platform built for barbershops and salons that take their business seriously.',
+    productHeading: 'Product',
+    companyHeading: 'Company',
+    legalHeading: 'Legal',
+    faq: 'FAQ',
+    contact: 'Contact',
+    copyright: 'All rights reserved.',
   },
     login: {
       title: 'Login',
