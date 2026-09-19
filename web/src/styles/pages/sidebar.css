@@ -121,11 +121,11 @@
   padding: 0;
 }
 
-/* GlobalNav has no leading button (nothing to go back to) — this holds the
-   logo at the same x-position as ShopNav's and the mobile top bar's
-   button-then-logo headers (matches .sidebar-back-link/.hamburger-btn's
-   32px size). */
+/* Desktop: logo sits flush left in both nav variants, so this spacer isn't
+   needed there. On mobile (see media query below) it reappears to hold the
+   logo clear of the fixed close-X overlaid on top of this same slot. */
 .sidebar-header-spacer {
+  display: none;
   width: 32px;
   height: 32px;
   flex-shrink: 0;
@@ -194,7 +194,8 @@
   opacity: 1;
 }
 
-/* ─── Back link (shop mode) — icon-only, gray chip ─── */
+/* ─── Back link (shop mode) — icon-only, gray chip, pushed to the far
+   right of the header row (logo comes first) ─── */
 .sidebar-back-link {
   display: inline-flex;
   align-items: center;
@@ -202,6 +203,7 @@
   width: 32px;
   height: 32px;
   flex-shrink: 0;
+  margin-left: auto;
   border-radius: var(--radius);
   background: var(--bg-input);
   color: var(--text-muted);
@@ -264,7 +266,7 @@
 }
 
 /* ─── Mobile: slide-in drawer ─── */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .app-mobile-header {
     display: flex;
   }
@@ -302,12 +304,19 @@
     display: flex;
   }
 
+  /* Reserve the leading slot the fixed close-X sits on top of, so the logo
+     (and, in shop mode, the back-arrow now at the far right) don't collide
+     with it. */
+  .sidebar-header-spacer {
+    display: inline-flex;
+  }
+
   .app-main {
     padding: 1.25rem 1rem;
   }
 }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .app-mobile-header {
     display: none;
   }

@@ -9,8 +9,6 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faEnvelope,
-  faLock,
   faSlidersH,
   faShieldHalved,
   faTriangleExclamation,
@@ -46,22 +44,13 @@ export default function SettingsPage() {
   const { language, toggleLanguage, t } = useLang();
   const navigate = useNavigate();
 
-  // Update email
+  // Profile — name, email, password, saved together
   const [email, setEmail] = useState(user?.email ?? '');
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [emailSuccess, setEmailSuccess] = useState('');
-
   const [name, setName] = useState(user?.name ?? '');
-  const [nameLoading, setNameLoading] = useState(false);
-  const [nameError, setNameError] = useState('');
-  const [nameSuccess, setNameSuccess] = useState('');
-
-  // Update password
   const [password, setPassword] = useState('');
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
 
   // Sessions
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -83,64 +72,39 @@ export default function SettingsPage() {
       .finally(() => setSessionsLoading(false));
   }, []);
 
-  const handleUpdateName = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setNameError('');
-    setNameSuccess('');
-    if (!name || name === user?.name) return;
-    setNameLoading(true);
-    try {
-      const data = await updateMe({ name });
-    if (data.message) {
-      setNameSuccess(data.message);
-      setUser({ ...user!, name: data.user.name });  // ← update context
-      setName(data.user.name ?? ''); 
-      } else {
-        setUser({ ...user!, name: data.user.name });
-        setNameSuccess(t.settings.successName);
-      }
-    } catch (err: any) {
-      setNameError(err.response?.data?.message ?? t.settings.errorName);
-    } finally {
-      setNameLoading(false);
-    }
-  };
+  const isProfileDirty =
+    (!!name && name !== user?.name) || (!!email && email !== user?.email) || password.length > 0;
 
-    const handleUpdateEmail = async (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEmailError('');
-    setEmailSuccess('');
-    if (!email || email === user?.email) return;
-    setEmailLoading(true);
+    setProfileError('');
+    setProfileSuccess('');
+    const payload: { name?: string; email?: string; password?: string } = {};
+    if (name && name !== user?.name) payload.name = name;
+    if (email && email !== user?.email) payload.email = email;
+    if (password) payload.password = password;
+    if (Object.keys(payload).length === 0) return;
+
+    setProfileLoading(true);
     try {
-      const data = await updateMe({ email });
+      const data = await updateMe(payload);
+      // `data.user` is only present when name and/or password changed —
+      // an email-only change returns just the verification message.
+      if (data.user) {
+        setUser({ ...user!, name: data.user.name, email: data.user.email });
+      }
       if (data.message) {
-        setEmailSuccess(data.message);
-        setEmail(user?.email ?? '');
+        // Email changes go through verification — keep showing the still-current address.
+        setEmail(data.user?.email ?? user?.email ?? '');
+        setProfileSuccess(data.message);
       } else {
-        setUser({ ...user!, email: data.user.email });
-        setEmailSuccess(t.settings.successEmail);
+        setProfileSuccess(t.settings.successProfile);
       }
-    } catch (err: any) {
-      setEmailError(err.response?.data?.message ?? t.settings.errorEmail);
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
-    setPasswordLoading(true);
-    try {
-      await updateMe({ password });
       setPassword('');
-      setPasswordSuccess(t.settings.successPassword);
     } catch (err: any) {
-      setPasswordError(err.response?.data?.message ?? t.settings.errorPassword);
+      setProfileError(err.response?.data?.message ?? t.settings.errorProfile);
     } finally {
-      setPasswordLoading(false);
+      setProfileLoading(false);
     }
   };
 
@@ -174,10 +138,11 @@ export default function SettingsPage() {
   };
 
   const passwordValid =
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /[0-9]/.test(password) &&
-    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+    password.length === 0 ||
+    (password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password));
 
   return (
     <div className="settings-page">
@@ -202,13 +167,13 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-      {/* User Name */}
+      {/* Profile — name, email, password, one save */}
       <div className="settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
-          {t.settings.nameSection}
+          {t.settings.profileSection}
         </p>
-        <form onSubmit={handleUpdateName}>
+        <form onSubmit={handleSaveProfile}>
           <div className="form-group">
             <label htmlFor="settings-name">{t.settings.nameLabel}</label>
             <input
@@ -219,24 +184,6 @@ export default function SettingsPage() {
               required
             />
           </div>
-          {nameError && <div className="alert alert-error">{nameError}</div>}
-          {nameSuccess && <div className="alert alert-success">{nameSuccess}</div>}
-          <button
-            className="btn btn-primary"
-            type="submit"
-            disabled={nameLoading || name === user?.name}
-          >
-            {nameLoading ? t.settings.saving : t.settings.saveName}
-          </button>
-        </form>
-      </div>
-      {/* Email Address */}
-      <div className="settings-section">
-        <p className="settings-section-title">
-          <FontAwesomeIcon icon={faEnvelope} className="settings-section-icon" />
-          {t.settings.emailSection}
-        </p>
-        <form onSubmit={handleUpdateEmail}>
           <div className="form-group">
             <label htmlFor="settings-email">{t.settings.emailLabel}</label>
             <input
@@ -247,33 +194,13 @@ export default function SettingsPage() {
               required
             />
           </div>
-          {emailError && <div className="alert alert-error">{emailError}</div>}
-          {emailSuccess && <div className="alert alert-success">{emailSuccess}</div>}
-          <button
-            className="btn btn-primary"
-            type="submit"
-            disabled={emailLoading || email === user?.email}
-          >
-            {emailLoading ? t.settings.saving : t.settings.saveEmail}
-          </button>
-        </form>
-      </div>
-
-      {/* Change Password */}
-      <div className="settings-section">
-        <p className="settings-section-title">
-          <FontAwesomeIcon icon={faLock} className="settings-section-icon" />
-          {t.settings.passwordSection}
-        </p>
-        <form onSubmit={handleUpdatePassword}>
           <div className="form-group">
-            <label htmlFor="settings-password">{t.settings.newPasswordLabel}</label>
+            <label htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
             <input
               id="settings-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
             {password.length > 0 && (
               <ul className="password-requirements">
@@ -284,14 +211,14 @@ export default function SettingsPage() {
               </ul>
             )}
           </div>
-          {passwordError && <div className="alert alert-error">{passwordError}</div>}
-          {passwordSuccess && <div className="alert alert-success">{passwordSuccess}</div>}
+          {profileError && <div className="alert alert-error">{profileError}</div>}
+          {profileSuccess && <div className="alert alert-success">{profileSuccess}</div>}
           <button
             className="btn btn-primary"
             type="submit"
-            disabled={passwordLoading || !passwordValid}
+            disabled={profileLoading || !isProfileDirty || !passwordValid}
           >
-            {passwordLoading ? t.settings.saving : t.settings.updatePassword}
+            {profileLoading ? t.settings.saving : t.settings.saveProfile}
           </button>
         </form>
       </div>

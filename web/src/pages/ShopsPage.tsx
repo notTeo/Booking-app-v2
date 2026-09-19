@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyShops, type Shop } from '../api/shop.api';
 import '../styles/pages/shops.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 export default function ShopsPage() {
   const { user } = useAuth();
@@ -25,16 +27,6 @@ export default function ShopsPage() {
     <div className="shops-page">
       <div className="shops-header">
         <h1>My Shops</h1>
-        <div>
-          <button
-            className="btn btn-primary shops-new-btn"
-            onClick={() => navigate('/shops/new')}
-            disabled={!isPro}
-            title={!isPro ? 'Upgrade to Pro to create a shop' : undefined}
-          >
-            + New Shop
-          </button>
-        </div>
       </div>
 
       {loading && (
@@ -51,8 +43,9 @@ export default function ShopsPage() {
         <div className="shops-empty">
           <p>You have no shops yet.</p>
           {isPro && (
-            <button className="btn btn-primary" onClick={() => navigate('/shops/new')}>
-              Create your first shop
+            <button type="button" className="shop-card shop-card--add" onClick={() => navigate('/shops/new')}>
+              <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
+              <span>Create your first shop</span>
             </button>
           )}
         </div>
@@ -78,6 +71,16 @@ export default function ShopsPage() {
               </div>
             </Link>
           ))}
+          <button
+            type="button"
+            className="shop-card shop-card--add"
+            onClick={() => navigate('/shops/new')}
+            disabled={!isPro}
+            title={!isPro ? 'Upgrade to Pro to create a shop' : undefined}
+          >
+            <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
+            <span>+ New Shop</span>
+          </button>
         </div>
       )}
     </div>

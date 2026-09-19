@@ -16,7 +16,7 @@ export default function TermsPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">BOOKLY</span></Link>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark">Bookly</span></Link>
         <h1 className="legal-title">{t.terms.title}</h1>
         <p className="legal-updated">{t.terms.lastUpdated}</p>
         <p className="legal-body">{t.terms.intro}</p>

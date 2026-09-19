@@ -98,6 +98,12 @@ export default function OwnerBookingWizard({
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           timeHint={timeHint}
+          mode="internal"
+          closedLinkTo={
+            wizard.selectedMemberId
+              ? `/shops/${slug}/team/${wizard.selectedMemberId}`
+              : `/shops/${slug}/working-hours`
+          }
           onDateChange={wizard.handleDateChange}
           onSelectTime={wizard.setTime}
           onBack={wizard.goBack}

@@ -195,8 +195,8 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
     updateDay(scheduleId, day, { hours });
   };
 
-  // ---- Save days ----
-  const handleSaveDays = async (scheduleId: string) => {
+  // ---- Save schedule (date range + days, one action) ----
+  const handleSaveSchedule = async (scheduleId: string) => {
     const state = editStates[scheduleId];
 
     const allErrors: Partial<Record<DayOfWeek, string>> = {};
@@ -213,6 +213,10 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
 
     updateEdit(scheduleId, { saving: true, error: '', success: '' });
     try {
+      await api.updateSchedule(scheduleId, {
+        startDate: state.startDate,
+        endDate: state.endDate || null,
+      });
       const updated = await api.upsertDays(scheduleId, {
         days: DAY_ORDER.map((d) => ({
           day: d,
@@ -223,22 +227,6 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       if (updated) {
         setSchedules((prev) => prev.map((s) => (s.id === scheduleId ? updated : s)));
       }
-      updateEdit(scheduleId, { saving: false, success: t.workingHours.successSave });
-    } catch {
-      updateEdit(scheduleId, { saving: false, error: t.workingHours.errorSave });
-    }
-  };
-
-  // ---- Save dates / active toggle ----
-  const handleSaveDates = async (scheduleId: string) => {
-    const state = editStates[scheduleId];
-    updateEdit(scheduleId, { saving: true, error: '', success: '' });
-    try {
-      const updated = await api.updateSchedule(scheduleId, {
-        startDate: state.startDate,
-        endDate: state.endDate || null,
-      });
-      setSchedules((prev) => prev.map((s) => (s.id === scheduleId ? updated : s)));
       updateEdit(scheduleId, { saving: false, success: t.workingHours.successSave });
     } catch (err: unknown) {
       const apiMsg =
@@ -448,15 +436,18 @@ const created = await api.createSchedule(dto);
                 )}
               </div>
               {isOwner ? (
-                <button
-                  className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'} wh-active-toggle`}
-                  onClick={(e) => { e.stopPropagation(); handleToggleActive(schedule); }}
+                <span
+                  className="wh-active-switch"
+                  onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
-                  disabled={editStates[schedule.id]?.saving}
-                  title={schedule.isActive ? t.workingHours.closed : t.workingHours.open}
                 >
-                  {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
-                </button>
+                  <Switch
+                    checked={schedule.isActive}
+                    onChange={() => handleToggleActive(schedule)}
+                    disabled={editStates[schedule.id]?.saving}
+                    label={schedule.isActive ? t.workingHours.open : t.workingHours.closed}
+                  />
+                </span>
               ) : (
                 <span className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'}`}>
                   {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
@@ -476,35 +467,28 @@ const created = await api.createSchedule(dto);
                 {state.success && (
                   <div className="alert alert-success wh-schedule-alert">{state.success}</div>
                 )}
-                    {isOwner && (
-                    <div className="wh-dates-section">
-                      <div className="wh-create-fields">
-                        <div className="form-group">
-                          <label>{t.workingHours.startDate}</label>
-                          <input
-                            type="date"
-                            value={state.startDate}
-                            onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>{t.workingHours.endDate}</label>
-                          <input
-                            type="date"
-                            value={state.endDate}
-                            onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
-                          />
-                        </div>
+                {isOwner && (
+                  <div className="wh-dates-section">
+                    <div className="wh-create-fields">
+                      <div className="form-group">
+                        <label>{t.workingHours.startDate}</label>
+                        <input
+                          type="date"
+                          value={state.startDate}
+                          onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
+                        />
                       </div>
-                      <button
-                        className="btn btn-secondary wh-save-dates-btn"
-                        onClick={() => handleSaveDates(schedule.id)}
-                        disabled={state.saving}
-                      >
-                        {state.saving ? t.workingHours.saving : t.workingHours.saveDates}
-                      </button>
+                      <div className="form-group">
+                        <label>{t.workingHours.endDate}</label>
+                        <input
+                          type="date"
+                          value={state.endDate}
+                          onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
+                        />
+                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
                 {/* Day rows */}
                 <div
@@ -622,7 +606,7 @@ const created = await api.createSchedule(dto);
 
                     <button
                       className="btn btn-primary"
-                      onClick={() => handleSaveDays(schedule.id)}
+                      onClick={() => handleSaveSchedule(schedule.id)}
                       disabled={state.saving || hasErrors}
                     >
                       {state.saving ? t.workingHours.saving : t.workingHours.saveDays}

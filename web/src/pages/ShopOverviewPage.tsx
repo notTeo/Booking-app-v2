@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
+import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { listBookings, getBookingStats, type Booking, type BookingWithStaff } from '../api/booking.api';
 import { getMembers } from '../api/team.api';
@@ -41,6 +42,7 @@ function BookingRow({ title, subtitle }: { title: string; subtitle: string }) {
 
 export default function ShopOverviewPage() {
   const { shop, isLoading } = useShop();
+  const { user } = useAuth();
   const { t } = useLang();
 
   const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
@@ -74,6 +76,7 @@ export default function ShopOverviewPage() {
 
   return (
     <div className="overview-page">
+      {user && <p className="overview-page__greeting">{t.overview.greeting.replace('{name}', user.name)}</p>}
       <h1 className="overview-page__title">{t.overview.title}</h1>
 
       <div className="shop-overview-card">

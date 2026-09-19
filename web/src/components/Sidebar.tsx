@@ -65,11 +65,11 @@ function GlobalNav({ isOpen, onClose, width, startResize }: NavProps) {
     >
     <CloseButton onClose={onClose} />
     <div className="sidebar-header">
-      {/* No button here (nothing to go "back" to) — this spacer keeps the
-          logo at the same x-position as ShopNav's back-button-then-logo
-          header and the mobile top bar's button-then-logo header. */}
+      {/* No button here (nothing to go "back" to) — logo sits flush left on
+          desktop. On mobile this spacer reappears (see sidebar.css) to hold
+          the logo clear of the fixed close-X overlaid on top of it. */}
       <span className="sidebar-header-spacer" aria-hidden="true" />
-      <h4 className="sidebar-link-label">BOOKLY</h4>
+      <h4 className="sidebar-link-label">Bookly</h4>
     </div>
 
       <span className="sidebar-section-label">{t.sidebar.app}</span>
@@ -130,10 +130,13 @@ function ShopNav({ isOpen, onClose, width, startResize, slug }: ShopNavProps) {
     >
     <CloseButton onClose={onClose} />
     <div className="sidebar-header">
+      {/* Mobile-only spacer, holds the logo clear of the fixed close-X
+          (mirrors GlobalNav's header — see sidebar.css). */}
+      <span className="sidebar-header-spacer" aria-hidden="true" />
+      <h4 className="sidebar-link-label">Bookly</h4>
       <NavLink to="/shops" className="sidebar-back-link" aria-label={t.sidebar.backToShops} title={t.sidebar.backToShops} onClick={onClose}>
         <FontAwesomeIcon icon={faChevronLeft} />
       </NavLink>
-      <h4 className="sidebar-link-label">BOOKLY</h4>
     </div>
 
       <div className="sidebar-shop-name">

@@ -130,6 +130,12 @@
   color: var(--text-muted);
 }
 
+.wh-active-switch {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .wh-chevron {
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -320,4 +326,9 @@
 
 .wh-create-fields{
   padding: 1rem 1.25rem;
+}
+
+.wh-dates-section {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
 }

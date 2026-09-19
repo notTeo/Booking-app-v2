@@ -298,22 +298,21 @@ export const revokeAllSessions = async (userId: string, currentToken: string) =>
   logger.info(`All sessions revoked for userId: ${userId}`);
 };
 
+type UpdatedUser = { id: string; name: string | null; email: string; isVerified: boolean; createdAt: Date };
+
 export const updateUser = async (
   userId: string,
   data: { email?: string; password?: string; name?: string },
-): Promise<{ user: { id: string; name: string | null; email: string; isVerified: boolean; createdAt: Date } } | { message: string }> => {
-  // Handle name change (immediate)
-  if (data.name) {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { name: data.name },
-      select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
-    });
-    logger.info(`Name updated for userId: ${userId}`);
-    return { user };
-  }
+): Promise<{ user: UpdatedUser } | { message: string } | { user: UpdatedUser; message: string }> => {
+  // Name and password apply immediately, in one update; email goes through a
+  // pending verification instead, so it's handled separately below.
+  const immediateChanges: { name?: string; passwordHash?: string } = {};
+  if (data.name) immediateChanges.name = data.name;
+  if (data.password) immediateChanges.passwordHash = await bcrypt.hash(data.password, 12);
+  const hasImmediateChanges = Object.keys(immediateChanges).length > 0;
 
-  // Handle email change — create a pending verification instead of updating directly
+  let message: string | undefined;
+
   if (data.email) {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing && existing.id !== userId) {
@@ -329,28 +328,35 @@ export const updateUser = async (
 
     await sendEmailChangeVerification(data.email, token);
     logger.info(`Email change verification sent for userId: ${userId}`);
-    return { message: 'Verification email sent to your new address' };
+    message = 'Verification email sent to your new address';
   }
 
-  // Handle password change (immediate)
   if (data.password) {
-    const passwordHash = await bcrypt.hash(data.password, 12);
     await prisma.refreshToken.deleteMany({ where: { userId } });
-    const user = await prisma.user.update({
+    logger.info(`Password updated for userId: ${userId}`);
+  }
+  if (data.name) {
+    logger.info(`Name updated for userId: ${userId}`);
+  }
+
+  // Email-only change (the original single-field contract): no immediate
+  // column changed, so return just the verification message, no user.
+  if (!hasImmediateChanges) {
+    if (message) return { message };
+    const user = await prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      data: { passwordHash },
       select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
     });
-    logger.info(`Password updated for userId: ${userId}`);
     return { user };
   }
 
-  // Nothing to update — return current user
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.update({
     where: { id: userId },
+    data: immediateChanges,
     select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
   });
-  return { user };
+
+  return message ? { user, message } : { user };
 };
 
 export const verifyEmailChange = async (token: string) => {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getShopInfo, getPublicSlots, type ShopInfo, type Service, type ShopMember } from '../api/public.api';
+import { getShopInfo, getPublicSlots, type ShopInfo, type Service, type ShopMember, type SlotsResponse } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
+
+const NO_SLOTS: SlotsResponse = { status: 'ok', slots: [] };
 
 export type WizardStep = 1 | 2 | 3 | 4;
 
@@ -27,7 +29,7 @@ export interface UseBookingWizardResult {
   date: string;
   time: string;
   setTime: (t: string) => void;
-  slots: string[];
+  slots: SlotsResponse;
   selectedService: Service | null;
   eligibleMembers: ShopMember[];
   handleSelectService: (serviceId: string) => void;
@@ -52,7 +54,7 @@ export function useBookingWizard({
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(initialMemberId ?? null);
   const [date, setDate] = useState(initialDate ?? '');
   const [time, setTime] = useState('');
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<SlotsResponse>(NO_SLOTS);
 
   useEffect(() => {
     if (!slug) return;
@@ -69,8 +71,8 @@ export function useBookingWizard({
 
   function fetchSlots(targetDate: string, memberId: string | null, serviceId: string) {
     getPublicSlots(slug, targetDate, memberId, serviceId)
-      .then((s) => setSlots(Array.isArray(s) ? s : []))
-      .catch(() => setSlots([]));
+      .then(setSlots)
+      .catch(() => setSlots({ status: 'closed' }));
   }
 
   function handleSelectService(serviceId: string) {

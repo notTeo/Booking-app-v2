@@ -12,7 +12,9 @@
   --radius:       12px;
   --font:         'Poppins', sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
-  --font-logo:    'Clash Display', sans-serif;
+  /* --font-heading: 'Space Grotesk', sans-serif; */
+  /* --font-logo:    'Clash Display', sans-serif; */
+  --font-logo:    'Paytone One', sans-serif;
     --red: #c0392b;
   --red-hover: #a93226;
   --error: #e74c3c;

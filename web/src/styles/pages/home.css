@@ -146,14 +146,14 @@
 .home-nav-left {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.4rem;
   min-width: 0;
 }
 
 .home-nav-links {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 .home-nav-link {
   color: var(--text-muted);
@@ -525,21 +525,21 @@
   /* Matches a real screenshot's proportions (1920×1080) at any rendered
      width, instead of a fixed min-height. */
   aspect-ratio: 16 / 9;
-  min-height: 500px;
+  min-height: 505px;
 }
 
 /* Clickable, non-functional mockup of the real sidebar (components/Sidebar.tsx)
    — reuses its CSS classes (.sidebar-header, .sidebar-link, etc. from
    sidebar.css) for visual accuracy, just not the root .sidebar positioning. */
 .home-preview-sidebar {
-  width: clamp(110px, 18cqw, 200px);
+  width: clamp(140px, 18cqw, 200px);
   flex-shrink: 0;
   padding: clamp(0.6rem, 1.8cqw, 1.25rem) clamp(0.4rem, 1.1cqw, 0.75rem);
   border-right: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   display: flex;
   flex-direction: column;
   gap: clamp(0.1rem, 0.3cqw, 0.2rem);
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* Without this, a short card (mobile aspect-ratio) squashes every row to
@@ -558,20 +558,22 @@
   cursor: pointer;
   /* Scales off the card's own width (container query units) so the mockup
      reads the same whether the card renders huge or shrunk on mobile —
-     both the text and the row's own padding/gap. */
-  font-size: clamp(0.65rem, 1.4cqw, 0.95rem);
-  padding: clamp(0.35rem, 1cqw, 0.55rem) clamp(0.45rem, 1.1cqw, 0.75rem);
+     both the text and the row's own padding/gap. Font sizes use a low cqw
+     coefficient (relative to padding/gap) so they drift gradually across
+     the card's width range instead of visibly jumping as it resizes. */
+  font-size: clamp(0.80rem, 0.76cqw, 1.02rem);
+  padding: clamp(0.32rem, 0.9cqw, 0.5rem) clamp(0.45rem, 1.1cqw, 0.75rem);
   gap: clamp(0.35rem, 1cqw, 0.6rem);
 }
 
 .home-preview-sidebar .sidebar-section-label {
-  font-size: clamp(0.55rem, 1cqw, 0.75rem);
+  font-size: clamp(0.62rem, 0.56cqw, 0.81rem);
   padding: 0 clamp(0.4rem, 1.1cqw, 0.75rem);
   margin: clamp(0.4rem, 1.1cqw, 0.75rem) 0 clamp(0.2rem, 0.6cqw, 0.4rem);
 }
 
 .home-preview-sidebar .sidebar-shop-name {
-  font-size: clamp(0.65rem, 1.4cqw, 1rem);
+  font-size: clamp(0.74rem, 0.76cqw, 1.08rem);
   padding: clamp(0.15rem, 0.4cqw, 0.25rem) clamp(0.4rem, 1.1cqw, 0.75rem) clamp(0.3rem, 0.8cqw, 0.5rem);
 }
 
@@ -581,7 +583,7 @@
 }
 
 .home-preview-sidebar .sidebar-header h4 {
-  font-size: clamp(0.9rem, 1.9cqw, 1.35rem);
+  font-size: clamp(1rem, 1.05cqw, 1.45rem);
 }
 
 /* Re-declared at higher specificity than the plain reset above — its equal
@@ -663,6 +665,157 @@
 
 .home-preview-tile h4 { margin: 0 0 0.35rem; font-size: clamp(0.75rem, 1.4cqw, 1rem); font-weight: 700; color: var(--text); }
 .home-preview-tile p  { margin: 0; font-size: clamp(0.7rem, 1.25cqw, 0.9rem); color: var(--text-muted); line-height: 1.5; }
+
+/* ─── Overview preview — mirrors ShopOverviewPage.tsx / shop-overview.css +
+   dashboard.css (shop-overview-card, field-group, dash-field, badge), just
+   scaled with clamp()/cqw like the rest of this mockup card instead of fixed
+   rem sizes, so it keeps reading the same at any rendered card size. ─────── */
+.home-preview-overview-card {
+  background: var(--bg-input);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: clamp(8px, 1.3cqw, 14px);
+  overflow: hidden;
+}
+
+.home-preview-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 1.45cqw, 1rem);
+  padding: clamp(0.7rem, 2cqw, 1.25rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-preview-overview-name {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.6cqw, 1.1rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-preview-badges {
+  display: flex;
+  gap: clamp(0.3rem, 0.9cqw, 0.5rem);
+  flex-shrink: 0;
+}
+
+.home-preview-badge {
+  display: inline-block;
+  font-size: clamp(0.5rem, 0.95cqw, 0.68rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: clamp(0.15rem, 0.4cqw, 0.25rem) clamp(0.4rem, 1cqw, 0.6rem);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.home-preview-badge--role {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.home-preview-badge--active {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.home-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.5rem, 1.5cqw, 1rem);
+  padding: clamp(0.7rem, 2cqw, 1.25rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-preview-stat {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.1rem, 0.3cqw, 0.2rem);
+  min-width: 0;
+}
+
+.home-preview-stat-label {
+  font-size: clamp(0.5rem, 0.95cqw, 0.68rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.home-preview-stat-value {
+  font-size: clamp(0.85rem, 1.7cqw, 1.15rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-preview-overview-section {
+  padding: clamp(0.7rem, 2cqw, 1.25rem);
+}
+
+.home-preview-overview-section + .home-preview-overview-section {
+  border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.home-preview-overview-section-title {
+  margin: 0 0 clamp(0.4rem, 1.1cqw, 0.7rem);
+  font-size: clamp(0.5rem, 0.95cqw, 0.68rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.home-preview-booking-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-preview-booking-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.3cqw, 0.85rem);
+  padding: clamp(0.4rem, 1.1cqw, 0.65rem) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.home-preview-booking-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.home-preview-booking-row:first-child {
+  padding-top: 0;
+}
+
+.home-preview-booking-icon {
+  width: clamp(20px, 3cqw, 30px);
+  height: clamp(20px, 3cqw, 30px);
+  border-radius: clamp(5px, 1cqw, 9px);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.6rem, 1.1cqw, 0.78rem);
+  flex-shrink: 0;
+}
+
+.home-preview-booking-title {
+  margin: 0 0 0.15rem;
+  font-size: clamp(0.6rem, 1.1cqw, 0.78rem);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.home-preview-booking-sub {
+  margin: 0;
+  font-size: clamp(0.7rem, 1.35cqw, 0.9rem);
+  font-weight: 600;
+  color: var(--text);
+}
 
 .home-preview-hint {
   display: flex;
@@ -1362,14 +1515,14 @@
 
 /* Nav collapses into the hamburger earlier than the rest of the tablet layout,
    since the nav links + toggles + CTA run out of room before the page content does. */
-@media (max-width: 850px) {
+@media (max-width: 767px) {
   .home-nav-links, .home-nav-right { display: none; }
   .home-hamburger { display: inline-flex; }
 }
 
 /* Preview card switches to its "mobile" treatment (drawer sidebar, app's
-   own mobile header) at 700px. */
-@media (max-width: 700px) {
+   own mobile header) at 767px. */
+@media (max-width: 767px) {
   /* Sidebar becomes a toggleable drawer instead of disappearing, matching
      the real app's mobile pattern (components/Sidebar.tsx + AppLayout.tsx).
      The header is taken out of flow (position:absolute) so the drawer,

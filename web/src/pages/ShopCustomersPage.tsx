@@ -153,7 +153,7 @@ export default function ShopCustomersPage() {
 
           <div className="pagination-controls">
             <button
-              className="btn btn-ghost"
+              className="bookings-date-nav-btn "
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
             >
@@ -163,7 +163,7 @@ export default function ShopCustomersPage() {
               {t.customers.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
             </span>
             <button
-              className="btn btn-ghost"
+              className="bookings-date-nav-btn"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
             >

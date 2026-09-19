@@ -33,23 +33,19 @@ export default function ShopTeamMemberPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Role + customer-visibility edit
+  // Member & Access — name/role/email/permissions, saved together
   const [editRole, setEditRole] = useState<'owner' | 'staff'>('staff');
   const [editCanView, setEditCanView] = useState(true);
-  const [savingRole, setSavingRole] = useState(false);
-  const [roleSuccess, setRoleSuccess] = useState('');
-  const [roleError, setRoleError] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [savingMember, setSavingMember] = useState(false);
+  const [memberSuccess, setMemberSuccess] = useState('');
+  const [memberError, setMemberError] = useState('');
   const [confirmRoleChange, setConfirmRoleChange] = useState(false);
 
-  // Login invite
+  // Login invite — its own action (sends an email), stays separate
   const [invitePending, setInvitePending] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [inviteError, setInviteError] = useState('');
-
-  // Email (needed before a login invite can be sent)
-  const [editEmail, setEditEmail] = useState('');
-  const [savingEmail, setSavingEmail] = useState(false);
-  const [emailError, setEmailError] = useState('');
 
   // Remove
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -93,37 +89,43 @@ export default function ShopTeamMemberPage() {
       .finally(() => setServicesLoading(false));
   }, [shop?.id, memberId]);
 
-  const isRoleDirty = !!member && (editRole !== member.role || editCanView !== member.canViewCustomerDetails);
+  const isMemberDirty =
+    !!member &&
+    (editRole !== member.role ||
+      editCanView !== member.canViewCustomerDetails ||
+      editEmail !== (member.email ?? ''));
   const isOwnerChange = !!member && editRole !== member.role && (editRole === 'owner' || member.role === 'owner');
 
-  const saveRoleChange = async () => {
-    if (!shop || !memberId) return;
-    setSavingRole(true);
-    setRoleError('');
-    setRoleSuccess('');
+  const saveMemberChange = async () => {
+    if (!shop || !memberId || !member) return;
+    setSavingMember(true);
+    setMemberError('');
+    setMemberSuccess('');
     try {
-      const updated = await updateMemberRole(shop.id, memberId, {
+      const dto: { role: 'owner' | 'staff'; canViewCustomerDetails: boolean; email?: string } = {
         role: editRole,
         canViewCustomerDetails: editCanView,
-      });
+      };
+      if (editEmail !== (member.email ?? '')) dto.email = editEmail;
+      const updated = await updateMemberRole(shop.id, memberId, dto);
       setMember(updated);
-      setRoleSuccess(t.team.roleUpdated);
+      setMemberSuccess(t.team.roleUpdated);
       setConfirmRoleChange(false);
     } catch (err: unknown) {
       const msg =
         err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-      setRoleError(msg || t.team.errorUpdateRole);
+      setMemberError(msg || t.team.errorUpdateRole);
     } finally {
-      setSavingRole(false);
+      setSavingMember(false);
     }
   };
 
-  const handleSaveRole = () => {
+  const handleSaveMember = () => {
     if (isOwnerChange && !confirmRoleChange) {
       setConfirmRoleChange(true);
       return;
     }
-    saveRoleChange();
+    saveMemberChange();
   };
 
   const handleRemove = async () => {
@@ -169,26 +171,6 @@ export default function ShopTeamMemberPage() {
       setInviteError(t.team.errorCancelInvite);
     } finally {
       setInvitePending(false);
-    }
-  };
-
-  const handleSaveEmail = async () => {
-    if (!shop || !memberId || !member) return;
-    setSavingEmail(true);
-    setEmailError('');
-    try {
-      const updated = await updateMemberRole(shop.id, memberId, {
-        role: member.role,
-        canViewCustomerDetails: member.canViewCustomerDetails,
-        email: editEmail,
-      });
-      setMember(updated);
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-      setEmailError(msg || t.team.errorSaveEmail);
-    } finally {
-      setSavingEmail(false);
     }
   };
 
@@ -254,7 +236,7 @@ export default function ShopTeamMemberPage() {
     return (
       <div className="team-member-page">
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
-          ← {t.team.backToTeam}
+          {t.team.backToTeam}
         </button>
         <div className="alert alert-error">{error || t.team.notFound}</div>
       </div>
@@ -265,115 +247,112 @@ export default function ShopTeamMemberPage() {
     <div className="team-member-page">
       {/* Back link */}
       <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
-        ← {t.team.backToTeam}
+        {t.team.backToTeam}
       </button>
 
-      {/* Member info card */}
+      {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
         <h1>{member.name}</h1>
         <div className="team-member-meta">
           <span className={`team-role-badge team-role-${member.role}`}>
             {t.team.roles[member.role]}
           </span>
-          <span className="team-date">{member.email}</span>
           <span className="team-date">
             {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
           </span>
         </div>
-      </div>
 
-      {/* Login invite — only relevant until they accept and get a login */}
-      {isOwner && !member.userId && (
-        <div className="card team-role-card">
-          <h2>{t.team.loginAccess}</h2>
-          <p className="shop-danger-desc">
-            {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
-          </p>
-          <div className="form-group">
-            <label>{t.team.emailLabel}</label>
-            <input
-              type="email"
-              value={editEmail}
-              onChange={(e) => setEditEmail(e.target.value)}
-              placeholder="staff@example.com"
-              disabled={savingEmail || member.hasPendingInvite}
-            />
-          </div>
-          {emailError && <div className="alert alert-error">{emailError}</div>}
-          {editEmail !== (member.email ?? '') && (
-            <button
-              className="btn btn-ghost"
-              onClick={handleSaveEmail}
-              disabled={savingEmail}
-              style={{ marginBottom: '0.75rem' }}
-            >
-              {savingEmail ? t.team.saving : t.team.saveEmail}
-            </button>
-          )}
-          {inviteError && <div className="alert alert-error">{inviteError}</div>}
-          {inviteSuccess && <div className="alert alert-success">{inviteSuccess}</div>}
-          <div className="team-invite-actions">
-            <button
-              className="btn btn-primary"
-              onClick={handleSendInvite}
-              disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
-              title={!member.email ? t.team.addEmailFirst : undefined}
-            >
-              {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
-            </button>
-            {member.hasPendingInvite && (
-              <button className="btn btn-ghost" onClick={handleCancelInvite} disabled={invitePending}>
-                {t.team.cancelInvite}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+        {isOwner ? (
+          <>
+            <div className="form-group">
+              <label>{t.team.emailLabel}</label>
+              <input
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                placeholder="staff@example.com"
+                disabled={savingMember}
+              />
+            </div>
 
-      {/* Role + permissions editor — owner only */}
-      {isOwner && (
-        <div className="card team-role-card">
-          <h2>{t.team.editRole}</h2>
-          <div className="form-group">
-            <label>{t.team.role}</label>
-            <select
-              value={editRole}
-              onChange={(e) => { setEditRole(e.target.value as 'owner' | 'staff'); setConfirmRoleChange(false); }}
-            >
-              <option value="staff">{t.team.roles.staff}</option>
-              <option value="owner">{t.team.roles.owner}</option>
-            </select>
-          </div>
-          {editRole === 'staff' && (
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.canViewCustomerDetails}</span>
-                <span className="team-switch-desc">{t.team.canViewCustomerDetailsDesc}</span>
+            <div className="form-group">
+              <label>{t.team.role}</label>
+              <select
+                value={editRole}
+                onChange={(e) => { setEditRole(e.target.value as 'owner' | 'staff'); setConfirmRoleChange(false); }}
+              >
+                <option value="staff">{t.team.roles.staff}</option>
+                <option value="owner">{t.team.roles.owner}</option>
+              </select>
+            </div>
+
+            {editRole === 'staff' && (
+              <div className="team-switch-row">
+                <div className="team-switch-label">
+                  <span>{t.team.canViewCustomerDetails}</span>
+                  <span className="team-switch-desc">{t.team.canViewCustomerDetailsDesc}</span>
+                </div>
+                <Switch checked={editCanView} onChange={setEditCanView} label={t.team.canViewCustomerDetails} />
               </div>
-              <Switch checked={editCanView} onChange={setEditCanView} label={t.team.canViewCustomerDetails} />
+            )}
+
+            {memberError && <div className="alert alert-error">{memberError}</div>}
+            {memberSuccess && <div className="alert alert-success">{memberSuccess}</div>}
+            {confirmRoleChange && (
+              <div className="alert alert-error">
+                {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
+              </div>
+            )}
+
+            <div className="team-invite-actions">
+              <button
+                className="btn btn-primary"
+                onClick={handleSaveMember}
+                disabled={savingMember || !isMemberDirty}
+              >
+                {savingMember ? t.team.saving : confirmRoleChange ? t.team.confirmContinue : t.team.saveRole}
+              </button>
+              {confirmRoleChange && (
+                <button className="btn btn-ghost" onClick={() => setConfirmRoleChange(false)}>
+                  {t.team.cancel}
+                </button>
+              )}
             </div>
-          )}
-          {roleError && <div className="alert alert-error">{roleError}</div>}
-          {roleSuccess && <div className="alert alert-success">{roleSuccess}</div>}
-          {confirmRoleChange && (
-            <div className="alert alert-error">
-              {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
-            </div>
-          )}
-          <button
-            className="btn btn-primary"
-            onClick={handleSaveRole}
-            disabled={savingRole || !isRoleDirty}
-          >
-            {savingRole ? t.team.saving : confirmRoleChange ? t.team.confirmContinue : t.team.saveRole}
-          </button>
-          {confirmRoleChange && (
-            <button className="btn btn-ghost" onClick={() => setConfirmRoleChange(false)}>
-              {t.team.cancel}
-            </button>
-          )}
-        </div>
-      )}
+
+            {/* Login invite — only relevant until they accept and get a login;
+                sends an email, so it stays a distinct action from the save above. */}
+            {!member.userId && (
+              <div className="team-invite-block">
+                <p className="shop-danger-desc">
+                  {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
+                </p>
+                {editEmail !== (member.email ?? '') && (
+                  <p className="team-switch-desc">{t.team.emailChangedHint}</p>
+                )}
+                {inviteError && <div className="alert alert-error">{inviteError}</div>}
+                {inviteSuccess && <div className="alert alert-success">{inviteSuccess}</div>}
+                <div className="team-invite-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSendInvite}
+                    disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
+                    title={!member.email ? t.team.addEmailFirst : undefined}
+                  >
+                    {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
+                  </button>
+                  {member.hasPendingInvite && (
+                    <button className="btn btn-ghost" onClick={handleCancelInvite} disabled={invitePending}>
+                      {t.team.cancelInvite}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="team-date">{member.email}</p>
+        )}
+      </div>
 
       {/* Staff availability schedule */}
       {workingHoursApi && (

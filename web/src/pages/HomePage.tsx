@@ -67,11 +67,18 @@ const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageI
   ]},
 ];
 
+// Fake but believable shop counts for the overview mockup's stat row — not
+// translated, since digits read the same in every language.
+const PREVIEW_TEAM_COUNT = 5;
+const PREVIEW_SERVICES_COUNT = 6;
+const PREVIEW_CUSTOMERS_COUNT = 312;
+const PREVIEW_UPCOMING_COUNT = 4;
+
 const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle: string; rows: { icon: typeof faTableCells; label: string; sub: string }[] }> => ({
-  overview: { title: t.home.previewGreeting, subtitle: t.home.previewGreetingSub, rows: [
-    { icon: faCalendarCheck, label: t.home.previewTodayLabel, sub: t.home.previewTodaySub },
-    { icon: faUsers, label: t.home.previewTeamLabel, sub: t.home.previewTeamSub },
-  ]},
+  // Rendered with its own dedicated markup (mirroring ShopOverviewPage.tsx)
+  // instead of the generic rows below — see the `previewPage === 'overview'`
+  // branch further down. title/subtitle stay here for the shared greeting header.
+  overview: { title: t.home.previewGreeting, subtitle: t.home.previewGreetingSub, rows: [] },
   bookings: { title: t.sidebar.bookings, subtitle: t.home.previewBookingsSubtitle, rows: [
     { icon: faCalendarCheck, label: t.home.previewBooking1Label, sub: t.home.previewBooking1Sub },
     { icon: faCalendarCheck, label: t.home.previewBooking2Label, sub: t.home.previewBooking2Sub },
@@ -238,9 +245,9 @@ export default function HomePage() {
 
             <div className="home-nav-links">
               <Link to="/about" className="home-nav-link">{t.home.aboutBadge || 'About'}</Link>
-              <a href="#features" className="home-nav-link">{t.home.featuresBadge || 'Features'}</a>
-              <a href="#how" className="home-nav-link">{t.home.howBadge || 'How It Works'}</a>
+              <a href="#features" className="home-nav-link">{t.home.productBadge || 'Product'}</a>
               <a href="#pricing" className="home-nav-link">{t.home.pricingBadge}</a>
+              <Link to="/contact" className="home-nav-link">{t.home.contactBadge || 'Contact'}</Link>
             </div>
           </div>
 
@@ -312,9 +319,9 @@ export default function HomePage() {
 
         <div className="home-mobile-links">
           <Link to="/about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</Link>
-          <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.featuresBadge || 'Features'}</a>
-          <a href="#how" className="home-mobile-link" onClick={closeMenu}>{t.home.howBadge || 'How It Works'}</a>
+          <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.productBadge || 'Product'}</a>
           <a href="#pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</a>
+          <Link to="/contact" className="home-mobile-link" onClick={closeMenu}>{t.home.contactBadge || 'Contact'}</Link>
         </div>
 
         <div className="home-mobile-bottom">
@@ -354,7 +361,7 @@ export default function HomePage() {
             <div className="home-preview-card-body">
               {/* Mobile-only — the real app's own mobile top header
                   (components/AppLayout.tsx), reused exactly: hamburger button +
-                  BOOKLY wordmark in a pill rounded only on the right, flush left.
+                  Bookly wordmark in a pill rounded only on the right, flush left.
                   Positioned so the drawer (below) can overlap it, same as the
                   real app's z-index relationship between the two. */}
               <header className="app-mobile-header">
@@ -366,13 +373,14 @@ export default function HomePage() {
                 >
                   <PreviewMenuIcon />
                 </button>
-                <span className="app-mobile-brand">BOOKLY</span>
+                <span className="app-mobile-brand">Bookly</span>
               </header>
 
               {/* Clickable, non-functional mockup of the real app sidebar — same
                   classes/CSS as components/Sidebar.tsx, for visual accuracy. */}
               <div className={`home-preview-sidebar${previewMenuOpen ? ' is-open' : ''}`}>
                 <div className="sidebar-header">
+                  <h4 className="sidebar-link-label">Bookly</h4>
                   <button
                     className="sidebar-back-link"
                     aria-label="Close menu"
@@ -380,7 +388,6 @@ export default function HomePage() {
                   >
                     <FontAwesomeIcon icon={faChevronLeft} />
                   </button>
-                  <h4 className="sidebar-link-label">BOOKLY</h4>
                 </div>
 
                 <div className="sidebar-shop-name">hairology</div>
@@ -429,6 +436,77 @@ export default function HomePage() {
                     <p>{previewPages[previewPage].subtitle}</p>
                   </div>
                 </div>
+                {previewPage === 'overview' ? (
+                  // Mirrors the real ShopOverviewPage.tsx: shop header + role/status
+                  // badges, team/services/customers stat row, today's + upcoming
+                  // bookings lists — same arrangement and fake-but-believable data.
+                  <div className="home-preview-overview-card">
+                    <div className="home-preview-overview-header">
+                      <h4 className="home-preview-overview-name">hairology</h4>
+                      <div className="home-preview-badges">
+                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
+                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                      </div>
+                    </div>
+
+                    <div className="home-preview-stats">
+                      <div className="home-preview-stat">
+                        <span className="home-preview-stat-label">{t.overview.teamLabel}</span>
+                        <span className="home-preview-stat-value">{PREVIEW_TEAM_COUNT}</span>
+                      </div>
+                      <div className="home-preview-stat">
+                        <span className="home-preview-stat-label">{t.overview.servicesLabel}</span>
+                        <span className="home-preview-stat-value">{PREVIEW_SERVICES_COUNT}</span>
+                      </div>
+                      <div className="home-preview-stat">
+                        <span className="home-preview-stat-label">{t.overview.customersLabel}</span>
+                        <span className="home-preview-stat-value">{PREVIEW_CUSTOMERS_COUNT}</span>
+                      </div>
+                    </div>
+
+                    <div className="home-preview-overview-section">
+                      <h5 className="home-preview-overview-section-title">{t.overview.todaysBookings}</h5>
+                      <div className="home-preview-booking-list">
+                        <div className="home-preview-booking-row">
+                          <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
+                          <div>
+                            <p className="home-preview-booking-title">{t.home.previewBooking1Label}</p>
+                            <p className="home-preview-booking-sub">{t.home.previewBooking1Sub}</p>
+                          </div>
+                        </div>
+                        <div className="home-preview-booking-row">
+                          <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
+                          <div>
+                            <p className="home-preview-booking-title">{t.home.previewBooking2Label}</p>
+                            <p className="home-preview-booking-sub">{t.home.previewBooking2Sub}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="home-preview-overview-section">
+                      <h5 className="home-preview-overview-section-title">
+                        {t.overview.upcomingBookings} ({PREVIEW_UPCOMING_COUNT})
+                      </h5>
+                      <div className="home-preview-booking-list">
+                        <div className="home-preview-booking-row">
+                          <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
+                          <div>
+                            <p className="home-preview-booking-title">{t.home.previewUpcoming1Label}</p>
+                            <p className="home-preview-booking-sub">{t.home.previewUpcoming1Sub}</p>
+                          </div>
+                        </div>
+                        <div className="home-preview-booking-row">
+                          <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
+                          <div>
+                            <p className="home-preview-booking-title">{t.home.previewUpcoming2Label}</p>
+                            <p className="home-preview-booking-sub">{t.home.previewUpcoming2Sub}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                 <div className="home-preview-tiles">
                   {previewPages[previewPage].rows.map(row => (
                     <div key={row.label} className="home-preview-tile">
@@ -440,6 +518,7 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           </div>

@@ -15,6 +15,8 @@ import {
 import { getMembers, type TeamMember } from '../api/team.api';
 import Switch from '../components/Switch';
 import '../styles/pages/services.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -303,11 +305,6 @@ export default function ShopServicesPage() {
     <div className="services-page">
       <div className="services-header">
         <h1>{t.services.title}</h1>
-        {isOwner && !showCreate && !editingId && (
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            {t.services.addService}
-          </button>
-        )}
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -329,8 +326,8 @@ export default function ShopServicesPage() {
         <p className="services-empty">{t.services.noServices}</p>
       )}
 
-      {/* Services list */}
-      {services.length > 0 && (
+      {/* Services list (+ add card) */}
+      {(services.length > 0 || (isOwner && !showCreate && !editingId)) && (
         <div className="services-list">
           {services.map((service) => (
             <div key={service.id} className="service-card">
@@ -369,15 +366,17 @@ export default function ShopServicesPage() {
                     {isOwner && (
                       <div className="service-card-actions">
                         <button
-                          className="btn btn-ghost service-action-btn"
+                          className="btn btn-ghost service-action-btn service-icon-btn"
                           onClick={() => {
                             closeStaffPanel();
                             setEditingId(service.id);
                             setEditForm(serviceToForm(service));
                             setEditError('');
                           }}
+                          aria-label={t.services.edit}
+                          title={t.services.edit}
                         >
-                          {t.services.edit}
+                          <FontAwesomeIcon icon={faPenToSquare} />
                         </button>
 
                         <button
@@ -411,10 +410,12 @@ export default function ShopServicesPage() {
                           </div>
                         ) : (
                           <button
-                            className="btn btn-ghost service-action-btn service-delete-btn"
+                            className="btn btn-ghost service-action-btn service-delete-btn service-icon-btn"
                             onClick={() => setConfirmDeleteId(service.id)}
+                            aria-label={t.services.delete}
+                            title={t.services.delete}
                           >
-                            {t.services.delete}
+                            <FontAwesomeIcon icon={faTrashCan} />
                           </button>
                         )}
                       </div>
@@ -492,6 +493,13 @@ export default function ShopServicesPage() {
               )}
             </div>
           ))}
+
+          {isOwner && !showCreate && !editingId && (
+            <button type="button" className="service-card service-card--add" onClick={() => setShowCreate(true)}>
+              <FontAwesomeIcon icon={faPlus} className="service-card--add-icon" />
+              <span>{t.services.addService}</span>
+            </button>
+          )}
         </div>
       )}
     </div>

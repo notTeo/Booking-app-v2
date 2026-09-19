@@ -71,7 +71,7 @@ export default function RegisterPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BOOKLY</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark">Bookly</span></Link>
         <h1>Register</h1>
 
         {inviteToken && (

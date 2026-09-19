@@ -14,6 +14,14 @@
   margin: 0 0 1.75rem;
 }
 
+/* Same size as the page title, per request — sits directly above it. */
+.overview-page__greeting {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.35rem;
+}
+
 /* ─── Card Shell ─────────────────────────────────────────────────── */
 /* Named shop-overview-card (not shop-card) so it doesn't collide with the
    unrelated .shop-card list-item class defined in shops.css — both
@@ -121,7 +129,7 @@
 /* ─── Field Group (section) ──────────────────────────────────────── */
 
 .field-group {
-  padding: 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 1.85rem;
 }
 
 .field-group + .field-group {

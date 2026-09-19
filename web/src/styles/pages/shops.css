@@ -19,17 +19,6 @@
   margin: 0;
 }
 
-.shops-header > div {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.shops-new-btn {
-  width: auto;
-}
-
 .shops-spinner-wrap {
   display: flex;
   justify-content: center;
@@ -116,6 +105,38 @@
 .shop-card-city {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+/* ---- "Add" card — dashed border, sits alongside real shop cards ---- */
+.shop-card--add {
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 0.6rem;
+  min-height: 96px;
+  background: transparent;
+  border-style: dashed;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shop-card--add:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: none;
+}
+
+.shop-card--add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shop-card--add-icon {
+  font-size: 1.1rem;
 }
 
 /* ---- Status & Role badges ---- */

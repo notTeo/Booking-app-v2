@@ -135,6 +135,7 @@ export default function PublicPage() {
                 selectedService={wizard.selectedService}
                 selectedMember={selectedMember}
                 minDate={todayISO()}
+                mode="public"
                 onDateChange={wizard.handleDateChange}
                 onSelectTime={wizard.setTime}
                 onBack={wizard.goBack}

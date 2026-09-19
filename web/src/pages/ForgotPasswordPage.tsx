@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BOOKLY</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark">Bookly</span></Link>
         <h1>Forgot Password</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="home-container">
         <div className="home-footer-inner">
           <div className="home-footer-brand">
-            <h3 className="home-footer-wordmark">BOOKLY</h3>
+            <h3 className="home-footer-wordmark">Bookly</h3>
             <p className="home-footer-brand-desc">
               {t.footer.brandDesc}
             </p>

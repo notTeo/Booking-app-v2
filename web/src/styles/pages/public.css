@@ -683,6 +683,33 @@
   border-color: var(--accent);
 }
 
+.public-slot-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.public-slot-btn--disabled:hover {
+  border-color: var(--border);
+}
+
+/* ── Closed / no-schedule message ─────────────────────────────────────── */
+.public-closed-message {
+  margin-top: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.public-closed-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+
 /* ── Customer search dropdown (owner booking) ────────────────────────────── */
 
 .customer-search-dropdown {

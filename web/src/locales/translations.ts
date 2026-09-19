@@ -79,6 +79,8 @@ export interface Translations {
     howTitle: string;
     howSub: string;
     aboutBadge: string;
+    productBadge: string;
+    contactBadge: string;
     pricingBadge: string;
     pricingTitle: string;
     pricingSub: string;
@@ -129,10 +131,10 @@ export interface Translations {
     featureChannelsTitle: string;
     previewGreeting: string;
     previewGreetingSub: string;
-    previewTodayLabel: string;
-    previewTodaySub: string;
-    previewTeamLabel: string;
-    previewTeamSub: string;
+    previewUpcoming1Label: string;
+    previewUpcoming1Sub: string;
+    previewUpcoming2Label: string;
+    previewUpcoming2Sub: string;
     previewBookingsSubtitle: string;
     previewBooking1Label: string;
     previewBooking1Sub: string;
@@ -221,6 +223,12 @@ export interface Translations {
     githubLabel: string;
     contactLabel: string;
   };
+  contact: {
+    badge: string;
+    title: string;
+    intro: string;
+    buttonLabel: string;
+  };
   footer: {
     brandDesc: string;
     productHeading: string;
@@ -302,12 +310,17 @@ export interface Translations {
   };
   settings: {
     title: string;
+    profileSection: string;
+    saveProfile: string;
+    successProfile: string;
+    errorProfile: string;
     emailSection: string;
     emailLabel: string;
     saveEmail: string;
     saving: string;
     passwordSection: string;
     newPasswordLabel: string;
+    newPasswordOptionalLabel: string;
     updatePassword: string;
     dangerZone: string;
     dangerDesc: string;
@@ -413,6 +426,7 @@ export interface Translations {
     saveEmail: string;
     addEmailFirst: string;
     errorSaveEmail: string;
+    emailChangedHint: string;
   };
   invites: {
     title: string;
@@ -566,6 +580,7 @@ export interface Translations {
     relativeMonthsAgo: string;
     generalInfo: string;
     contactLocation: string;
+    shopDetails: string;
     configuration: string;
     activeLabel: string;
     activeDesc: string;
@@ -615,12 +630,16 @@ export interface Translations {
     bookingConfirmedMsg: string;
     shopNotFound: string;
     somethingWrong: string;
+    closedThisDay: string;
+    closedOrNoSchedule: string;
+    manageWorkingHours: string;
     failedSlots: string;
     serviceContext: string;
     staffContext: string;
     atLabel: string;
   };
   overview: {
+    greeting: string;
     title: string;
     loading: string;
     noShop: string;
@@ -780,6 +799,8 @@ home: {
     howTitle: 'Έτοιμο σε λίγα λεπτά',
     howSub: 'Τρία απλά βήματα για μια πλήρως αυτοματοποιημένη εμπειρία κρατήσεων.',
     aboutBadge: 'Σχετικά',
+    productBadge: 'Προϊόν',
+    contactBadge: 'Επικοινωνία',
     pricingBadge: 'Τιμές',
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
     pricingSub: 'Είμαστε ακόμα στα πρώτα βήματα — επικοινωνήστε μαζί μας για να ξεκινήσετε.',
@@ -830,10 +851,10 @@ home: {
     featureChannelsTitle: 'Οποιαδήποτε συσκευή, οποιαδήποτε ώρα',
     previewGreeting: 'Γεια σου, Μάρκο!',
     previewGreetingSub: 'Δες τι συμβαίνει σήμερα στο κατάστημά σου.',
-    previewTodayLabel: 'Σημερινές Κρατήσεις',
-    previewTodaySub: '12 ραντεβού προγραμματισμένα, 3 ελεύθερες θέσεις.',
-    previewTeamLabel: 'Η Ομάδα σου',
-    previewTeamSub: '5 μέλη προσωπικού ενεργά, όλα συγχρονισμένα με το ημερολόγιο.',
+    previewUpcoming1Label: 'Έλενα Ρ. · Σοφία Ριβέρα',
+    previewUpcoming1Sub: 'Κούρεμα — Αύριο, 10:00 πμ',
+    previewUpcoming2Label: 'Δημήτρης Κ. · Μάρκος',
+    previewUpcoming2Sub: 'Φορμάρισμα Γενειάδας — Παρ, 2:30 μμ',
     previewBookingsSubtitle: 'Όλα στο ημερολόγιο αυτή την εβδομάδα.',
     previewBooking1Label: 'Σάρα Μ. — Κούρεμα',
     previewBooking1Sub: 'Σήμερα, 3:00 μμ',
@@ -922,6 +943,12 @@ home: {
     githubLabel: 'Δες τον κώδικα στο GitHub',
     contactLabel: 'Επικοινώνησε μαζί μου',
   },
+  contact: {
+    badge: 'Πες Γεια 👋',
+    title: 'Ας μιλήσουμε!',
+    intro: 'Βρήκες κάποιο bug, έχεις κάποια ερώτηση ή μια ιδέα για το Bookly; Στείλε μου ένα μήνυμα και θα σου απαντήσω το συντομότερο δυνατό.',
+    buttonLabel: 'Επικοινώνησε μαζί μου',
+  },
   footer: {
     brandDesc: 'Η πλατφόρμα κρατήσεων φτιαγμένη για κουρεία και σαλόνια ομορφιάς που παίρνουν την επιχείρησή τους στα σοβαρά.',
     productHeading: 'Προϊόν',
@@ -1003,12 +1030,17 @@ home: {
     },
     settings: {
       title: 'Ρυθμίσεις',
+      profileSection: 'Προφίλ',
+      saveProfile: 'Αποθήκευση Προφίλ',
+      successProfile: 'Το προφίλ ενημερώθηκε επιτυχώς.',
+      errorProfile: 'Αποτυχία ενημέρωσης προφίλ.',
       emailSection: 'Διεύθυνση Email',
       emailLabel: 'Email',
       saveEmail: 'Αποθήκευση Email',
       saving: 'Αποθήκευση...',
       passwordSection: 'Αλλαγή Κωδικού',
       newPasswordLabel: 'Νέος Κωδικός',
+      newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
       updatePassword: 'Ενημέρωση Κωδικού',
       dangerZone: 'Επικίνδυνη Ζώνη',
       dangerDesc: 'Οριστική διαγραφή λογαριασμού και όλων των δεδομένων. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
@@ -1114,6 +1146,7 @@ home: {
       saveEmail: 'Αποθήκευση Email',
       addEmailFirst: 'Προσθέστε email πριν στείλετε πρόσκληση σύνδεσης',
       errorSaveEmail: 'Αποτυχία αποθήκευσης email.',
+      emailChangedHint: 'Αποθηκεύστε τις αλλαγές παραπάνω πριν στείλετε την πρόσκληση.',
     },
     invites: {
       title: 'Προσκλήσεις',
@@ -1267,6 +1300,7 @@ home: {
       relativeMonthsAgo: 'μήνες πριν',
       generalInfo: 'Γενικές Πληροφορίες',
       contactLocation: 'Επικοινωνία & Τοποθεσία',
+      shopDetails: 'Στοιχεία Καταστήματος',
       configuration: 'Διαμόρφωση',
       activeLabel: 'Ενεργό',
       activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
@@ -1316,12 +1350,16 @@ home: {
       bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
       shopNotFound: 'Το κατάστημα δεν βρέθηκε',
       somethingWrong: 'Κάτι πήγε στραβά',
+      closedThisDay: 'Είμαστε κλειστά αυτή την ημέρα.',
+      closedOrNoSchedule: 'Κλειστό ή δεν υπάρχει πρόγραμμα για αυτή την ημέρα.',
+      manageWorkingHours: 'Μετάβαση στο ωράριο εργασίας για διόρθωση',
       failedSlots: 'Αποτυχία φόρτωσης διαθέσιμων ωρών',
       serviceContext: 'Υπηρεσία:',
       staffContext: 'Προσωπικό:',
       atLabel: 'στις',
     },
     overview: {
+      greeting: 'Γεια σου, {name}!',
       title: 'Επισκόπηση',
       loading: 'Φόρτωση...',
       noShop: 'Δεν φορτώθηκε κατάστημα',
@@ -1367,8 +1405,8 @@ home: {
       errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
       hiddenLabel: 'Πελάτης',
       contactHiddenNotice: 'Δεν έχετε δικαίωμα προβολής ή επεξεργασίας των στοιχείων επικοινωνίας αυτού του πελάτη.',
-      prevPage: '← Προηγούμενη',
-      nextPage: 'Επόμενη →',
+      prevPage: '←',
+      nextPage: '→',
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
@@ -1480,6 +1518,8 @@ home: {
     howTitle: 'Up and running in minutes',
     howSub: 'Three simple steps to a fully automated booking experience.',
     aboutBadge: 'About',
+    productBadge: 'Product',
+    contactBadge: 'Contact',
     pricingBadge: 'Pricing',
     pricingTitle: 'Simple, with no surprises',
     pricingSub: "We're still early — reach out and we'll get you set up.",
@@ -1530,10 +1570,10 @@ home: {
     featureChannelsTitle: 'Any device, any time',
     previewGreeting: 'Hi, Marcus!',
     previewGreetingSub: "Here's what's happening at your shop today.",
-    previewTodayLabel: "Today's Bookings",
-    previewTodaySub: '12 appointments scheduled, 3 open slots left.',
-    previewTeamLabel: 'Your Team',
-    previewTeamSub: '5 staff members active, all synced to the calendar.',
+    previewUpcoming1Label: 'Emma R. · Sofia Rivera',
+    previewUpcoming1Sub: 'Haircut — Tomorrow, 10:00 AM',
+    previewUpcoming2Label: 'David K. · Marcus',
+    previewUpcoming2Sub: 'Beard Trim — Fri, 2:30 PM',
     previewBookingsSubtitle: 'Everything on the calendar this week.',
     previewBooking1Label: 'Sarah M. — Haircut',
     previewBooking1Sub: 'Today, 3:00 PM',
@@ -1622,6 +1662,12 @@ home: {
     githubLabel: 'View the code on GitHub',
     contactLabel: 'Get in touch',
   },
+  contact: {
+    badge: 'Say Hi 👋',
+    title: 'Let’s talk!',
+    intro: "Found a bug, have a question, or have an idea for Bookly? I’d like to hear it. Send me a message and I’ll get back to you.",
+    buttonLabel: 'Contact me',
+  },
   footer: {
     brandDesc: 'The booking platform built for barbershops and salons that take their business seriously.',
     productHeading: 'Product',
@@ -1703,12 +1749,17 @@ home: {
     },
     settings: {
       title: 'Settings',
+      profileSection: 'Profile',
+      saveProfile: 'Save Profile',
+      successProfile: 'Profile updated successfully.',
+      errorProfile: 'Failed to update profile.',
       emailSection: 'Email Address',
       emailLabel: 'Email',
       saveEmail: 'Save Email',
       saving: 'Saving...',
       passwordSection: 'Change Password',
       newPasswordLabel: 'New Password',
+      newPasswordOptionalLabel: 'New Password (optional)',
       updatePassword: 'Update Password',
       dangerZone: 'Danger Zone',
       dangerDesc: 'Permanently delete your account and all associated data. This action cannot be undone.',
@@ -1814,6 +1865,7 @@ home: {
       saveEmail: 'Save Email',
       addEmailFirst: 'Add an email before sending a login invite',
       errorSaveEmail: 'Failed to save email.',
+      emailChangedHint: 'Save your changes above before sending the invite.',
     },
     invites: {
       title: 'Invites',
@@ -1967,6 +2019,7 @@ home: {
       relativeMonthsAgo: 'months ago',
       generalInfo: 'General Info',
       contactLocation: 'Contact & Location',
+      shopDetails: 'Shop Details',
       configuration: 'Configuration',
       activeLabel: 'Active',
       activeDesc: "When inactive, your shop won't accept new bookings.",
@@ -2016,12 +2069,16 @@ home: {
       bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
       shopNotFound: 'Shop not found',
       somethingWrong: 'Something went wrong',
+      closedThisDay: 'We are closed this day.',
+      closedOrNoSchedule: 'Closed, or there is no schedule for this day.',
+      manageWorkingHours: 'Go to working hours to fix this',
       failedSlots: 'Failed to load available slots',
       serviceContext: 'Service:',
       staffContext: 'Staff:',
       atLabel: 'at',
     },
     overview: {
+      greeting: 'Hello, {name}!',
       title: 'Overview',
       loading: 'Loading...',
       noShop: 'No shop loaded',
@@ -2067,8 +2124,8 @@ home: {
       errorUpdate: 'Failed to save changes.',
       hiddenLabel: 'Customer',
       contactHiddenNotice: "You don't have permission to view or edit this customer's contact details.",
-      prevPage: '← Previous',
-      nextPage: 'Next →',
+      prevPage: '←',
+      nextPage: '→',
       pageOf: 'Page {page} of {total}',
     },
     bookings: {

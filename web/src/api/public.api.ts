@@ -100,6 +100,15 @@ export interface CancelBookingResult {
 export const cancelBooking = (token: string) =>
   client.post('/public/cancel', { token }).then((r) => r.data.data as CancelBookingResult);
 
+export interface SlotInfo {
+  time: string; // "HH:MM"
+  available: boolean;
+}
+
+export type SlotsResponse =
+  | { status: 'closed' }
+  | { status: 'ok'; slots: SlotInfo[] };
+
 export const getPublicSlots = (
   slug: string,
   date: string,
@@ -108,4 +117,4 @@ export const getPublicSlots = (
 ) =>
   client
     .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId } })
-    .then((r) => r.data.data as string[]);
+    .then((r) => r.data.data as SlotsResponse);

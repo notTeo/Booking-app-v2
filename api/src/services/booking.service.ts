@@ -177,54 +177,71 @@ export const createBookingForShop = async (
 
 // ── Slots ───────────────────────────────────────
 
+export interface SlotInfo {
+  time: string; // "HH:MM"
+  available: boolean;
+}
+
+export type SlotsResult =
+  | { status: 'closed' }
+  | { status: 'ok'; slots: SlotInfo[] };
+
 export const getAvailableSlots = async (
   shopId: string,
   date: string,
   staffId: string | null,
   serviceId: string,
-): Promise<string[]> => {
+): Promise<SlotsResult> => {
 
   // 1. Get the day's working hours
   const DAY_MAP = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
-let resolvedStaffId = staffId;
+  const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
 
-if (staffId === null) {
-  const randomStaff = await prisma.userShop.findFirst({
-    where: { shopId },
-    select: { id: true },
-  });
-  if (!randomStaff) return [];
-  resolvedStaffId = randomStaff.id;
-}
+  // Booking-conflict checks always need a concrete staff member; when none
+  // was requested (public flow, shop-wide hours) fall back to any staff on
+  // the shop — unchanged from prior behavior. Schedule lookup below, on the
+  // other hand, is keyed on the staffId that was actually passed in, with no
+  // such fallback: a staff member with no schedule of their own is "closed",
+  // not silently given the shop-wide hours.
+  let resolvedStaffId = staffId;
+  if (staffId === null) {
+    const randomStaff = await prisma.userShop.findFirst({
+      where: { shopId },
+      select: { id: true },
+    });
+    if (!randomStaff) return { status: 'closed' };
+    resolvedStaffId = randomStaff.id;
+  }
 
+  const requestedDate = new Date(`${date}T00:00:00.000Z`);
 
-const requestedDate = new Date(`${date}T00:00:00.000Z`);
-
-const schedule = await prisma.shopWorkingSchedule.findFirst({
-  where: {
-    shopId,
-    staffId: null,
-    isActive: true,
-    startDate: { lte: requestedDate },
-    OR: [
-      { endDate: null },
-      { endDate: { gte: requestedDate } },
-    ],
-  },
-  include: {
-    days: {
-      where: { day: dayOfWeek },
-      include: { hours: true },
+  const schedule = await prisma.shopWorkingSchedule.findFirst({
+    where: {
+      shopId,
+      staffId,
+      isActive: true,
+      startDate: { lte: requestedDate },
+      OR: [
+        { endDate: null },
+        { endDate: { gte: requestedDate } },
+      ],
     },
-  },
-  orderBy: { startDate: 'desc' },
-});
-  if (!schedule) return [];
+    include: {
+      days: {
+        where: { day: dayOfWeek },
+        include: { hours: true },
+      },
+    },
+    orderBy: { startDate: 'desc' },
+  });
+  if (!schedule) return { status: 'closed' };
+
+  const day = schedule.days[0];
+  if (!day || !day.isOpen) return { status: 'closed' };
 
   // 2. Get service duration
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
-  if (!service) return [];
+  if (!service) return { status: 'closed' };
 
   // 3. Get existing bookings for that day + staff — excluding statuses that
   // don't actually hold the slot (matches the create-time conflict check's
@@ -235,11 +252,10 @@ const schedule = await prisma.shopWorkingSchedule.findFirst({
     staffId: resolvedStaffId ?? undefined,
   })).filter((b) => !['CANCELED', 'NO_SHOW', 'COMPLETED'].includes(b.status));
 
-  // 4. Generate slots — YOU write this part
-  const slots: string[] = [];
-
-  const day = schedule.days[0];
-  if (!day || !day.isOpen) return [];
+  // 4. Generate every theoretical slot in the open window, flagged with
+  // whether it's actually free — callers decide whether to filter these
+  // down (public/customer view) or show booked ones disabled (internal view).
+  const slots: SlotInfo[] = [];
 
   const toMins = (t: string) => {
     const [h, m] = t.split(':').map(Number);
@@ -264,11 +280,11 @@ const schedule = await prisma.shopWorkingSchedule.findFirst({
         (b) => b.startTime < candidateEnd && b.endTime > candidateStart
       );
 
-      if (!hasOverlap) slots.push(toHHMM(start));
+      slots.push({ time: toHHMM(start), available: !hasOverlap });
     }
   }
 
-  return slots;
+  return { status: 'ok', slots };
 };
 
 // ── Owner / Staff ────────────────────────────────────────────────────────────

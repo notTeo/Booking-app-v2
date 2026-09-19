@@ -22,7 +22,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand" onClick={closeMenu}>BOOKLY</Link>
+      <Link to="/" className="navbar-brand" onClick={closeMenu}>Bookly</Link>
 
       {/* Desktop nav links */}
       <div className="navbar-links">

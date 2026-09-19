@@ -8,7 +8,6 @@ import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore,
-  faLocationDot,
   faGear,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
@@ -170,11 +169,11 @@ export default function ShopSettingsPage() {
       </div>
 
       <form onSubmit={handleSave}>
-        {/* General Info */}
+        {/* Shop Details — general info + contact & location */}
         <div className="settings-section shop-settings-section">
           <p className="settings-section-title">
             <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
-            {t.shopSettings.generalInfo}
+            {t.shopSettings.shopDetails}
           </p>
           <div className="form-group">
             <label htmlFor="detail-name">{t.shops.name}</label>
@@ -201,14 +200,6 @@ export default function ShopSettingsPage() {
               placeholder={t.shopSettings.descPlaceholder}
             />
           </div>
-        </div>
-
-        {/* Contact & Location */}
-        <div className="settings-section shop-settings-section">
-          <p className="settings-section-title">
-            <FontAwesomeIcon icon={faLocationDot} className="settings-section-icon" />
-            {t.shopSettings.contactLocation}
-          </p>
           <div className="form-group">
             <label htmlFor="detail-phone">{t.shops.phone}</label>
             <input id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
