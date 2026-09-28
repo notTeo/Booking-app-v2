@@ -1,10 +1,8 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** Out-of-hours commits **1 + 2** — migration
-`Booking.overriddenRules` / `createdById`, then the explicit `overrideRules`
-rules contract — then checkpoint again **before any UI work**. Not started
-(the owner asked to stop after the follow-ups in `449f10d`, `70c710d`,
-`2c34663`). See `docs/plan-out-of-hours.md` for the order and details.
+**Next step:** Out-of-hours commit **2** — the explicit `overrideRules` rules
+contract (commit 1, the migration, is done) — then checkpoint again **before any
+UI work**. See `docs/plan-out-of-hours.md` for the order and details.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -393,4 +391,11 @@ npm run e2e                                                     # from repo root
 
 ## LATER (triaged, not launch-critical)
 
-_None yet._
+- **Intermittent API test failures under full-suite load** (3 in ~20 full runs
+  while doing out-of-hours commit 1; each passed on rerun and in isolation, 6/6):
+  `concurrency.test.ts` "simultaneous OVERLAPPING" (Athens) and "SAME customer
+  phone" (New York) — bodies not captured; `overlapIntegrity.test.ts` "CANCELED
+  -> CONFIRMED onto a re-booked slot" (New York) — 15 s test timeout. Same family
+  as the earlier unexplained single failure/timeout under "Known open items".
+  Classified LATER: no double booking was observed (those tests assert exactly
+  that), but the cause is unproven. Next time one fails, keep the response body.
