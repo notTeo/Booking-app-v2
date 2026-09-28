@@ -9,6 +9,9 @@ export class AppError extends Error {
     public code?: string,
     // Extra response headers (e.g. Retry-After on a 503).
     public headers?: Record<string, string>,
+    // Extra fields merged into the JSON response body (e.g. the full list of
+    // booking-rule `violations` on a 422).
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'App Error';
@@ -27,6 +30,7 @@ export const ErrorHandler = (
       status: 'error',
       ...(err.code && { code: err.code }),
       message: err.message,
+      ...err.details,
     });
   }
   logger.error({ err, path: req.path, method: req.method }, 'Unhandled error');

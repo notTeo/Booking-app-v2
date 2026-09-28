@@ -1,8 +1,9 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** Out-of-hours commit **2** — the explicit `overrideRules` rules
-contract (commit 1, the migration, is done) — then checkpoint again **before any
-UI work**. See `docs/plan-out-of-hours.md` for the order and details.
+**Next step:** adapt the web "book anyway?" dialog to the new `overrideRules`
+contract (the API now rejects the old `override: true` with 400, so the
+dashboard is broken until this lands), then **checkpoint before any other UI
+work** and push. (Out-of-hours commits 1 and 2 are done.) See `docs/plan-out-of-hours.md` for the order and details.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -391,6 +392,11 @@ npm run e2e                                                     # from repo root
 
 ## LATER (triaged, not launch-critical)
 
+- **A fourth intermittent failure**: `concurrency.test.ts` "non-conflicting
+  bookings for different providers/slots all succeed" failed once (UTC, full
+  suite, while finishing out-of-hours commit 2); passed on every rerun. That test
+  expects six 201s, so a failure means a valid booking was rejected (409/503),
+  not a double booking. No body captured — unclassified.
 - **Intermittent API test failures under full-suite load** (3 in ~20 full runs
   while doing out-of-hours commit 1; each passed on rerun and in isolation):
   `concurrency.test.ts` "simultaneous OVERLAPPING" (Athens) and "SAME customer

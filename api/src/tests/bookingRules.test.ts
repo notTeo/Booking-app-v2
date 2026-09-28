@@ -8,6 +8,7 @@ import {
   authHeader,
   createTenant,
   type Tenant,
+  ALL_OVERRIDABLE_RULES,
 } from './helpers';
 
 vi.mock('../services/email.service');
@@ -125,11 +126,16 @@ describe('public path: strict rules, 422 with a code', () => {
     expect(explicit.body.code).toBe('SHOP_CLOSED');
   });
 
-  it('ignores override: true from the public', async () => {
+  it('ignores override and overrideRules from the public', async () => {
     const t = await shop();
-    const res = await pub(t, PAST, { override: true });
-    expect(res.status).toBe(422);
-    expect(res.body.code).toBe('BOOKING_IN_PAST');
+    for (const extra of [
+      { override: true },
+      { overrideRules: ALL_OVERRIDABLE_RULES },
+    ]) {
+      const res = await pub(t, PAST, extra);
+      expect(res.status).toBe(422);
+      expect(res.body.code).toBe('BOOKING_IN_PAST');
+    }
   });
 
   it('is DST-correct: 04:00 EEST and 02:30 EET on 2027-03-28 are valid slots', async () => {
@@ -147,21 +153,35 @@ describe('public path: strict rules, 422 with a code', () => {
   });
 });
 
-describe('owner path: same rules, bypassable with override: true', () => {
-  for (const [label, start, code] of RULE_CASES) {
-    it(`${label}: 422 ${code} without override, 201 with it`, async () => {
+describe('owner path: same rules, each violation acceptable only by its own code', () => {
+  const OVERRIDABLE_CASES = RULE_CASES.filter(
+    ([, , code]) => code !== 'BOOKING_BEYOND_ADVANCE_WINDOW',
+  );
+  for (const [label, start, code] of OVERRIDABLE_CASES) {
+    it(`${label}: 422 ${code} without overrideRules, 201 when that code is accepted`, async () => {
       const t = await shop({ sundayClosed: true });
       const denied = await owner(t, start);
       expect(denied.status).toBe(422);
       expect(denied.body.code).toBe(code);
 
-      const allowed = await owner(t, start, { override: true });
+      const allowed = await owner(t, start, { overrideRules: [code] });
       expect(allowed.status).toBe(201);
+      expect(allowed.body.data.overriddenRules).toEqual([code]);
     });
   }
 
-  it('rejects a non-boolean override with 400', async () => {
+  it('the advance window is never overridable, even accepting everything', async () => {
+    const t = await shop({ sundayClosed: true });
+    const res = await owner(t, BEYOND, {
+      overrideRules: ALL_OVERRIDABLE_RULES,
+    });
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('BOOKING_BEYOND_ADVANCE_WINDOW');
+  });
+
+  it('rejects the old blanket override with 400', async () => {
     const t = await shop();
+    expect((await owner(t, OK, { override: true })).status).toBe(400);
     expect((await owner(t, OK, { override: 'yes' })).status).toBe(400);
   });
 });
@@ -170,11 +190,15 @@ describe('overlap is NEVER bypassable', () => {
   it('owner override cannot double-book an occupied slot (409)', async () => {
     const t = await shop();
     expect((await owner(t, OK)).status).toBe(201);
-    const exact = await owner(t, OK, { override: true });
+    const exact = await owner(t, OK, { overrideRules: ALL_OVERRIDABLE_RULES });
     expect(exact.status).toBe(409);
     expect(exact.body.code).toBe('SLOT_TAKEN');
     expect(
-      (await owner(t, '2026-12-08T10:15:00+02:00', { override: true })).status,
+      (
+        await owner(t, '2026-12-08T10:15:00+02:00', {
+          overrideRules: ALL_OVERRIDABLE_RULES,
+        })
+      ).status,
     ).toBe(409);
     expect(await prisma.booking.count({ where: { shopId: t.shop.id } })).toBe(
       1,
@@ -189,8 +213,12 @@ describe('overlap is NEVER bypassable', () => {
 
   it('a rule violation is reported before the overlap check only for the rules, and overlap still wins with override', async () => {
     const t = await shop();
-    expect((await owner(t, PAST, { override: true })).status).toBe(201);
-    expect((await owner(t, PAST, { override: true })).status).toBe(409);
+    expect(
+      (await owner(t, PAST, { overrideRules: ALL_OVERRIDABLE_RULES })).status,
+    ).toBe(201);
+    expect(
+      (await owner(t, PAST, { overrideRules: ALL_OVERRIDABLE_RULES })).status,
+    ).toBe(409);
   });
 });
 
@@ -213,7 +241,12 @@ describe('PATCH: rules and override apply when scheduling changes', () => {
     expect(denied.status).toBe(422);
     expect(denied.body.code).toBe('OUTSIDE_OPENING_HOURS');
     expect(
-      (await patch(t, id, { startTime: BEFORE_OPEN, override: true })).status,
+      (
+        await patch(t, id, {
+          startTime: BEFORE_OPEN,
+          overrideRules: ALL_OVERRIDABLE_RULES,
+        })
+      ).status,
     ).toBe(200);
   });
 
@@ -223,7 +256,7 @@ describe('PATCH: rules and override apply when scheduling changes', () => {
     await booked(t, '2026-12-08T11:00:00+02:00');
     const res = await patch(t, id, {
       startTime: '2026-12-08T11:00:00+02:00',
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
     });
     expect(res.status).toBe(409);
   });
@@ -263,7 +296,12 @@ describe('PATCH: rules and override apply when scheduling changes', () => {
       const id = await booked(t, OK);
       await booked(t, '2026-12-08T10:30:00+02:00');
       expect(
-        (await patch(t, id, { serviceId: long.id, override: true })).status,
+        (
+          await patch(t, id, {
+            serviceId: long.id,
+            overrideRules: ALL_OVERRIDABLE_RULES,
+          })
+        ).status,
       ).toBe(409);
     });
 
@@ -297,7 +335,12 @@ describe('PATCH: rules and override apply when scheduling changes', () => {
       expect(denied.status).toBe(422);
       expect(denied.body.code).toBe('OUTSIDE_OPENING_HOURS');
       expect(
-        (await patch(t, id, { serviceId: long.id, override: true })).status,
+        (
+          await patch(t, id, {
+            serviceId: long.id,
+            overrideRules: ALL_OVERRIDABLE_RULES,
+          })
+        ).status,
       ).toBe(200);
     });
   });

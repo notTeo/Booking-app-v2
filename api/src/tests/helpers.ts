@@ -2,6 +2,15 @@ import { prisma } from '../utils/prisma';
 import { signAccessToken } from '../utils/jwt';
 import type { BookingStatus } from '../../dist/generated/prisma';
 
+// Every booking rule an owner/staff request may accept (mirrors the API's
+// OVERRIDABLE_RULE_CODES; BOOKING_BEYOND_ADVANCE_WINDOW is never overridable).
+export const ALL_OVERRIDABLE_RULES = [
+  'OUTSIDE_OPENING_HOURS',
+  'SHOP_CLOSED',
+  'BOOKING_IN_PAST',
+  'OFF_SLOT_GRID',
+];
+
 let counter = 0;
 export const unique = () => `${Date.now()}-${++counter}`;
 

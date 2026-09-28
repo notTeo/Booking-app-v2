@@ -144,6 +144,9 @@ const claimSlotAndCreate = async (
     customer: { name: string; phone: string; email?: string };
     notes?: string;
     cancelToken: string;
+    // Owner/staff creation only: the rules accepted, and who created it.
+    overriddenRules?: string[];
+    createdById?: string;
   },
 ) => {
   assertBookingLength(p.startTime, p.endTime);
@@ -174,6 +177,8 @@ const claimSlotAndCreate = async (
       endTime: p.endTime,
       notes: p.notes,
       cancelToken: p.cancelToken,
+      overriddenRules: p.overriddenRules ?? [],
+      createdById: p.createdById ?? null,
     },
     include: BOOKING_INCLUDE,
   });
@@ -261,8 +266,9 @@ export const createBookingForShop = async (
     staffId?: string | null;
     startTime: string;
     notes?: string;
-    // Bypass the booking rules (never the overlap check).
-    override?: boolean;
+    // Booking rules the caller explicitly accepts, by code (validated to the
+    // overridable set). Never bypasses the overlap check.
+    overrideRules?: string[];
   },
 ) => {
   const startTime = new Date(data.startTime);
@@ -291,23 +297,23 @@ export const createBookingForShop = async (
     );
     if (!staff) throw staffUnavailable(data.staffId);
 
-    // Same rules as the public path, bypassable only with an explicit
-    // override. The overlap check in claimSlotAndCreate is never skipped.
-    if (!data.override) {
-      const shop = await tx.shop.findUniqueOrThrow({
-        where: { id: shopId },
-        select: { timezone: true, maxAdvanceDays: true },
-      });
-      await assertBookingRules({
-        db: tx,
-        shopId,
-        timezone: shop.timezone,
-        maxAdvanceDays: shop.maxAdvanceDays,
-        scheduleStaffId: data.staffId ? staff.id : null,
-        startTime,
-        endTime,
-      });
-    }
+    // Same rules as the public path; a violation is only allowed if its code
+    // is in overrideRules. The overlap check in claimSlotAndCreate is never
+    // skipped.
+    const shop = await tx.shop.findUniqueOrThrow({
+      where: { id: shopId },
+      select: { timezone: true, maxAdvanceDays: true },
+    });
+    const overriddenRules = await assertBookingRules({
+      db: tx,
+      shopId,
+      timezone: shop.timezone,
+      maxAdvanceDays: shop.maxAdvanceDays,
+      scheduleStaffId: data.staffId ? staff.id : null,
+      startTime,
+      endTime,
+      overrideRules: data.overrideRules,
+    });
 
     return claimSlotAndCreate(tx, {
       shopId,
@@ -318,6 +324,8 @@ export const createBookingForShop = async (
       customer: { name: data.name, phone: data.phone, email: data.email },
       notes: data.notes,
       cancelToken,
+      overriddenRules,
+      createdById: userId,
     });
   });
 };
@@ -541,8 +549,9 @@ export const updateBooking = async (
     serviceId?: string;
     staffId?: string;
     notes?: string;
-    // Bypass the booking rules (never the overlap check).
-    override?: boolean;
+    // Booking rules the caller explicitly accepts, by code. Never bypasses the
+    // overlap check.
+    overrideRules?: string[];
   },
   canViewCustomer = true,
 ) =>
@@ -599,22 +608,22 @@ export const updateBooking = async (
     const duration = newService?.duration ?? existing.service.duration;
     const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
 
-    // Same rules as creation (bypassable by an override); overlap never is.
-    if (!data.override) {
-      const shop = await tx.shop.findUniqueOrThrow({
-        where: { id: shopId },
-        select: { timezone: true, maxAdvanceDays: true },
-      });
-      await assertBookingRules({
-        db: tx,
-        shopId,
-        timezone: shop.timezone,
-        maxAdvanceDays: shop.maxAdvanceDays,
-        scheduleStaffId: finalStaffId,
-        startTime: finalStartTime,
-        endTime: finalEndTime,
-      });
-    }
+    // Same rules as creation; overlap never is bypassable. The stored codes
+    // describe the booking's CURRENT time, so a reschedule replaces them.
+    const shop = await tx.shop.findUniqueOrThrow({
+      where: { id: shopId },
+      select: { timezone: true, maxAdvanceDays: true },
+    });
+    const overriddenRules = await assertBookingRules({
+      db: tx,
+      shopId,
+      timezone: shop.timezone,
+      maxAdvanceDays: shop.maxAdvanceDays,
+      scheduleStaffId: finalStaffId,
+      startTime: finalStartTime,
+      endTime: finalEndTime,
+      overrideRules: data.overrideRules,
+    });
 
     // Same overlap check as creation, excluding this booking itself.
     assertBookingLength(finalStartTime, finalEndTime);
@@ -635,6 +644,7 @@ export const updateBooking = async (
         startTime: finalStartTime,
         endTime: finalEndTime,
         staffId: finalStaffId,
+        overriddenRules,
         ...(data.serviceId && { serviceId: data.serviceId }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },

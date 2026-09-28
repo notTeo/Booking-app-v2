@@ -8,6 +8,7 @@ import {
   createBookingRow,
   createTenant,
   type Tenant,
+  ALL_OVERRIDABLE_RULES,
 } from './helpers';
 
 vi.mock('../services/email.service');
@@ -89,7 +90,9 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
     await createBookingRow(t, SLOT_ISO, 'COMPLETED');
 
     const owner = await ownerBook(t);
-    const overridden = await ownerBook(t, { override: true });
+    const overridden = await ownerBook(t, {
+      overrideRules: ALL_OVERRIDABLE_RULES,
+    });
     const pub = await request(app).post(`/public/${t.shop.slug}/book`).send({
       name: 'C',
       phone: '6911111111',
@@ -116,7 +119,7 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
     const res = await request(app)
       .patch(`/api/shops/${t.shop.id}/bookings/${other.id}`)
       .set(authHeader(t.token))
-      .send({ startTime: SLOT, override: true });
+      .send({ startTime: SLOT, overrideRules: ALL_OVERRIDABLE_RULES });
     expect(res.status).toBe(409);
   });
 

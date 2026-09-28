@@ -30,6 +30,21 @@ truth if work continues in a new session. Branch: `prod-readiness`.
    reports no drift and does not try to drop it. If either fails: skip it and
    say so.
 
+6. **Implementation of the contract (commit 2), as built:**
+   - `overrideRules` is validated to the overridable set (400 otherwise); the
+     old `override` field, in any form, is a 400. The public path ignores both.
+   - A 422 carries `code` (the first violation not accepted) plus
+     `violations: [{code, message, overridable}]` listing ALL violations.
+   - **Stored = violated ∩ accepted.** Codes accepted but not violated are
+     dropped, so a booking is never tagged with something it did not need.
+   - A PATCH that changes time, staff or service **replaces** `overriddenRules`
+     with the codes accepted for the new time; notes-only edits leave it, and
+     `createdById`, untouched.
+   - Consequence to know about: `BOOKING_BEYOND_ADVANCE_WINDOW` is never
+     overridable, so changing the service/staff/time of an existing booking that
+     lies beyond the shop's window is refused until `maxAdvanceDays` is raised
+     (before, a blanket override bypassed it).
+
 ### Approved order (bugs before features)
 
 0. Commit the Playwright scaffold; mark the obsolete override-dialog E2E

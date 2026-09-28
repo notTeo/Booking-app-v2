@@ -7,6 +7,8 @@ import {
 } from '../services/booking.service';
 import { createSchedule } from '../services/workingHours.service';
 
+import { ALL_OVERRIDABLE_RULES } from './helpers';
+
 let counter = 0;
 function unique() {
   counter += 1;
@@ -24,7 +26,9 @@ async function setupShop() {
   });
 
   const shop = await prisma.shop.create({
-    data: { name: 'Test Shop', slug: `test-shop-${id}` },
+    // Wide window: these tests use fixed far-future dates, and the advance
+    // window is (deliberately) not overridable.
+    data: { name: 'Test Shop', slug: `test-shop-${id}`, maxAdvanceDays: 730 },
   });
 
   const staff = await prisma.userShop.create({
@@ -73,7 +77,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const booking = await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Alice',
       phone: '1000000001',
       serviceId: service.id,
@@ -82,7 +86,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     const updated = await updateBooking(shop.id, booking.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       startTime: '2027-01-04T14:00:00.000Z',
     });
 
@@ -93,7 +97,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const bookingA = await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Alice',
       phone: '1000000002',
       serviceId: service.id,
@@ -102,7 +106,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Bob',
       phone: '1000000003',
       serviceId: service.id,
@@ -112,7 +116,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
 
     await expect(
       updateBooking(shop.id, bookingA.id, {
-        override: true,
+        overrideRules: ALL_OVERRIDABLE_RULES,
         startTime: '2027-01-05T11:00:00.000Z',
       }),
     ).rejects.toMatchObject({
@@ -125,7 +129,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const booking = await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Alice',
       phone: '1000000004',
       serviceId: service.id,
@@ -134,7 +138,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     const updated = await updateBooking(shop.id, booking.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       startTime: '2027-01-06T10:00:00.000Z',
       notes: 'Confirmed by phone',
     });
@@ -147,7 +151,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const bookingA = await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Alice',
       phone: '1000000005',
       serviceId: service.id,
@@ -157,7 +161,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
 
     // Same staff, different (non-overlapping) time slot — should have no effect on bookingA's edit below.
     await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Bob',
       phone: '1000000006',
       serviceId: service.id,
@@ -296,7 +300,7 @@ describe('getAvailableSlots', () => {
     // 10:00 Athens wall-clock on 2027-02-01 (EET, +02:00), as an explicit
     // instant so the test doesn't depend on the process timezone.
     await createBookingForShop(owner.id, shop.id, {
-      override: true,
+      overrideRules: ALL_OVERRIDABLE_RULES,
       name: 'Alice',
       phone: '1000000007',
       serviceId: service.id,

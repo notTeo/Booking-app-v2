@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import app from '../app';
 import { prisma } from '../utils/prisma';
-import { authHeader, createBookingRow, createTenant } from './helpers';
+import {
+  authHeader,
+  createBookingRow,
+  createTenant,
+  ALL_OVERRIDABLE_RULES,
+} from './helpers';
 
 vi.mock('../services/email.service');
 
@@ -134,6 +139,12 @@ describe('booking references must belong to the same shop', () => {
 
   it('still allows same-shop staff and service changes on PATCH', async () => {
     const A = await createTenant('Alpha');
+    // createBookingRow's default date is far ahead; the advance window is
+    // (deliberately) not overridable, so widen it for this shop.
+    await prisma.shop.update({
+      where: { id: A.shop.id },
+      data: { maxAdvanceDays: 730 },
+    });
     const aBooking = await createBookingRow(A);
     const service2 = await prisma.service.create({
       data: { shopId: A.shop.id, name: 'Beard', duration: 15, price: 1000 },
@@ -142,7 +153,11 @@ describe('booking references must belong to the same shop', () => {
     const res = await request(app)
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
-      .send({ serviceId: service2.id, staffId: A.staff.id, override: true });
+      .send({
+        serviceId: service2.id,
+        staffId: A.staff.id,
+        overrideRules: ALL_OVERRIDABLE_RULES,
+      });
 
     expect(res.status).toBe(200);
     expect(res.body.data.serviceId).toBe(service2.id);

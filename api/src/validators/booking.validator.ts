@@ -1,7 +1,30 @@
 import { body, param, query } from 'express-validator';
 import { BookingStatus } from '../../dist/generated/prisma';
+import { OVERRIDABLE_RULE_CODES } from '../services/bookingRules.service';
 
 const validStatuses = Object.values(BookingStatus);
+
+// Owner/staff bookings may accept specific rule violations by code. The old
+// blanket `override` flag is rejected outright so no client can silently keep
+// bypassing everything.
+const overrideRulesValidation = [
+  body('override')
+    .not()
+    .exists()
+    .withMessage(
+      'override is no longer supported; send overrideRules: ["<RULE_CODE>", ...]',
+    ),
+  body('overrideRules')
+    .optional()
+    .isArray()
+    .withMessage('overrideRules must be an array of rule codes'),
+  body('overrideRules.*')
+    .isString()
+    .isIn([...OVERRIDABLE_RULE_CODES])
+    .withMessage(
+      `overrideRules may only contain: ${OVERRIDABLE_RULE_CODES.join(', ')}`,
+    ),
+];
 
 export const createBookingValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
@@ -50,11 +73,7 @@ export const ownerCreateBookingValidation = [
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
   body('notes').optional().trim(),
-  body('override')
-    .optional()
-    .isBoolean()
-    .withMessage('override must be a boolean')
-    .toBoolean(),
+  ...overrideRulesValidation,
 ];
 
 export const listBookingsValidation = [
@@ -88,11 +107,7 @@ export const updateBookingValidation = [
     .withMessage('serviceId cannot be empty'),
   body('staffId').optional().notEmpty().withMessage('staffId cannot be empty'),
   body('notes').optional().trim(),
-  body('override')
-    .optional()
-    .isBoolean()
-    .withMessage('override must be a boolean')
-    .toBoolean(),
+  ...overrideRulesValidation,
 ];
 
 export const updateStatusValidation = [

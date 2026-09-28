@@ -8,6 +8,7 @@ import {
   createBookingRow,
   createTenant,
   type Tenant,
+  ALL_OVERRIDABLE_RULES,
 } from './helpers';
 
 vi.mock('../services/email.service');
@@ -150,7 +151,7 @@ describe('concurrent bookings for the same provider', () => {
               serviceId: t.service.id,
               staffId: t.staff.id,
               startTime: SLOT,
-              override: true,
+              overrideRules: ALL_OVERRIDABLE_RULES,
             }),
         ),
       );

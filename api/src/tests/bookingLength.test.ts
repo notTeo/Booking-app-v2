@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import app from '../app';
 import { prisma } from '../utils/prisma';
-import { addWeeklySchedule, authHeader, createTenant } from './helpers';
+import {
+  addWeeklySchedule,
+  authHeader,
+  createTenant,
+  ALL_OVERRIDABLE_RULES,
+} from './helpers';
 
 vi.mock('../services/email.service');
 
@@ -54,7 +59,7 @@ describe('bookings are never longer than 24 hours', () => {
         serviceId: t.service.id,
         staffId: t.staff.id,
         startTime: '2026-12-08T10:00:00+02:00',
-        override: true,
+        overrideRules: ALL_OVERRIDABLE_RULES,
       });
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('BOOKING_TOO_LONG');
@@ -79,7 +84,7 @@ describe('bookings are never longer than 24 hours', () => {
           serviceId,
           staffId: t.staff.id,
           startTime,
-          override: true,
+          overrideRules: ALL_OVERRIDABLE_RULES,
         });
     expect(
       (await book(day.id, '2026-12-08T10:00:00+02:00', '6900000001')).status,
