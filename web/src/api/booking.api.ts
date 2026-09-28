@@ -57,7 +57,11 @@ export const listBookings = (shopId: string, params?: ListBookingsParams) =>
 export const getBookingStats = (shopId: string) =>
   client.get(`${base(shopId)}/stats`).then((r) => r.data.data as BookingStats);
 
-/** Slots for the shop's own staff (authenticated): honours "bookable internally". */
+/**
+ * Slots for the shop's own staff (authenticated): honours "bookable
+ * internally". Always includes the out-of-hours grid (flagged per slot), so the
+ * form knows which times need confirming; the toggle only decides what to show.
+ */
 export const getOwnerSlots = (
   shopId: string,
   date: string,
@@ -65,7 +69,9 @@ export const getOwnerSlots = (
   serviceId: string,
 ) =>
   client
-    .get(`${base(shopId)}/slots`, { params: { date, staffId, serviceId } })
+    .get(`${base(shopId)}/slots`, {
+      params: { date, staffId, serviceId, includeOutsideHours: true },
+    })
     .then((r) => r.data.data as SlotsResponse);
 
 export const updateBookingStatus = (shopId: string, bookingId: string, status: BookingStatus) =>

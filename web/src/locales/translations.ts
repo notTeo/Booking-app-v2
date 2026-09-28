@@ -732,6 +732,23 @@ export interface Translations {
       confirm: string;
       cancel: string;
     };
+    outsideHours: {
+      toggle: string;
+      workingHours: string;
+      BEFORE_OPENING: string;
+      BREAK: string;
+      AFTER_CLOSING: string;
+      CLOSED_DAY: string;
+      needsConfirm: string;
+      otherTime: string;
+      otherTimeHint: string;
+      booked: string;
+      past: string;
+      slotAria: string;
+      panelTitle: string;
+      panelBody: string;
+      confirmButton: string;
+    };
   };
   cancelBooking: {
     invalidLink: string;
@@ -1482,6 +1499,23 @@ home: {
         confirm: 'Κράτηση παρ’ όλα αυτά',
         cancel: 'Άκυρο',
       },
+      outsideHours: {
+        toggle: 'Εμφάνιση ωρών εκτός ωραρίου',
+        workingHours: 'Ώρες λειτουργίας',
+        BEFORE_OPENING: 'Πριν το άνοιγμα',
+        BREAK: 'Διάλειμμα',
+        AFTER_CLOSING: 'Μετά το κλείσιμο',
+        CLOSED_DAY: 'Κλειστή ημέρα',
+        needsConfirm: '(απαιτεί επιβεβαίωση)',
+        otherTime: 'Άλλη ώρα',
+        otherTimeHint: 'Οποιαδήποτε ώρα ανά 5 λεπτά. Ελέγχεται όταν κάνετε την κράτηση.',
+        booked: 'κρατημένο',
+        past: 'παρελθόν',
+        slotAria: 'εκτός ωραρίου',
+        panelTitle: 'Εκτός ωραρίου',
+        panelBody: 'Η κράτηση θα αποθηκευτεί ως εξαίρεση.',
+        confirmButton: 'Κράτηση εκτός ωραρίου',
+      },
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -2230,6 +2264,23 @@ home: {
         title: 'Book anyway?',
         confirm: 'Book anyway',
         cancel: 'Cancel',
+      },
+      outsideHours: {
+        toggle: 'Show times outside working hours',
+        workingHours: 'Working hours',
+        BEFORE_OPENING: 'Before opening',
+        BREAK: 'Break',
+        AFTER_CLOSING: 'After closing',
+        CLOSED_DAY: 'Closed day',
+        needsConfirm: '(needs confirmation)',
+        otherTime: 'Other time',
+        otherTimeHint: 'Any time in 5-minute steps. It is checked when you book.',
+        booked: 'booked',
+        past: 'past',
+        slotAria: 'outside working hours',
+        panelTitle: 'Outside working hours',
+        panelBody: 'This booking will be saved as an exception.',
+        confirmButton: 'Book outside working hours',
       },
     },
     cancelBooking: {

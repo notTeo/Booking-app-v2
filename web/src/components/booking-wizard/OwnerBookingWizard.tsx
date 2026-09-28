@@ -15,7 +15,8 @@ import ServiceSelectStep from './ServiceSelectStep';
 import StaffSelectStep from './StaffSelectStep';
 import DateTimeStep from './DateTimeStep';
 import OwnerCustomerFormStep, { type OwnerCustomerFormValues } from './OwnerCustomerFormStep';
-import { buildISODateTime } from './wizardUtils';
+import { shiftDate, todayInZone } from '../../utils/shopTime';
+import { anticipatedRuleCodes, buildISODateTime } from './wizardUtils';
 
 export default function OwnerBookingWizard({
   shopId,
@@ -55,6 +56,9 @@ export default function OwnerBookingWizard({
   }
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
+  // Rules the chosen slot is known to break, confirmed on the last step. null
+  // (a typed-in "Other time") = unknown; a 422 then falls back to the dialog.
+  const anticipated = anticipatedRuleCodes(wizard.slots, wizard.time);
 
   async function handleSubmit(
     values: OwnerCustomerFormValues,
@@ -131,6 +135,8 @@ export default function OwnerBookingWizard({
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           timeHint={timeHint}
+          // Owners may log past bookings; the advance window is never overridable.
+          maxDate={shiftDate(todayInZone(wizard.shop.timezone), wizard.shop.maxAdvanceDays)}
           mode="internal"
           closedLinkTo={
             wizard.selectedMemberId
@@ -151,7 +157,8 @@ export default function OwnerBookingWizard({
           selectedMember={selectedMember}
           date={wizard.date}
           time={wizard.time}
-          onSubmit={(values) => handleSubmit(values)}
+          outsideRules={anticipated ?? []}
+          onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}
           submitting={submitting}
           error={submitError}

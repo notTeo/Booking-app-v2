@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Service, ShopMember, SlotsResponse } from '../../api/public.api';
+import type { Service, ShopMember, SlotInfo, SlotsResponse } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import { groupSlotSections, type SlotSectionKey } from './wizardUtils';
 
 const toMins = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number);
@@ -49,19 +50,64 @@ export default function DateTimeStep({
   const { t } = useLang();
 
   const isClosed = date !== '' && slots.status === 'closed';
-  // Public view only ever offers free times (unchanged from before); internal
+  // Owner/staff can also book outside working hours: the slot list carries the
+  // out-of-hours grid, shown only when the toggle is on. (A closed day still
+  // shows its "closed" note and can offer the grid too.)
+  const [showOutside, setShowOutside] = useState(false);
+  const [customTime, setCustomTime] = useState('');
+  const internal = mode === 'internal';
+  const allSlots: SlotInfo[] = slots.slots ?? [];
+  const sections = internal ? groupSlotSections(allSlots, showOutside) : [];
+  // Public view only ever offers free times (unchanged from before). Internal
   // view shows every slot in the day, with booked ones disabled rather than
   // hidden, so staff can see the whole working window.
-  const slotList = slots.status === 'ok'
-    ? (mode === 'internal' ? slots.slots : slots.slots.filter((s) => s.available))
-    : [];
+  const visibleSlots = internal
+    ? sections.flatMap((g) => g.slots)
+    : slots.status === 'ok'
+      ? slots.slots.filter((s) => s.available)
+      : [];
+  const hasOutsideSlots = allSlots.some((s) => s.outsideHours);
+  // The "Other time…" input only shows while it holds the selected time.
+  const customValue = customTime !== '' && customTime === time ? customTime : '';
+
+  const os = t.bookings.outsideHours;
+  const sectionTitle = (key: SlotSectionKey) =>
+    key === 'working' ? os.workingHours : `${os[key]} ${os.needsConfirm}`;
+  const slotLabel = (slot: SlotInfo) => {
+    const parts = [slot.time];
+    if (slot.outsideHours) parts.push(os.slotAria);
+    if (!slot.available) parts.push(os.booked);
+    if (slot.past) parts.push(os.past);
+    return parts.join(', ');
+  };
+  const pickSlot = (slot: SlotInfo) => {
+    if (!slot.available) return;
+    setCustomTime('');
+    onSelectTime(slot.time);
+  };
+  const renderSlot = (slot: SlotInfo) => (
+    <button
+      key={slot.time}
+      className={`public-slot-btn${time === slot.time ? ' public-slot-btn--selected' : ''}${!slot.available ? ' public-slot-btn--disabled' : ''}${slot.outsideHours ? ' public-slot-btn--outside' : ''}`}
+      onClick={() => pickSlot(slot)}
+      disabled={internal && !slot.available}
+      aria-label={internal && (slot.outsideHours || !slot.available || slot.past) ? slotLabel(slot) : undefined}
+    >
+      {slot.outsideHours && <span aria-hidden="true">☾ </span>}
+      {slot.time}
+      {internal && !slot.available && <span className="slot-tag"> {os.booked}</span>}
+      {internal && slot.available && slot.past && <span className="slot-tag"> {os.past}</span>}
+    </button>
+  );
 
   // Auto-select the nearest available slot to a calendar-click time hint,
   // but never override an explicit user pick, and only within a sane
   // distance of the hint — otherwise leave it unselected.
   useEffect(() => {
     if (!timeHint || time || slots.status !== 'ok') return;
-    const availableSlots = slots.slots.filter((s) => s.available);
+    // Only slots currently on screen are candidates.
+    const onScreen = internal ? groupSlotSections(slots.slots, showOutside).flatMap((g) => g.slots) : slots.slots;
+    const availableSlots = onScreen.filter((s) => s.available);
     if (availableSlots.length === 0) return;
     const hintMins = toMins(timeHint);
     let nearest = availableSlots[0];
@@ -74,7 +120,7 @@ export default function DateTimeStep({
       }
     }
     if (nearestDist <= TIME_HINT_THRESHOLD_MINS) onSelectTime(nearest.time);
-  }, [slots, timeHint, time, onSelectTime]);
+  }, [slots, timeHint, time, onSelectTime, showOutside, internal]);
 
   return (
     <div className="public-wizard-panel">
@@ -100,7 +146,29 @@ export default function DateTimeStep({
         />
       </div>
 
-      {isClosed ? (
+      {internal && date !== '' && (hasOutsideSlots || isClosed) && (
+        <label className="ooh-toggle">
+          <input
+            type="checkbox"
+            checked={showOutside}
+            onChange={(e) => {
+              setShowOutside(e.target.checked);
+              // A chosen time that only exists in the out-of-hours list (or was
+              // typed in) goes away with it, rather than staying selected unseen.
+              if (!e.target.checked) {
+                const chosen = allSlots.find((x) => x.time === time);
+                if (time !== '' && (!chosen || chosen.outsideHours)) {
+                  setCustomTime('');
+                  onSelectTime('');
+                }
+              }
+            }}
+          />
+          <span aria-hidden="true">☾</span> {os.toggle}
+        </label>
+      )}
+
+      {isClosed && (
         <div className="public-closed-message">
           <p>{mode === 'internal' ? t.public.closedOrNoSchedule : t.public.closedThisDay}</p>
           {mode === 'internal' && closedLinkTo && (
@@ -109,18 +177,40 @@ export default function DateTimeStep({
             </p>
           )}
         </div>
-      ) : (
-        <div className="public-slots-grid">
-          {slotList.map((slot) => (
-            <button
-              key={slot.time}
-              className={`public-slot-btn${time === slot.time ? ' public-slot-btn--selected' : ''}${!slot.available ? ' public-slot-btn--disabled' : ''}`}
-              onClick={() => slot.available && onSelectTime(slot.time)}
-              disabled={mode === 'internal' && !slot.available}
-            >
-              {slot.time}
-            </button>
-          ))}
+      )}
+
+      {!internal && !isClosed && (
+        <div className="public-slots-grid">{visibleSlots.map(renderSlot)}</div>
+      )}
+
+      {internal &&
+        sections.map((g) => (
+          <section key={g.key} className="slot-section">
+            {(showOutside || g.key !== 'working') && (
+              <h4 className="slot-section-title">
+                {g.key !== 'working' && <span aria-hidden="true">☾ </span>}
+                {sectionTitle(g.key)}
+              </h4>
+            )}
+            <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
+          </section>
+        ))}
+
+      {internal && showOutside && date !== '' && (
+        <div className="ooh-other-time">
+          <label className="public-field-label" htmlFor="booking-other-time">{os.otherTime}</label>
+          <input
+            id="booking-other-time"
+            className="public-field-input"
+            type="time"
+            step={300}
+            value={customValue}
+            onChange={(e) => {
+              setCustomTime(e.target.value);
+              onSelectTime(e.target.value);
+            }}
+          />
+          <p className="public-closed-hint">{os.otherTimeHint}</p>
         </div>
       )}
 

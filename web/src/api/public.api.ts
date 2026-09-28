@@ -103,13 +103,21 @@ export interface CancelBookingResult {
 export const cancelBooking = (token: string) =>
   client.post('/public/cancel', { token }).then((r) => r.data.data as CancelBookingResult);
 
+/** Why a slot is outside working hours (owner/staff view only). */
+export type OutsideReason = 'BEFORE_OPENING' | 'BREAK' | 'AFTER_CLOSING' | 'CLOSED_DAY';
+
 export interface SlotInfo {
   time: string; // "HH:MM"
-  available: boolean;
+  available: boolean; // false = overlaps an active booking
+  // Only present on the authenticated owner slots (includeOutsideHours):
+  outsideHours?: boolean;
+  past?: boolean;
+  reason?: OutsideReason;
 }
 
 export type SlotsResponse =
-  | { status: 'closed' }
+  // A closed day may still carry the out-of-hours grid (owner view).
+  | { status: 'closed'; slots?: SlotInfo[] }
   | { status: 'ok'; slots: SlotInfo[] };
 
 export const getPublicSlots = (

@@ -693,6 +693,59 @@
   border-color: var(--border);
 }
 
+/* ── Out-of-hours slots (owner/staff booking form) ─────────────────────── */
+/* Never colour alone: dashed border + moon icon + a text heading per section. */
+.ooh-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.slot-section {
+  margin-top: 12px;
+}
+
+.slot-section-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary, var(--text));
+}
+
+.public-slot-btn--outside {
+  border-style: dashed;
+}
+
+.slot-tag {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  text-decoration: none;
+}
+
+.ooh-other-time {
+  margin-top: 16px;
+}
+
+.ooh-panel {
+  margin-top: 12px;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  font-size: 0.875rem;
+}
+
+.ooh-panel p {
+  margin: 0 0 0.25rem;
+}
+
+.ooh-panel-title {
+  font-weight: 600;
+}
+
 /* ── Closed / no-schedule message ─────────────────────────────────────── */
 .public-closed-message {
   margin-top: 12px;

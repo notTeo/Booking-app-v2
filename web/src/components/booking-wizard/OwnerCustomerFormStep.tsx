@@ -1,6 +1,7 @@
 import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
+import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
 
@@ -17,6 +18,7 @@ export default function OwnerCustomerFormStep({
   selectedMember,
   date,
   time,
+  outsideRules = [],
   onSubmit,
   onBack,
   submitting,
@@ -27,6 +29,8 @@ export default function OwnerCustomerFormStep({
   selectedMember: ShopMember | null;
   date: string;
   time: string;
+  /** Rules the chosen time is known to break; non-empty shows the confirmation panel. */
+  outsideRules?: BookingRuleCode[];
   onSubmit: (values: OwnerCustomerFormValues) => void;
   onBack: () => void;
   submitting: boolean;
@@ -181,6 +185,17 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
+        {outsideRules.length > 0 && (
+          <div className="ooh-panel" role="note">
+            <p className="ooh-panel-title">
+              <span aria-hidden="true">☾ </span>
+              {t.bookings.outsideHours.panelTitle}
+            </p>
+            <p>{outsideRules.map((c) => t.bookings.override[c]).join(' ')}</p>
+            <p>{t.bookings.outsideHours.panelBody}</p>
+          </div>
+        )}
+
         {error && <p className="public-submit-error">{error}</p>}
       </div>
 
@@ -193,7 +208,11 @@ export default function OwnerCustomerFormStep({
           onClick={handleSubmit}
           disabled={submitting || name.trim() === '' || phone.trim() === ''}
         >
-          {submitting ? t.bookings.creating : t.bookings.createBooking}
+          {submitting
+            ? t.bookings.creating
+            : outsideRules.length > 0
+              ? t.bookings.outsideHours.confirmButton
+              : t.bookings.createBooking}
         </button>
       </div>
     </div>
