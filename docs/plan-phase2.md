@@ -1,9 +1,9 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** adapt the web "book anyway?" dialog to the new `overrideRules`
-contract (the API now rejects the old `override: true` with 400, so the
-dashboard is broken until this lands), then **checkpoint before any other UI
-work** and push. (Out-of-hours commits 1 and 2 are done.) See `docs/plan-out-of-hours.md` for the order and details.
+**Next step:** out-of-hours commit **4** — authenticated owner slots endpoint
+with out-of-hours flags (15-min midnight-anchored grid, 3 h / 4 h caps, breaks in
+full) — then commits 6 and 7, then the rest of Phase A. Commits 1 and 2 and the
+web dialog fix are done and pushed; this was the checkpoint before UI work.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
