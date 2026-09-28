@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { buildISODateTime } from './wizardUtils';
 
 const ATHENS = 'Europe/Athens';
@@ -41,4 +41,19 @@ describe('buildISODateTime(date, time, shopTimezone)', () => {
       '2027-02-01T15:00:00.000Z',
     );
   });
+});
+
+// Ambiguous (repeated) wall-clock times must resolve the same way regardless
+// of WHEN the code runs — the season at "now" must not pick the offset.
+describe('ambiguous time resolution does not depend on the current date', () => {
+  afterEach(() => vi.useRealTimers());
+
+  for (const now of ['2026-12-01T09:00:00Z', '2026-07-15T09:00:00Z']) {
+    it(`03:30 on 2027-10-31 is the earlier instant when now = ${now}`, () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date(now) });
+      expect(buildISODateTime('2027-10-31', '03:30', ATHENS)).toBe(
+        '2027-10-31T00:30:00.000Z',
+      );
+    });
+  }
 });

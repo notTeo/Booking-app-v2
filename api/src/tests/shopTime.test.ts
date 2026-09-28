@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   addDays,
   dateOnlyToUtc,
@@ -118,5 +118,42 @@ describe('buildSlotCandidates', () => {
     );
     const labels = c.map((x) => x.time);
     expect(new Set(labels).size).toBe(labels.length);
+  });
+});
+
+describe('resolution never depends on the current date', () => {
+  afterEach(() => vi.useRealTimers());
+
+  for (const now of ['2026-12-01T09:00:00Z', '2026-07-15T09:00:00Z']) {
+    it(`ambiguous 2027-10-31 03:30 is the earlier instant when now = ${now}`, () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date(now) });
+      expect(iso(wallClockToUtc('2027-10-31', '03:30', ATHENS))).toBe(
+        '2027-10-31T00:30:00.000Z',
+      );
+      // and the whole ambiguous hour, both edges
+      expect(iso(wallClockToUtc('2027-10-31', '03:00', ATHENS))).toBe(
+        '2027-10-31T00:00:00.000Z',
+      );
+      expect(iso(wallClockToUtc('2027-10-31', '03:59', ATHENS))).toBe(
+        '2027-10-31T00:59:00.000Z',
+      );
+    });
+
+    it(`gap 2027-03-28 03:30 stays nonexistent when now = ${now}`, () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date(now) });
+      expect(wallClockToUtc('2027-03-28', '03:30', ATHENS)).toBeNull();
+      expect(iso(wallClockToUtcLenient('2027-03-28', '03:30', ATHENS))).toBe(
+        '2027-03-28T01:30:00.000Z',
+      );
+    });
+  }
+
+  it('handles half-hour-offset zones (Asia/Kolkata) and fixed-offset zones', () => {
+    expect(iso(wallClockToUtc('2027-02-01', '10:00', 'Asia/Kolkata'))).toBe(
+      '2027-02-01T04:30:00.000Z',
+    );
+    expect(iso(wallClockToUtc('2027-02-01', '10:00', 'UTC'))).toBe(
+      '2027-02-01T10:00:00.000Z',
+    );
   });
 });

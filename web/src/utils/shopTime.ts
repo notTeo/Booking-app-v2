@@ -9,16 +9,41 @@ import { DateTime } from 'luxon';
  * slot labels as "HH:mm" wall-clock in the shop zone.
  */
 
+const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
+
+const offsetMinutesAt = (ms: number, zone: string): number =>
+  DateTime.fromMillis(ms, { zone }).offset;
+
 /** Wall-clock (date + "HH:mm") in `zone` -> UTC ISO string.
- * A time that occurs twice (DST fall-back) maps to the earlier instant. */
+ *
+ * Resolved WITHOUT consulting the current time (Luxon's own handling of an
+ * ambiguous time is biased by the offset in effect "now"): every offset the
+ * zone uses within a day either side is tried and the earliest valid instant
+ * wins, so a time that occurs twice (DST fall-back) maps to the earlier one —
+ * identical to api/src/utils/shopTime.ts. A nonexistent time (spring-forward
+ * gap) rolls forward past the gap. */
 export const wallClockToISO = (
   date: string,
   time: string,
   zone: string,
 ): string => {
-  const dt = DateTime.fromISO(`${date}T${time}`, { zone });
-  if (!dt.isValid) throw new Error(`Invalid date/time/zone: ${date} ${time} ${zone}`);
-  return dt.toUTC().toISO()!;
+  const naive = DateTime.fromISO(`${date}T${time}`, { zone: 'utc' });
+  if (!naive.isValid || !DateTime.fromMillis(0, { zone }).isValid) {
+    throw new Error(`Invalid date/time/zone: ${date} ${time} ${zone}`);
+  }
+  const naiveMs = naive.toMillis();
+  const before = offsetMinutesAt(naiveMs - DAY_MS, zone);
+  const after = offsetMinutesAt(naiveMs + DAY_MS, zone);
+
+  const valid = [...new Set([before, after])]
+    .map((offset) => ({ offset, ms: naiveMs - offset * MINUTE_MS }))
+    .filter(({ offset, ms }) => offsetMinutesAt(ms, zone) === offset)
+    .map(({ ms }) => ms)
+    .sort((x, y) => x - y);
+
+  const ms = valid.length > 0 ? valid[0] : naiveMs - before * MINUTE_MS;
+  return new Date(ms).toISOString();
 };
 
 /** Today's calendar date ("YYYY-MM-DD") in `zone`. */

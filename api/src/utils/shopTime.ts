@@ -14,12 +14,48 @@ export const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const DAYS: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-const at = (date: string, time: string, zone: string) => {
-  const dt = DateTime.fromISO(`${date}T${time}`, { zone });
-  if (!dt.isValid) {
+const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
+
+const offsetMinutesAt = (ms: number, zone: string): number =>
+  DateTime.fromMillis(ms, { zone }).offset;
+
+/**
+ * Resolve a wall-clock time in `zone` WITHOUT consulting the current time.
+ * (Luxon's own resolution of an ambiguous time is biased by the offset in
+ * effect "now", which would make the answer depend on the season the code
+ * happens to run in.)
+ *
+ * Every offset the zone uses within a day either side is tried; a candidate
+ * instant is valid if the zone really has that offset at that instant.
+ * - `instant`: the earliest valid instant (fall-back repeats -> earlier one),
+ *   or null when the wall-clock time does not exist (spring-forward gap).
+ * - `lenient`: `instant`, or for a gap time the instant just past the gap.
+ */
+const resolveWallClock = (
+  date: string,
+  time: string,
+  zone: string,
+): { instant: Date | null; lenient: Date } => {
+  const naive = DateTime.fromISO(`${date}T${time}`, { zone: 'utc' });
+  if (!naive.isValid || !DateTime.fromMillis(0, { zone }).isValid) {
     throw new Error(`Invalid date/time/zone: ${date} ${time} ${zone}`);
   }
-  return dt;
+  const naiveMs = naive.toMillis();
+  const before = offsetMinutesAt(naiveMs - DAY_MS, zone);
+  const after = offsetMinutesAt(naiveMs + DAY_MS, zone);
+
+  const valid = [...new Set([before, after])]
+    .map((offset) => ({ offset, ms: naiveMs - offset * MINUTE_MS }))
+    .filter(({ offset, ms }) => offsetMinutesAt(ms, zone) === offset)
+    .map(({ ms }) => ms)
+    .sort((x, y) => x - y);
+
+  if (valid.length > 0) {
+    const instant = new Date(valid[0]);
+    return { instant, lenient: instant };
+  }
+  return { instant: null, lenient: new Date(naiveMs - before * MINUTE_MS) };
 };
 
 /**
@@ -31,30 +67,23 @@ export const wallClockToUtc = (
   date: string,
   time: string,
   zone: string,
-): Date | null => {
-  const dt = at(date, time, zone);
-  const [h, m] = time.split(':').map(Number);
-  // Luxon shifts a nonexistent time forward; detect that by round-tripping.
-  if (dt.hour !== h || dt.minute !== m) return null;
-  return dt.toJSDate();
-};
+): Date | null => resolveWallClock(date, time, zone).instant;
 
 /** Like wallClockToUtc but a nonexistent time rolls forward past the gap. */
 export const wallClockToUtcLenient = (
   date: string,
   time: string,
   zone: string,
-): Date => at(date, time, zone).toJSDate();
+): Date => resolveWallClock(date, time, zone).lenient;
 
 /** Half-open UTC range [start, end) covering the calendar `date` in `zone`. */
 export const dayBoundsUtc = (
   date: string,
   zone: string,
 ): { start: Date; end: Date } => {
-  const start = at(date, '00:00', zone);
   return {
-    start: start.toJSDate(),
-    end: start.plus({ days: 1 }).startOf('day').toJSDate(),
+    start: wallClockToUtcLenient(date, '00:00', zone),
+    end: wallClockToUtcLenient(addDays(date, 1), '00:00', zone),
   };
 };
 
