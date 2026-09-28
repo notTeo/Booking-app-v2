@@ -67,6 +67,23 @@ truth if work continues in a new session. Branch: `prod-readiness`.
      08:00–22:00.
    - Unbookable provider / wrong-shop service with the flag: `{status:'closed', slots:[]}`.
 
+8. **Web form (commit 6), as built:** the owner wizard always fetches with
+   `includeOutsideHours=true`; the toggle only controls display. Sections:
+   working hours, before opening, break, after closing, closed day. Each
+   out-of-hours slot: dashed border + ☾ + aria-label ("20:30, outside working
+   hours") + heading text; booked/past tagged with words. "Other time" is a
+   native 5-minute time input shown with the toggle. The last step shows a
+   non-modal panel and a "Book outside working hours" button for slots whose
+   flags say they break a rule (codes derived from `reason`/`past`; sent as
+   `overrideRules`). A typed-in time that is NOT a listed slot is unknown
+   client-side, so a 422 falls back to the confirmation dialog (which lists all
+   violations); a typed time that equals a listed slot is treated as that slot.
+   The wizard's date input is capped at the shop's advance window.
+   **Browser spec (pulled forward from commit 9):** `e2e/tests/owner-outside-hours.spec.ts`
+   (phone viewport) replaces the obsolete `override-dialog.spec.ts`. Still to do
+   for commit 9: the calendar assertions (06:15 / 22:30 bookings, closed-day
+   booking visible), which need commit 7.
+
 ### Approved order (bugs before features)
 
 0. Commit the Playwright scaffold; mark the obsolete override-dialog E2E

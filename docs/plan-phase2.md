@@ -1,12 +1,12 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** out-of-hours commit **6** — web form: "show times outside working
-hours" toggle, sections, "Other time…", inline confirmation, translations (uses
-the commit-4 endpoint and the commit-2 `overrideRules` contract). Then commit 7
-(calendar; note its per-provider shading needs the commit-5 day-schedule
-endpoint, which is in Phase B — decide then whether to pull it forward).
-Commits 1, 2, 4 and the web dialog fix are done; 1, 2 and the dialog fix are
-pushed.
+**Next step:** out-of-hours commit **7** — web calendar (dynamic range, override
+styling, out-of-view safety net, real "Other" column). Its per-provider
+non-working shading needs the commit-5 day-schedule endpoint, which is Phase B:
+the owner decides whether to pull commit 5 forward or ship commit 7 without
+shading. Done and pushed: commits 1, 2, 4, 6, the web dialog fix and a calendar
+stale-response fix. (Commit 9 is partly done: the form spec exists; the calendar
+assertions wait for commit 7.)
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -31,8 +31,8 @@ end of this file, without asking.
 
 **Pushing:** push `prod-readiness` after each checkpoint.
 
-Branch: `prod-readiness` (base `main`; PRs target `dev`). Nothing pushed, no PR
-opened, nothing deployed.
+Branch: `prod-readiness` (base `main`; PRs target `dev`). Pushed after each
+checkpoint; no PR opened, nothing deployed.
 
 ## Context
 
@@ -395,11 +395,10 @@ npm run e2e                                                     # from repo root
 
 ## LATER (triaged, not launch-critical)
 
-- **Slots for a date beyond `maxAdvanceDays`**: neither the public nor the owner
-  slots endpoint knows about the advance window, so the UI lists slots that the
-  booking call will then refuse (422 `BOOKING_BEYOND_ADVANCE_WINDOW`, never
-  overridable). Harmless (clean error), but the wizard should grey the date out
-  or say so; handle in the web form work (commit 6) if cheap.
+- **Slots for a date beyond `maxAdvanceDays`**: the endpoints still list slots the
+  booking call will refuse (422, never overridable). The owner wizard's date
+  input is now capped at the window (commit 6); the public page already was.
+  Remaining: nothing user-visible. (Closed.)
 
 - **A fourth intermittent failure**: `concurrency.test.ts` "non-conflicting
   bookings for different providers/slots all succeed" failed once (UTC, full

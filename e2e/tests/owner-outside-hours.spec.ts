@@ -1,0 +1,199 @@
+import { test, expect, type Page } from '@playwright/test';
+import { E2E } from '../support/env';
+import { bookingCount, query } from '../support/db';
+import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
+
+/**
+ * Owner/staff booking outside working hours (docs/plan-out-of-hours.md).
+ *
+ * The seeded provider works 00:00–23:30, so for this spec her hours are
+ * narrowed to 09:00–17:00 (and restored afterwards). Phone-size viewport.
+ */
+test.use({ timezoneId: 'America/New_York', viewport: { width: 390, height: 844 } });
+test.describe.configure({ mode: 'serial' });
+
+// A day no other spec books on (owner-booking uses +3).
+const date = addDays(athensDate(), 5);
+
+test.beforeAll(async () => {
+  await query(`update "ShopWorkingHourRange" set "startTime"='09:00', "endTime"='17:00'`);
+});
+test.afterAll(async () => {
+  await query(`update "ShopWorkingHourRange" set "startTime"='00:00', "endTime"='23:30'`);
+});
+
+async function openWizard(page: Page, context: import('@playwright/test').BrowserContext) {
+  await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
+  await page.goto('/login');
+  await page.locator('#email').fill(E2E.owner.email);
+  await page.locator('#password').fill(E2E.owner.password);
+  await page.locator('button[type=submit]').click();
+  await page.waitForURL('**/dashboard');
+  await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
+  await page.locator('.public-service-card--selectable').first().click();
+  await page.locator('.public-team-card--selectable').first().click();
+  await page.locator('#booking-date').fill(date);
+  await expect(page.locator('.public-slot-btn', { hasText: /^10:00$/ })).toBeVisible();
+}
+
+const toggle = (page: Page) => page.locator('.ooh-toggle input');
+
+async function lastBooking() {
+  const rows = await query<{ startTime: Date; overriddenRules: string[]; createdById: string | null }>(
+    'select "startTime", "overriddenRules", "createdById" from "Booking" order by "createdAt" desc limit 1',
+  );
+  return rows[0];
+}
+
+test('the out-of-hours grid is hidden until asked for, and is never colour alone', async ({ page, context }) => {
+  await openWizard(page, context);
+
+  // toggle off: only the working-hours grid (09:00–16:30), no out-of-hours slots
+  await expect(page.getByRole('button', { name: /^20:30/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^06:00/ })).toHaveCount(0);
+
+  await toggle(page).check();
+  await expect(page.getByRole('heading', { name: /before opening/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /after closing/i })).toBeVisible();
+
+  // 3 h before 09:00 and 4 h after 17:00, nothing beyond
+  await expect(page.getByRole('button', { name: /^06:00,/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^05:45/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^21:00,/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^21:15/ })).toHaveCount(0);
+
+  // an out-of-hours slot says so in words (aria-label), with an icon and a dashed border
+  const slot = page.getByRole('button', { name: '20:30, outside working hours' });
+  await expect(slot).toBeVisible();
+  await expect(slot).toContainText('☾');
+  expect(await slot.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('dashed');
+  // an in-hours slot has neither
+  const inHours = page.locator('.public-slot-btn', { hasText: /^10:00$/ });
+  expect(await inHours.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('solid');
+
+  // turning the toggle off drops a selected out-of-hours time (no unseen selection)
+  await slot.click();
+  await expect(page.getByRole('button', { name: /continue/i })).toBeVisible();
+  await toggle(page).uncheck();
+  await expect(page.getByRole('button', { name: /continue/i })).toHaveCount(0);
+});
+
+test('owner books 20:30 via the toggle: confirmation panel, stored as an exception', async ({ page, context }) => {
+  await openWizard(page, context);
+  await toggle(page).check();
+  await page.getByRole('button', { name: '20:30, outside working hours' }).click();
+  await page.getByRole('button', { name: /continue/i }).click();
+
+  await page.locator('#b-name').fill('Late Regular');
+  await page.locator('#b-phone').fill('6900000201');
+
+  // non-modal panel, and the submit button says what it does
+  const panel = page.locator('.ooh-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText(/outside working hours/i);
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  const before = await bookingCount();
+  await page.getByRole('button', { name: 'Book outside working hours' }).click();
+  await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+  expect(await bookingCount()).toBe(before + 1);
+  const row = await lastBooking();
+  expect(row.startTime.toISOString()).toBe(athensWallClockToUtc(date, '20:30').toISOString());
+  expect(row.overriddenRules).toEqual(['OUTSIDE_OPENING_HOURS']);
+  expect(row.createdById).toBe('u1');
+
+  // and it is on the calendar
+  await page.locator('#bookings-date').fill(date);
+  await expect(page.locator('.cal-block', { hasText: 'Late Regular' })).toBeVisible();
+});
+
+test('the booked out-of-hours slot is shown as booked, and overlap is refused even after confirming', async ({
+  page,
+  context,
+}) => {
+  await openWizard(page, context);
+  await toggle(page).check();
+  const booked = page.getByRole('button', { name: '20:30, outside working hours, booked' });
+  await expect(booked).toBeDisabled();
+  await expect(booked).toContainText('booked');
+
+  // try to force it through "Other time": 20:30 is a listed slot, so the form
+  // treats it as that slot (panel + explicit button) and lets the server decide
+  await page.locator('#booking-other-time').fill('20:30');
+  await page.getByRole('button', { name: /continue/i }).click();
+  await page.locator('#b-name').fill('Double Booker');
+  await page.locator('#b-phone').fill('6900000202');
+  await expect(page.locator('.ooh-panel')).toBeVisible();
+  const before = await bookingCount();
+  await page.getByRole('button', { name: 'Book outside working hours' }).click();
+
+  // accepting the rule is not enough: the slot is taken (409), nothing created
+  await expect(page.locator('.public-submit-error')).toContainText(/already booked/i);
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  expect(await bookingCount()).toBe(before);
+});
+
+test('owner books 21:10 via "Other time": the dialog fallback lists the rule, then stores it', async ({
+  page,
+  context,
+}) => {
+  await openWizard(page, context);
+  await toggle(page).check();
+  await page.locator('#booking-other-time').fill('21:10');
+  await page.getByRole('button', { name: /continue/i }).click();
+  await page.locator('#b-name').fill('Walk In');
+  await page.locator('#b-phone').fill('6900000203');
+
+  // a typed-in time is unknown client-side: no panel, an ordinary button
+  await expect(page.locator('.ooh-panel')).toHaveCount(0);
+  const before = await bookingCount();
+  await page.getByRole('button', { name: /create booking/i }).click();
+
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('Book anyway?');
+  expect(await bookingCount()).toBe(before); // nothing yet
+
+  // Cancel closes it and still creates nothing ...
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toBeHidden();
+  expect(await bookingCount()).toBe(before);
+
+  // ... submitting again and confirming books it
+  await page.getByRole('button', { name: /create booking/i }).click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Book anyway' }).click();
+  await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+  const row = await lastBooking();
+  expect(row.startTime.toISOString()).toBe(athensWallClockToUtc(date, '21:10').toISOString());
+  expect(row.overriddenRules).toEqual(['OUTSIDE_OPENING_HOURS']);
+});
+
+test('the public booking page never offers those times', async ({ request }) => {
+  const res = await request.get(
+    `${E2E.apiUrl}/public/${E2E.shop.slug}/slots?date=${date}&serviceId=sv1&staffId=us1&includeOutsideHours=true`,
+  );
+  expect(res.status()).toBe(200);
+  const { data } = await res.json();
+  expect(data.status).toBe('ok');
+  const times: string[] = data.slots.map((s: { time: string }) => s.time);
+  expect(times[0]).toBe('09:00');
+  expect(times.every((x) => x >= '09:00' && x <= '16:30')).toBe(true);
+  expect(times).not.toContain('20:30');
+  expect(data.slots.every((s: object) => !('outsideHours' in s))).toBe(true);
+
+  // and a public booking at 20:30 is refused outright
+  const book = await request.post(`${E2E.apiUrl}/public/${E2E.shop.slug}/book`, {
+    data: {
+      name: 'Sneaky',
+      phone: '6900000204',
+      serviceId: 'sv1',
+      staffId: 'us1',
+      startTime: athensWallClockToUtc(date, '20:00').toISOString(),
+      overrideRules: ['OUTSIDE_OPENING_HOURS'],
+    },
+  });
+  expect(book.status()).toBe(422);
+  expect((await book.json()).code).toBe('OUTSIDE_OPENING_HOURS');
+});
