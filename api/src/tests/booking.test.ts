@@ -73,6 +73,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const booking = await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Alice',
       phone: '1000000001',
       serviceId: service.id,
@@ -81,6 +82,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     const updated = await updateBooking(shop.id, booking.id, {
+      override: true,
       startTime: '2027-01-04T14:00:00.000Z',
     });
 
@@ -91,6 +93,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const bookingA = await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Alice',
       phone: '1000000002',
       serviceId: service.id,
@@ -99,6 +102,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Bob',
       phone: '1000000003',
       serviceId: service.id,
@@ -108,6 +112,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
 
     await expect(
       updateBooking(shop.id, bookingA.id, {
+        override: true,
         startTime: '2027-01-05T11:00:00.000Z',
       }),
     ).rejects.toMatchObject({
@@ -120,6 +125,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const booking = await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Alice',
       phone: '1000000004',
       serviceId: service.id,
@@ -128,6 +134,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     const updated = await updateBooking(shop.id, booking.id, {
+      override: true,
       startTime: '2027-01-06T10:00:00.000Z',
       notes: 'Confirmed by phone',
     });
@@ -140,6 +147,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     const { owner, shop, staff, service } = await setupShop();
 
     const bookingA = await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Alice',
       phone: '1000000005',
       serviceId: service.id,
@@ -149,6 +157,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
 
     // Same staff, different (non-overlapping) time slot — should have no effect on bookingA's edit below.
     await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Bob',
       phone: '1000000006',
       serviceId: service.id,
@@ -287,6 +296,7 @@ describe('getAvailableSlots', () => {
     // 10:00 Athens wall-clock on 2027-02-01 (EET, +02:00), as an explicit
     // instant so the test doesn't depend on the process timezone.
     await createBookingForShop(owner.id, shop.id, {
+      override: true,
       name: 'Alice',
       phone: '1000000007',
       serviceId: service.id,

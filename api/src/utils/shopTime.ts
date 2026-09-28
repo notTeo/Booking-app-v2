@@ -107,3 +107,10 @@ export const dateOnlyToUtc = (date: string): Date =>
 /** `date` shifted by whole calendar days (timezone-free). */
 export const addDays = (date: string, days: number): string =>
   DateTime.fromISO(date, { zone: 'utc' }).plus({ days }).toISODate()!;
+
+/** Calendar date ("YYYY-MM-DD") of an instant, in `zone`. */
+export const dateInZone = (instant: Date, zone: string): string => {
+  const dt = DateTime.fromJSDate(instant, { zone });
+  if (!dt.isValid) throw new Error(`Invalid zone: ${zone}`);
+  return dt.toISODate()!;
+};

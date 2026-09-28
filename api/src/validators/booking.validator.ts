@@ -40,6 +40,11 @@ export const ownerCreateBookingValidation = [
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
   body('notes').optional().trim(),
+  body('override')
+    .optional()
+    .isBoolean()
+    .withMessage('override must be a boolean')
+    .toBoolean(),
 ];
 
 export const listBookingsValidation = [
@@ -73,6 +78,11 @@ export const updateBookingValidation = [
     .withMessage('serviceId cannot be empty'),
   body('staffId').optional().notEmpty().withMessage('staffId cannot be empty'),
   body('notes').optional().trim(),
+  body('override')
+    .optional()
+    .isBoolean()
+    .withMessage('override must be a boolean')
+    .toBoolean(),
 ];
 
 export const updateStatusValidation = [

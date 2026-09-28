@@ -72,3 +72,48 @@ export async function createStaffMember(t: Tenant, label = 'Staffer') {
   });
   return { user, staff, token: signAccessToken(user.id) };
 }
+
+const ALL_DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
+
+// Weekly schedule with one opening window every day except `closedDays`.
+// staffId null = shop-wide schedule; otherwise that staff member's own.
+export async function addWeeklySchedule(
+  t: Tenant,
+  opts: {
+    staffId?: string | null;
+    open?: string;
+    close?: string;
+    closedDays?: (typeof ALL_DAYS)[number][];
+  } = {},
+) {
+  const { open = '09:00', close = '13:00', closedDays = [] } = opts;
+  const staffId = opts.staffId === undefined ? t.staff.id : opts.staffId;
+  return prisma.shopWorkingSchedule.create({
+    data: {
+      shopId: t.shop.id,
+      staffId,
+      startDate: new Date(Date.UTC(2026, 0, 1)),
+      days: {
+        create: ALL_DAYS.map((day) =>
+          closedDays.includes(day)
+            ? { day, isOpen: false }
+            : {
+                day,
+                isOpen: true,
+                hours: { create: [{ startTime: open, endTime: close }] },
+              },
+        ),
+      },
+    },
+  });
+}
+
+export async function addService(t: Tenant, duration: number, name = 'Svc') {
+  const service = await prisma.service.create({
+    data: { shopId: t.shop.id, name, duration, price: 1000 },
+  });
+  await prisma.staffService.create({
+    data: { userShopId: t.staff.id, serviceId: service.id },
+  });
+  return service;
+}

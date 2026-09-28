@@ -142,7 +142,7 @@ describe('booking references must belong to the same shop', () => {
     const res = await request(app)
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
-      .send({ serviceId: service2.id, staffId: A.staff.id });
+      .send({ serviceId: service2.id, staffId: A.staff.id, override: true });
 
     expect(res.status).toBe(200);
     expect(res.body.data.serviceId).toBe(service2.id);

@@ -1,20 +1,11 @@
 import { randomUUID } from 'crypto';
-import {
-  BookingStatus,
-  DayOfWeek,
-  UserShop,
-} from '../../dist/generated/prisma';
+import { BookingStatus, UserShop } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
-import {
-  DATE_ONLY_RE,
-  dateOnlyToUtc,
-  dayBoundsUtc,
-  todayInZone,
-  weekdayOf,
-} from '../utils/shopTime';
+import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
 import { buildSlotCandidates } from '../utils/slots';
+import { assertBookingRules, loadDayHours } from './bookingRules.service';
 
 // Throws 404 (not 403, so shop existence isn't revealed) unless the caller
 // belongs to the shop.
@@ -114,6 +105,18 @@ export const createBooking = async (
   }
   const staffId = staff.id;
 
+  // Strict on the public path — there is no override. The schedule checked is
+  // the one the slots endpoint used: the requested staff member's own, or the
+  // shop-wide one when the customer had no preference.
+  await assertBookingRules({
+    shopId: shop.id,
+    timezone: shop.timezone,
+    maxAdvanceDays: shop.maxAdvanceDays,
+    scheduleStaffId: data.staffId ? staffId : null,
+    startTime,
+    endTime,
+  });
+
   try {
     return await prisma.$transaction(
       async (tx) => {
@@ -127,7 +130,8 @@ export const createBooking = async (
           },
         });
 
-        if (conflict) throw new AppError(409, 'Time slot is already booked');
+        if (conflict)
+          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
         const customer = await tx.customer.upsert({
           where: { shopId_phone: { shopId: shop.id, phone: data.phone } },
@@ -182,6 +186,8 @@ export const createBookingForShop = async (
     staffId?: string | null;
     startTime: string;
     notes?: string;
+    // Bypass the booking rules (never the overlap check).
+    override?: boolean;
   },
 ) => {
   // Verify caller is a member of the shop
@@ -215,6 +221,23 @@ export const createBookingForShop = async (
   }
   const staffId = staff.id;
 
+  // Same rules as the public path, bypassable only with an explicit
+  // override. The overlap check inside the transaction below is never skipped.
+  if (!data.override) {
+    const shop = await prisma.shop.findUniqueOrThrow({
+      where: { id: shopId },
+      select: { timezone: true, maxAdvanceDays: true },
+    });
+    await assertBookingRules({
+      shopId,
+      timezone: shop.timezone,
+      maxAdvanceDays: shop.maxAdvanceDays,
+      scheduleStaffId: data.staffId ? staffId : null,
+      startTime,
+      endTime,
+    });
+  }
+
   try {
     return await prisma.$transaction(
       async (tx) => {
@@ -227,7 +250,8 @@ export const createBookingForShop = async (
           },
         });
 
-        if (conflict) throw new AppError(409, 'Time slot is already booked');
+        if (conflict)
+          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
         const customer = await tx.customer.upsert({
           where: { shopId_phone: { shopId, phone: data.phone } },
@@ -300,7 +324,6 @@ export const getAvailableSlots = async (
   // timezone; its weekday does not depend on any timezone.
   if (!DATE_ONLY_RE.test(date))
     throw new AppError(400, 'date must be YYYY-MM-DD');
-  const dayOfWeek = weekdayOf(date);
 
   // Booking-conflict checks always need a concrete, bookable staff member.
   // resolveBookableStaff validates an explicitly-passed staffId (active +
@@ -314,28 +337,8 @@ export const getAvailableSlots = async (
   if (!staff) return { status: 'closed' };
   const resolvedStaffId = staff.id;
 
-  const requestedDate = dateOnlyToUtc(date);
-
-  const schedule = await prisma.shopWorkingSchedule.findFirst({
-    where: {
-      shopId,
-      staffId,
-      isActive: true,
-      startDate: { lte: requestedDate },
-      OR: [{ endDate: null }, { endDate: { gte: requestedDate } }],
-    },
-    include: {
-      days: {
-        where: { day: dayOfWeek },
-        include: { hours: true },
-      },
-    },
-    orderBy: { startDate: 'desc' },
-  });
-  if (!schedule) return { status: 'closed' };
-
-  const day = schedule.days[0];
-  if (!day || !day.isOpen) return { status: 'closed' };
+  const hours = await loadDayHours(shopId, staffId, date);
+  if (!hours) return { status: 'closed' };
 
   // 2. Get service duration
   const service = await prisma.service.findFirst({
@@ -368,7 +371,7 @@ export const getAvailableSlots = async (
   const slots: SlotInfo[] = buildSlotCandidates(
     date,
     zone,
-    day.hours,
+    hours,
     service.duration,
   ).map((c) => ({
     time: c.time,
@@ -493,6 +496,8 @@ export const updateBooking = async (
     serviceId?: string;
     staffId?: string;
     notes?: string;
+    // Bypass the booking rules (never the overlap check).
+    override?: boolean;
   },
   canViewCustomer = true,
 ) => {
@@ -513,33 +518,23 @@ export const updateBooking = async (
     if (!newStaff) throw new AppError(404, 'Staff member not found');
   }
 
-  let startTime: Date | undefined;
-  let endTime: Date | undefined;
-
-  if (data.startTime) {
-    startTime = new Date(data.startTime);
-    const duration = newService?.duration ?? existing.service.duration;
-    endTime = new Date(startTime.getTime() + duration * 60 * 1000);
-  }
-
-  const updateData = {
-    ...(startTime && { startTime, endTime }),
-    ...(data.serviceId && { serviceId: data.serviceId }),
-    ...(data.staffId && { staffId: data.staffId }),
-    ...(data.notes !== undefined && { notes: data.notes }),
-  };
-
-  // Only re-run the overlap check when the edit actually touches scheduling
-  // (time and/or staff). Non-scheduling edits (notes, service-only, etc.)
-  // skip straight to a plain update, same as before this fix.
+  const serviceChanged =
+    !!data.serviceId && data.serviceId !== existing.serviceId;
   const staffChanged =
     data.staffId !== undefined && data.staffId !== existing.staffId;
-  const schedulingChanged = !!startTime || staffChanged;
+  // Anything that moves the booking in time — a new start, a new staff
+  // member, or a new service (which changes how long it runs) — is a
+  // scheduling change: end time is recomputed and the overlap check re-runs
+  // inside the serializable transaction. Notes-only edits skip all of that.
+  const schedulingChanged = !!data.startTime || serviceChanged || staffChanged;
 
   if (!schedulingChanged) {
     const updated = await prisma.booking.update({
       where: { id: bookingId },
-      data: updateData,
+      data: {
+        ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.serviceId && { serviceId: data.serviceId }),
+      },
       include: { customer: true, service: true },
     });
     return {
@@ -549,8 +544,35 @@ export const updateBooking = async (
   }
 
   const finalStaffId = data.staffId ?? existing.staffId;
-  const finalStartTime = startTime ?? existing.startTime;
-  const finalEndTime = endTime ?? existing.endTime;
+  const finalStartTime = data.startTime
+    ? new Date(data.startTime)
+    : existing.startTime;
+  const duration = newService?.duration ?? existing.service.duration;
+  const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
+
+  const updateData = {
+    startTime: finalStartTime,
+    endTime: finalEndTime,
+    staffId: finalStaffId,
+    ...(data.serviceId && { serviceId: data.serviceId }),
+    ...(data.notes !== undefined && { notes: data.notes }),
+  };
+
+  // Same rules as creation (bypassable by an override); overlap never is.
+  if (!data.override) {
+    const shop = await prisma.shop.findUniqueOrThrow({
+      where: { id: shopId },
+      select: { timezone: true, maxAdvanceDays: true },
+    });
+    await assertBookingRules({
+      shopId,
+      timezone: shop.timezone,
+      maxAdvanceDays: shop.maxAdvanceDays,
+      scheduleStaffId: finalStaffId,
+      startTime: finalStartTime,
+      endTime: finalEndTime,
+    });
+  }
 
   try {
     return await prisma.$transaction(
@@ -566,7 +588,8 @@ export const updateBooking = async (
           },
         });
 
-        if (conflict) throw new AppError(409, 'Time slot is already booked');
+        if (conflict)
+          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
         const updated = await tx.booking.update({
           where: { id: bookingId },
