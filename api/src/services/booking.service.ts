@@ -583,7 +583,10 @@ export const deleteBooking = async (
   shopId: string,
   bookingId: string,
 ) => {
-  await requireMembership(userId, shopId); // throws 404 for non-members
+  const membership = await requireMembership(userId, shopId); // 404 for non-members
+  // Hard delete is owner-only; staff can still cancel via the status endpoint.
+  if (membership.role !== 'owner')
+    throw new AppError(403, 'Only the shop owner can delete bookings');
   await getBooking(shopId, bookingId); // throws 404 if not found
   await prisma.booking.delete({ where: { id: bookingId } });
 };

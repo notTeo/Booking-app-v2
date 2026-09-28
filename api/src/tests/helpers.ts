@@ -56,3 +56,19 @@ export async function createBookingRow(
     },
   });
 }
+
+// A non-owner member of the tenant's shop with their own login.
+export async function createStaffMember(t: Tenant, label = 'Staffer') {
+  const id = unique();
+  const user = await prisma.user.create({
+    data: {
+      name: label,
+      email: `${label.toLowerCase()}-${id}@example.com`,
+      isVerified: true,
+    },
+  });
+  const staff = await prisma.userShop.create({
+    data: { userId: user.id, shopId: t.shop.id, role: 'staff', name: label },
+  });
+  return { user, staff, token: signAccessToken(user.id) };
+}
