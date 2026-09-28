@@ -149,9 +149,10 @@ export const deleteBooking = async (
   next: NextFunction,
 ) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const bookingId = req.params['bookingId'] as string;
-    await bookingService.deleteBooking(shopId, bookingId);
+    await bookingService.deleteBooking(userId, shopId, bookingId);
     successResponse(res, { deleted: true });
   } catch (err) {
     next(err);

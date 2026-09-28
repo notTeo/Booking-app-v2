@@ -8,6 +8,16 @@ import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
 
+// Throws 404 (not 403, so shop existence isn't revealed) unless the caller
+// belongs to the shop.
+export const requireMembership = async (userId: string, shopId: string) => {
+  const membership = await prisma.userShop.findUnique({
+    where: { userId_shopId: { userId, shopId } },
+  });
+  if (!membership) throw new AppError(404, 'Shop not found');
+  return membership;
+};
+
 // Whether the calling member can see customer contact info — owners always
 // can; staff only when their own membership flag allows it.
 export const canViewCustomerDetails = async (
@@ -558,7 +568,12 @@ export const updateBooking = async (
   }
 };
 
-export const deleteBooking = async (shopId: string, bookingId: string) => {
+export const deleteBooking = async (
+  userId: string,
+  shopId: string,
+  bookingId: string,
+) => {
+  await requireMembership(userId, shopId); // throws 404 for non-members
   await getBooking(shopId, bookingId); // throws 404 if not found
   await prisma.booking.delete({ where: { id: bookingId } });
 };
