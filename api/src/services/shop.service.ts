@@ -13,13 +13,44 @@ export interface CreateShopDto {
 
 export interface UpdateShopDto {
   name?: string;
-  slug?: string;
   description?: string;
   phone?: string;
   formattedAddress?: string;
   timezone?: string;
   isActive?: boolean;
 }
+
+// Explicit whitelists: request bodies are never spread into Prisma calls, so
+// clients can't set columns (id, createdAt, isActive on create) or smuggle
+// nested relation writes (members/services/...) through extra fields.
+const CREATE_FIELDS = [
+  'name',
+  'slug',
+  'description',
+  'phone',
+  'formattedAddress',
+  'timezone',
+] as const;
+// slug is deliberately absent: it is immutable after creation.
+const UPDATE_FIELDS = [
+  'name',
+  'description',
+  'phone',
+  'formattedAddress',
+  'timezone',
+  'isActive',
+] as const;
+
+const pick = <T extends object, K extends keyof T>(
+  source: T,
+  keys: readonly K[],
+): Pick<T, K> => {
+  const out = {} as Pick<T, K>;
+  for (const key of keys) {
+    if (source[key] !== undefined) out[key] = source[key];
+  }
+  return out;
+};
 
 export const createShop = async (userId: string, dto: CreateShopDto) => {
   const user = await prisma.user.findUnique({
@@ -35,7 +66,7 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
 
   const shop = await prisma.shop.create({
     data: {
-      ...dto,
+      ...pick(dto, CREATE_FIELDS),
       members: {
         create: { userId, role: 'owner', name: user.name, email: user.email },
       },
@@ -80,17 +111,9 @@ export const updateShop = async (
   if (membership.role !== 'owner')
     throw new AppError(403, 'Only the shop owner can update this shop');
 
-  if (dto.slug) {
-    const existing = await prisma.shop.findFirst({
-      where: { slug: dto.slug, NOT: { id: shopId } },
-    });
-    if (existing)
-      throw new AppError(409, 'A shop with this slug already exists');
-  }
-
   const shop = await prisma.shop.update({
     where: { id: shopId },
-    data: dto,
+    data: pick(dto, UPDATE_FIELDS),
   });
 
   logger.info(`Shop updated: ${shop.id} by user ${userId}`);
