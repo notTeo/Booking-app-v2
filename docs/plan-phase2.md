@@ -1,10 +1,10 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** Checkpoint (retry-safety review is done: `742acb6`, `053ac8b`,
-`c7e79fd`, `d08f231`, `47ac29a`). Then out-of-hours commits **1 + 2** (migration
+**Next step:** Out-of-hours commits **1 + 2** — migration
 `Booking.overriddenRules` / `createdById`, then the explicit `overrideRules`
-rules contract), then checkpoint again **before any UI work**. See
-`docs/plan-out-of-hours.md` for the order and details.
+rules contract — then checkpoint again **before any UI work**. Not started
+(the owner asked to stop after the follow-ups in `449f10d`, `70c710d`,
+`2c34663`). See `docs/plan-out-of-hours.md` for the order and details.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -147,10 +147,10 @@ before continuing.
 | 0 Housekeeping | **done** | `caf9ee6` self-migrating test DB (+ refuses non-*test* DBs); `46fad4f` stale booking tests; `cf1fff1` no-useless-escape + lint glob; `7c8b787` prettier-only |
 | 1 Tenant isolation | **done** | `be099d1` delete membership; `7647e8e` serviceId/staffId scoping (create, PATCH, slots); `783e4e2` field whitelists; `2f27ae8` delete owner-only |
 | 2 Timezones | **done** | `a8becd9` server (Luxon, shop tz); `6689f90` web (+ vitest, `test:tz`); follow-ups below |
-| 3 Booking rules | **partly done / partly superseded** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field. Remainder = out-of-hours plan (`overrideRules` contract, storage, UI) |
+| 3 Booking rules | **partly done / partly superseded** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field. Remainder = out-of-hours plan (`overrideRules` contract, storage, UI) **+ the translation / 503 items under "Additional items by group"** |
 | 4 Customer upsert | not started | — |
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
-| 6 Rate limiting / JSON errors | not started | — |
+| 6 Rate limiting / JSON errors | not started | — (see the shared-login-budget finding under "Additional items by group") |
 | 7 Validation | not started | — |
 | 8 Slugs | not started | — (note: `updateShop` already ignores `slug`; must become a 400 before deploy) |
 | 9 Ops/env | not started | — |
@@ -187,6 +187,15 @@ before continuing.
   Postgres `statement_timeout`/`lock_timeout`, 503 `BOOKING_BUSY`.
 - `47ac29a` Playwright owner-wizard smoke test (uses the authenticated slots
   endpoint, never the public one).
+- `449f10d` test: the transaction time budgets (`statement_timeout`,
+  `lock_timeout`) are transaction-scoped — `set_config(..., is_local = true)` at
+  `api/src/utils/serializable.ts:199-200` (= `SET LOCAL`); after committed and
+  rolled-back transactions every pooled connection is back to the defaults.
+  Verified the test fails if the setting is made session-level.
+- `70c710d` `RATE_LIMIT_DISABLED=true` switch (never honoured in production) so
+  the e2e browser suite isn't blocked by the auth limiter.
+- `2c34663` owner wizard phone look-up never clears or overwrites typed text
+  (fills empty name/email only), with unit + Playwright coverage.
 
 ## Known open items / notes
 
@@ -204,9 +213,7 @@ before continuing.
 - `BOOKING_BUSY` (503) and `BOOKING_TOO_LONG` (422) have server messages only
   (English); the public page shows the server text — add translations in group
   10/UI work if wanted.
-- UX gotcha in the owner wizard: changing the phone field clears the name (it
-  triggers the customer look-up), so typing the name first and the phone second
-  silently wipes the name. Not fixed.
+- (Fixed in `2c34663`) The owner wizard's phone field used to clear the name.
 - Public shop info (`GET /public/:slug`) still lists active members who are
   not bookable by customers (names only, no contact data); the owner wizard
   relies on it. Consider tightening when the wizard moves to authenticated
@@ -216,6 +223,40 @@ before continuing.
 - Phase 1 items to close before deploy (mapped to groups): rate limiting (6),
   validation gaps (7), slug rules (8), ops/env (9), GDPR (10), root routing
   (11), tenant creation + Hairology seed (12), CI (13), runbook (14).
+
+## Additional items by group
+
+### Group 3 (booking rules) — remaining UI/text work
+
+- **Translations (el + en) for the two new server error codes**, on **both** the
+  public booking page and the owner wizard (`web/src/locales/translations.ts`;
+  stage only my hunks, never the owner's own edits):
+  - `BOOKING_BUSY` (503): Greek + English, e.g. "The booking system is busy —
+    please try again in a moment." / "Το σύστημα κρατήσεων είναι απασχολημένο —
+    δοκιμάστε ξανά σε λίγο."
+  - `BOOKING_TOO_LONG` (422): Greek + English, e.g. "A booking can't be longer
+    than 24 hours." / "Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες."
+  - Wire them like the existing rule codes (`t.public.ruleErrors[...]` on the
+    public page, `t.bookings.override[...]` / an equivalent map in the owner
+    wizard) so neither page falls back to raw English server text.
+- **Public page handling of `503 BOOKING_BUSY`** — it must not look like a
+  failure: show a neutral, non-error notice ("Try again in a moment"), keep every
+  value the customer entered, re-enable the submit button, optionally after the
+  `Retry-After` delay (1 s), and never show it in the red error style used for
+  real rejections (409 slot taken, 422 rule violations). The owner wizard gets
+  the same treatment. Add a Playwright case that forces a 503 (route
+  interception) and checks the form is intact and the message is neutral.
+
+### Group 6 (rate limiting) — new finding
+
+`authLimiter` (10 requests / 15 min per IP) is shared by `/auth/login` **and**
+`/auth/refresh`, and every full page load calls `POST /auth/refresh` — including
+anonymous visitors of the public booking page. One login flow costs 3 hits. On a
+shared IP (a shop's Wi-Fi, a mobile-carrier NAT) ordinary browsing can exhaust the
+budget and lock a staff member out of logging in. When group 6 is done: give
+refresh its own, much looser limiter (or skip it when there is no refresh cookie),
+keep login strict, and keep the new `/public/*` limiters separate. The
+`RATE_LIMIT_DISABLED` switch (`70c710d`) exists only for the e2e suite.
 
 ## Retry safety and contention: findings and decision
 
@@ -324,7 +365,7 @@ concurrency file ×30 runs — zero failures, zero 5xx, every request < 4 s.
 ## How to verify the current state
 
 ```bash
-cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 210 tests x 3 zones
-cd web && npx tsc -b && npm run test:tz && npm run build        # lint has 30 known errors
-npm run e2e                                                     # from repo root (5 pass, 1 skipped)
+cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 216 tests x 3 zones
+cd web && npx tsc -b && npm run test:tz && npm run build        # 21 tests x 3 zones; lint has 30 known errors
+npm run e2e                                                     # from repo root (9 pass, 1 skipped)
 ```
