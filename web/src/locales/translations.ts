@@ -65,6 +65,8 @@ export interface Translations {
     notFound: string;
     errorLoad: string;
     successUpdate: string;
+    createFirstShop: string;
+    upgradeToCreate: string;
   };
   home: {
     headline: string;
@@ -141,40 +143,32 @@ export interface Translations {
     previewBooking2Label: string;
     previewBooking2Sub: string;
     previewNewBookingSubtitle: string;
-    previewNewBookingStep1Label: string;
-    previewNewBookingStep1Sub: string;
-    previewNewBookingStep2Label: string;
-    previewNewBookingStep2Sub: string;
     previewServicesSubtitle: string;
-    previewService1Label: string;
-    previewService1Sub: string;
-    previewService2Label: string;
-    previewService2Sub: string;
     previewTeamPageSubtitle: string;
-    previewTeamMember1Label: string;
-    previewTeamMember1Sub: string;
-    previewTeamMember2Label: string;
-    previewTeamMember2Sub: string;
     previewInvitesSubtitle: string;
-    previewInvite1Label: string;
-    previewInvite1Sub: string;
-    previewInvite2Label: string;
-    previewInvite2Sub: string;
     previewHoursSubtitle: string;
-    previewHours1Label: string;
-    previewHours1Sub: string;
-    previewHours2Label: string;
-    previewHours2Sub: string;
     previewCustomersSubtitle: string;
-    previewCustomer1Label: string;
-    previewCustomer1Sub: string;
-    previewCustomer2Label: string;
-    previewCustomer2Sub: string;
     previewSettingsSubtitle: string;
-    previewSetting1Label: string;
-    previewSetting1Sub: string;
-    previewSetting2Label: string;
-    previewSetting2Sub: string;
+    previewCalStaff1: string;
+    previewCalStaff2: string;
+    previewCalStaff3: string;
+    previewCalBlock1Name: string;
+    previewCalBlock1Service: string;
+    previewCalBlock2Name: string;
+    previewCalBlock2Service: string;
+    previewCalBlock3Name: string;
+    previewCalBlock3Service: string;
+    previewCalBlock4Name: string;
+    previewCalBlock4Service: string;
+    previewService1Name: string;
+    previewService1Duration: string;
+    previewService1Desc: string;
+    previewService2Name: string;
+    previewService2Duration: string;
+    previewService2Desc: string;
+    previewInviteRowName1: string;
+    previewInviteRowName2: string;
+    previewShopDesc: string;
   };
   privacy: {
     linkLabel: string;
@@ -419,6 +413,14 @@ export interface Translations {
     errorCancelInvite: string;
     canViewCustomerDetails: string;
     canViewCustomerDetailsDesc: string;
+    active: string;
+    activeDesc: string;
+    ownerAlwaysActiveHint: string;
+    bookableByCustomers: string;
+    bookableByCustomersDesc: string;
+    bookableInternally: string;
+    bookableInternallyDesc: string;
+    inactiveBadge: string;
     confirmContinue: string;
     confirmPromoteOwner: string;
     confirmDemoteOwner: string;
@@ -599,6 +601,13 @@ export interface Translations {
     errorDelete: string;
     yesDeleteShop: string;
     areYouSure: string;
+  };
+  sharing: {
+    title: string;
+    desc: string;
+    copyButton: string;
+    copiedLabel: string;
+    viewButton: string;
   };
   public: {
     bookAppointment: string;
@@ -785,6 +794,8 @@ export const translations: Record<Language, Translations> = {
       notFound: 'Το κατάστημα δεν βρέθηκε.',
       errorLoad: 'Αποτυχία φόρτωσης καταστημάτων.',
       successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
+      createFirstShop: 'Δημιούργησε το πρώτο σου κατάστημα',
+      upgradeToCreate: 'Αναβάθμισε σε Pro για να δημιουργήσεις κατάστημα',
     },
 home: {
     headline: 'Το πρόγραμμά σου,',
@@ -847,8 +858,8 @@ home: {
     featureRemindersCheck2: 'Άμεση επιβεβαίωση email σε κάθε κράτηση',
     featureRemindersLabel: 'Καμία χειροκίνητη δουλειά',
     featureRemindersTitle: 'Επιβεβαιώσεις κρατήσεων',
-    featureChannelsLabel: 'Κράτησε από',
-    featureChannelsTitle: 'Οποιαδήποτε συσκευή, οποιαδήποτε ώρα',
+    featureChannelsLabel: 'Ένας σύνδεσμος',
+    featureChannelsTitle: 'Μοιραστείτε τον στο bio, στο WhatsApp, στην ιστοσελίδα σας',
     previewGreeting: 'Γεια σου, Μάρκο!',
     previewGreetingSub: 'Δες τι συμβαίνει σήμερα στο κατάστημά σου.',
     previewUpcoming1Label: 'Έλενα Ρ. · Σοφία Ριβέρα',
@@ -861,40 +872,32 @@ home: {
     previewBooking2Label: 'Γιάννης Ο. — Φορμάρισμα Γενειάδας',
     previewBooking2Sub: 'Σήμερα, 4:30 μμ',
     previewNewBookingSubtitle: 'Κλείσε ραντεβού πελάτη σε λιγότερο από ένα λεπτό.',
-    previewNewBookingStep1Label: 'Επίλεξε υπηρεσία',
-    previewNewBookingStep1Sub: 'Κούρεμα, βαφή, φορμάρισμα γενειάδας & άλλα',
-    previewNewBookingStep2Label: 'Επίλεξε ώρα',
-    previewNewBookingStep2Sub: 'Δες τη διαθεσιμότητα της ομάδας σου σε πραγματικό χρόνο',
     previewServicesSubtitle: 'Τι προσφέρει το κατάστημά σου.',
-    previewService1Label: 'Κούρεμα',
-    previewService1Sub: '30 λεπτά · 25€',
-    previewService2Label: 'Φορμάρισμα Γενειάδας',
-    previewService2Sub: '15 λεπτά · 12€',
     previewTeamPageSubtitle: '5 μέλη προσωπικού ενεργά.',
-    previewTeamMember1Label: 'Μάρκος Θεοδώρου',
-    previewTeamMember1Sub: 'Ιδιοκτήτης',
-    previewTeamMember2Label: 'Σοφία Ριβέρα',
-    previewTeamMember2Sub: 'Κομμώτρια',
     previewInvitesSubtitle: 'Φέρε την ομάδα σου στο Bookly.',
-    previewInvite1Label: 'Εκκρεμής πρόσκληση',
-    previewInvite1Sub: 'james@fadeculture.com',
-    previewInvite2Label: 'Κάλεσε συνάδελφο',
-    previewInvite2Sub: 'Στείλε σύνδεσμο για να μπει στο κατάστημά σου',
     previewHoursSubtitle: 'Πότε είναι ανοιχτό το κατάστημά σου.',
-    previewHours1Label: 'Δευ – Παρ',
-    previewHours1Sub: '9:00 πμ – 7:00 μμ',
-    previewHours2Label: 'Σαβ',
-    previewHours2Sub: '10:00 πμ – 4:00 μμ',
     previewCustomersSubtitle: '312 πελάτες καταχωρημένοι.',
-    previewCustomer1Label: 'Αναζήτηση πελατών',
-    previewCustomer1Sub: 'Αναζήτησε με όνομα, τηλέφωνο ή email',
-    previewCustomer2Label: 'Σάρα Μ.',
-    previewCustomer2Sub: '14 επισκέψεις · τελευταία πριν 2 εβδομάδες',
     previewSettingsSubtitle: 'Στοιχεία καταστήματος & προτιμήσεις.',
-    previewSetting1Label: 'Προφίλ καταστήματος',
-    previewSetting1Sub: 'Όνομα, διεύθυνση, στοιχεία επικοινωνίας',
-    previewSetting2Label: 'Ειδοποιήσεις',
-    previewSetting2Sub: 'Προτιμήσεις email & SMS',
+    previewCalStaff1: 'Μάρκος',
+    previewCalStaff2: 'Σοφία',
+    previewCalStaff3: 'Τζόρνταν',
+    previewCalBlock1Name: 'Σάρα Μ.',
+    previewCalBlock1Service: 'Κούρεμα',
+    previewCalBlock2Name: 'Γιάννης Ο.',
+    previewCalBlock2Service: 'Φορμάρισμα Γενειάδας',
+    previewCalBlock3Name: 'Έλενα Ρ.',
+    previewCalBlock3Service: 'Βαφή',
+    previewCalBlock4Name: 'Δημήτρης Κ.',
+    previewCalBlock4Service: 'Μασάζ',
+    previewService1Name: 'Κούρεμα',
+    previewService1Duration: '30 λεπτά',
+    previewService1Desc: 'Κλασικό κούρεμα, καθαρό φινίρισμα.',
+    previewService2Name: 'Φορμάρισμα Γενειάδας',
+    previewService2Duration: '20 λεπτά',
+    previewService2Desc: 'Καθαρές γραμμές, τέλειο σχήμα.',
+    previewInviteRowName1: 'Γιάννης Ο.',
+    previewInviteRowName2: 'Αλέξης Τ.',
+    previewShopDesc: 'Παραδοσιακό κουρείο στο κέντρο της πόλης.',
   },
   privacy: {
     linkLabel: 'Πολιτική Απορρήτου',
@@ -1139,6 +1142,14 @@ home: {
       errorCancelInvite: 'Αποτυχία ακύρωσης πρόσκλησης.',
       canViewCustomerDetails: 'Προβολή στοιχείων πελατών',
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, το μέλος βλέπει μόνο τη λέξη «Πελάτης», χωρίς όνομα, τηλέφωνο ή email.',
+      active: 'Ενεργό',
+      activeDesc: 'Όταν είναι ανενεργό, το μέλος δεν εμφανίζεται πουθενά για κράτηση και χάνει την πρόσβαση σε αυτό το κατάστημα.',
+      ownerAlwaysActiveHint: 'Ο ιδιοκτήτης παραμένει πάντα ενεργός, ώστε να μη χάσει ποτέ την πρόσβασή του.',
+      bookableByCustomers: 'Διαθέσιμο για κράτηση από πελάτες',
+      bookableByCustomersDesc: 'Ελέγχει αν το μέλος εμφανίζεται ως επιλογή στον δημόσιο σύνδεσμο κρατήσεων.',
+      bookableInternally: 'Διαθέσιμο για εσωτερική κράτηση',
+      bookableInternallyDesc: 'Ελέγχει αν το μέλος εμφανίζεται ως επιλογή όταν δημιουργείτε ραντεβού μέσα από την εφαρμογή.',
+      inactiveBadge: 'Ανενεργό',
       confirmContinue: 'Επιβεβαίωση & Συνέχεια',
       confirmPromoteOwner: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων, καθώς και δυνατότητα υποβιβασμού άλλων ιδιοκτητών. Πατήστε ξανά για να συνεχίσετε.',
       confirmDemoteOwner: 'Αυτό το άτομο θα χάσει την πρόσβαση ιδιοκτήτη. Πατήστε ξανά για να συνεχίσετε.',
@@ -1212,7 +1223,7 @@ home: {
     },
     services: {
       title: 'Υπηρεσίες',
-      addService: '+ Νέα Υπηρεσία',
+      addService: 'Νέα Υπηρεσία',
       create: 'Δημιουργία',
       name: 'Όνομα',
       description: 'Περιγραφή',
@@ -1319,6 +1330,13 @@ home: {
       errorDelete: 'Αποτυχία διαγραφής καταστήματος.',
       yesDeleteShop: 'Ναι, Διαγραφή Καταστήματος',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το {name} και όλα τα δεδομένα του.',
+    },
+    sharing: {
+      title: 'Ο σύνδεσμος κράτησής σας',
+      desc: 'Μοιραστείτε αυτόν τον σύνδεσμο οπουδήποτε — στο bio του Instagram, στο WhatsApp, στην ιστοσελίδα σας.',
+      copyButton: 'Αντιγραφή',
+      copiedLabel: 'Αντιγράφηκε!',
+      viewButton: 'Άνοιγμα',
     },
     public: {
       bookAppointment: 'Κλείστε Ραντεβού',
@@ -1504,6 +1522,8 @@ home: {
       notFound: 'Shop not found.',
       errorLoad: 'Failed to load shops.',
       successUpdate: 'Shop updated successfully.',
+      createFirstShop: 'Create your first shop',
+      upgradeToCreate: 'Upgrade to Pro to create a shop',
     },
     home: {
     headline: 'Run your shop.',
@@ -1566,8 +1586,8 @@ home: {
     featureRemindersCheck2: 'Instant email confirmation on every booking',
     featureRemindersLabel: 'Zero manual work',
     featureRemindersTitle: 'Booking confirmations',
-    featureChannelsLabel: 'Book from',
-    featureChannelsTitle: 'Any device, any time',
+    featureChannelsLabel: 'One link',
+    featureChannelsTitle: 'Share it in your bio, on WhatsApp, on your site',
     previewGreeting: 'Hi, Marcus!',
     previewGreetingSub: "Here's what's happening at your shop today.",
     previewUpcoming1Label: 'Emma R. · Sofia Rivera',
@@ -1580,40 +1600,32 @@ home: {
     previewBooking2Label: 'James O. — Beard Trim',
     previewBooking2Sub: 'Today, 4:30 PM',
     previewNewBookingSubtitle: 'Book a client in under a minute.',
-    previewNewBookingStep1Label: 'Choose a service',
-    previewNewBookingStep1Sub: 'Haircut, color, beard trim & more',
-    previewNewBookingStep2Label: 'Pick a time',
-    previewNewBookingStep2Sub: 'See live availability for your team',
     previewServicesSubtitle: 'What your shop offers.',
-    previewService1Label: 'Haircut',
-    previewService1Sub: '30 min · €25',
-    previewService2Label: 'Beard Trim',
-    previewService2Sub: '15 min · €12',
     previewTeamPageSubtitle: '5 staff members active.',
-    previewTeamMember1Label: 'Marcus Thompson',
-    previewTeamMember1Sub: 'Owner',
-    previewTeamMember2Label: 'Sofia Rivera',
-    previewTeamMember2Sub: 'Stylist',
     previewInvitesSubtitle: 'Bring your team onto Bookly.',
-    previewInvite1Label: 'Pending invite',
-    previewInvite1Sub: 'james@fadeculture.com',
-    previewInvite2Label: 'Invite a teammate',
-    previewInvite2Sub: 'Send a link to join your shop',
     previewHoursSubtitle: 'When your shop is open.',
-    previewHours1Label: 'Mon – Fri',
-    previewHours1Sub: '9:00 AM – 7:00 PM',
-    previewHours2Label: 'Sat',
-    previewHours2Sub: '10:00 AM – 4:00 PM',
     previewCustomersSubtitle: '312 clients on file.',
-    previewCustomer1Label: 'Search customers',
-    previewCustomer1Sub: 'Find by name, phone, or email',
-    previewCustomer2Label: 'Sarah M.',
-    previewCustomer2Sub: '14 visits · last seen 2 weeks ago',
     previewSettingsSubtitle: 'Shop details & preferences.',
-    previewSetting1Label: 'Shop profile',
-    previewSetting1Sub: 'Name, address, contact info',
-    previewSetting2Label: 'Notifications',
-    previewSetting2Sub: 'Email & SMS preferences',
+    previewCalStaff1: 'Marcus',
+    previewCalStaff2: 'Sofia',
+    previewCalStaff3: 'Jordan',
+    previewCalBlock1Name: 'Sarah M.',
+    previewCalBlock1Service: 'Haircut',
+    previewCalBlock2Name: 'James O.',
+    previewCalBlock2Service: 'Beard Trim',
+    previewCalBlock3Name: 'Emma R.',
+    previewCalBlock3Service: 'Color',
+    previewCalBlock4Name: 'David K.',
+    previewCalBlock4Service: 'Massage',
+    previewService1Name: 'Haircut',
+    previewService1Duration: '30 min',
+    previewService1Desc: 'Classic cut, clean fade.',
+    previewService2Name: 'Beard Trim',
+    previewService2Duration: '20 min',
+    previewService2Desc: 'Sharp lines, clean shape.',
+    previewInviteRowName1: 'James O.',
+    previewInviteRowName2: 'Alex T.',
+    previewShopDesc: 'A classic barbershop in the heart of downtown.',
   },
   privacy: {
     linkLabel: 'Privacy Policy',
@@ -1858,6 +1870,14 @@ home: {
       errorCancelInvite: 'Failed to cancel invite.',
       canViewCustomerDetails: 'View customer details',
       canViewCustomerDetailsDesc: "When off, this member sees just the word \"Customer\" — no name, phone, or email.",
+      active: 'Active',
+      activeDesc: "When off, this member won't show up anywhere for booking and loses access to this shop.",
+      ownerAlwaysActiveHint: 'The owner always stays active, so they can never be locked out of their own shop.',
+      bookableByCustomers: 'Bookable by customers',
+      bookableByCustomersDesc: 'Controls whether this member shows up as an option on the public booking link.',
+      bookableInternally: 'Bookable internally',
+      bookableInternallyDesc: 'Controls whether this member shows up as an option when creating a booking from inside the app.',
+      inactiveBadge: 'Inactive',
       confirmContinue: 'Confirm & Continue',
       confirmPromoteOwner: 'This person will become an owner, with full access to team, invites, customers, and settings — including the ability to demote other owners. Click again to continue.',
       confirmDemoteOwner: 'This person will lose owner access. Click again to continue.',
@@ -1931,7 +1951,7 @@ home: {
     },
     services: {
       title: 'Services',
-      addService: '+ New Service',
+      addService: 'New Service',
       create: 'Create',
       name: 'Name',
       description: 'Description',
@@ -2038,6 +2058,13 @@ home: {
       errorDelete: 'Failed to delete shop.',
       yesDeleteShop: 'Yes, Delete Shop',
       areYouSure: 'Are you sure? This will permanently delete {name} and all its data.',
+    },
+    sharing: {
+      title: 'Your booking link',
+      desc: 'Share this link anywhere — your Instagram bio, WhatsApp, your website.',
+      copyButton: 'Copy',
+      copiedLabel: 'Copied!',
+      viewButton: 'Open',
     },
     public: {
       bookAppointment: 'Book an Appointment',

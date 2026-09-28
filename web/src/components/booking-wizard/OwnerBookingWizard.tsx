@@ -28,7 +28,7 @@ export default function OwnerBookingWizard({
   hideTitle?: boolean;
 }) {
   const { t } = useLang();
-  const wizard = useBookingWizard({ slug, initialMemberId, initialDate });
+  const wizard = useBookingWizard({ slug, initialMemberId, initialDate, internal: true });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 

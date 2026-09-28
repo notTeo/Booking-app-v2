@@ -8,6 +8,9 @@ export interface UpdateMemberRoleDto {
   role: 'owner' | 'staff';
   canViewCustomerDetails?: boolean;
   email?: string;
+  active?: boolean;
+  bookableByCustomers?: boolean;
+  bookableInternally?: boolean;
 }
 
 export interface CreateTeamMemberDto {
@@ -26,6 +29,9 @@ const MEMBER_SELECT = {
   name: true,
   email: true,
   canViewCustomerDetails: true,
+  active: true,
+  bookableByCustomers: true,
+  bookableInternally: true,
   createdAt: true,
   invites: {
     where: { status: 'pending' as const },
@@ -142,6 +148,26 @@ export const updateMemberRole = async (
     if (existing) throw new AppError(409, 'A team member with this email already exists in this shop');
   }
 
+  // The owner must always be able to access their own shop — active can
+  // never be turned off for the owner role, and promoting someone to owner
+  // implicitly reactivates them.
+  let active: boolean;
+  if (dto.role === 'owner') {
+    if (dto.active === false) throw new AppError(400, 'The owner cannot be set inactive');
+    active = true;
+  } else {
+    active = dto.active !== undefined ? dto.active : member.active;
+  }
+
+  // Deactivating a member turns off both bookable toggles too — they should
+  // never be selectable anywhere while inactive, regardless of what was sent.
+  const bookableByCustomers = active
+    ? (dto.bookableByCustomers !== undefined ? dto.bookableByCustomers : member.bookableByCustomers)
+    : false;
+  const bookableInternally = active
+    ? (dto.bookableInternally !== undefined ? dto.bookableInternally : member.bookableInternally)
+    : false;
+
   const updated = await prisma.userShop.update({
     where: { id: memberId },
     data: {
@@ -150,6 +176,9 @@ export const updateMemberRole = async (
         canViewCustomerDetails: dto.canViewCustomerDetails,
       }),
       ...(email !== undefined && { email }),
+      active,
+      bookableByCustomers,
+      bookableInternally,
     },
     select: MEMBER_SELECT,
   });

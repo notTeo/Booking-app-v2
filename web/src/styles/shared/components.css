@@ -383,7 +383,7 @@ textarea:focus-visible {
    plain copy — matches the script logo used on the marketing home page. */
 .brand-wordmark {
   font-family: var(--font-logo);
-  font-weight: 700;
+  font-weight: 900;
 }
 
 /* --- Password requirements checklist ---
@@ -418,4 +418,52 @@ textarea:focus-visible {
 .card-back:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* --- Copy-link row ---
+   Shared by ShopSettingsPage and ShopOverviewPage (rendered via
+   <CopyLinkButton>) to show the shop's public /p/:slug booking link with a
+   copy-to-clipboard button and a link to open it. */
+.copy-link-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.copy-link-value {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copy-link-btn.btn {
+  width: auto;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.copy-link-btn--icon.btn {
+  padding: 0.45rem 0.65rem;
+}
+
+.copy-link-row--compact {
+  padding: 0.5rem 0.7rem;
+}
+
+.copy-link-row--compact .copy-link-value {
+  font-size: 0.8rem;
 }

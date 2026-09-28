@@ -14,6 +14,38 @@ export const canViewCustomerDetails = async (userId: string, shopId: string) => 
   return membership.role === 'owner' || membership.canViewCustomerDetails;
 };
 
+// ── Staff resolution ─────────────────────────────────────────────────────────
+
+export type BookingContext = 'public' | 'internal';
+
+// Looks up the staff member a booking (or slots request) should use, enforcing
+// that they're active and bookable in the given context. Covers both paths:
+// an explicit staffId (previously never validated at all) and the "no
+// preference" fallback (previously validated only against service assignment).
+const resolveBookableStaff = async (
+  shopId: string,
+  staffId: string | null | undefined,
+  serviceId: string,
+  context: BookingContext,
+): Promise<UserShop | null> => {
+  const bookableField = context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
+
+  if (staffId) {
+    return prisma.userShop.findFirst({
+      where: { id: staffId, shopId, active: true, [bookableField]: true },
+    });
+  }
+
+  return prisma.userShop.findFirst({
+    where: {
+      shopId,
+      active: true,
+      [bookableField]: true,
+      staffServices: { some: { serviceId } },
+    },
+  });
+};
+
 // ── Public ──────────────────────────────────────────────────────────────────
 
 export const createBooking = async (
@@ -37,18 +69,16 @@ export const createBooking = async (
   const startTime = new Date(data.startTime);
   const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
   const cancelToken = randomUUID();
-  let staffId = data.staffId;
 
-if (!staffId) {
-  const anyStaff = await prisma.userShop.findFirst({
-    where: {
-      shopId: shop.id,
-      staffServices: { some: { serviceId: data.serviceId } },
-    },
-  });
-  if (!anyStaff) throw new AppError(400, 'No staff available for this service');
-  staffId = anyStaff.id;
-}
+  const staff = await resolveBookableStaff(shop.id, data.staffId, data.serviceId, 'public');
+  if (!staff) {
+    throw new AppError(
+      400,
+      data.staffId ? 'Selected staff member is not available for booking' : 'No staff available for this service',
+    );
+  }
+  const staffId = staff.id;
+
   try {
     return await prisma.$transaction(
       async (tx) => {
@@ -120,18 +150,15 @@ export const createBookingForShop = async (
   const startTime = new Date(data.startTime);
   const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
   const cancelToken = randomUUID();
-  let staffId = data.staffId;
 
-  if (!staffId) {
-    const anyStaff = await prisma.userShop.findFirst({
-      where: {
-        shopId,
-        staffServices: { some: { serviceId: data.serviceId } },
-      },
-    });
-    if (!anyStaff) throw new AppError(400, 'No staff available for this service');
-    staffId = anyStaff.id;
+  const staff = await resolveBookableStaff(shopId, data.staffId, data.serviceId, 'internal');
+  if (!staff) {
+    throw new AppError(
+      400,
+      data.staffId ? 'Selected staff member is not available for booking' : 'No staff available for this service',
+    );
   }
+  const staffId = staff.id;
 
   try {
     return await prisma.$transaction(
@@ -191,27 +218,24 @@ export const getAvailableSlots = async (
   date: string,
   staffId: string | null,
   serviceId: string,
+  context: BookingContext = 'public',
 ): Promise<SlotsResult> => {
 
   // 1. Get the day's working hours
   const DAY_MAP = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
 
-  // Booking-conflict checks always need a concrete staff member; when none
-  // was requested (public flow, shop-wide hours) fall back to any staff on
-  // the shop — unchanged from prior behavior. Schedule lookup below, on the
-  // other hand, is keyed on the staffId that was actually passed in, with no
-  // such fallback: a staff member with no schedule of their own is "closed",
-  // not silently given the shop-wide hours.
-  let resolvedStaffId = staffId;
-  if (staffId === null) {
-    const randomStaff = await prisma.userShop.findFirst({
-      where: { shopId },
-      select: { id: true },
-    });
-    if (!randomStaff) return { status: 'closed' };
-    resolvedStaffId = randomStaff.id;
-  }
+  // Booking-conflict checks always need a concrete, bookable staff member.
+  // resolveBookableStaff validates an explicitly-passed staffId (active +
+  // bookable in this context) and, when none was requested (public flow,
+  // shop-wide hours), falls back to any eligible staff assigned to the
+  // service. Schedule lookup below, on the other hand, is keyed on the
+  // staffId that was actually passed in, with no such fallback: a staff
+  // member with no schedule of their own is "closed", not silently given
+  // the shop-wide hours.
+  const staff = await resolveBookableStaff(shopId, staffId, serviceId, context);
+  if (!staff) return { status: 'closed' };
+  const resolvedStaffId = staff.id;
 
   const requestedDate = new Date(`${date}T00:00:00.000Z`);
 

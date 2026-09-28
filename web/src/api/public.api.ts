@@ -45,6 +45,8 @@ export interface ShopMember {
   role: 'owner' | 'staff';
   createdAt: string;
   name: string;
+  bookableByCustomers: boolean;
+  bookableInternally: boolean;
   staffServices: StaffService[];
 }
 
@@ -114,7 +116,8 @@ export const getPublicSlots = (
   date: string,
   staffId: string | null,
   serviceId: string | null,
+  internal?: boolean,
 ) =>
   client
-    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId } })
+    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId, internal } })
     .then((r) => r.data.data as SlotsResponse);

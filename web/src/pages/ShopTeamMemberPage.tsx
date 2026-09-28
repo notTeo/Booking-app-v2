@@ -37,6 +37,9 @@ export default function ShopTeamMemberPage() {
   const [editRole, setEditRole] = useState<'owner' | 'staff'>('staff');
   const [editCanView, setEditCanView] = useState(true);
   const [editEmail, setEditEmail] = useState('');
+  const [editActive, setEditActive] = useState(true);
+  const [editBookableByCustomers, setEditBookableByCustomers] = useState(true);
+  const [editBookableInternally, setEditBookableInternally] = useState(true);
   const [savingMember, setSavingMember] = useState(false);
   const [memberSuccess, setMemberSuccess] = useState('');
   const [memberError, setMemberError] = useState('');
@@ -72,6 +75,9 @@ export default function ShopTeamMemberPage() {
         setEditRole(m.role);
         setEditCanView(m.canViewCustomerDetails);
         setEditEmail(m.email ?? '');
+        setEditActive(m.active);
+        setEditBookableByCustomers(m.bookableByCustomers);
+        setEditBookableInternally(m.bookableInternally);
       })
       .catch(() => setError(t.team.errorLoad))
       .finally(() => setLoading(false));
@@ -93,8 +99,30 @@ export default function ShopTeamMemberPage() {
     !!member &&
     (editRole !== member.role ||
       editCanView !== member.canViewCustomerDetails ||
-      editEmail !== (member.email ?? ''));
+      editEmail !== (member.email ?? '') ||
+      editActive !== member.active ||
+      editBookableByCustomers !== member.bookableByCustomers ||
+      editBookableInternally !== member.bookableInternally);
   const isOwnerChange = !!member && editRole !== member.role && (editRole === 'owner' || member.role === 'owner');
+
+  // Turning Active off also turns off both bookable toggles — an inactive
+  // member should never be selectable anywhere. Turning it back on doesn't
+  // restore them; the owner re-enables bookability explicitly.
+  const handleActiveChange = (checked: boolean) => {
+    setEditActive(checked);
+    if (!checked) {
+      setEditBookableByCustomers(false);
+      setEditBookableInternally(false);
+    }
+  };
+
+  const handleRoleChange = (role: 'owner' | 'staff') => {
+    setEditRole(role);
+    setConfirmRoleChange(false);
+    // The owner can never be inactive, since that would lock them out of
+    // their own shop.
+    if (role === 'owner') setEditActive(true);
+  };
 
   const saveMemberChange = async () => {
     if (!shop || !memberId || !member) return;
@@ -102,9 +130,19 @@ export default function ShopTeamMemberPage() {
     setMemberError('');
     setMemberSuccess('');
     try {
-      const dto: { role: 'owner' | 'staff'; canViewCustomerDetails: boolean; email?: string } = {
+      const dto: {
+        role: 'owner' | 'staff';
+        canViewCustomerDetails: boolean;
+        email?: string;
+        active: boolean;
+        bookableByCustomers: boolean;
+        bookableInternally: boolean;
+      } = {
         role: editRole,
         canViewCustomerDetails: editCanView,
+        active: editActive,
+        bookableByCustomers: editBookableByCustomers,
+        bookableInternally: editBookableInternally,
       };
       if (editEmail !== (member.email ?? '')) dto.email = editEmail;
       const updated = await updateMemberRole(shop.id, memberId, dto);
@@ -279,11 +317,52 @@ export default function ShopTeamMemberPage() {
               <label>{t.team.role}</label>
               <select
                 value={editRole}
-                onChange={(e) => { setEditRole(e.target.value as 'owner' | 'staff'); setConfirmRoleChange(false); }}
+                onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
               >
                 <option value="staff">{t.team.roles.staff}</option>
                 <option value="owner">{t.team.roles.owner}</option>
               </select>
+            </div>
+
+            <div className="team-switch-row">
+              <div className="team-switch-label">
+                <span>{t.team.active}</span>
+                <span className="team-switch-desc">
+                  {editRole === 'owner' ? t.team.ownerAlwaysActiveHint : t.team.activeDesc}
+                </span>
+              </div>
+              <Switch
+                checked={editActive}
+                onChange={handleActiveChange}
+                label={t.team.active}
+                disabled={editRole === 'owner'}
+              />
+            </div>
+
+            <div className="team-switch-row">
+              <div className="team-switch-label">
+                <span>{t.team.bookableByCustomers}</span>
+                <span className="team-switch-desc">{t.team.bookableByCustomersDesc}</span>
+              </div>
+              <Switch
+                checked={editBookableByCustomers}
+                onChange={setEditBookableByCustomers}
+                label={t.team.bookableByCustomers}
+                disabled={!editActive}
+              />
+            </div>
+
+            <div className="team-switch-row">
+              <div className="team-switch-label">
+                <span>{t.team.bookableInternally}</span>
+                <span className="team-switch-desc">{t.team.bookableInternallyDesc}</span>
+              </div>
+              <Switch
+                checked={editBookableInternally}
+                onChange={setEditBookableInternally}
+                label={t.team.bookableInternally}
+                disabled={!editActive}
+              />
             </div>
 
             {editRole === 'staff' && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 import { getMyShops, type Shop } from '../api/shop.api';
 import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,6 +9,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 export default function ShopsPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
 
   const [shops, setShops] = useState<Shop[]>([]);
@@ -19,14 +21,14 @@ export default function ShopsPage() {
   useEffect(() => {
     getMyShops()
       .then(setShops)
-      .catch(() => setError('Failed to load shops.'))
+      .catch(() => setError(t.shops.errorLoad))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="shops-page">
       <div className="shops-header">
-        <h1>My Shops</h1>
+        <h1>{t.shops.title}</h1>
       </div>
 
       {loading && (
@@ -41,11 +43,11 @@ export default function ShopsPage() {
 
       {!loading && !error && shops.length === 0 && (
         <div className="shops-empty">
-          <p>You have no shops yet.</p>
+          <p>{t.shops.noShops}</p>
           {isPro && (
             <button type="button" className="shop-card shop-card--add" onClick={() => navigate('/shops/new')}>
               <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
-              <span>Create your first shop</span>
+              <span>{t.shops.createFirstShop}</span>
             </button>
           )}
         </div>
@@ -58,7 +60,7 @@ export default function ShopsPage() {
               <div className="shop-card-top">
                 <span className="shop-card-name">{shop.name}</span>
                 <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
-                  {shop.isActive ? 'Active' : 'Inactive'}
+                  {shop.isActive ? t.shops.active : t.shops.inactive}
                 </span>
               </div>
               <span className="shop-card-slug">/{shop.slug}</span>
@@ -76,10 +78,10 @@ export default function ShopsPage() {
             className="shop-card shop-card--add"
             onClick={() => navigate('/shops/new')}
             disabled={!isPro}
-            title={!isPro ? 'Upgrade to Pro to create a shop' : undefined}
+            title={!isPro ? t.shops.upgradeToCreate : undefined}
           >
             <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
-            <span>+ New Shop</span>
+            <span>{t.shops.newShop}</span>
           </button>
         </div>
       )}

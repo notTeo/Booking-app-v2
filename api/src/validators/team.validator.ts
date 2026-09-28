@@ -13,6 +13,9 @@ export const updateMemberRoleValidation = [
     .withMessage('role must be either owner or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
   body('email').optional({ checkFalsy: true }).isEmail().withMessage('Invalid email').normalizeEmail(),
+  body('active').optional().isBoolean(),
+  body('bookableByCustomers').optional().isBoolean(),
+  body('bookableInternally').optional().isBoolean(),
 ];
 
 export const createTeamMemberValidation = [

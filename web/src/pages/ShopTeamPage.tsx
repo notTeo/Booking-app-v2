@@ -125,6 +125,9 @@ export default function ShopTeamPage() {
                       <span className={`team-role-badge team-role-${member.role}`}>
                         {t.team.roles[member.role]}
                       </span>
+                      {!member.active && (
+                        <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
+                      )}
                     </td>
                     <td className="team-date">
                       {new Date(member.createdAt).toLocaleDateString()}
@@ -173,6 +176,9 @@ export default function ShopTeamPage() {
                   <span className={`team-role-badge team-role-${member.role}`}>
                     {t.team.roles[member.role]}
                   </span>
+                  {!member.active && (
+                    <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
+                  )}
                 </div>
                 <div className="row-card__field">
                   <span className="row-card__label">{t.team.joined}</span>

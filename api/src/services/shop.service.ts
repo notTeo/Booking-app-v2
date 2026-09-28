@@ -46,7 +46,7 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
 
 export const getMyShops = async (userId: string) => {
   const memberships = await prisma.userShop.findMany({
-    where: { userId },
+    where: { userId, active: true },
     include: { shop: true },
   });
 

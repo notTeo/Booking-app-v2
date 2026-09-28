@@ -4,11 +4,13 @@ import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } fro
 import { useLang } from '../context/LanguageContext';
 import type { Translations } from '../locales/translations';
 import Switch from '../components/Switch';
+import CopyLinkButton from '../components/CopyLinkButton';
 import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore,
   faGear,
+  faLink,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -166,6 +168,16 @@ export default function ShopSettingsPage() {
           <span className="shop-detail-date">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
           <span className="shop-detail-date">{t.shopSettings.updatedPrefix} {formatRelative(shop.updatedAt, t.shopSettings)}</span>
         </div>
+      </div>
+
+      {/* Booking link — copyable public /p/:slug link */}
+      <div className="settings-section shop-settings-section">
+        <p className="settings-section-title">
+          <FontAwesomeIcon icon={faLink} className="settings-section-icon" />
+          {t.sharing.title}
+        </p>
+        <p className="shop-field-hint">{t.sharing.desc}</p>
+        <CopyLinkButton link={`${window.location.origin}/p/${shop.slug}`} />
       </div>
 
       <form onSubmit={handleSave}>

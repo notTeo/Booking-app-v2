@@ -16,6 +16,13 @@ export interface UseBookingWizardOptions {
    */
   initialMemberId?: string | null;
   initialDate?: string;
+  /**
+   * True for the shop's own booking wizard (owner/staff booking on a
+   * customer's behalf) — filters staff by "bookable internally" instead of
+   * "bookable by customers", and threads the same distinction through slot
+   * lookups since both flows share this one hook/endpoint.
+   */
+  internal?: boolean;
 }
 
 export interface UseBookingWizardResult {
@@ -42,6 +49,7 @@ export function useBookingWizard({
   slug,
   initialMemberId,
   initialDate,
+  internal,
 }: UseBookingWizardOptions): UseBookingWizardResult {
   const { t } = useLang();
 
@@ -65,12 +73,15 @@ export function useBookingWizard({
   }, [slug]);
 
   const selectedService = shop?.services.find((s) => s.id === selectedServiceId) ?? null;
+  const bookableMembers = (shop?.members ?? []).filter((m) =>
+    internal ? m.bookableInternally : m.bookableByCustomers,
+  );
   const eligibleMembers = selectedServiceId
-    ? (shop?.members.filter((m) => m.staffServices.some((ss) => ss.service.id === selectedServiceId)) ?? [])
-    : (shop?.members ?? []);
+    ? bookableMembers.filter((m) => m.staffServices.some((ss) => ss.service.id === selectedServiceId))
+    : bookableMembers;
 
   function fetchSlots(targetDate: string, memberId: string | null, serviceId: string) {
-    getPublicSlots(slug, targetDate, memberId, serviceId)
+    getPublicSlots(slug, targetDate, memberId, serviceId, internal)
       .then(setSlots)
       .catch(() => setSlots({ status: 'closed' }));
   }

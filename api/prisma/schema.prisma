@@ -116,6 +116,10 @@ model UserShop {
 
   canViewCustomerDetails Boolean @default(true)
 
+  active              Boolean @default(true)
+  bookableByCustomers Boolean @default(true)
+  bookableInternally  Boolean @default(true)
+
   createdAt DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)

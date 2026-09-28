@@ -45,6 +45,12 @@
   color: var(--text-muted);
 }
 
+.team-role-inactive {
+  margin-left: 0.4rem;
+  background: color-mix(in srgb, var(--error) 15%, transparent);
+  color: var(--error);
+}
+
 /* ---- Date cell ---- */
 .team-date {
   color: var(--text-muted);

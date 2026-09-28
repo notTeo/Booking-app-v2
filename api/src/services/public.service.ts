@@ -19,12 +19,15 @@ const shop = await prisma.shop.findUnique({
       }
     },
     members: {
+      where: { active: true },
       select: {
         id: true,
         shopId: true,
         role: true,
         name: true,
         createdAt: true,
+        bookableByCustomers: true,
+        bookableInternally: true,
         staffServices: {
           include: {
             service: {

@@ -10,6 +10,9 @@ export interface TeamMember {
   name: string;
   email: string | null;
   canViewCustomerDetails: boolean;
+  active: boolean;
+  bookableByCustomers: boolean;
+  bookableInternally: boolean;
   createdAt: string;
   hasPendingInvite: boolean;
 }
@@ -26,6 +29,9 @@ export interface UpdateMemberRoleDto {
   role: ShopRole;
   canViewCustomerDetails?: boolean;
   email?: string;
+  active?: boolean;
+  bookableByCustomers?: boolean;
+  bookableInternally?: boolean;
 }
 
 export const getMembers = (shopId: string) =>

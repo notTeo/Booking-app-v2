@@ -237,6 +237,12 @@
   display: block;
 }
 
+/* Booking-link section hint sits above the copy row, not under an input */
+.shop-settings-section .shop-field-hint:has(+ .copy-link-row) {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
 .shop-active-toggle {
   flex-direction: row;
   align-items: center;

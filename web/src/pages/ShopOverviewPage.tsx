@@ -8,6 +8,7 @@ import { listBookings, getBookingStats, type Booking, type BookingWithStaff } fr
 import { getMembers } from '../api/team.api';
 import { getServices } from '../api/service.api';
 import { getCustomers } from '../api/customer.api';
+import CopyLinkButton from '../components/CopyLinkButton';
 import '../styles/pages/shop-overview.css';
 import '../styles/pages/dashboard.css';
 
@@ -98,6 +99,11 @@ export default function ShopOverviewPage() {
 
         {/* ── Body ── */}
         <div className="shop-overview-card__body">
+          <section className="field-group">
+            <h3 className="field-group__title">{t.sharing.title}</h3>
+            <CopyLinkButton link={`${window.location.origin}/p/${shop.slug}`} compact />
+          </section>
+
           {loadingStats ? (
             <div className="shops-spinner-wrap"><div className="spinner" /></div>
           ) : (

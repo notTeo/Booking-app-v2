@@ -5,7 +5,7 @@ import {
   faCalendarCheck,
   faStore,
   faUsers,
-  faMobile,
+  faLink,
   faUserPlus,
   faGear,
   faArrowRight,
@@ -25,10 +25,16 @@ import {
   faMagnifyingGlass,
   faArrowUp,
   faRightFromBracket,
+  faChevronDown,
+  faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
+import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/Footer';
+import Switch from '../components/Switch';
+import { handleActivateKeyDown } from '../utils/a11y';
+import type { DayOfWeek, HourRange } from '../api/workingHours.api';
 import '../styles/pages/home.css';
 import '../styles/pages/sidebar.css';
 
@@ -67,50 +73,46 @@ const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageI
   ]},
 ];
 
-// Fake but believable shop counts for the overview mockup's stat row — not
-// translated, since digits read the same in every language.
+// Fake but believable shop data for the mockup — not translated (except
+// where noted), since digits/emails/names read the same in every language.
+const PREVIEW_SHOP_NAME = 'Demo Barbershop';
 const PREVIEW_TEAM_COUNT = 5;
 const PREVIEW_SERVICES_COUNT = 6;
 const PREVIEW_CUSTOMERS_COUNT = 312;
 const PREVIEW_UPCOMING_COUNT = 4;
 
-const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle: string; rows: { icon: typeof faTableCells; label: string; sub: string }[] }> => ({
-  // Rendered with its own dedicated markup (mirroring ShopOverviewPage.tsx)
-  // instead of the generic rows below — see the `previewPage === 'overview'`
-  // branch further down. title/subtitle stay here for the shared greeting header.
-  overview: { title: t.home.previewGreeting, subtitle: t.home.previewGreetingSub, rows: [] },
-  bookings: { title: t.sidebar.bookings, subtitle: t.home.previewBookingsSubtitle, rows: [
-    { icon: faCalendarCheck, label: t.home.previewBooking1Label, sub: t.home.previewBooking1Sub },
-    { icon: faCalendarCheck, label: t.home.previewBooking2Label, sub: t.home.previewBooking2Sub },
-  ]},
-  newBooking: { title: t.sidebar.bookAppointment, subtitle: t.home.previewNewBookingSubtitle, rows: [
-    { icon: faScissors, label: t.home.previewNewBookingStep1Label, sub: t.home.previewNewBookingStep1Sub },
-    { icon: faCalendar, label: t.home.previewNewBookingStep2Label, sub: t.home.previewNewBookingStep2Sub },
-  ]},
-  services: { title: t.sidebar.services, subtitle: t.home.previewServicesSubtitle, rows: [
-    { icon: faScissors, label: t.home.previewService1Label, sub: t.home.previewService1Sub },
-    { icon: faScissors, label: t.home.previewService2Label, sub: t.home.previewService2Sub },
-  ]},
-  team: { title: t.sidebar.team, subtitle: t.home.previewTeamPageSubtitle, rows: [
-    { icon: faUsers, label: t.home.previewTeamMember1Label, sub: t.home.previewTeamMember1Sub },
-    { icon: faUsers, label: t.home.previewTeamMember2Label, sub: t.home.previewTeamMember2Sub },
-  ]},
-  invites: { title: t.sidebar.invites, subtitle: t.home.previewInvitesSubtitle, rows: [
-    { icon: faUserPlus, label: t.home.previewInvite1Label, sub: t.home.previewInvite1Sub },
-    { icon: faUserPlus, label: t.home.previewInvite2Label, sub: t.home.previewInvite2Sub },
-  ]},
-  hours: { title: t.sidebar.shopWorkingHours, subtitle: t.home.previewHoursSubtitle, rows: [
-    { icon: faClock, label: t.home.previewHours1Label, sub: t.home.previewHours1Sub },
-    { icon: faClock, label: t.home.previewHours2Label, sub: t.home.previewHours2Sub },
-  ]},
-  customers: { title: t.sidebar.customers, subtitle: t.home.previewCustomersSubtitle, rows: [
-    { icon: faMagnifyingGlass, label: t.home.previewCustomer1Label, sub: t.home.previewCustomer1Sub },
-    { icon: faUsers, label: t.home.previewCustomer2Label, sub: t.home.previewCustomer2Sub },
-  ]},
-  settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle, rows: [
-    { icon: faGear, label: t.home.previewSetting1Label, sub: t.home.previewSetting1Sub },
-    { icon: faGear, label: t.home.previewSetting2Label, sub: t.home.previewSetting2Sub },
-  ]},
+const PREVIEW_SERVICE_PRICES = ['€25', '€12'];
+
+// ─── Working-hours mock demo data ──────────────────────────────────────────
+const WH_DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+type WhDayState = { isOpen: boolean; hours: HourRange[] };
+type WhDaysForm = Record<DayOfWeek, WhDayState>;
+
+const defaultWhDays = (): WhDaysForm => ({
+  MON: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
+  TUE: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
+  WED: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
+  THU: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
+  FRI: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
+  SAT: { isOpen: true, hours: [{ startTime: '10:00', endTime: '14:00' }] },
+  SUN: { isOpen: false, hours: [] },
+});
+
+// ─── Booking wizard mock demo data ─────────────────────────────────────────
+type WizardStep = 1 | 2 | 3 | 4;
+const WIZARD_DEMO_SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+const WIZARD_UNAVAILABLE_SLOTS = new Set(['10:30', '14:00']);
+
+const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle: string }> => ({
+  overview: { title: t.home.previewGreeting, subtitle: t.home.previewGreetingSub },
+  bookings: { title: t.sidebar.bookings, subtitle: t.home.previewBookingsSubtitle },
+  newBooking: { title: t.sidebar.bookAppointment, subtitle: t.home.previewNewBookingSubtitle },
+  services: { title: t.sidebar.services, subtitle: t.home.previewServicesSubtitle },
+  team: { title: t.sidebar.team, subtitle: t.home.previewTeamPageSubtitle },
+  invites: { title: t.sidebar.invites, subtitle: t.home.previewInvitesSubtitle },
+  hours: { title: t.sidebar.shopWorkingHours, subtitle: t.home.previewHoursSubtitle },
+  customers: { title: t.sidebar.customers, subtitle: t.home.previewCustomersSubtitle },
+  settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle },
 });
 
 // Same icon as AppLayout.tsx's IconMenu, so the mockup's mobile header
@@ -140,10 +142,93 @@ export default function HomePage() {
   const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
   const [previewPage, setPreviewPage] = useState<PreviewPageId>('overview');
 
+  // Customers mock — real, typeable search input (purely local; doesn't filter the demo rows)
+  const [customersSearch, setCustomersSearch] = useState('');
+
+  // Invites mock — real add-member form fields (local only, not submitted anywhere)
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'staff' | 'owner'>('staff');
+
+  // Settings mock — real shop-details form fields (local only, not saved anywhere)
+  const [settingsName, setSettingsName] = useState(PREVIEW_SHOP_NAME);
+  const [settingsSlug, setSettingsSlug] = useState('demo-barbershop');
+  const [settingsDesc, setSettingsDesc] = useState(t.home.previewShopDesc);
+  const [settingsPhone, setSettingsPhone] = useState('555-0100');
+  const [settingsAddress, setSettingsAddress] = useState('123 Main St, Springfield');
+  const [settingsTimezone, setSettingsTimezone] = useState('Europe/Athens');
+  const [settingsActive, setSettingsActive] = useState(true);
+
+  // Working hours mock — interactive per-day toggles + real time-slot inputs
+  const [whExpanded, setWhExpanded] = useState(true);
+  const [whDays, setWhDays] = useState<WhDaysForm>(defaultWhDays);
+
+  const toggleWhDay = (day: DayOfWeek) => {
+    setWhDays(prev => {
+      const wasOpen = prev[day].isOpen;
+      const hours = !wasOpen && prev[day].hours.length === 0
+        ? [{ startTime: '09:00', endTime: '17:00' }]
+        : prev[day].hours;
+      return { ...prev, [day]: { isOpen: !wasOpen, hours } };
+    });
+  };
+
+  const updateWhSlot = (day: DayOfWeek, idx: number, field: 'startTime' | 'endTime', value: string) => {
+    setWhDays(prev => {
+      const hours = [...prev[day].hours];
+      hours[idx] = { ...hours[idx], [field]: value };
+      return { ...prev, [day]: { ...prev[day], hours } };
+    });
+  };
+
+  const addWhSlot = (day: DayOfWeek) => {
+    setWhDays(prev => ({
+      ...prev,
+      [day]: { ...prev[day], hours: [...prev[day].hours, { startTime: '09:00', endTime: '17:00' }] },
+    }));
+  };
+
+  const removeWhSlot = (day: DayOfWeek, idx: number) => {
+    setWhDays(prev => ({
+      ...prev,
+      [day]: { ...prev[day], hours: prev[day].hours.filter((_, i) => i !== idx) },
+    }));
+  };
+
+  // New-booking wizard mock — click-through 4-step flow, local state only
+  const [wizardStep, setWizardStep] = useState<WizardStep>(1);
+  const [wizardServiceIdx, setWizardServiceIdx] = useState<number | null>(null);
+  const [wizardStaffIdx, setWizardStaffIdx] = useState<number | null>(null); // -1 = "no preference"
+  const [wizardDate, setWizardDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [wizardTime, setWizardTime] = useState('');
+  const [wizardName, setWizardName] = useState('');
+  const [wizardPhone, setWizardPhone] = useState('');
+  const [wizardEmail, setWizardEmail] = useState('');
+  const [wizardNotes, setWizardNotes] = useState('');
+  const [wizardDone, setWizardDone] = useState(false);
+
+  const resetWizard = () => {
+    setWizardStep(1);
+    setWizardServiceIdx(null);
+    setWizardStaffIdx(null);
+    setWizardDate(new Date().toISOString().split('T')[0]);
+    setWizardTime('');
+    setWizardName('');
+    setWizardPhone('');
+    setWizardEmail('');
+    setWizardNotes('');
+    setWizardDone(false);
+  };
+
   const steps = getSteps(t);
   const faqs = getFaqs(t);
   const previewNavSections = getPreviewNavSections(t);
   const previewPages = getPreviewPages(t);
+  const wizardServices = [
+    { name: t.home.previewService1Name, duration: t.home.previewService1Duration, price: PREVIEW_SERVICE_PRICES[0] },
+    { name: t.home.previewService2Name, duration: t.home.previewService2Duration, price: PREVIEW_SERVICE_PRICES[1] },
+  ];
+  const wizardStaff = [t.home.previewCalStaff1, t.home.previewCalStaff2, t.home.previewCalStaff3];
 
   const navWrapperRef = useRef<HTMLDivElement>(null);
   const navRowRef = useRef<HTMLDivElement>(null);
@@ -390,7 +475,7 @@ export default function HomePage() {
                   </button>
                 </div>
 
-                <div className="sidebar-shop-name">hairology</div>
+                <div className="sidebar-shop-name">{PREVIEW_SHOP_NAME}</div>
 
                 {previewNavSections.map(section => (
                   <div key={section.label}>
@@ -399,7 +484,11 @@ export default function HomePage() {
                       <button
                         key={item.id}
                         className={`sidebar-link${previewPage === item.id ? ' active' : ''}`}
-                        onClick={() => { setPreviewPage(item.id); setPreviewMenuOpen(false); }}
+                        onClick={() => {
+                          setPreviewPage(item.id);
+                          setPreviewMenuOpen(false);
+                          if (item.id === 'newBooking') resetWizard();
+                        }}
                       >
                         <FontAwesomeIcon icon={item.icon} />
                         <span className="sidebar-link-label">{item.label}</span>
@@ -442,7 +531,7 @@ export default function HomePage() {
                   // bookings lists — same arrangement and fake-but-believable data.
                   <div className="home-preview-overview-card">
                     <div className="home-preview-overview-header">
-                      <h4 className="home-preview-overview-name">hairology</h4>
+                      <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
                       <div className="home-preview-badges">
                         <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
                         <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
@@ -467,14 +556,26 @@ export default function HomePage() {
                     <div className="home-preview-overview-section">
                       <h5 className="home-preview-overview-section-title">{t.overview.todaysBookings}</h5>
                       <div className="home-preview-booking-list">
-                        <div className="home-preview-booking-row">
+                        <div
+                          className="home-preview-booking-row home-preview-booking-row--clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setPreviewPage('bookings')}
+                          onKeyDown={handleActivateKeyDown(() => setPreviewPage('bookings'))}
+                        >
                           <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
                           <div>
                             <p className="home-preview-booking-title">{t.home.previewBooking1Label}</p>
                             <p className="home-preview-booking-sub">{t.home.previewBooking1Sub}</p>
                           </div>
                         </div>
-                        <div className="home-preview-booking-row">
+                        <div
+                          className="home-preview-booking-row home-preview-booking-row--clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setPreviewPage('bookings')}
+                          onKeyDown={handleActivateKeyDown(() => setPreviewPage('bookings'))}
+                        >
                           <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
                           <div>
                             <p className="home-preview-booking-title">{t.home.previewBooking2Label}</p>
@@ -489,14 +590,26 @@ export default function HomePage() {
                         {t.overview.upcomingBookings} ({PREVIEW_UPCOMING_COUNT})
                       </h5>
                       <div className="home-preview-booking-list">
-                        <div className="home-preview-booking-row">
+                        <div
+                          className="home-preview-booking-row home-preview-booking-row--clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setPreviewPage('bookings')}
+                          onKeyDown={handleActivateKeyDown(() => setPreviewPage('bookings'))}
+                        >
                           <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
                           <div>
                             <p className="home-preview-booking-title">{t.home.previewUpcoming1Label}</p>
                             <p className="home-preview-booking-sub">{t.home.previewUpcoming1Sub}</p>
                           </div>
                         </div>
-                        <div className="home-preview-booking-row">
+                        <div
+                          className="home-preview-booking-row home-preview-booking-row--clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setPreviewPage('bookings')}
+                          onKeyDown={handleActivateKeyDown(() => setPreviewPage('bookings'))}
+                        >
                           <span className="home-preview-booking-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
                           <div>
                             <p className="home-preview-booking-title">{t.home.previewUpcoming2Label}</p>
@@ -506,18 +619,565 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                ) : (
-                <div className="home-preview-tiles">
-                  {previewPages[previewPage].rows.map(row => (
-                    <div key={row.label} className="home-preview-tile">
-                      <FontAwesomeIcon icon={row.icon} className="home-preview-tile-icon" />
-                      <div>
-                        <h4>{row.label}</h4>
-                        <p>{row.sub}</p>
+                ) : previewPage === 'customers' ? (
+                  // Mirrors ShopCustomersPage.tsx: search box + data table + pagination.
+                  <div className="home-preview-customers">
+                    <input
+                      type="text"
+                      className="home-preview-input home-preview-search-input"
+                      placeholder={t.customers.searchPlaceholder}
+                      value={customersSearch}
+                      onChange={(e) => setCustomersSearch(e.target.value)}
+                    />
+                    <div className="home-preview-table-card">
+                      <table className="home-preview-table">
+                        <thead>
+                          <tr>
+                            <th>{t.customers.nameCol}</th>
+                            <th>{t.customers.phoneCol}</th>
+                            <th>{t.customers.emailCol}</th>
+                            <th>{t.customers.addedCol}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Sarah M.</td>
+                            <td>555-0142</td>
+                            <td>sarah.m@example.com</td>
+                            <td>2025</td>
+                          </tr>
+                          <tr>
+                            <td>James O.</td>
+                            <td>555-0198</td>
+                            <td>james.o@example.com</td>
+                            <td>2025</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="home-preview-pagination">
+                      <button type="button" disabled>{t.customers.prevPage}</button>
+                      <span>{t.customers.pageOf.replace('{page}', '1').replace('{total}', '32')}</span>
+                      <button type="button" disabled>{t.customers.nextPage}</button>
+                    </div>
+                  </div>
+                ) : previewPage === 'team' ? (
+                  // Mirrors ShopTeamPage.tsx: a data table with a color-coded role pill.
+                  <div className="home-preview-table-card">
+                    <table className="home-preview-table">
+                      <thead>
+                        <tr>
+                          <th>{t.team.email}</th>
+                          <th>{t.team.role}</th>
+                          <th>{t.team.joined}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>marcus@demo.shop</td>
+                          <td><span className="home-preview-role-badge home-preview-role-badge--owner">{t.team.roles.owner}</span></td>
+                          <td>2024</td>
+                        </tr>
+                        <tr>
+                          <td>sofia@demo.shop</td>
+                          <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.team.roles.staff}</span></td>
+                          <td>2025</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                ) : previewPage === 'invites' ? (
+                  // Mirrors ShopInvitesPage.tsx: an "add member" form card above a
+                  // pending-invites table with role + status pills.
+                  <div className="home-preview-invites">
+                    <div className="home-preview-invite-form-card">
+                      <h5 className="home-preview-overview-section-title">{t.invites.addMember}</h5>
+                      <div className="home-preview-invite-fields">
+                        <div className="home-preview-form-group">
+                          <label>{t.invites.nameLabel}</label>
+                          <input
+                            type="text"
+                            className="home-preview-input"
+                            placeholder={t.invites.namePlaceholder}
+                            value={inviteName}
+                            onChange={(e) => setInviteName(e.target.value)}
+                          />
+                        </div>
+                        <div className="home-preview-form-group">
+                          <label>{t.invites.emailLabel}</label>
+                          <input
+                            type="email"
+                            className="home-preview-input"
+                            placeholder="staff@example.com"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="home-preview-form-group">
+                          <label>{t.invites.roleLabel}</label>
+                          <select
+                            className="home-preview-input"
+                            value={inviteRole}
+                            onChange={(e) => setInviteRole(e.target.value as 'staff' | 'owner')}
+                          >
+                            <option value="staff">{t.invites.roles.staff}</option>
+                            <option value="owner">{t.invites.roles.owner}</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="home-preview-table-card">
+                      <table className="home-preview-table">
+                        <thead>
+                          <tr>
+                            <th>{t.invites.nameLabel}</th>
+                            <th>{t.invites.roleLabel}</th>
+                            <th>{t.invites.statusLabel}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>{t.home.previewInviteRowName1}</td>
+                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
+                            <td><span className="home-preview-status-badge home-preview-status-badge--pending">{t.invites.status.pending}</span></td>
+                          </tr>
+                          <tr>
+                            <td>{t.home.previewInviteRowName2}</td>
+                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
+                            <td><span className="home-preview-status-badge home-preview-status-badge--expired">{t.invites.notSentYet}</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : previewPage === 'settings' ? (
+                  // Mirrors ShopSettingsPage.tsx: header with badges, icon-labeled
+                  // sections, and a red-tinted danger zone.
+                  <div className="home-preview-overview-card">
+                    <div className="home-preview-overview-header">
+                      <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
+                      <div className="home-preview-badges">
+                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
+                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                      </div>
+                    </div>
+
+                    <div className="home-preview-settings-section">
+                      <h5 className="home-preview-overview-section-title">
+                        <FontAwesomeIcon icon={faStore} /> {t.shopSettings.shopDetails}
+                      </h5>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.name}</label>
+                        <input
+                          type="text"
+                          className="home-preview-input"
+                          value={settingsName}
+                          onChange={(e) => setSettingsName(e.target.value)}
+                        />
+                      </div>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.slug}</label>
+                        <input
+                          type="text"
+                          className="home-preview-input"
+                          value={settingsSlug}
+                          onChange={(e) => setSettingsSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        />
+                      </div>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.description}</label>
+                        <textarea
+                          className="home-preview-input home-preview-textarea"
+                          rows={2}
+                          value={settingsDesc}
+                          onChange={(e) => setSettingsDesc(e.target.value)}
+                        />
+                      </div>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.phone}</label>
+                        <input
+                          type="text"
+                          className="home-preview-input"
+                          value={settingsPhone}
+                          onChange={(e) => setSettingsPhone(e.target.value)}
+                        />
+                      </div>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.address}</label>
+                        <input
+                          type="text"
+                          className="home-preview-input"
+                          value={settingsAddress}
+                          onChange={(e) => setSettingsAddress(e.target.value)}
+                        />
+                      </div>
+                      <div className="home-preview-form-group">
+                        <label>{t.shops.timezone}</label>
+                        <select
+                          className="home-preview-input"
+                          value={settingsTimezone}
+                          onChange={(e) => setSettingsTimezone(e.target.value)}
+                        >
+                          <option value="Europe/Athens">Europe/Athens</option>
+                          <option value="Europe/London">Europe/London</option>
+                          <option value="America/New_York">America/New_York</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="home-preview-settings-section">
+                      <h5 className="home-preview-overview-section-title">
+                        <FontAwesomeIcon icon={faGear} /> {t.shopSettings.configuration}
+                      </h5>
+                      <div className="home-preview-wh-row">
+                        <span>{t.shops.active}</span>
+                        <Switch checked={settingsActive} onChange={setSettingsActive} />
+                      </div>
+                    </div>
+
+                    <div className="home-preview-settings-section home-preview-settings-section--danger">
+                      <h5 className="home-preview-overview-section-title">
+                        <FontAwesomeIcon icon={faTriangleExclamation} /> {t.shops.dangerZone}
+                      </h5>
+                      <p className="home-preview-danger-desc">{t.shops.dangerDesc}</p>
+                    </div>
+                  </div>
+                ) : previewPage === 'services' ? (
+                  // Mirrors ShopServicesPage.tsx: a vertical stack of service cards
+                  // with a status pill, plus a dashed "add service" card.
+                  <div className="home-preview-services-list">
+                    <div className="home-preview-service-row">
+                      <div className="home-preview-service-row-top">
+                        <h4>{t.home.previewService1Name}</h4>
+                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                      </div>
+                      <p className="home-preview-service-desc">{t.home.previewService1Desc}</p>
+                      <p className="home-preview-service-meta">{t.home.previewService1Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[0]}</p>
+                    </div>
+                    <div className="home-preview-service-row">
+                      <div className="home-preview-service-row-top">
+                        <h4>{t.home.previewService2Name}</h4>
+                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                      </div>
+                      <p className="home-preview-service-desc">{t.home.previewService2Desc}</p>
+                      <p className="home-preview-service-meta">{t.home.previewService2Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[1]}</p>
+                    </div>
+                    <div className="home-preview-service-add">
+                      <FontAwesomeIcon icon={faPlus} />
+                      <span>{t.services.addService}</span>
+                    </div>
+                  </div>
+                ) : previewPage === 'hours' ? (
+                  // Mirrors WorkingHoursPanel.tsx: a collapsible schedule card with
+                  // per-day Switch toggles and real time-slot inputs — same
+                  // interactions and demo data, but everything stays local (no
+                  // save/API calls).
+                  <div className="home-preview-wh-schedule-card">
+                    <div
+                      className="home-preview-wh-header"
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={whExpanded}
+                      onClick={() => setWhExpanded(v => !v)}
+                      onKeyDown={handleActivateKeyDown(() => setWhExpanded(v => !v))}
+                    >
+                      <span className="home-preview-wh-date-range">{t.workingHours.from} Jan 1 — {t.workingHours.ongoing}</span>
+                      <span className="home-preview-wh-badge home-preview-wh-badge--active">{t.shops.active}</span>
+                      <FontAwesomeIcon
+                        icon={faChevronDown}
+                        className={`home-preview-wh-chevron${whExpanded ? ' home-preview-wh-chevron--open' : ''}`}
+                      />
+                    </div>
+                    {whExpanded && (
+                      <div className="home-preview-wh-body">
+                        {WH_DAY_ORDER.map((day) => {
+                          const dayState = whDays[day];
+                          return (
+                            <div key={day} className="home-preview-wh-row home-preview-wh-row--full">
+                              <div className="home-preview-wh-row-top">
+                                <span className="home-preview-wh-day">{t.workingHours.days[day]}</span>
+                                <Switch checked={dayState.isOpen} onChange={() => toggleWhDay(day)} />
+                                <span className={`home-preview-wh-status home-preview-wh-status--${dayState.isOpen ? 'open' : 'closed'}`}>
+                                  {dayState.isOpen ? t.workingHours.open : t.workingHours.closed}
+                                </span>
+                              </div>
+                              {dayState.isOpen && (
+                                <div className="home-preview-wh-slots">
+                                  {dayState.hours.map((slot, idx) => (
+                                    <div key={idx} className="home-preview-wh-slot-row">
+                                      <input
+                                        type="time"
+                                        className="home-preview-input home-preview-time-input"
+                                        value={slot.startTime}
+                                        onChange={(e) => updateWhSlot(day, idx, 'startTime', e.target.value)}
+                                      />
+                                      <span className="home-preview-wh-slot-sep">–</span>
+                                      <input
+                                        type="time"
+                                        className="home-preview-input home-preview-time-input"
+                                        value={slot.endTime}
+                                        onChange={(e) => updateWhSlot(day, idx, 'endTime', e.target.value)}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="home-preview-wh-slot-remove"
+                                        onClick={() => removeWhSlot(day, idx)}
+                                        aria-label={t.workingHours.removeSlot}
+                                      >
+                                        <FontAwesomeIcon icon={faXmark} />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  <button type="button" className="home-preview-wh-add-slot" onClick={() => addWhSlot(day)}>
+                                    {t.workingHours.addSlot}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : previewPage === 'newBooking' ? (
+                  // Mirrors OwnerBookingWizard.tsx: a real click-through 4-step flow
+                  // (service → staff → date & time → your details) with demo data —
+                  // fully interactive locally, but never calls the real API.
+                  <div className="home-preview-wizard">
+                    <div className="home-preview-wizard-steps">
+                      {[t.public.service, t.public.staff, t.public.dateTime, t.public.yourDetails].map((label, i) => {
+                        const stepNum = (i + 1) as WizardStep;
+                        const isCompleted = wizardStep > stepNum;
+                        const isActive = wizardStep === stepNum;
+                        return (
+                          <button
+                            key={label}
+                            type="button"
+                            className={`home-preview-wizard-step${isActive ? ' home-preview-wizard-step--active' : ''}${isCompleted ? ' home-preview-wizard-step--completed' : ''}`}
+                            onClick={() => { if (isCompleted) setWizardStep(stepNum); }}
+                            disabled={!isCompleted}
+                          >
+                            <span className="home-preview-wizard-step-number">
+                              {isCompleted ? <FontAwesomeIcon icon={faCheck} /> : stepNum}
+                            </span>
+                            <span className="home-preview-wizard-step-label">{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {wizardStep === 1 && (
+                      <div className="home-preview-services-grid">
+                        {wizardServices.map((s, i) => (
+                          <button
+                            key={s.name}
+                            type="button"
+                            className="home-preview-service-card home-preview-service-card--selectable"
+                            onClick={() => { setWizardServiceIdx(i); setWizardStep(2); }}
+                          >
+                            <div className="home-preview-service-card-header">
+                              <h4>{s.name}</h4>
+                              <span className="home-preview-service-price">{s.price}</span>
+                            </div>
+                            <span className="home-preview-service-duration"><FontAwesomeIcon icon={faClock} /> {s.duration}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {wizardStep === 2 && (
+                      <div className="home-preview-wizard-panel">
+                        {wizardServiceIdx !== null && (
+                          <p className="home-preview-wizard-context">
+                            {t.public.serviceContext} <strong>{wizardServices[wizardServiceIdx].name}</strong>
+                          </p>
+                        )}
+                        <div className="home-preview-team-grid">
+                          {wizardStaff.map((name, i) => (
+                            <button
+                              key={name}
+                              type="button"
+                              className="home-preview-team-card"
+                              onClick={() => { setWizardStaffIdx(i); setWizardStep(3); }}
+                            >
+                              <span className="home-preview-team-avatar">{name.charAt(0)}</span>
+                              <span className="home-preview-team-name">{name}</span>
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            className="home-preview-team-card"
+                            onClick={() => { setWizardStaffIdx(-1); setWizardStep(3); }}
+                          >
+                            <span className="home-preview-team-avatar"><FontAwesomeIcon icon={faUsers} /></span>
+                            <span className="home-preview-team-name">{t.public.noPreference}</span>
+                          </button>
+                        </div>
+                        <div className="home-preview-wizard-actions">
+                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(1)}>{t.public.back}</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {wizardStep === 3 && (
+                      <div className="home-preview-wizard-panel">
+                        {wizardServiceIdx !== null && (
+                          <p className="home-preview-wizard-context">
+                            {t.public.serviceContext} <strong>{wizardServices[wizardServiceIdx].name}</strong>
+                            {wizardStaffIdx !== null && wizardStaffIdx >= 0 && (
+                              <> · {t.public.staffContext} <strong>{wizardStaff[wizardStaffIdx]}</strong></>
+                            )}
+                          </p>
+                        )}
+                        <div className="home-preview-form-group">
+                          <label>{t.public.date}</label>
+                          <input
+                            type="date"
+                            className="home-preview-input"
+                            value={wizardDate}
+                            onChange={(e) => setWizardDate(e.target.value)}
+                          />
+                        </div>
+                        <div className="home-preview-slots-grid">
+                          {WIZARD_DEMO_SLOTS.map((slot) => {
+                            const unavailable = WIZARD_UNAVAILABLE_SLOTS.has(slot);
+                            return (
+                              <button
+                                key={slot}
+                                type="button"
+                                className={`home-preview-slot${wizardTime === slot ? ' home-preview-slot--selected' : ''}${unavailable ? ' home-preview-slot--disabled' : ''}`}
+                                disabled={unavailable}
+                                onClick={() => setWizardTime(slot)}
+                              >
+                                {slot}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="home-preview-wizard-actions">
+                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(2)}>{t.public.back}</button>
+                          {wizardDate && wizardTime && (
+                            <button type="button" className="btn btn-primary" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {wizardStep === 4 && (
+                      wizardDone ? (
+                        <div className="home-preview-wizard-success">
+                          <span className="home-preview-wizard-success-icon"><FontAwesomeIcon icon={faCheck} /></span>
+                          <p>{t.public.bookingConfirmed}</p>
+                          <button type="button" className="btn btn-primary" onClick={resetWizard}>{t.bookings.newBookingTitle}</button>
+                        </div>
+                      ) : (
+                        <div className="home-preview-wizard-panel">
+                          {wizardServiceIdx !== null && (
+                            <p className="home-preview-wizard-context">
+                              {t.public.serviceContext} <strong>{wizardServices[wizardServiceIdx].name}</strong>
+                              {wizardStaffIdx !== null && wizardStaffIdx >= 0 && (
+                                <> · {t.public.staffContext} <strong>{wizardStaff[wizardStaffIdx]}</strong></>
+                              )}
+                              {' · '}<strong>{wizardDate}</strong> {t.public.atLabel} <strong>{wizardTime}</strong>
+                            </p>
+                          )}
+                          <div className="home-preview-form-group">
+                            <label>{t.public.phoneLabel}</label>
+                            <input
+                              type="tel"
+                              className="home-preview-input"
+                              placeholder={t.bookings.phoneSearchHint}
+                              value={wizardPhone}
+                              onChange={(e) => setWizardPhone(e.target.value)}
+                            />
+                          </div>
+                          <div className="home-preview-form-group">
+                            <label>{t.public.nameLabel}</label>
+                            <input
+                              type="text"
+                              className="home-preview-input"
+                              placeholder={t.public.namePlaceholder}
+                              value={wizardName}
+                              onChange={(e) => setWizardName(e.target.value)}
+                            />
+                          </div>
+                          <div className="home-preview-form-group">
+                            <label>{t.public.emailLabel}</label>
+                            <input
+                              type="email"
+                              className="home-preview-input"
+                              placeholder={t.public.emailPlaceholder}
+                              value={wizardEmail}
+                              onChange={(e) => setWizardEmail(e.target.value)}
+                            />
+                          </div>
+                          <div className="home-preview-form-group">
+                            <label>{t.public.notesLabel}</label>
+                            <textarea
+                              className="home-preview-input home-preview-textarea"
+                              rows={2}
+                              placeholder={t.public.notesPlaceholder}
+                              value={wizardNotes}
+                              onChange={(e) => setWizardNotes(e.target.value)}
+                            />
+                          </div>
+                          <div className="home-preview-wizard-actions">
+                            <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(3)}>{t.public.back}</button>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              disabled={wizardName.trim() === '' || wizardPhone.trim() === ''}
+                              onClick={() => setWizardDone(true)}
+                            >
+                              {t.bookings.createBooking}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  // bookings — mirrors ShopBookingsPage.tsx: a mini time-grid
+                  // calendar with a few color-coded booking blocks per staff column.
+                  <div className="home-preview-cal-grid">
+                    <div className="home-preview-cal-header-row">
+                      <div className="home-preview-cal-gutter-cell" />
+                      <div className="home-preview-cal-col-header">{t.home.previewCalStaff1}</div>
+                      <div className="home-preview-cal-col-header">{t.home.previewCalStaff2}</div>
+                      <div className="home-preview-cal-col-header">{t.home.previewCalStaff3}</div>
+                    </div>
+                    <div className="home-preview-cal-body">
+                      <div className="home-preview-cal-gutter">
+                        <span className="home-preview-cal-hour-label">09:00</span>
+                        <span className="home-preview-cal-hour-label">10:00</span>
+                        <span className="home-preview-cal-hour-label">11:00</span>
+                        <span className="home-preview-cal-hour-label">12:00</span>
+                        <span className="home-preview-cal-hour-label">13:00</span>
+                      </div>
+                      <div className="home-preview-cal-col">
+                        <div className="home-preview-cal-block home-preview-cal-block--confirmed" style={{ top: '10%', height: '28%' }}>
+                          <span className="home-preview-cal-block-name">{t.home.previewCalBlock1Name}</span>
+                          <span className="home-preview-cal-block-service">{t.home.previewCalBlock1Service}</span>
+                        </div>
+                        <div className="home-preview-cal-block home-preview-cal-block--pending" style={{ top: '55%', height: '28%' }}>
+                          <span className="home-preview-cal-block-name">{t.home.previewCalBlock2Name}</span>
+                          <span className="home-preview-cal-block-service">{t.home.previewCalBlock2Service}</span>
+                        </div>
+                      </div>
+                      <div className="home-preview-cal-col">
+                        <div className="home-preview-cal-block home-preview-cal-block--completed" style={{ top: '30%', height: '28%' }}>
+                          <span className="home-preview-cal-block-name">{t.home.previewCalBlock3Name}</span>
+                          <span className="home-preview-cal-block-service">{t.home.previewCalBlock3Service}</span>
+                        </div>
+                      </div>
+                      <div className="home-preview-cal-col">
+                        <div className="home-preview-cal-block home-preview-cal-block--canceled" style={{ top: '15%', height: '28%' }}>
+                          <span className="home-preview-cal-block-name">{t.home.previewCalBlock4Name}</span>
+                          <span className="home-preview-cal-block-service">{t.home.previewCalBlock4Service}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -613,10 +1273,10 @@ export default function HomePage() {
             {/* Any device, any time */}
             <div className="home-feature-bento home-feature-bento--channels">
               <div className="home-feature-bento-icons">
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faLink} /></span>
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faInstagram} /></span>
+                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faWhatsapp} /></span>
                 <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faGlobe} /></span>
-                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faEnvelope} /></span>
-                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faMobile} /></span>
-                <span className="home-feature-mini-icon"><FontAwesomeIcon icon={faCalendarCheck} /></span>
               </div>
               <div className="home-feature-bento-text">
                 <span className="home-feature-bento-label">{t.home.featureChannelsLabel}</span>

@@ -19,6 +19,7 @@ export const getPublicSlotsValidation = [
   query('date').notEmpty().isISO8601().withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  query('internal').optional().isBoolean(),
 ];
 
 export const ownerCreateBookingValidation = [
