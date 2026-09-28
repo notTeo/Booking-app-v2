@@ -284,16 +284,14 @@ describe('getAvailableSlots', () => {
       ],
     });
 
-    // getAvailableSlots builds candidate windows from `${date}T${time}:00` with
-    // no timezone suffix, i.e. server-local time — match that here so the
-    // booking actually lands on the same instant as the '10:00' slot below,
-    // regardless of the host's timezone.
+    // 10:00 Athens wall-clock on 2027-02-01 (EET, +02:00), as an explicit
+    // instant so the test doesn't depend on the process timezone.
     await createBookingForShop(owner.id, shop.id, {
       name: 'Alice',
       phone: '1000000007',
       serviceId: service.id,
       staffId: staff.id,
-      startTime: new Date(`${MONDAY}T10:00:00`).toISOString(),
+      startTime: '2027-02-01T10:00:00+02:00',
     });
 
     const result = await getAvailableSlots(shop.id, MONDAY, null, service.id);

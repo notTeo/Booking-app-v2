@@ -7,6 +7,14 @@ import {
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
+import {
+  DATE_ONLY_RE,
+  dateOnlyToUtc,
+  dayBoundsUtc,
+  todayInZone,
+  weekdayOf,
+} from '../utils/shopTime';
+import { buildSlotCandidates } from '../utils/slots';
 
 // Throws 404 (not 403, so shop existence isn't revealed) unless the caller
 // belongs to the shop.
@@ -260,6 +268,16 @@ export const createBookingForShop = async (
   }
 };
 
+// The shop's IANA timezone — every wall-clock <-> UTC conversion uses it.
+const getShopTimezone = async (shopId: string) => {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    select: { timezone: true },
+  });
+  if (!shop) throw new AppError(404, 'Shop not found');
+  return shop.timezone;
+};
+
 // ── Slots ───────────────────────────────────────
 
 export interface SlotInfo {
@@ -278,9 +296,11 @@ export const getAvailableSlots = async (
   serviceId: string,
   context: BookingContext = 'public',
 ): Promise<SlotsResult> => {
-  // 1. Get the day's working hours
-  const DAY_MAP = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
+  // 1. Get the day's working hours. `date` is a calendar date in the shop's
+  // timezone; its weekday does not depend on any timezone.
+  if (!DATE_ONLY_RE.test(date))
+    throw new AppError(400, 'date must be YYYY-MM-DD');
+  const dayOfWeek = weekdayOf(date);
 
   // Booking-conflict checks always need a concrete, bookable staff member.
   // resolveBookableStaff validates an explicitly-passed staffId (active +
@@ -294,7 +314,7 @@ export const getAvailableSlots = async (
   if (!staff) return { status: 'closed' };
   const resolvedStaffId = staff.id;
 
-  const requestedDate = new Date(`${date}T00:00:00.000Z`);
+  const requestedDate = dateOnlyToUtc(date);
 
   const schedule = await prisma.shopWorkingSchedule.findFirst({
     where: {
@@ -323,52 +343,39 @@ export const getAvailableSlots = async (
   });
   if (!service) return { status: 'closed' };
 
-  // 3. Get existing bookings for that day + staff — excluding statuses that
-  // don't actually hold the slot (matches the create-time conflict check's
-  // exclusion set), so a canceled/no-show booking doesn't keep blocking its
-  // old time from being offered again.
-  const existingBookings = (
-    await listBookings(shopId, {
-      date,
-      staffId: resolvedStaffId ?? undefined,
-    })
-  ).filter((b) => !['CANCELED', 'NO_SHOW', 'COMPLETED'].includes(b.status));
+  const zone = await getShopTimezone(shopId);
 
-  // 4. Generate every theoretical slot in the open window, flagged with
-  // whether it's actually free — callers decide whether to filter these
-  // down (public/customer view) or show booked ones disabled (internal view).
-  const slots: SlotInfo[] = [];
+  // 3. Bookings that overlap the shop-local day for this staff member —
+  // excluding statuses that don't actually hold the slot (matches the
+  // create-time conflict check's exclusion set), so a canceled/no-show
+  // booking doesn't keep blocking its old time from being offered again.
+  const { start: dayStart, end: dayEnd } = dayBoundsUtc(date, zone);
+  const existingBookings = await prisma.booking.findMany({
+    where: {
+      shopId,
+      staffId: resolvedStaffId,
+      status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+      startTime: { lt: dayEnd },
+      endTime: { gt: dayStart },
+    },
+    select: { startTime: true, endTime: true },
+  });
 
-  const toMins = (t: string) => {
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-  };
-
-  const toHHMM = (mins: number) => {
-    const h = Math.floor(mins / 60)
-      .toString()
-      .padStart(2, '0');
-    const m = (mins % 60).toString().padStart(2, '0');
-    return `${h}:${m}`;
-  };
-
-  for (const hourRange of day.hours) {
-    const open = toMins(hourRange.startTime); // e.g. 540  (09:00)
-    const close = toMins(hourRange.endTime); // e.g. 1080 (18:00)
-
-    for (let start = open; start + service.duration <= close; start += 30) {
-      const candidateStart = new Date(`${date}T${toHHMM(start)}:00`);
-      const candidateEnd = new Date(
-        `${date}T${toHHMM(start + service.duration)}:00`,
-      );
-
-      const hasOverlap = existingBookings.some(
-        (b) => b.startTime < candidateEnd && b.endTime > candidateStart,
-      );
-
-      slots.push({ time: toHHMM(start), available: !hasOverlap });
-    }
-  }
+  // 4. Every theoretical slot in the open window (wall-clock in the shop's
+  // timezone), flagged with whether it's actually free — callers decide
+  // whether to filter these down (public/customer view) or show booked ones
+  // disabled (internal view).
+  const slots: SlotInfo[] = buildSlotCandidates(
+    date,
+    zone,
+    day.hours,
+    service.duration,
+  ).map((c) => ({
+    time: c.time,
+    available: !existingBookings.some(
+      (b) => b.startTime < c.end && b.endTime > c.start,
+    ),
+  }));
 
   return { status: 'ok', slots };
 };
@@ -383,11 +390,13 @@ export const listBookings = async (
   const where: Record<string, unknown> = { shopId };
 
   if (filters.date) {
-    const start = new Date(filters.date);
-    start.setUTCHours(0, 0, 0, 0);
-    const end = new Date(filters.date);
-    end.setUTCHours(23, 59, 59, 999);
-    where['startTime'] = { gte: start, lte: end };
+    if (!DATE_ONLY_RE.test(filters.date))
+      throw new AppError(400, 'date must be YYYY-MM-DD');
+    const { start, end } = dayBoundsUtc(
+      filters.date,
+      await getShopTimezone(shopId),
+    );
+    where['startTime'] = { gte: start, lt: end };
   }
 
   if (filters.status) where['status'] = filters.status;
@@ -410,16 +419,17 @@ export const getBookingStats = async (
   canViewCustomer = true,
 ) => {
   const now = new Date();
-  const startOfToday = new Date(now);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const endOfToday = new Date(now);
-  endOfToday.setUTCHours(23, 59, 59, 999);
+  const zone = await getShopTimezone(shopId);
+  const { start: startOfToday, end: endOfToday } = dayBoundsUtc(
+    todayInZone(zone, now),
+    zone,
+  );
 
   const [todayCount, upcomingCount, upcoming] = await Promise.all([
     prisma.booking.count({
       where: {
         shopId,
-        startTime: { gte: startOfToday, lte: endOfToday },
+        startTime: { gte: startOfToday, lt: endOfToday },
         status: { notIn: ['CANCELED'] },
       },
     }),

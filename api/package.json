@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test:tz": "for tz in UTC Europe/Athens America/New_York; do echo \"== TZ=$tz\"; TZ=$tz vitest run || exit 1; done"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "@types/express": "^5.0.6",
     "@types/express-rate-limit": "^5.1.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/luxon": "^3.7.5",
     "@types/node": "^25.3.0",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
@@ -52,6 +54,7 @@
     "express-validator": "^7.3.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "luxon": "^3.7.2",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
     "prisma": "^7.4.1",
