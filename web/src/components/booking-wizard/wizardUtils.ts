@@ -1,3 +1,5 @@
+import { wallClockToISO } from '../../utils/shopTime';
+
 export function formatDuration(mins: number): string {
   if (mins < 60) return `${mins}m`;
   const h = Math.floor(mins / 60);
@@ -9,6 +11,7 @@ export function formatPrice(cents: number): string {
   return `€${(cents / 100).toFixed(2)}`;
 }
 
-export function buildISODateTime(date: string, time: string): string {
-  return new Date(`${date}T${time}:00`).toISOString();
+/** Slot date + "HH:mm" label -> UTC instant, interpreted in the SHOP's timezone. */
+export function buildISODateTime(date: string, time: string, shopTimezone: string): string {
+  return wallClockToISO(date, time, shopTimezone);
 }

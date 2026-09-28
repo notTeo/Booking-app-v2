@@ -1,3 +1,4 @@
+import { dateInZone, formatDateTimeInZone } from '../utils/shopTime';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,9 +19,9 @@ interface ShopStat {
 interface UpcomingRow extends BookingWithStaff {
   shopName: string;
   shopSlug: string;
+  shopTimezone: string;
 }
 
-const dateOf = (iso: string) => iso.split('T')[0];
 
 export default function DashboardPage() {
   const { t } = useLang();
@@ -45,7 +46,7 @@ export default function DashboardPage() {
   }, []);
 
   const upcoming: UpcomingRow[] = shopStats
-    .flatMap((s) => s.upcoming.map((b) => ({ ...b, shopName: s.shop.name, shopSlug: s.shop.slug })))
+    .flatMap((s) => s.upcoming.map((b) => ({ ...b, shopName: s.shop.name, shopSlug: s.shop.slug, shopTimezone: s.shop.timezone })))
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
     .slice(0, 8);
 
@@ -102,7 +103,7 @@ export default function DashboardPage() {
                 {upcoming.map((b) => (
                   <Link
                     key={b.id}
-                    to={`/shops/${b.shopSlug}/bookings?date=${dateOf(b.startTime)}`}
+                    to={`/shops/${b.shopSlug}/bookings?date=${dateInZone(b.startTime, b.shopTimezone)}`}
                     className="dash-field dash-field--link"
                   >
                     <div className="dash-field-icon">
@@ -112,7 +113,7 @@ export default function DashboardPage() {
                       <p className="dash-field-label">{b.shopName} · {b.customer.name}</p>
                       <p className="dash-field-value">
                         {b.service.name} —{' '}
-                        {new Date(b.startTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                        {formatDateTimeInZone(b.startTime, b.shopTimezone)}
                       </p>
                     </div>
                   </Link>

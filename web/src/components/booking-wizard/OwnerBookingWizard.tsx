@@ -52,7 +52,7 @@ export default function OwnerBookingWizard({
         email: values.email,
         serviceId: wizard.selectedServiceId,
         staffId: wizard.selectedMemberId ?? undefined,
-        startTime: buildISODateTime(wizard.date, wizard.time),
+        startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: values.notes,
       });
       onDone(booking);

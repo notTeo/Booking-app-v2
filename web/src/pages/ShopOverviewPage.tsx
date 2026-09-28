@@ -1,3 +1,4 @@
+import { formatDateTimeInZone, formatTimeInZone, todayInZone } from '../utils/shopTime';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
@@ -11,8 +12,6 @@ import { getCustomers } from '../api/customer.api';
 import CopyLinkButton from '../components/CopyLinkButton';
 import '../styles/pages/shop-overview.css';
 import '../styles/pages/dashboard.css';
-
-const todayISO = () => new Date().toISOString().split('T')[0];
 
 interface Counts {
   team: number;
@@ -56,7 +55,7 @@ export default function ShopOverviewPage() {
     if (!shop) return;
     setLoadingStats(true);
     Promise.all([
-      listBookings(shop.id, { date: todayISO() }),
+      listBookings(shop.id, { date: todayInZone(shop.timezone) }),
       getBookingStats(shop.id),
       getMembers(shop.id),
       getServices(shop.id),
@@ -126,7 +125,7 @@ export default function ShopOverviewPage() {
                       <BookingRow
                         key={b.id}
                         title={b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
-                        subtitle={`${b.service.name} — ${new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                        subtitle={`${b.service.name} — ${formatTimeInZone(b.startTime, shop.timezone)}`}
                       />
                     ))}
                   </div>
@@ -145,7 +144,7 @@ export default function ShopOverviewPage() {
                       <BookingRow
                         key={b.id}
                         title={`${b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name} · ${b.staff.name}`}
-                        subtitle={`${b.service.name} — ${new Date(b.startTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}`}
+                        subtitle={`${b.service.name} — ${formatDateTimeInZone(b.startTime, shop.timezone)}`}
                       />
                     ))}
                   </div>

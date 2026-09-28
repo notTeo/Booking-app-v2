@@ -1,3 +1,4 @@
+import { formatDateTimeInZone } from '../utils/shopTime';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
@@ -191,10 +192,7 @@ export default function ShopCustomerDetailPage() {
                   <tr key={b.id} className="data-table-row">
                     <td>{b.service.name}</td>
                     <td className="team-date">
-                      {new Date(b.startTime).toLocaleString([], {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
+                      {formatDateTimeInZone(b.startTime, shop!.timezone)}
                     </td>
                     <td>
                       <StatusBadge status={b.status} />

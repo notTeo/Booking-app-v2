@@ -10,9 +10,8 @@ import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
+import { todayInZone } from '../utils/shopTime';
 import '../styles/pages/public.css';
-
-const todayISO = () => new Date().toISOString().split('T')[0];
 
 export default function PublicPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -51,7 +50,7 @@ export default function PublicPage() {
         email: email || undefined,
         serviceId: wizard.selectedServiceId,
         staffId: wizard.selectedMemberId ?? '',
-        startTime: buildISODateTime(wizard.date, wizard.time),
+        startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
       });
       setConfirmed(true);
@@ -134,7 +133,7 @@ export default function PublicPage() {
                 slots={wizard.slots}
                 selectedService={wizard.selectedService}
                 selectedMember={selectedMember}
-                minDate={todayISO()}
+                minDate={todayInZone(shop.timezone)}
                 mode="public"
                 onDateChange={wizard.handleDateChange}
                 onSelectTime={wizard.setTime}

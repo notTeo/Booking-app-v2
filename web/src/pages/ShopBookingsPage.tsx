@@ -1,3 +1,4 @@
+import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -27,24 +28,6 @@ const HOURS = Array.from({ length: GRID_END - GRID_START }, (_, i) => GRID_START
 const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED', 'NO_SHOW'];
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-const todayISO = () => new Date().toISOString().split('T')[0];
-
-const shiftDateStr = (date: string, delta: number) => {
-  const d = new Date(date + 'T00:00:00'); // force local-time parsing
-  d.setDate(d.getDate() + delta);
-  // Build the string from local getters, not toISOString() — that converts
-  // to UTC first, which can roll the date back a day depending on the
-  // local UTC offset (most visible right at local midnight, exactly what
-  // this produces).
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-};
-
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 const formatDuration = (mins: number) => {
   if (mins < 60) return `${mins}m`;
@@ -77,7 +60,11 @@ export default function ShopBookingsPage() {
   const [members, setMembers]                 = useState<TeamMember[]>([]);
   const [loading, setLoading]                 = useState(true);
   const [error, setError]                     = useState('');
-  const [date, setDate]                       = useState(() => searchParams.get('date') || todayISO());
+  // The calendar day is a shop-local date. Until the user picks one it follows
+  // "today" in the SHOP's timezone (not the browser's).
+  const zone = shop?.timezone ?? 'UTC';
+  const [dateOverride, setDateOverride]       = useState<string | null>(searchParams.get('date'));
+  const date = dateOverride ?? todayInZone(zone);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [creatingSlot, setCreatingSlot]       = useState<CreatingSlot | null>(null);
   const [updatingId, setUpdatingId]           = useState<string | null>(null);
@@ -189,7 +176,7 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
           <button
             type="button"
             className="bookings-date-nav-btn"
-            onClick={() => setDate(d => shiftDateStr(d, -1))}
+            onClick={() => setDateOverride(shiftDate(date, -1))}
             aria-label="Previous day"
           >
             <FontAwesomeIcon icon={faChevronLeft} />
@@ -202,12 +189,12 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
             type="date"
             className="bookings-date-picker"
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={e => setDateOverride(e.target.value)}
           />
           <button
             type="button"
             className="bookings-date-nav-btn"
-            onClick={() => setDate(d => shiftDateStr(d, 1))}
+            onClick={() => setDateOverride(shiftDate(date, 1))}
             aria-label="Next day"
           >
             <FontAwesomeIcon icon={faChevronRight} />
@@ -260,7 +247,7 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
           <div className="cal-detail-meta">
             <span>{selectedBooking.service.name}</span>
             <span className="cal-detail-sep">·</span>
-            <span>{formatTime(selectedBooking.startTime)}</span>
+            <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
             <span className="cal-detail-sep">·</span>
             <span>{formatDuration(selectedBooking.service.duration)}</span>
           </div>
@@ -372,8 +359,7 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
 
                   {/* Booking blocks */}
                   {(bookingsByStaff[col.id] ?? []).map(b => {
-                    const dt = new Date(b.startTime);
-                    const mins = dt.getHours() * 60 + dt.getMinutes();
+                    const mins = minutesOfDayInZone(b.startTime, zone);
                     const top = (mins - GRID_START * 60) * PX_PER_MIN;
                     const height = Math.max(b.service.duration * PX_PER_MIN, MIN_BLOCK_H);
                     const isSelected = selectedBooking?.id === b.id;
@@ -392,7 +378,7 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
                           openBookingDetail(b, isSelected);
                         }}
                       >
-                        <div className="cal-block-time">{formatTime(b.startTime)}</div>
+                        <div className="cal-block-time">{formatTimeInZone(b.startTime, zone)}</div>
                         <div className="cal-block-name">
                           {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
                         </div>
