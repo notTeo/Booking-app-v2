@@ -8,6 +8,27 @@ rules contract — then checkpoint again **before any UI work**. Not started
 
 *(Keep this line updated after every commit or checkpoint.)*
 
+## Priority order and triage rule (owner-approved)
+
+The full plan stays; nothing is dropped. Order of work:
+
+**PHASE A — launch-critical, do first:** out-of-hours commits 1, 2, 4, 6, 7;
+group 3 remainder (`BOOKING_BUSY` / `BOOKING_TOO_LONG` translations + neutral
+503 handling); group 4 customer upsert; group 6 rate limiting (including the
+shared-IP login lockout fix); group 7 validation; group 8 slugs; group 9
+ops/env; group 10 GDPR; group 11 root routing; group 12 tenant script +
+Hairology seed; group 14 runbook.
+
+**PHASE B — after A:** out-of-hours commits 5, 8, 9; the exclusion constraint;
+group 13 CI + web lint fixes; anything else remaining in the plans.
+
+**Triage rule for NEW findings** (not already in the plans): fix immediately
+ONLY if it causes double booking, data leak, data loss, or blocks the owner's
+daily use. Everything else is classified and logged in the "LATER" list at the
+end of this file, without asking.
+
+**Pushing:** push `prod-readiness` after each checkpoint.
+
 Branch: `prod-readiness` (base `main`; PRs target `dev`). Nothing pushed, no PR
 opened, nothing deployed.
 
@@ -369,3 +390,7 @@ cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 216 tests x 3 
 cd web && npx tsc -b && npm run test:tz && npm run build        # 21 tests x 3 zones; lint has 30 known errors
 npm run e2e                                                     # from repo root (9 pass, 1 skipped)
 ```
+
+## LATER (triaged, not launch-critical)
+
+_None yet._
