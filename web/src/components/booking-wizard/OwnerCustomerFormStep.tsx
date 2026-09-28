@@ -1,3 +1,4 @@
+import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { Service, ShopMember } from '../../api/public.api';
@@ -42,11 +43,16 @@ export default function OwnerCustomerFormStep({
   const [showDropdown, setShowDropdown] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // The latest phone text, so a slow look-up that returns after the user kept
+  // typing is discarded instead of filling in for a number no longer shown.
+  const phoneRef = useRef('');
+
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
+    phoneRef.current = val;
     setPhone(val);
-    setName('');
-    setEmail('');
+    // Deliberately NOT touching name/email: text the user typed is never
+    // cleared just because the phone changed.
     setShowDropdown(false);
     setCustomerResults([]);
 
@@ -56,6 +62,14 @@ export default function OwnerCustomerFormStep({
     debounceRef.current = setTimeout(() => {
       getCustomers(shopId, val.trim())
         .then((result) => {
+          if (phoneRef.current !== val) return; // stale
+          const exact = result.items.find((c) => isExactPhoneMatch(val, c.phone));
+          if (exact) {
+            // A known customer: fill in what is still empty, nothing else.
+            setName((n) => fillIfEmpty(n, exact.name));
+            setEmail((m) => fillIfEmpty(m, exact.email));
+            return;
+          }
           setCustomerResults(result.items);
           setShowDropdown(result.items.length > 0);
         })
@@ -64,9 +78,10 @@ export default function OwnerCustomerFormStep({
   }
 
   function selectCustomer(c: Customer) {
+    phoneRef.current = c.phone;
     setPhone(c.phone);
-    setName(c.name);
-    setEmail(c.email ?? '');
+    setName((n) => fillIfEmpty(n, c.name));
+    setEmail((m) => fillIfEmpty(m, c.email));
     setShowDropdown(false);
     setCustomerResults([]);
   }

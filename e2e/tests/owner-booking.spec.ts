@@ -43,10 +43,12 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
   await page.locator('.public-slot-btn', { hasText: /^10:00$/ }).click();
   await page.getByRole('button', { name: /continue/i }).click();
 
-  // customer form. Phone FIRST: changing the phone clears the name (it triggers
-  // the customer look-up), so typing the name first would be wiped.
-  await page.locator('#b-phone').fill('6987654321');
+  // customer form: type the NAME first, then the phone. Changing the phone
+  // triggers a customer look-up; it must never clear what was typed.
   await page.locator('#b-name').fill('Smoke Test');
+  await page.locator('#b-phone').fill('6987654321');
+  await page.waitForTimeout(600); // let the (debounced) look-up finish
+  await expect(page.locator('#b-name')).toHaveValue('Smoke Test');
   await page.getByRole('button', { name: /create booking/i }).click();
 
   // lands on the calendar (today); go to the booking's day
