@@ -117,8 +117,7 @@ export const getPublicSlots = (
   date: string,
   staffId: string | null,
   serviceId: string | null,
-  internal?: boolean,
 ) =>
   client
-    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId, internal } })
+    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId } })
     .then((r) => r.data.data as SlotsResponse);

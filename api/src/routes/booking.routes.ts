@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
 import {
   ownerCreateBookingValidation,
+  ownerSlotsValidation,
   listBookingsValidation,
   bookingParamsValidation,
   updateBookingValidation,
@@ -27,6 +28,14 @@ router.get(
   bookingController.listBookings,
 );
 router.get('/stats', authenticate, bookingController.getBookingStats);
+// Declared before /:bookingId so 'slots' is not treated as a booking id.
+router.get(
+  '/slots',
+  authenticate,
+  ownerSlotsValidation,
+  validate,
+  bookingController.getAvailableSlots,
+);
 router.get(
   '/:bookingId',
   authenticate,

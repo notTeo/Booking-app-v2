@@ -25,7 +25,17 @@ export const getPublicSlotsValidation = [
     .withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
-  query('internal').optional().isBoolean(),
+];
+
+export const ownerSlotsValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  query('date')
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('date must be YYYY-MM-DD')
+    .isISO8601({ strict: true })
+    .withMessage('date must be a valid calendar date'),
+  query('serviceId').notEmpty().withMessage('serviceId is required'),
+  query('staffId').optional({ values: 'falsy' }).isString(),
 ];
 
 export const ownerCreateBookingValidation = [

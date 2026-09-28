@@ -35,7 +35,7 @@ export default function OwnerBookingWizard({
   hideTitle?: boolean;
 }) {
   const { t } = useLang();
-  const wizard = useBookingWizard({ slug, initialMemberId, initialDate, internal: true });
+  const wizard = useBookingWizard({ slug, shopId, initialMemberId, initialDate, internal: true });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   // Set when the server rejected the booking for a rule violation (422). The

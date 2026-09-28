@@ -49,15 +49,19 @@ export const getAvailableSlots = async (
   next: NextFunction,
 ) => {
   try {
+    const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
+    // Any member of the shop may look; anyone else gets a 404.
+    await bookingService.requireMembership(userId, shopId);
     const date = req.query['date'] as string;
-    const staffId = req.query['staffId'] as string;
+    const staffId = (req.query['staffId'] as string | undefined) || null;
     const serviceId = req.query['serviceId'] as string;
     const slots = await bookingService.getAvailableSlots(
       shopId,
       date,
       staffId,
       serviceId,
+      'internal',
     );
     successResponse(res, slots);
   } catch (err) {

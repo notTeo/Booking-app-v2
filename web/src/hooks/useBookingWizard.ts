@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getOwnerSlots } from '../api/booking.api';
 import { getShopInfo, getPublicSlots, type ShopInfo, type Service, type ShopMember, type SlotsResponse } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 
@@ -8,6 +9,8 @@ export type WizardStep = 1 | 2 | 3 | 4;
 
 export interface UseBookingWizardOptions {
   slug: string;
+  /** Required when `internal` — owner slots come from the authenticated API. */
+  shopId?: string;
   /**
    * When set (calendar quick-create flow), the staff member is already known.
    * Picking a service jumps straight from step 1 to step 3, skipping the
@@ -47,6 +50,7 @@ export interface UseBookingWizardResult {
 
 export function useBookingWizard({
   slug,
+  shopId,
   initialMemberId,
   initialDate,
   internal,
@@ -81,7 +85,11 @@ export function useBookingWizard({
     : bookableMembers;
 
   function fetchSlots(targetDate: string, memberId: string | null, serviceId: string) {
-    getPublicSlots(slug, targetDate, memberId, serviceId, internal)
+    const request =
+      internal && shopId
+        ? getOwnerSlots(shopId, targetDate, memberId, serviceId)
+        : getPublicSlots(slug, targetDate, memberId, serviceId);
+    request
       .then(setSlots)
       .catch(() => setSlots({ status: 'closed' }));
   }

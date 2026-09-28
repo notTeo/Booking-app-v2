@@ -122,11 +122,6 @@ export const getPublicSlots = async (
     const date = req.query['date'] as string;
     const staffId = (req.query['staffId'] as string) ?? null;
     const serviceId = req.query['serviceId'] as string;
-    // Set by the shop's own booking wizard (an owner/staff booking on a
-    // customer's behalf) so slots respect "bookable internally" instead of
-    // "bookable by customers" — the wizard shares this same public endpoint.
-    const internal = req.query['internal'] === 'true';
-
     const shop = await prisma.shop.findUnique({
       where: { slug, isActive: true },
       select: { id: true },
@@ -138,7 +133,9 @@ export const getPublicSlots = async (
       date,
       staffId,
       serviceId,
-      internal ? 'internal' : 'public',
+      // Always the customer-facing view. Owner/staff availability lives on the
+      // authenticated GET /api/shops/:shopId/bookings/slots.
+      'public',
     );
     successResponse(res, slots);
   } catch (err) {

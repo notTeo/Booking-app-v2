@@ -1,4 +1,5 @@
 import client from './client';
+import type { SlotsResponse } from './public.api';
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW';
 
@@ -55,6 +56,17 @@ export const listBookings = (shopId: string, params?: ListBookingsParams) =>
 
 export const getBookingStats = (shopId: string) =>
   client.get(`${base(shopId)}/stats`).then((r) => r.data.data as BookingStats);
+
+/** Slots for the shop's own staff (authenticated): honours "bookable internally". */
+export const getOwnerSlots = (
+  shopId: string,
+  date: string,
+  staffId: string | null,
+  serviceId: string,
+) =>
+  client
+    .get(`${base(shopId)}/slots`, { params: { date, staffId, serviceId } })
+    .then((r) => r.data.data as SlotsResponse);
 
 export const updateBookingStatus = (shopId: string, bookingId: string, status: BookingStatus) =>
   client
