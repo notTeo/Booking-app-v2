@@ -1,4 +1,7 @@
 import { AppError } from '../middleware/errorHandler';
+import { Prisma } from '../../dist/generated/prisma';
+import { prisma } from './prisma';
+import { logger } from './logger';
 
 /**
  * Serializable transactions are how a booking claims a provider's time: the
@@ -31,41 +34,93 @@ export const isSerializationFailure = (err: unknown): boolean => {
   );
 };
 
-// Two concurrent first bookings by the same phone number race on the
-// (shopId, phone) customer upsert. Retrying makes the loser find the row.
-export const isUniqueViolation = (err: unknown): boolean => {
-  const e = err as ErrLike | null;
-  if (!e) return false;
-  return (
-    e.code === 'P2002' ||
-    e.cause?.originalCode === '23505' ||
-    e.cause?.kind === 'UniqueConstraintViolation'
-  );
+/**
+ * Retry policy. ONLY serialization failures are retried (40001 /
+ * TransactionWriteConflict / P2034); domain errors (AppError), unique
+ * violations and anything else propagate immediately. Retrying is capped by
+ * attempt count AND total elapsed time, every retry is logged with its attempt
+ * number, and what still fails becomes a clean 409.
+ *
+ * What is retried is the WHOLE transaction function, so it must be free of side
+ * effects (emails etc. run in the controllers, after commit) and must read
+ * everything it depends on inside the transaction, so a retry sees fresh data.
+ */
+export const SERIALIZABLE_RETRY = { maxAttempts: 5, maxElapsedMs: 3000 };
+
+// In-process counters: for tests and quick diagnosis; not a metrics system.
+export const retryStats = { retries: 0, succeededAfterRetry: 0, exhausted: 0 };
+export const resetRetryStats = () => {
+  retryStats.retries = 0;
+  retryStats.succeededAfterRetry = 0;
+  retryStats.exhausted = 0;
 };
 
-const isRetryable = (err: unknown) =>
-  isSerializationFailure(err) || isUniqueViolation(err);
+export interface RetryOptions {
+  maxAttempts?: number;
+  maxElapsedMs?: number;
+}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const withSerializableRetry = async <T>(
   run: () => Promise<T>,
-  attempts = 6,
+  options: RetryOptions = {},
 ): Promise<T> => {
+  const maxAttempts = options.maxAttempts ?? SERIALIZABLE_RETRY.maxAttempts;
+  const maxElapsedMs = options.maxElapsedMs ?? SERIALIZABLE_RETRY.maxElapsedMs;
+  // performance.now(), not Date.now(): monotonic, and unaffected by clock changes.
+  const started = performance.now();
+
   for (let attempt = 1; ; attempt++) {
     try {
-      return await run();
+      const result = await run();
+      if (attempt > 1) {
+        retryStats.succeededAfterRetry++;
+        logger.info(
+          { attempts: attempt },
+          'serializable transaction succeeded after retry',
+        );
+      }
+      return result;
     } catch (err) {
-      if (!isRetryable(err)) throw err;
-      if (attempt >= attempts) {
+      if (!isSerializationFailure(err)) throw err;
+
+      const elapsedMs = performance.now() - started;
+      if (attempt >= maxAttempts || elapsedMs >= maxElapsedMs) {
+        retryStats.exhausted++;
+        logger.warn(
+          { attempts: attempt, elapsedMs: Math.round(elapsedMs) },
+          'serializable retries exhausted',
+        );
         throw new AppError(
           409,
           'That time was just taken by another booking. Please try again.',
           'SLOT_TAKEN',
         );
       }
-      // Small jittered back-off so the contenders stop colliding in lockstep.
-      await sleep(Math.random() * 15 * attempt);
+
+      retryStats.retries++;
+      logger.warn(
+        { attempt, maxAttempts },
+        'serializable transaction conflict, retrying',
+      );
+      // Jittered back-off so contenders stop colliding in lockstep, never
+      // sleeping past the total-time budget.
+      await sleep(
+        Math.min(Math.random() * 15 * attempt, maxElapsedMs - elapsedMs),
+      );
     }
   }
 };
+
+/** The one place a serializable interactive transaction is started. Exposed as
+ * an object so tests can make individual attempts fail (the Prisma client is a
+ * proxy and cannot be spied on directly). */
+export const txRunner = {
+  run: <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> =>
+    prisma.$transaction(fn, { isolationLevel: 'Serializable' }),
+};
+
+export const serializableTransaction = <T>(
+  fn: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> => withSerializableRetry(() => txRunner.run(fn));

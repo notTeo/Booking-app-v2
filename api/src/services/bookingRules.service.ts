@@ -1,4 +1,4 @@
-import { prisma } from '../utils/prisma';
+import type { Prisma } from '../../dist/generated/prisma';
 import { AppError } from '../middleware/errorHandler';
 import {
   addDays,
@@ -43,12 +43,13 @@ export interface DayHours {
  * their own is closed (never silently given the shop-wide hours).
  */
 export const loadDayHours = async (
+  db: Prisma.TransactionClient,
   shopId: string,
   scheduleStaffId: string | null,
   date: string,
 ): Promise<DayHours[] | null> => {
   const requestedDate = dateOnlyToUtc(date);
-  const schedule = await prisma.shopWorkingSchedule.findFirst({
+  const schedule = await db.shopWorkingSchedule.findFirst({
     where: {
       shopId,
       staffId: scheduleStaffId,
@@ -67,6 +68,8 @@ export const loadDayHours = async (
 };
 
 export const assertBookingRules = async (params: {
+  // Pass the transaction client: the schedule is read inside the transaction.
+  db: Prisma.TransactionClient;
   shopId: string;
   timezone: string;
   maxAdvanceDays: number;
@@ -76,7 +79,7 @@ export const assertBookingRules = async (params: {
   endTime: Date;
   now?: Date;
 }) => {
-  const { shopId, timezone: zone, startTime, endTime } = params;
+  const { db, shopId, timezone: zone, startTime, endTime } = params;
   const now = params.now ?? new Date();
 
   if (startTime < now) {
@@ -92,7 +95,7 @@ export const assertBookingRules = async (params: {
     );
   }
 
-  const hours = await loadDayHours(shopId, params.scheduleStaffId, date);
+  const hours = await loadDayHours(db, shopId, params.scheduleStaffId, date);
   if (!hours) {
     throw violation('SHOP_CLOSED', 'The shop is closed on that day.');
   }

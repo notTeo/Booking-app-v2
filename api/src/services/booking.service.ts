@@ -1,17 +1,35 @@
 import { randomUUID } from 'crypto';
-import { BookingStatus, UserShop } from '../../dist/generated/prisma';
+import {
+  BookingStatus,
+  type Prisma,
+  type UserShop,
+} from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
 import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
 import { buildSlotCandidates } from '../utils/slots';
 import { assertBookingRules, loadDayHours } from './bookingRules.service';
-import { withSerializableRetry } from '../utils/serializable';
+import { serializableTransaction } from '../utils/serializable';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
 // Only these statuses release a slot. COMPLETED does NOT — that time was
 // really used — so it blocks overlap like PENDING/CONFIRMED do.
 export const SLOT_FREEING_STATUSES: BookingStatus[] = ['CANCELED', 'NO_SHOW'];
+/** WHERE clause for "another booking holds this provider's time". */
+const overlapWhere = (
+  staffId: string,
+  startTime: Date,
+  endTime: Date,
+  excludeBookingId?: string,
+) => ({
+  staffId,
+  ...(excludeBookingId && { id: { not: excludeBookingId } }),
+  status: { notIn: SLOT_FREEING_STATUSES },
+  startTime: { lt: endTime },
+  endTime: { gt: startTime },
+});
+
 const freesSlot = (status: BookingStatus) =>
   SLOT_FREEING_STATUSES.includes(status);
 
@@ -47,6 +65,7 @@ export type BookingContext = 'public' | 'internal';
 // an explicit staffId (previously never validated at all) and the "no
 // preference" fallback (previously validated only against service assignment).
 const resolveBookableStaff = async (
+  db: Prisma.TransactionClient,
   shopId: string,
   staffId: string | null | undefined,
   serviceId: string,
@@ -56,12 +75,12 @@ const resolveBookableStaff = async (
     context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
 
   if (staffId) {
-    return prisma.userShop.findFirst({
+    return db.userShop.findFirst({
       where: { id: staffId, shopId, active: true, [bookableField]: true },
     });
   }
 
-  return prisma.userShop.findFirst({
+  return db.userShop.findFirst({
     where: {
       shopId,
       active: true,
@@ -71,7 +90,77 @@ const resolveBookableStaff = async (
   });
 };
 
+const staffUnavailable = (requestedStaffId: string | null | undefined) =>
+  new AppError(
+    400,
+    requestedStaffId
+      ? 'Selected staff member is not available for booking'
+      : 'No staff available for this service',
+  );
+
+const BOOKING_INCLUDE = {
+  customer: true,
+  service: true,
+  shop: true,
+  staff: { select: { id: true, name: true, email: true } },
+} as const;
+
+/**
+ * Overlap check + customer + insert, for a provider's time. Runs inside the
+ * caller's serializable transaction. Never bypassable.
+ */
+const claimSlotAndCreate = async (
+  tx: Prisma.TransactionClient,
+  p: {
+    shopId: string;
+    serviceId: string;
+    staffId: string;
+    startTime: Date;
+    endTime: Date;
+    customer: { name: string; phone: string; email?: string };
+    notes?: string;
+    cancelToken: string;
+  },
+) => {
+  const conflict = await tx.booking.findFirst({
+    where: overlapWhere(p.staffId, p.startTime, p.endTime),
+  });
+  if (conflict)
+    throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
+
+  const customer = await tx.customer.upsert({
+    where: { shopId_phone: { shopId: p.shopId, phone: p.customer.phone } },
+    update: { name: p.customer.name, email: p.customer.email ?? undefined },
+    create: {
+      shopId: p.shopId,
+      name: p.customer.name,
+      phone: p.customer.phone,
+      email: p.customer.email,
+    },
+  });
+
+  return tx.booking.create({
+    data: {
+      shopId: p.shopId,
+      customerId: customer.id,
+      serviceId: p.serviceId,
+      staffId: p.staffId,
+      startTime: p.startTime,
+      endTime: p.endTime,
+      notes: p.notes,
+      cancelToken: p.cancelToken,
+    },
+    include: BOOKING_INCLUDE,
+  });
+};
+
 // ── Public ──────────────────────────────────────────────────────────────────
+
+// NOTE on the two create functions below: the transaction function is RETRIED
+// on serialization failures, so it must (1) read everything the booking depends
+// on — shop, service, staff, schedule — INSIDE the transaction, never before it
+// and reused; and (2) have no side effects (emails are sent by the controller
+// after this returns).
 
 export const createBooking = async (
   slug: string,
@@ -85,95 +174,53 @@ export const createBooking = async (
     notes?: string;
   },
 ) => {
-  const shop = await prisma.shop.findUnique({ where: { slug } });
-  if (!shop) throw new AppError(404, 'Shop not found');
-
-  const service = await prisma.service.findFirst({
-    where: { id: data.serviceId, shopId: shop.id },
-  });
-  if (!service) throw new AppError(404, 'Service not found');
-
   const startTime = new Date(data.startTime);
-  const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
-  const cancelToken = randomUUID();
+  const cancelToken = randomUUID(); // only persisted by the attempt that commits
 
-  const staff = await resolveBookableStaff(
-    shop.id,
-    data.staffId,
-    data.serviceId,
-    'public',
-  );
-  if (!staff) {
-    throw new AppError(
-      400,
-      data.staffId
-        ? 'Selected staff member is not available for booking'
-        : 'No staff available for this service',
+  return serializableTransaction(async (tx) => {
+    const shop = await tx.shop.findFirst({ where: { slug } });
+    if (!shop) throw new AppError(404, 'Shop not found');
+
+    const service = await tx.service.findFirst({
+      where: { id: data.serviceId, shopId: shop.id },
+    });
+    if (!service) throw new AppError(404, 'Service not found');
+
+    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+
+    const staff = await resolveBookableStaff(
+      tx,
+      shop.id,
+      data.staffId,
+      data.serviceId,
+      'public',
     );
-  }
-  const staffId = staff.id;
+    if (!staff) throw staffUnavailable(data.staffId);
 
-  // Strict on the public path — there is no override. The schedule checked is
-  // the one the slots endpoint used: the requested staff member's own, or the
-  // shop-wide one when the customer had no preference.
-  await assertBookingRules({
-    shopId: shop.id,
-    timezone: shop.timezone,
-    maxAdvanceDays: shop.maxAdvanceDays,
-    scheduleStaffId: data.staffId ? staffId : null,
-    startTime,
-    endTime,
+    // Strict on the public path — there is no override. The schedule checked is
+    // the one the slots endpoint used: the requested staff member's own, or the
+    // shop-wide one when the customer had no preference.
+    await assertBookingRules({
+      db: tx,
+      shopId: shop.id,
+      timezone: shop.timezone,
+      maxAdvanceDays: shop.maxAdvanceDays,
+      scheduleStaffId: data.staffId ? staff.id : null,
+      startTime,
+      endTime,
+    });
+
+    return claimSlotAndCreate(tx, {
+      shopId: shop.id,
+      serviceId: data.serviceId,
+      staffId: staff.id,
+      startTime,
+      endTime,
+      customer: { name: data.name, phone: data.phone, email: data.email },
+      notes: data.notes,
+      cancelToken,
+    });
   });
-
-  return await withSerializableRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        // Overlap check: any booking for same staff where ranges intersect
-        const conflict = await tx.booking.findFirst({
-          where: {
-            staffId,
-            status: { notIn: SLOT_FREEING_STATUSES },
-            startTime: { lt: endTime },
-            endTime: { gt: startTime },
-          },
-        });
-
-        if (conflict)
-          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
-
-        const customer = await tx.customer.upsert({
-          where: { shopId_phone: { shopId: shop.id, phone: data.phone } },
-          update: { name: data.name, email: data.email ?? undefined },
-          create: {
-            shopId: shop.id,
-            name: data.name,
-            phone: data.phone,
-            email: data.email,
-          },
-        });
-
-        return tx.booking.create({
-          data: {
-            shopId: shop.id,
-            customerId: customer.id,
-            serviceId: data.serviceId,
-            staffId,
-            startTime,
-            endTime,
-            notes: data.notes,
-            cancelToken,
-          },
-          include: {
-            customer: true,
-            service: true,
-            shop: true,
-            staff: { select: { id: true, name: true, email: true } },
-          },
-        });
-      },
-      { isolationLevel: 'Serializable' },
-    ),
-  );
 };
 
 // ── Owner / Staff booking creation ──────────────────────────────────────────
@@ -193,102 +240,61 @@ export const createBookingForShop = async (
     override?: boolean;
   },
 ) => {
-  // Verify caller is a member of the shop
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-
-  const service = await prisma.service.findFirst({
-    where: { id: data.serviceId, shopId },
-  });
-  if (!service) throw new AppError(404, 'Service not found');
-
   const startTime = new Date(data.startTime);
-  const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
   const cancelToken = randomUUID();
 
-  const staff = await resolveBookableStaff(
-    shopId,
-    data.staffId,
-    data.serviceId,
-    'internal',
-  );
-  if (!staff) {
-    throw new AppError(
-      400,
-      data.staffId
-        ? 'Selected staff member is not available for booking'
-        : 'No staff available for this service',
-    );
-  }
-  const staffId = staff.id;
-
-  // Same rules as the public path, bypassable only with an explicit
-  // override. The overlap check inside the transaction below is never skipped.
-  if (!data.override) {
-    const shop = await prisma.shop.findUniqueOrThrow({
-      where: { id: shopId },
-      select: { timezone: true, maxAdvanceDays: true },
+  return serializableTransaction(async (tx) => {
+    // Verify caller is a member of the shop
+    const membership = await tx.userShop.findUnique({
+      where: { userId_shopId: { userId, shopId } },
     });
-    await assertBookingRules({
+    if (!membership) throw new AppError(404, 'Shop not found');
+
+    const service = await tx.service.findFirst({
+      where: { id: data.serviceId, shopId },
+    });
+    if (!service) throw new AppError(404, 'Service not found');
+
+    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+
+    const staff = await resolveBookableStaff(
+      tx,
       shopId,
-      timezone: shop.timezone,
-      maxAdvanceDays: shop.maxAdvanceDays,
-      scheduleStaffId: data.staffId ? staffId : null,
+      data.staffId,
+      data.serviceId,
+      'internal',
+    );
+    if (!staff) throw staffUnavailable(data.staffId);
+
+    // Same rules as the public path, bypassable only with an explicit
+    // override. The overlap check in claimSlotAndCreate is never skipped.
+    if (!data.override) {
+      const shop = await tx.shop.findUniqueOrThrow({
+        where: { id: shopId },
+        select: { timezone: true, maxAdvanceDays: true },
+      });
+      await assertBookingRules({
+        db: tx,
+        shopId,
+        timezone: shop.timezone,
+        maxAdvanceDays: shop.maxAdvanceDays,
+        scheduleStaffId: data.staffId ? staff.id : null,
+        startTime,
+        endTime,
+      });
+    }
+
+    return claimSlotAndCreate(tx, {
+      shopId,
+      serviceId: data.serviceId,
+      staffId: staff.id,
       startTime,
       endTime,
+      customer: { name: data.name, phone: data.phone, email: data.email },
+      notes: data.notes,
+      cancelToken,
     });
-  }
-
-  return await withSerializableRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        const conflict = await tx.booking.findFirst({
-          where: {
-            staffId,
-            status: { notIn: SLOT_FREEING_STATUSES },
-            startTime: { lt: endTime },
-            endTime: { gt: startTime },
-          },
-        });
-
-        if (conflict)
-          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
-
-        const customer = await tx.customer.upsert({
-          where: { shopId_phone: { shopId, phone: data.phone } },
-          update: { name: data.name, email: data.email ?? undefined },
-          create: {
-            shopId,
-            name: data.name,
-            phone: data.phone,
-            email: data.email,
-          },
-        });
-
-        return tx.booking.create({
-          data: {
-            shopId,
-            customerId: customer.id,
-            serviceId: data.serviceId,
-            staffId,
-            startTime,
-            endTime,
-            notes: data.notes,
-            cancelToken,
-          },
-          include: {
-            customer: true,
-            service: true,
-            shop: true,
-            staff: { select: { id: true, name: true, email: true } },
-          },
-        });
-      },
-      { isolationLevel: 'Serializable' },
-    ),
-  );
+  });
 };
 
 // The shop's IANA timezone — every wall-clock <-> UTC conversion uses it.
@@ -332,11 +338,17 @@ export const getAvailableSlots = async (
   // staffId that was actually passed in, with no such fallback: a staff
   // member with no schedule of their own is "closed", not silently given
   // the shop-wide hours.
-  const staff = await resolveBookableStaff(shopId, staffId, serviceId, context);
+  const staff = await resolveBookableStaff(
+    prisma,
+    shopId,
+    staffId,
+    serviceId,
+    context,
+  );
   if (!staff) return { status: 'closed' };
   const resolvedStaffId = staff.id;
 
-  const hours = await loadDayHours(shopId, staffId, date);
+  const hours = await loadDayHours(prisma, shopId, staffId, date);
   if (!hours) return { status: 'closed' };
 
   // 2. Get service duration
@@ -468,19 +480,28 @@ export const getBookingStats = async (
   };
 };
 
+// Raw booking (with customer + service), scoped to the shop. Takes the client so
+// it can run inside a transaction.
+const loadBooking = async (
+  db: Prisma.TransactionClient,
+  shopId: string,
+  bookingId: string,
+) => {
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    include: { customer: true, service: true },
+  });
+  if (!booking || booking.shopId !== shopId)
+    throw new AppError(404, 'Booking not found');
+  return booking;
+};
+
 export const getBooking = async (
   shopId: string,
   bookingId: string,
   canViewCustomer = true,
 ) => {
-  const booking = await prisma.booking.findUnique({
-    where: { id: bookingId },
-    include: { customer: true, service: true },
-  });
-
-  if (!booking || booking.shopId !== shopId)
-    throw new AppError(404, 'Booking not found');
-
+  const booking = await loadBooking(prisma, shopId, bookingId);
   return {
     ...booking,
     customer: redactCustomer(booking.customer, canViewCustomer),
@@ -499,40 +520,97 @@ export const updateBooking = async (
     override?: boolean;
   },
   canViewCustomer = true,
-) => {
-  const existing = await getBooking(shopId, bookingId); // throws 404 if not found
+) =>
+  // Everything is read inside the (retried) transaction — see the note on the
+  // create functions.
+  serializableTransaction(async (tx) => {
+    const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
-  // Any service/staff being referenced must belong to this shop.
-  let newService: { duration: number } | null = null;
-  if (data.serviceId) {
-    newService = await prisma.service.findFirst({
-      where: { id: data.serviceId, shopId },
+    // Any service/staff being referenced must belong to this shop.
+    let newService: { duration: number } | null = null;
+    if (data.serviceId) {
+      newService = await tx.service.findFirst({
+        where: { id: data.serviceId, shopId },
+      });
+      if (!newService) throw new AppError(404, 'Service not found');
+    }
+    if (data.staffId) {
+      const newStaff = await tx.userShop.findFirst({
+        where: { id: data.staffId, shopId },
+      });
+      if (!newStaff) throw new AppError(404, 'Staff member not found');
+    }
+
+    const serviceChanged =
+      !!data.serviceId && data.serviceId !== existing.serviceId;
+    const staffChanged =
+      data.staffId !== undefined && data.staffId !== existing.staffId;
+    // Anything that moves the booking in time — a new start, a new staff
+    // member, or a new service (which changes how long it runs) — is a
+    // scheduling change: end time is recomputed and the overlap check re-runs.
+    // Notes-only edits skip all of that.
+    const schedulingChanged =
+      !!data.startTime || serviceChanged || staffChanged;
+
+    if (!schedulingChanged) {
+      const updated = await tx.booking.update({
+        where: { id: bookingId },
+        data: {
+          ...(data.notes !== undefined && { notes: data.notes }),
+          ...(data.serviceId && { serviceId: data.serviceId }),
+        },
+        include: { customer: true, service: true },
+      });
+      return {
+        ...updated,
+        customer: redactCustomer(updated.customer, canViewCustomer),
+      };
+    }
+
+    const finalStaffId = data.staffId ?? existing.staffId;
+    const finalStartTime = data.startTime
+      ? new Date(data.startTime)
+      : existing.startTime;
+    const duration = newService?.duration ?? existing.service.duration;
+    const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
+
+    // Same rules as creation (bypassable by an override); overlap never is.
+    if (!data.override) {
+      const shop = await tx.shop.findUniqueOrThrow({
+        where: { id: shopId },
+        select: { timezone: true, maxAdvanceDays: true },
+      });
+      await assertBookingRules({
+        db: tx,
+        shopId,
+        timezone: shop.timezone,
+        maxAdvanceDays: shop.maxAdvanceDays,
+        scheduleStaffId: finalStaffId,
+        startTime: finalStartTime,
+        endTime: finalEndTime,
+      });
+    }
+
+    // Same overlap check as creation, excluding this booking itself.
+    const conflict = await tx.booking.findFirst({
+      where: overlapWhere(
+        finalStaffId,
+        finalStartTime,
+        finalEndTime,
+        bookingId,
+      ),
     });
-    if (!newService) throw new AppError(404, 'Service not found');
-  }
-  if (data.staffId) {
-    const newStaff = await prisma.userShop.findFirst({
-      where: { id: data.staffId, shopId },
-    });
-    if (!newStaff) throw new AppError(404, 'Staff member not found');
-  }
+    if (conflict)
+      throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  const serviceChanged =
-    !!data.serviceId && data.serviceId !== existing.serviceId;
-  const staffChanged =
-    data.staffId !== undefined && data.staffId !== existing.staffId;
-  // Anything that moves the booking in time — a new start, a new staff
-  // member, or a new service (which changes how long it runs) — is a
-  // scheduling change: end time is recomputed and the overlap check re-runs
-  // inside the serializable transaction. Notes-only edits skip all of that.
-  const schedulingChanged = !!data.startTime || serviceChanged || staffChanged;
-
-  if (!schedulingChanged) {
-    const updated = await prisma.booking.update({
+    const updated = await tx.booking.update({
       where: { id: bookingId },
       data: {
-        ...(data.notes !== undefined && { notes: data.notes }),
+        startTime: finalStartTime,
+        endTime: finalEndTime,
+        staffId: finalStaffId,
         ...(data.serviceId && { serviceId: data.serviceId }),
+        ...(data.notes !== undefined && { notes: data.notes }),
       },
       include: { customer: true, service: true },
     });
@@ -540,70 +618,7 @@ export const updateBooking = async (
       ...updated,
       customer: redactCustomer(updated.customer, canViewCustomer),
     };
-  }
-
-  const finalStaffId = data.staffId ?? existing.staffId;
-  const finalStartTime = data.startTime
-    ? new Date(data.startTime)
-    : existing.startTime;
-  const duration = newService?.duration ?? existing.service.duration;
-  const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
-
-  const updateData = {
-    startTime: finalStartTime,
-    endTime: finalEndTime,
-    staffId: finalStaffId,
-    ...(data.serviceId && { serviceId: data.serviceId }),
-    ...(data.notes !== undefined && { notes: data.notes }),
-  };
-
-  // Same rules as creation (bypassable by an override); overlap never is.
-  if (!data.override) {
-    const shop = await prisma.shop.findUniqueOrThrow({
-      where: { id: shopId },
-      select: { timezone: true, maxAdvanceDays: true },
-    });
-    await assertBookingRules({
-      shopId,
-      timezone: shop.timezone,
-      maxAdvanceDays: shop.maxAdvanceDays,
-      scheduleStaffId: finalStaffId,
-      startTime: finalStartTime,
-      endTime: finalEndTime,
-    });
-  }
-
-  return await withSerializableRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        // Same overlap check as createBooking, excluding this booking itself.
-        const conflict = await tx.booking.findFirst({
-          where: {
-            id: { not: bookingId },
-            staffId: finalStaffId,
-            status: { notIn: SLOT_FREEING_STATUSES },
-            startTime: { lt: finalEndTime },
-            endTime: { gt: finalStartTime },
-          },
-        });
-
-        if (conflict)
-          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
-
-        const updated = await tx.booking.update({
-          where: { id: bookingId },
-          data: updateData,
-          include: { customer: true, service: true },
-        });
-        return {
-          ...updated,
-          customer: redactCustomer(updated.customer, canViewCustomer),
-        };
-      },
-      { isolationLevel: 'Serializable' },
-    ),
-  );
-};
+  });
 
 export const deleteBooking = async (
   userId: string,
@@ -623,56 +638,36 @@ export const updateBookingStatus = async (
   bookingId: string,
   status: BookingStatus,
   canViewCustomer = true,
-) => {
-  const existing = await getBooking(shopId, bookingId); // throws 404 if not found
+) =>
+  serializableTransaction(async (tx) => {
+    const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
-  const include = { customer: true, service: true } as const;
-  // Moving a booking from a slot-freeing status (CANCELED/NO_SHOW) back to one
-  // that holds the provider's time re-occupies that slot. Someone else may
-  // have booked it meanwhile, so the overlap check must run again — inside a
-  // serializable transaction, like every other write that takes a slot.
-  const reoccupies = freesSlot(existing.status) && !freesSlot(status);
-  if (!reoccupies) {
-    const updated = await prisma.booking.update({
+    // Moving a booking from a slot-freeing status (CANCELED/NO_SHOW) back to
+    // one that holds the provider's time re-occupies that slot. Someone else
+    // may have booked it meanwhile, so the overlap check runs again.
+    if (freesSlot(existing.status) && !freesSlot(status)) {
+      const conflict = await tx.booking.findFirst({
+        where: overlapWhere(
+          existing.staffId,
+          existing.startTime,
+          existing.endTime,
+          bookingId,
+        ),
+      });
+      if (conflict)
+        throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
+    }
+
+    const updated = await tx.booking.update({
       where: { id: bookingId },
       data: { status },
-      include,
+      include: { customer: true, service: true },
     });
     return {
       ...updated,
       customer: redactCustomer(updated.customer, canViewCustomer),
     };
-  }
-
-  return await withSerializableRetry(() =>
-    prisma.$transaction(
-      async (tx) => {
-        const conflict = await tx.booking.findFirst({
-          where: {
-            id: { not: bookingId },
-            staffId: existing.staffId,
-            status: { notIn: SLOT_FREEING_STATUSES },
-            startTime: { lt: existing.endTime },
-            endTime: { gt: existing.startTime },
-          },
-        });
-        if (conflict)
-          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
-
-        const updated = await tx.booking.update({
-          where: { id: bookingId },
-          data: { status },
-          include,
-        });
-        return {
-          ...updated,
-          customer: redactCustomer(updated.customer, canViewCustomer),
-        };
-      },
-      { isolationLevel: 'Serializable' },
-    ),
-  );
-};
+  });
 
 export const cancelBookingByToken = async (token: string) => {
   const booking = await prisma.booking.findUnique({
