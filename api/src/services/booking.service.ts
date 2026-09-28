@@ -81,8 +81,8 @@ export const createBooking = async (
   const shop = await prisma.shop.findUnique({ where: { slug } });
   if (!shop) throw new AppError(404, 'Shop not found');
 
-  const service = await prisma.service.findUnique({
-    where: { id: data.serviceId },
+  const service = await prisma.service.findFirst({
+    where: { id: data.serviceId, shopId: shop.id },
   });
   if (!service) throw new AppError(404, 'Service not found');
 
@@ -182,8 +182,8 @@ export const createBookingForShop = async (
   });
   if (!membership) throw new AppError(404, 'Shop not found');
 
-  const service = await prisma.service.findUnique({
-    where: { id: data.serviceId },
+  const service = await prisma.service.findFirst({
+    where: { id: data.serviceId, shopId },
   });
   if (!service) throw new AppError(404, 'Service not found');
 
@@ -318,7 +318,9 @@ export const getAvailableSlots = async (
   if (!day || !day.isOpen) return { status: 'closed' };
 
   // 2. Get service duration
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  const service = await prisma.service.findFirst({
+    where: { id: serviceId, shopId },
+  });
   if (!service) return { status: 'closed' };
 
   // 3. Get existing bookings for that day + staff — excluding statuses that
@@ -486,19 +488,27 @@ export const updateBooking = async (
 ) => {
   const existing = await getBooking(shopId, bookingId); // throws 404 if not found
 
+  // Any service/staff being referenced must belong to this shop.
+  let newService: { duration: number } | null = null;
+  if (data.serviceId) {
+    newService = await prisma.service.findFirst({
+      where: { id: data.serviceId, shopId },
+    });
+    if (!newService) throw new AppError(404, 'Service not found');
+  }
+  if (data.staffId) {
+    const newStaff = await prisma.userShop.findFirst({
+      where: { id: data.staffId, shopId },
+    });
+    if (!newStaff) throw new AppError(404, 'Staff member not found');
+  }
+
   let startTime: Date | undefined;
   let endTime: Date | undefined;
 
   if (data.startTime) {
     startTime = new Date(data.startTime);
-    let duration = existing.service.duration;
-    if (data.serviceId && data.serviceId !== existing.serviceId) {
-      const newService = await prisma.service.findUnique({
-        where: { id: data.serviceId },
-      });
-      if (!newService) throw new AppError(404, 'Service not found');
-      duration = newService.duration;
-    }
+    const duration = newService?.duration ?? existing.service.duration;
     endTime = new Date(startTime.getTime() + duration * 60 * 1000);
   }
 
