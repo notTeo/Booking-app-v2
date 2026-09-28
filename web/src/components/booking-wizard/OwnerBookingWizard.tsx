@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  acceptableRuleCodes,
   createOwnerBooking,
   getApiError,
   isBookingRuleViolation,
@@ -39,10 +40,11 @@ export default function OwnerBookingWizard({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   // Set when the server rejected the booking for a rule violation (422). The
-  // form values are kept so "book anyway" can resend them with override.
+  // form values are kept so "book anyway" can resend them, accepting exactly
+  // the violations the server listed.
   const [pendingOverride, setPendingOverride] = useState<{
     values: OwnerCustomerFormValues;
-    code: BookingRuleCode;
+    codes: BookingRuleCode[];
   } | null>(null);
 
   if (wizard.loading) {
@@ -54,7 +56,10 @@ export default function OwnerBookingWizard({
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
 
-  async function handleSubmit(values: OwnerCustomerFormValues, override = false) {
+  async function handleSubmit(
+    values: OwnerCustomerFormValues,
+    acceptedRules?: BookingRuleCode[],
+  ) {
     if (!wizard.selectedServiceId) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -67,15 +72,21 @@ export default function OwnerBookingWizard({
         staffId: wizard.selectedMemberId ?? undefined,
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: values.notes,
-        ...(override && { override: true }),
+        ...(acceptedRules && { overrideRules: acceptedRules }),
       });
       setPendingOverride(null);
       onDone(booking);
     } catch (err: unknown) {
       const info = getApiError(err);
-      if (isBookingRuleViolation(info)) {
+      const acceptable = acceptableRuleCodes(info);
+      if (acceptable) {
         // Ask before breaking a rule; overlap (409) is never offered an override.
-        setPendingOverride({ values, code: info.code });
+        setPendingOverride({ values, codes: acceptable });
+      } else if (isBookingRuleViolation(info)) {
+        // A rule that can never be overridden (the booking window): say so,
+        // don't offer "book anyway".
+        setPendingOverride(null);
+        setSubmitError(t.public.ruleErrors[info.code] ?? info.message ?? t.bookings.createError);
       } else if (info.code === 'SLOT_TAKEN') {
         setPendingOverride(null);
         setSubmitError(t.bookings.override.SLOT_TAKEN);
@@ -150,11 +161,11 @@ export default function OwnerBookingWizard({
       {pendingOverride && (
         <ConfirmDialog
           title={t.bookings.override.title}
-          message={t.bookings.override[pendingOverride.code]}
+          message={pendingOverride.codes.map((c) => t.bookings.override[c]).join(' ')}
           confirmLabel={t.bookings.override.confirm}
           cancelLabel={t.bookings.override.cancel}
           busy={submitting}
-          onConfirm={() => handleSubmit(pendingOverride.values, true)}
+          onConfirm={() => handleSubmit(pendingOverride.values, pendingOverride.codes)}
           onCancel={() => setPendingOverride(null)}
         />
       )}

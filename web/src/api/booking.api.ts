@@ -84,9 +84,11 @@ export interface OwnerCreateBookingPayload {
   staffId?: string;
   startTime: string; // ISO 8601
   notes?: string;
-  /** Bypass the booking rules (never the overlap check). Sent only after the
-   * user confirmed a rule violation the server reported with a 422 `code`. */
-  override?: boolean;
+  /** Rule violations the user explicitly accepted, by code (never the overlap
+   * check). Sent only after the user confirmed the violations the server listed
+   * in a 422. The server ignores nothing: any violation not listed here is
+   * rejected again. */
+  overrideRules?: BookingRuleCode[];
 }
 
 export const createOwnerBooking = (shopId: string, payload: OwnerCreateBookingPayload) =>
@@ -102,20 +104,53 @@ export const BOOKING_RULE_CODES = [
 ] as const;
 export type BookingRuleCode = (typeof BOOKING_RULE_CODES)[number];
 
+export interface RuleViolation {
+  code: string;
+  message: string;
+  overridable: boolean;
+}
+
 export interface ApiErrorInfo {
   status?: number;
   code?: string;
   message?: string;
+  /** Every booking rule the request broke (422), not just the first. */
+  violations?: RuleViolation[];
 }
 
 /** Pull status / machine code / message out of an axios error. */
 export const getApiError = (err: unknown): ApiErrorInfo => {
-  const r = (err as { response?: { status?: number; data?: { code?: string; message?: string } } })
-    ?.response;
-  return { status: r?.status, code: r?.data?.code, message: r?.data?.message };
+  const r = (
+    err as {
+      response?: {
+        status?: number;
+        data?: { code?: string; message?: string; violations?: RuleViolation[] };
+      };
+    }
+  )?.response;
+  return {
+    status: r?.status,
+    code: r?.data?.code,
+    message: r?.data?.message,
+    violations: r?.data?.violations,
+  };
 };
 
 export const isBookingRuleViolation = (
   e: ApiErrorInfo,
 ): e is ApiErrorInfo & { code: BookingRuleCode } =>
   e.status === 422 && (BOOKING_RULE_CODES as readonly string[]).includes(e.code ?? '');
+
+/**
+ * The rule codes the "book anyway" dialog may resend as `overrideRules`, or
+ * null when the dialog must NOT be offered: not a 422 rule violation, or at
+ * least one violation can never be overridden (the advance window).
+ */
+export const acceptableRuleCodes = (e: ApiErrorInfo): BookingRuleCode[] | null => {
+  if (!isBookingRuleViolation(e)) return null;
+  if (e.violations && e.violations.length > 0) {
+    if (e.violations.some((v) => !v.overridable)) return null;
+    return e.violations.map((v) => v.code as BookingRuleCode);
+  }
+  return e.code === 'BOOKING_BEYOND_ADVANCE_WINDOW' ? null : [e.code];
+};
