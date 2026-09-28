@@ -15,6 +15,15 @@ truth if work continues in a new session. Branch: `prod-readiness`.
    before the first opening** and **4 h after the last closing** for that
    provider/day. Anything beyond that goes through "Other time…" (5-minute
    step). Breaks between opening ranges are shown in full.
+   **Closed day / provider's day off (no ranges at all):** there is no "first
+   opening" or "last closing" to cap against, so the out-of-hours grid uses
+   the shop's **most recent regular hours for that weekday** if any exist,
+   otherwise **08:00–22:00**, with the same 15-minute step. "Other time…" is
+   still available for anything outside that window.
+   ("Most recent regular hours for that weekday" = the latest-starting schedule
+   that has an open range on that weekday, whether or not it is active on the
+   requested date; for a provider's day off this means the shop-wide hours, not
+   the provider's own.)
 5. **Postgres exclusion constraint** is a separate commit, done only after
    (a) verifying `btree_gist` works on a real Railway Postgres (throwaway DB,
    steps provided to the owner) and (b) confirming `prisma migrate diff`
@@ -123,6 +132,8 @@ Chosen options: **A3 / B3 / C1 / D2 / E2** (rationale in section 4).
   no grid (e.g. a walk-in logged at 21:10).
 - Grid: 15-min, midnight-anchored, capped 3 h before first opening / 4 h after
   last closing for that provider/day (decision 4); breaks shown in full.
+  On a closed day or a provider's day off the grid covers the shop's most
+  recent regular hours for that weekday, else 08:00–22:00 (decision 4).
   In-hours slots keep the current opening-anchored 30-min grid.
 - Visual: dashed border + moon icon (☾) per out-of-hours slot; text section
   headings ("Before opening", "Break", "After closing"); aria-label like
@@ -131,7 +142,8 @@ Chosen options: **A3 / B3 / C1 / D2 / E2** (rationale in section 4).
 - API: new authenticated `GET /api/shops/:shopId/bookings/slots?...&includeOutsideHours=true`
   returning `{time, available, outsideHours, reason?}`. The public endpoint is
   untouched and loses the `internal` flag.
-- Closed day: show the "closed" note but still offer the toggle.
+- Closed day: show the "closed" note but still offer the toggle; the grid
+  behind it follows the closed-day rule in decision 4.
 
 ### B3 — confirming the override
 - The last step shows a non-modal "This booking is outside working hours"
@@ -272,7 +284,9 @@ CALENDAR — PHONE (one provider per page, swipe or tap chips)
 4. Owner slots endpoint: `includeOutsideHours` full-day flags (before opening,
    break, after closing, closed day, past, booked) with the 3 h / 4 h caps;
    authenticated; `bookableInternally` respected; DST days 2027-03-28 and
-   2027-10-31 with no duplicates/nonexistent slots.
+   2027-10-31 with no duplicates/nonexistent slots; closed day / day off falls
+   back to the shop's most recent regular hours for that weekday, else
+   08:00–22:00, at 15-min steps.
 5. Rule 4: the public endpoint never returns out-of-hours slots; the
    `internal` flag on the public route is ignored (unauthenticated
    `internal=true` gets public-only results); a public booking with override
