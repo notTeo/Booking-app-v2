@@ -59,6 +59,11 @@ export const ownerSlotsValidation = [
     .withMessage('date must be a valid calendar date'),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
   query('staffId').optional({ values: 'falsy' }).isString(),
+  query('includeOutsideHours')
+    .optional()
+    .isBoolean()
+    .withMessage('includeOutsideHours must be true or false')
+    .toBoolean(),
 ];
 
 export const ownerCreateBookingValidation = [

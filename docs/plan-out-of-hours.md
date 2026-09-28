@@ -45,6 +45,28 @@ truth if work continues in a new session. Branch: `prod-readiness`.
      lies beyond the shop's window is refused until `maxAdvanceDays` is raised
      (before, a blanket override bypassed it).
 
+7. **Owner slots endpoint (commit 4), as built:**
+   `GET /api/shops/:shopId/bookings/slots?...&includeOutsideHours=true`
+   (authenticated, any member; the public route never reads the flag).
+   Slots are `{time, available, outsideHours, past, reason?}`; `available` only
+   means "not overlapping an active booking", `reason` is `BEFORE_OPENING`,
+   `BREAK`, `AFTER_CLOSING` or `CLOSED_DAY`. Without the flag the response is
+   unchanged. Interpretations of decision 4:
+   - In-hours slots keep the 30-minute opening-anchored grid. A 15-minute time
+     whose whole booking fits inside one opening range but is off that grid is
+     NOT listed (it would be `OFF_SLOT_GRID`; reachable via "Other time…"). A
+     start inside a range that would run past that range's closing IS listed
+     (`BREAK`, or `AFTER_CLOSING` in the last range).
+   - Caps are on start times, both ends inclusive, clamped to the calendar day:
+     first opening − 3 h to last closing + 4 h.
+   - Closed day / day off: response is `{status:'closed', slots:[…]}` (the UI
+     keeps its "closed" note and can still offer the grid). The grid is exactly
+     the fallback hours (first open to last close, no padding), every slot
+     `CLOSED_DAY`. Fallback = the latest-starting **active shop-wide** schedule
+     with an open range that weekday, ignoring its date validity; else
+     08:00–22:00.
+   - Unbookable provider / wrong-shop service with the flag: `{status:'closed', slots:[]}`.
+
 ### Approved order (bugs before features)
 
 0. Commit the Playwright scaffold; mark the obsolete override-dialog E2E

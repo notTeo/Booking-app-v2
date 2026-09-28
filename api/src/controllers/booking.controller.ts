@@ -62,6 +62,10 @@ export const getAvailableSlots = async (
       staffId,
       serviceId,
       'internal',
+      {
+        includeOutsideHours:
+          String(req.query['includeOutsideHours']) === 'true',
+      },
     );
     successResponse(res, slots);
   } catch (err) {

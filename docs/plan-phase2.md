@@ -1,9 +1,12 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** out-of-hours commit **4** — authenticated owner slots endpoint
-with out-of-hours flags (15-min midnight-anchored grid, 3 h / 4 h caps, breaks in
-full) — then commits 6 and 7, then the rest of Phase A. Commits 1 and 2 and the
-web dialog fix are done and pushed; this was the checkpoint before UI work.
+**Next step:** out-of-hours commit **6** — web form: "show times outside working
+hours" toggle, sections, "Other time…", inline confirmation, translations (uses
+the commit-4 endpoint and the commit-2 `overrideRules` contract). Then commit 7
+(calendar; note its per-provider shading needs the commit-5 day-schedule
+endpoint, which is in Phase B — decide then whether to pull it forward).
+Commits 1, 2, 4 and the web dialog fix are done; 1, 2 and the dialog fix are
+pushed.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -391,6 +394,12 @@ npm run e2e                                                     # from repo root
 ```
 
 ## LATER (triaged, not launch-critical)
+
+- **Slots for a date beyond `maxAdvanceDays`**: neither the public nor the owner
+  slots endpoint knows about the advance window, so the UI lists slots that the
+  booking call will then refuse (422 `BOOKING_BEYOND_ADVANCE_WINDOW`, never
+  overridable). Harmless (clean error), but the wizard should grey the date out
+  or say so; handle in the web form work (commit 6) if cheap.
 
 - **A fourth intermittent failure**: `concurrency.test.ts` "non-conflicting
   bookings for different providers/slots all succeed" failed once (UTC, full

@@ -8,8 +8,17 @@ import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
 import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
-import { buildSlotCandidates } from '../utils/slots';
-import { assertBookingRules, loadDayHours } from './bookingRules.service';
+import {
+  buildOutsideHoursCandidates,
+  buildSlotCandidates,
+  DEFAULT_CLOSED_DAY_HOURS,
+  type OutsideReason,
+} from '../utils/slots';
+import {
+  assertBookingRules,
+  loadDayHours,
+  loadShopRegularHours,
+} from './bookingRules.service';
 import { serializableTransaction } from '../utils/serializable';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
@@ -347,9 +356,18 @@ export interface SlotInfo {
   available: boolean;
 }
 
+// Owner/staff view with includeOutsideHours: every slot says whether it is
+// outside working hours (and why) and whether it is already in the past.
+// `available` still only means "not overlapping an active booking".
+export interface OwnerSlotInfo extends SlotInfo {
+  outsideHours: boolean;
+  past: boolean;
+  reason?: OutsideReason;
+}
+
 export type SlotsResult =
-  | { status: 'closed' }
-  | { status: 'ok'; slots: SlotInfo[] };
+  | { status: 'closed'; slots?: OwnerSlotInfo[] }
+  | { status: 'ok'; slots: SlotInfo[] | OwnerSlotInfo[] };
 
 export const getAvailableSlots = async (
   shopId: string,
@@ -357,7 +375,11 @@ export const getAvailableSlots = async (
   staffId: string | null,
   serviceId: string,
   context: BookingContext = 'public',
+  // Authenticated owner/staff view only: also list out-of-hours times. The
+  // public route never passes this.
+  options: { includeOutsideHours?: boolean } = {},
 ): Promise<SlotsResult> => {
+  const withOutside = options.includeOutsideHours === true;
   // 1. Get the day's working hours. `date` is a calendar date in the shop's
   // timezone; its weekday does not depend on any timezone.
   if (!DATE_ONLY_RE.test(date))
@@ -378,17 +400,19 @@ export const getAvailableSlots = async (
     serviceId,
     context,
   );
-  if (!staff) return { status: 'closed' };
+  if (!staff)
+    return withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
   const resolvedStaffId = staff.id;
 
   const hours = await loadDayHours(prisma, shopId, staffId, date);
-  if (!hours) return { status: 'closed' };
+  if (!hours && !withOutside) return { status: 'closed' };
 
   // 2. Get service duration
   const service = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
   });
-  if (!service) return { status: 'closed' };
+  if (!service)
+    return withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
 
   const zone = await getShopTimezone(shopId);
 
@@ -408,6 +432,46 @@ export const getAvailableSlots = async (
     select: { startTime: true, endTime: true },
   });
 
+  const isFree = (c: { start: Date; end: Date }) =>
+    !existingBookings.some((b) => b.startTime < c.end && b.endTime > c.start);
+
+  if (withOutside) {
+    // Owner/staff view: the usual in-hours grid plus the out-of-hours grid. On a
+    // closed day (or a provider's day off) there are no in-hours slots and the
+    // grid is sized from the shop's regular hours for that weekday.
+    const now = new Date();
+    const inHours = hours
+      ? buildSlotCandidates(date, zone, hours, service.duration)
+      : [];
+    const closedDayRanges = hours
+      ? []
+      : ((await loadShopRegularHours(prisma, shopId, date)) ?? [
+          DEFAULT_CLOSED_DAY_HOURS,
+        ]);
+    const outsideCandidates = buildOutsideHoursCandidates(
+      date,
+      zone,
+      hours ?? [],
+      closedDayRanges,
+      service.duration,
+    );
+    const all = [
+      ...inHours.map((c) => ({
+        ...c,
+        reason: undefined as OutsideReason | undefined,
+      })),
+      ...outsideCandidates,
+    ].sort((a, b) => a.start.getTime() - b.start.getTime());
+    const slots: OwnerSlotInfo[] = all.map((c) => ({
+      time: c.time,
+      available: isFree(c),
+      outsideHours: c.reason !== undefined,
+      past: c.start < now,
+      ...(c.reason && { reason: c.reason }),
+    }));
+    return hours ? { status: 'ok', slots } : { status: 'closed', slots };
+  }
+
   // 4. Every theoretical slot in the open window (wall-clock in the shop's
   // timezone), flagged with whether it's actually free — callers decide
   // whether to filter these down (public/customer view) or show booked ones
@@ -415,14 +479,9 @@ export const getAvailableSlots = async (
   const slots: SlotInfo[] = buildSlotCandidates(
     date,
     zone,
-    hours,
+    hours!,
     service.duration,
-  ).map((c) => ({
-    time: c.time,
-    available: !existingBookings.some(
-      (b) => b.startTime < c.end && b.endTime > c.start,
-    ),
-  }));
+  ).map((c) => ({ time: c.time, available: isFree(c) }));
 
   return { status: 'ok', slots };
 };

@@ -161,6 +161,33 @@ export const findBookingViolations = async (
  * never tagged with something it did not need). The public path passes no
  * `overrideRules`, so any violation blocks.
  */
+/**
+ * The shop's regular hours for a weekday, used to size the out-of-hours grid on
+ * a closed day or a provider's day off (there is no opening to measure from).
+ * The shop-wide schedule (never the provider's own) that starts latest and has
+ * an open range that weekday — regardless of whether it is active on the
+ * requested date — or null if none.
+ */
+export const loadShopRegularHours = async (
+  db: Prisma.TransactionClient | typeof import('../utils/prisma').prisma,
+  shopId: string,
+  date: string,
+): Promise<DayHours[] | null> => {
+  const day = weekdayOf(date);
+  const schedule = await db.shopWorkingSchedule.findFirst({
+    where: {
+      shopId,
+      staffId: null,
+      isActive: true,
+      days: { some: { day, isOpen: true, hours: { some: {} } } },
+    },
+    include: { days: { where: { day }, include: { hours: true } } },
+    orderBy: { startDate: 'desc' },
+  });
+  const hours = schedule?.days[0]?.hours;
+  return hours && hours.length > 0 ? hours : null;
+};
+
 export const assertBookingRules = async (
   params: RuleParams & { overrideRules?: readonly string[] },
 ): Promise<BookingRuleCode[]> => {
