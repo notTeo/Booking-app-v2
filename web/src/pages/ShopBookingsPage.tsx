@@ -1,5 +1,5 @@
 import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
@@ -71,18 +71,25 @@ export default function ShopBookingsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting]               = useState(false);
 
+  // Latest-request-wins: a slow response for a day the user has already left
+  // (or the duplicate effect run in StrictMode) must never replace the bookings
+  // of the day now on screen.
+  const requestSeq = useRef(0);
+
   const refetchBookings = () => {
     if (!shop) return;
+    const seq = ++requestSeq.current;
     setLoading(true);
     setError('');
     listBookings(shop.id, { date })
-      .then(setBookings)
-      .catch(() => setError(t.bookings.errorLoad))
-      .finally(() => setLoading(false));
+      .then((bkgs) => { if (seq === requestSeq.current) setBookings(bkgs); })
+      .catch(() => { if (seq === requestSeq.current) setError(t.bookings.errorLoad); })
+      .finally(() => { if (seq === requestSeq.current) setLoading(false); });
   };
 
   useEffect(() => {
     if (!shop) return;
+    const seq = ++requestSeq.current;
     setLoading(true);
     setError('');
     const membersPromise = members.length > 0
@@ -90,11 +97,12 @@ export default function ShopBookingsPage() {
       : getMembers(shop.id);
     Promise.all([listBookings(shop.id, { date }), membersPromise])
       .then(([bkgs, mems]) => {
+        if (seq !== requestSeq.current) return;
         setBookings(bkgs);
         if (members.length === 0) setMembers(mems);
       })
-      .catch(() => setError(t.bookings.errorLoad))
-      .finally(() => setLoading(false));
+      .catch(() => { if (seq === requestSeq.current) setError(t.bookings.errorLoad); })
+      .finally(() => { if (seq === requestSeq.current) setLoading(false); });
   }, [shop?.id, date]);
 
   // keep selected booking in sync after status updates
