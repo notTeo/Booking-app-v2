@@ -10,7 +10,11 @@ import {
   UpdateShopDto,
 } from '../services/shop.service';
 
-export const createShop = async (req: Request, res: Response, next: NextFunction) => {
+export const createShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const dto: CreateShopDto = req.body;
@@ -21,7 +25,11 @@ export const createShop = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getMyShops = async (req: Request, res: Response, next: NextFunction) => {
+export const getMyShops = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shops = await getMyShopsService(userId);
@@ -31,7 +39,11 @@ export const getMyShops = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getShop = async (req: Request, res: Response, next: NextFunction) => {
+export const getShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shop = await getShopById(userId, req.params.id as string);
@@ -41,7 +53,11 @@ export const getShop = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-export const updateShop = async (req: Request, res: Response, next: NextFunction) => {
+export const updateShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const dto: UpdateShopDto = req.body;
@@ -52,7 +68,11 @@ export const updateShop = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const deleteShop = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     await deleteShopService(userId, req.params.id as string);

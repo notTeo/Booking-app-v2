@@ -12,7 +12,11 @@ export const updateMemberRoleValidation = [
     .isIn(['owner', 'staff'])
     .withMessage('role must be either owner or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
-  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Invalid email').normalizeEmail(),
+  body('email')
+    .optional({ checkFalsy: true })
+    .isEmail()
+    .withMessage('Invalid email')
+    .normalizeEmail(),
   body('active').optional().isBoolean(),
   body('bookableByCustomers').optional().isBoolean(),
   body('bookableInternally').optional().isBoolean(),
@@ -29,8 +33,14 @@ export const createTeamMemberValidation = [
     }
     return true;
   }),
-  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Invalid email').normalizeEmail(),
-  body('role').isIn(['owner', 'staff']).withMessage('role must be either owner or staff'),
+  body('email')
+    .optional({ checkFalsy: true })
+    .isEmail()
+    .withMessage('Invalid email')
+    .normalizeEmail(),
+  body('role')
+    .isIn(['owner', 'staff'])
+    .withMessage('role must be either owner or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
   body('sendEmail').optional().isBoolean(),
 ];

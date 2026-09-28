@@ -4,9 +4,21 @@ import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { LoginDto, RegisterDto } from '../types/auth.types';
 import { logger } from '../utils/logger';
-import { generateRandomToken, getEmailTokenExpiry, getPasswordResetTokenExpiry, getRefreshTokenExpiry, signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import {
+  generateRandomToken,
+  getEmailTokenExpiry,
+  getPasswordResetTokenExpiry,
+  getRefreshTokenExpiry,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from '../utils/jwt';
 import { randomUUID } from 'crypto';
-import { sendEmailChangeVerification, sendPasswordResetEmail, sendVerificationEmail } from './email.service';
+import {
+  sendEmailChangeVerification,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from './email.service';
 
 export const registerUser = async ({ name, email, password }: RegisterDto) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -24,9 +36,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-
   const token = generateRandomToken();
-
 
   await prisma.pendingRegistration.create({
     data: {
@@ -38,7 +48,6 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
     },
   });
 
-
   await sendVerificationEmail(email, token, name);
 
   logger.info(`Pending registration created for: ${email}`);
@@ -48,7 +57,10 @@ export const registerUserWithInvite = async (
   { name, email, password }: RegisterDto,
   plainToken: string,
 ) => {
-  const tokenHash = crypto.createHash('sha256').update(plainToken).digest('hex');
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(plainToken)
+    .digest('hex');
 
   const invite = await prisma.shopInvite.findUnique({
     where: { tokenHash },
@@ -56,14 +68,19 @@ export const registerUserWithInvite = async (
   });
 
   if (!invite) throw new AppError(400, 'Invalid invite token');
-  if (invite.status !== 'pending') throw new AppError(400, 'Invite already used');
-  if (invite.expiresAt < new Date()) throw new AppError(400, 'Invite has expired');
+  if (invite.status !== 'pending')
+    throw new AppError(400, 'Invite already used');
+  if (invite.expiresAt < new Date())
+    throw new AppError(400, 'Invite has expired');
   if (invite.email.toLowerCase() !== email.toLowerCase())
     throw new AppError(400, 'Email does not match the invite');
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser)
-    throw new AppError(409, 'Email already in use — please log in and accept the invite');
+    throw new AppError(
+      409,
+      'Email already in use — please log in and accept the invite',
+    );
 
   const passwordHash = await bcrypt.hash(password, 12);
   const family = randomUUID();
@@ -71,12 +88,24 @@ export const registerUserWithInvite = async (
   const accessToken = signAccessToken('placeholder'); // replaced in transaction
   let finalAccessToken = accessToken;
   let finalRefreshToken = '';
-  let createdUser: { id: string; name: string; email: string; isVerified: boolean; createdAt: Date };
+  let createdUser: {
+    id: string;
+    name: string;
+    email: string;
+    isVerified: boolean;
+    createdAt: Date;
+  };
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: { name, email, passwordHash, isVerified: true },
-      select: { id: true, name:true, email: true, isVerified: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isVerified: true,
+        createdAt: true,
+      },
     });
 
     // Link the new login to the placeholder team member this invite grants
@@ -118,12 +147,12 @@ export const registerUserWithInvite = async (
 
 export const loginUser = async ({ email, password }: LoginDto) => {
   const user = await prisma.user.findUnique({
-    where: {email},
-  })
+    where: { email },
+  });
 
-  if(!user){
+  if (!user) {
     logger.warn(`Login attempt with existing email: ${email}`);
-    throw new AppError(401, 'Invalid credentials')
+    throw new AppError(401, 'Invalid credentials');
   }
 
   if (!user.passwordHash) {
@@ -133,9 +162,9 @@ export const loginUser = async ({ email, password }: LoginDto) => {
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
-  if(!isPasswordValid){
+  if (!isPasswordValid) {
     logger.warn(`Failed login attempt for: ${email}`);
-    throw new AppError(401, 'Invalid credentials')
+    throw new AppError(401, 'Invalid credentials');
   }
 
   const accessToken = signAccessToken(user.id);
@@ -181,7 +210,9 @@ export const refreshAccessToken = async (token: string) => {
   if (!stored) {
     // Valid JWT but token not in DB — it was already rotated: reuse attack detected.
     // Invalidate the entire token family to protect the account.
-    logger.warn(`Refresh token reuse detected for userId: ${payload.userId}. Invalidating all sessions.`);
+    logger.warn(
+      `Refresh token reuse detected for userId: ${payload.userId}. Invalidating all sessions.`,
+    );
     await prisma.refreshToken.deleteMany({
       where: { userId: payload.userId },
     });
@@ -211,7 +242,7 @@ export const refreshAccessToken = async (token: string) => {
   logger.info(`Access token refreshed for userId: ${payload.userId}`);
 
   return { accessToken, newRefreshToken };
-}
+};
 
 export const logoutUser = async (token: string) => {
   await prisma.refreshToken.deleteMany({
@@ -222,7 +253,6 @@ export const logoutUser = async (token: string) => {
 };
 
 export const verifyEmail = async (token: string) => {
-
   const pending = await prisma.pendingRegistration.findUnique({
     where: { token },
   });
@@ -246,7 +276,7 @@ export const verifyEmail = async (token: string) => {
     select: {
       id: true,
       email: true,
-      name:true,
+      name: true,
       isVerified: true,
       createdAt: true,
     },
@@ -291,30 +321,46 @@ export const getSessions = async (userId: string) => {
   return sessions;
 };
 
-export const revokeAllSessions = async (userId: string, currentToken: string) => {
+export const revokeAllSessions = async (
+  userId: string,
+  currentToken: string,
+) => {
   await prisma.refreshToken.deleteMany({
     where: { userId },
   });
   logger.info(`All sessions revoked for userId: ${userId}`);
 };
 
-type UpdatedUser = { id: string; name: string | null; email: string; isVerified: boolean; createdAt: Date };
+type UpdatedUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  isVerified: boolean;
+  createdAt: Date;
+};
 
 export const updateUser = async (
   userId: string,
   data: { email?: string; password?: string; name?: string },
-): Promise<{ user: UpdatedUser } | { message: string } | { user: UpdatedUser; message: string }> => {
+): Promise<
+  | { user: UpdatedUser }
+  | { message: string }
+  | { user: UpdatedUser; message: string }
+> => {
   // Name and password apply immediately, in one update; email goes through a
   // pending verification instead, so it's handled separately below.
   const immediateChanges: { name?: string; passwordHash?: string } = {};
   if (data.name) immediateChanges.name = data.name;
-  if (data.password) immediateChanges.passwordHash = await bcrypt.hash(data.password, 12);
+  if (data.password)
+    immediateChanges.passwordHash = await bcrypt.hash(data.password, 12);
   const hasImmediateChanges = Object.keys(immediateChanges).length > 0;
 
   let message: string | undefined;
 
   if (data.email) {
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
     if (existing && existing.id !== userId) {
       throw new AppError(409, 'Email already in use');
     }
@@ -323,7 +369,12 @@ export const updateUser = async (
     await prisma.pendingEmailChange.upsert({
       where: { userId },
       update: { newEmail: data.email, token, expiresAt: getEmailTokenExpiry() },
-      create: { userId, newEmail: data.email, token, expiresAt: getEmailTokenExpiry() },
+      create: {
+        userId,
+        newEmail: data.email,
+        token,
+        expiresAt: getEmailTokenExpiry(),
+      },
     });
 
     await sendEmailChangeVerification(data.email, token);
@@ -345,7 +396,13 @@ export const updateUser = async (
     if (message) return { message };
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isVerified: true,
+        createdAt: true,
+      },
     });
     return { user };
   }
@@ -353,14 +410,22 @@ export const updateUser = async (
   const user = await prisma.user.update({
     where: { id: userId },
     data: immediateChanges,
-    select: { id: true, name: true, email: true, isVerified: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+      createdAt: true,
+    },
   });
 
   return message ? { user, message } : { user };
 };
 
 export const verifyEmailChange = async (token: string) => {
-  const pending = await prisma.pendingEmailChange.findUnique({ where: { token } });
+  const pending = await prisma.pendingEmailChange.findUnique({
+    where: { token },
+  });
 
   if (!pending) {
     throw new AppError(400, 'Invalid verification token');
@@ -379,7 +444,9 @@ export const verifyEmailChange = async (token: string) => {
 
   await prisma.pendingEmailChange.delete({ where: { token } });
 
-  logger.info(`Email changed for userId: ${pending.userId} → ${pending.newEmail}`);
+  logger.info(
+    `Email changed for userId: ${pending.userId} → ${pending.newEmail}`,
+  );
   return user;
 };
 
@@ -402,11 +469,15 @@ export const deleteUser = async (userId: string, password?: string) => {
 };
 
 export const resendVerificationEmail = async (email: string) => {
-  const pending = await prisma.pendingRegistration.findUnique({ where: { email } });
+  const pending = await prisma.pendingRegistration.findUnique({
+    where: { email },
+  });
 
   if (!pending) {
     // Don't reveal whether the email exists or not
-    logger.warn(`Resend verification requested for unknown/verified email: ${email}`);
+    logger.warn(
+      `Resend verification requested for unknown/verified email: ${email}`,
+    );
     return;
   }
 
@@ -426,7 +497,6 @@ export const resendVerificationEmail = async (email: string) => {
 };
 
 export const resetPassword = async (token: string, newPassword: string) => {
-
   const resetToken = await prisma.passwordResetToken.findUnique({
     where: { token },
   });

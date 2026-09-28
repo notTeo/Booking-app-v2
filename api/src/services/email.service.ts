@@ -91,7 +91,8 @@ const buildCalendarUrl = (params: {
   details: string;
   location?: string | null;
 }) => {
-  const toUtcBasic = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const toUtcBasic = (d: Date) =>
+    d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const search = new URLSearchParams({
     action: 'TEMPLATE',
     text: params.title,
@@ -108,13 +109,18 @@ export const sendVerificationEmail = async (
   name?: string,
 ) => {
   const verificationUrl = `${env.clientUrl}/verify-email?token=${token}`;
-  const heading = name ? `Verify your email, ${escapeHtml(name)}.` : 'Verify your email.';
+  const heading = name
+    ? `Verify your email, ${escapeHtml(name)}.`
+    : 'Verify your email.';
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: email,
     subject: 'Verify your email',
-    html: baseTemplate('Verify your email', 'Verify', `
+    html: baseTemplate(
+      'Verify your email',
+      'Verify',
+      `
       <h1 style="${styles.h1}">${heading}</h1>
       <p style="${styles.p}">Confirm this email to activate your account and keep your access secure.</p>
       <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>. If you didn't create a Bookly account, you can ignore this email.</p>
@@ -123,7 +129,8 @@ export const sendVerificationEmail = async (
       </div>
       <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
       <p style="${styles.fallbackLink}">${verificationUrl}</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {
@@ -144,7 +151,10 @@ export const sendEmailChangeVerification = async (
     from: env.resend.emailFrom,
     to: newEmail,
     subject: 'Verify your new email address',
-    html: baseTemplate('Verify your new email address', 'Verify email change', `
+    html: baseTemplate(
+      'Verify your new email address',
+      'Verify email change',
+      `
       <h1 style="${styles.h1}">Verify your new email.</h1>
       <p style="${styles.p}">You requested to change your account's email address. Confirm this address to complete the change.</p>
       <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>.</p>
@@ -153,11 +163,15 @@ export const sendEmailChangeVerification = async (
       </div>
       <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
       <p style="${styles.fallbackLink}">${verifyUrl}</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {
-    logger.error(error, `Failed to send email change verification to ${newEmail}`);
+    logger.error(
+      error,
+      `Failed to send email change verification to ${newEmail}`,
+    );
     throw new Error('Failed to send email change verification');
   }
 
@@ -170,13 +184,18 @@ export const sendPasswordResetEmail = async (
   name?: string,
 ) => {
   const resetUrl = `${env.clientUrl}/reset-password?token=${token}`;
-  const heading = name ? `Reset your password, ${escapeHtml(name)}.` : 'Reset your password.';
+  const heading = name
+    ? `Reset your password, ${escapeHtml(name)}.`
+    : 'Reset your password.';
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: email,
     subject: 'Reset your password',
-    html: baseTemplate('Reset your password', 'Reset password', `
+    html: baseTemplate(
+      'Reset your password',
+      'Reset password',
+      `
       <h1 style="${styles.h1}">${heading}</h1>
       <p style="${styles.p}">We received a request to reset your password. Set a new one below.</p>
       <p style="${styles.note}">This link expires in <strong style="${styles.strong}">1 hour</strong>. If you didn't request this, you can ignore this email.</p>
@@ -185,7 +204,8 @@ export const sendPasswordResetEmail = async (
       </div>
       <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
       <p style="${styles.fallbackLink}">${resetUrl}</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {
@@ -241,7 +261,10 @@ export const sendBookingConfirmationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} is confirmed`,
-    html: baseTemplate(`Booking at ${params.shopName}`, 'Booked', `
+    html: baseTemplate(
+      `Booking at ${params.shopName}`,
+      'Booked',
+      `
       <h1 style="${styles.h1}">Booking confirmed, ${escapeHtml(params.customerName)}.</h1>
       <p style="${styles.p}">Your appointment is locked in. We'll see you soon.</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
@@ -257,11 +280,15 @@ export const sendBookingConfirmationEmail = async (params: {
       </div>
       <p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>
       <p style="${styles.note}">Need to cancel? ${inlineLink(cancelUrl, 'Cancel this booking')}.</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {
-    logger.error(error, `Failed to send booking confirmation email to ${params.email}`);
+    logger.error(
+      error,
+      `Failed to send booking confirmation email to ${params.email}`,
+    );
     throw new Error('Failed to send booking confirmation email');
   }
 
@@ -295,7 +322,10 @@ export const sendCancellationConfirmationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} has been cancelled`,
-    html: baseTemplate(`Booking Cancelled — ${params.shopName}`, 'Cancelled', `
+    html: baseTemplate(
+      `Booking Cancelled — ${params.shopName}`,
+      'Cancelled',
+      `
       <h1 style="${styles.h1}">Booking cancelled, ${escapeHtml(params.customerName)}.</h1>
       <p style="${styles.p}">Your appointment has been successfully cancelled.</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
@@ -305,7 +335,8 @@ export const sendCancellationConfirmationEmail = async (params: {
         ${detailRow('Location', escapeHtml(params.shopName))}
       </table>
       <p style="${styles.note}">If you'd like to book again, visit the shop's booking page.</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {
@@ -345,7 +376,10 @@ export const sendNewBookingNotificationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `New booking at ${params.shopName}`,
-    html: baseTemplate(`New Booking — ${params.shopName}`, 'New booking', `
+    html: baseTemplate(
+      `New Booking — ${params.shopName}`,
+      'New booking',
+      `
       <h1 style="${styles.h1}">New booking at ${escapeHtml(params.shopName)}.</h1>
       <p style="${styles.p}">A new appointment has just been made.</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
@@ -356,11 +390,15 @@ export const sendNewBookingNotificationEmail = async (params: {
         ${detailRow('Date', dateStr)}
         ${detailRow('Time', timeStr)}
       </table>
-    `),
+    `,
+    ),
   });
 
   if (error) {
-    logger.error(error, `Failed to send new booking notification to ${params.email}`);
+    logger.error(
+      error,
+      `Failed to send new booking notification to ${params.email}`,
+    );
     throw new Error('Failed to send new booking notification email');
   }
 
@@ -381,7 +419,10 @@ export const sendInviteEmail = async (
     from: env.resend.emailFrom,
     to,
     subject: `You've been invited to join ${shopName}`,
-    html: baseTemplate(`Invitation to ${shopName}`, 'Invite', `
+    html: baseTemplate(
+      `Invitation to ${shopName}`,
+      'Invite',
+      `
       <h1 style="${styles.h1}">You're invited to ${escapeHtml(shopName)}.</h1>
       <p style="${styles.p}"><strong style="${styles.strong}">${escapeHtml(inviterEmail)}</strong> has invited you to join as a <strong style="${styles.strong}">${escapeHtml(role)}</strong>.</p>
       <p style="${styles.note}">This link expires in <strong style="${styles.strong}">7 days</strong>.</p>
@@ -390,7 +431,8 @@ export const sendInviteEmail = async (
       </div>
       <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
       <p style="${styles.fallbackLink}">${inviteUrl}</p>
-    `),
+    `,
+    ),
   });
 
   if (error) {

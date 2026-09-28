@@ -28,7 +28,9 @@ export const getMe = async (
     }
 
     const { passwordHash, ...userWithoutHash } = user;
-    successResponse(res, { user: { ...userWithoutHash, hasPassword: !!passwordHash } });
+    successResponse(res, {
+      user: { ...userWithoutHash, hasPassword: !!passwordHash },
+    });
   } catch (err) {
     next(err);
   }
@@ -41,7 +43,11 @@ export const updateMe = async (
 ) => {
   try {
     const { email, password, name } = req.body;
-    const result = await updateUser(req.user!.userId!, { email, password, name });
+    const result = await updateUser(req.user!.userId!, {
+      email,
+      password,
+      name,
+    });
     successResponse(res, result);
   } catch (err) {
     next(err);

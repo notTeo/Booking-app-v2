@@ -30,13 +30,18 @@ const getMembership = async (userId: string, shopId: string) => {
 
 const requireOwner = async (userId: string, shopId: string) => {
   const membership = await getMembership(userId, shopId);
-  if (membership.role !== 'owner') throw new AppError(403, 'Only the shop owner can perform this action');
+  if (membership.role !== 'owner')
+    throw new AppError(403, 'Only the shop owner can perform this action');
   return membership;
 };
 
 // ── service CRUD ──────────────────────────────────────────
 
-export const createService = async (userId: string, shopId: string, dto: CreateServiceDto) => {
+export const createService = async (
+  userId: string,
+  shopId: string,
+  dto: CreateServiceDto,
+) => {
   await requireOwner(userId, shopId);
 
   const service = await prisma.service.create({
@@ -56,7 +61,11 @@ export const getServices = async (userId: string, shopId: string) => {
   });
 };
 
-export const getServiceById = async (userId: string, shopId: string, serviceId: string) => {
+export const getServiceById = async (
+  userId: string,
+  shopId: string,
+  serviceId: string,
+) => {
   await getMembership(userId, shopId);
 
   const service = await prisma.service.findFirst({
@@ -76,10 +85,17 @@ export const getServiceById = async (userId: string, shopId: string, serviceId: 
   return service;
 };
 
-export const updateService = async (userId: string, shopId: string, serviceId: string, dto: UpdateServiceDto) => {
+export const updateService = async (
+  userId: string,
+  shopId: string,
+  serviceId: string,
+  dto: UpdateServiceDto,
+) => {
   await requireOwner(userId, shopId);
 
-  const existing = await prisma.service.findFirst({ where: { id: serviceId, shopId } });
+  const existing = await prisma.service.findFirst({
+    where: { id: serviceId, shopId },
+  });
   if (!existing) throw new AppError(404, 'Service not found');
 
   const updated = await prisma.service.update({
@@ -91,10 +107,16 @@ export const updateService = async (userId: string, shopId: string, serviceId: s
   return updated;
 };
 
-export const deleteService = async (userId: string, shopId: string, serviceId: string) => {
+export const deleteService = async (
+  userId: string,
+  shopId: string,
+  serviceId: string,
+) => {
   await requireOwner(userId, shopId);
 
-  const existing = await prisma.service.findFirst({ where: { id: serviceId, shopId } });
+  const existing = await prisma.service.findFirst({
+    where: { id: serviceId, shopId },
+  });
   if (!existing) throw new AppError(404, 'Service not found');
 
   await prisma.service.delete({ where: { id: serviceId } });
@@ -103,16 +125,26 @@ export const deleteService = async (userId: string, shopId: string, serviceId: s
 
 // ── staff assignment ──────────────────────────────────────
 
-export const assignStaffToService = async (userId: string, shopId: string, serviceId: string, userShopId: string) => {
+export const assignStaffToService = async (
+  userId: string,
+  shopId: string,
+  serviceId: string,
+  userShopId: string,
+) => {
   await requireOwner(userId, shopId);
 
   // verify service belongs to this shop
-  const service = await prisma.service.findFirst({ where: { id: serviceId, shopId } });
+  const service = await prisma.service.findFirst({
+    where: { id: serviceId, shopId },
+  });
   if (!service) throw new AppError(404, 'Service not found');
 
   // verify the userShopId being assigned actually belongs to this shop
-  const targetMembership = await prisma.userShop.findFirst({ where: { id: userShopId, shopId } });
-  if (!targetMembership) throw new AppError(404, 'Staff member not found in this shop');
+  const targetMembership = await prisma.userShop.findFirst({
+    where: { id: userShopId, shopId },
+  });
+  if (!targetMembership)
+    throw new AppError(404, 'Staff member not found in this shop');
 
   const assignment = await prisma.staffService.create({
     data: { userShopId, serviceId },
@@ -122,7 +154,12 @@ export const assignStaffToService = async (userId: string, shopId: string, servi
   return assignment;
 };
 
-export const unassignStaffFromService = async (userId: string, shopId: string, serviceId: string, userShopId: string) => {
+export const unassignStaffFromService = async (
+  userId: string,
+  shopId: string,
+  serviceId: string,
+  userShopId: string,
+) => {
   await requireOwner(userId, shopId);
 
   const assignment = await prisma.staffService.findFirst({
@@ -134,14 +171,19 @@ export const unassignStaffFromService = async (userId: string, shopId: string, s
   logger.info(`Staff ${userShopId} unassigned from service ${serviceId}`);
 };
 
-export const getMemberServices = async (userId: string, shopId: string, memberId: string) => {
+export const getMemberServices = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
   await getMembership(userId, shopId);
 
   // memberId is UserShop.id
   const targetMembership = await prisma.userShop.findFirst({
     where: { id: memberId, shopId },
   });
-  if (!targetMembership) throw new AppError(404, 'Staff member not found in this shop');
+  if (!targetMembership)
+    throw new AppError(404, 'Staff member not found in this shop');
 
   return prisma.staffService.findMany({
     where: { userShopId: targetMembership.id },

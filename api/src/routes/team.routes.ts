@@ -22,15 +22,57 @@ import workingHoursRouter from './workingHours.routes';
 const router = Router({ mergeParams: true });
 
 router.get('/', authenticate, getMembers);
-router.post('/', authenticate, createTeamMemberValidation, validate, createTeamMember);
-router.get('/:memberId', authenticate, memberIdParamValidation, validate, getMember);
-router.patch('/:memberId', authenticate, updateMemberRoleValidation, validate, updateMemberRole);
-router.delete('/:memberId', authenticate, memberIdParamValidation, validate, removeMember);
-router.post('/:memberId/invite', authenticate, memberIdParamValidation, validate, sendLoginInvite);
-router.delete('/:memberId/invite', authenticate, memberIdParamValidation, validate, cancelLoginInvite);
+router.post(
+  '/',
+  authenticate,
+  createTeamMemberValidation,
+  validate,
+  createTeamMember,
+);
+router.get(
+  '/:memberId',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  getMember,
+);
+router.patch(
+  '/:memberId',
+  authenticate,
+  updateMemberRoleValidation,
+  validate,
+  updateMemberRole,
+);
+router.delete(
+  '/:memberId',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  removeMember,
+);
+router.post(
+  '/:memberId/invite',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  sendLoginInvite,
+);
+router.delete(
+  '/:memberId/invite',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  cancelLoginInvite,
+);
 
 // Staff services
-router.get('/:memberId/services', authenticate, memberIdParamValidation, validate, getMemberServices);
+router.get(
+  '/:memberId/services',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  getMemberServices,
+);
 
 // Staff schedule routes — re-use the existing working hours router
 // workingHoursRouter has mergeParams: true, so it will see :shopId and :memberId

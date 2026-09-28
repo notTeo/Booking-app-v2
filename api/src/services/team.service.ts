@@ -1,7 +1,11 @@
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
-import { generateRandomToken, getInviteTokenExpiry, hashToken } from '../utils/jwt';
+import {
+  generateRandomToken,
+  getInviteTokenExpiry,
+  hashToken,
+} from '../utils/jwt';
 import { sendInviteEmail } from './email.service';
 
 export interface UpdateMemberRoleDto {
@@ -80,7 +84,11 @@ export const getMembers = async (userId: string, shopId: string) => {
   return members.map(shapeMember);
 };
 
-export const getMember = async (userId: string, shopId: string, memberId: string) => {
+export const getMember = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
   await requireMembership(userId, shopId);
   return shapeMember(await requireMemberInShop(memberId, shopId));
 };
@@ -98,7 +106,11 @@ export const createTeamMember = async (
     const existing = await prisma.userShop.findFirst({
       where: { shopId, email: { equals: email, mode: 'insensitive' } },
     });
-    if (existing) throw new AppError(409, 'A team member with this email already exists in this shop');
+    if (existing)
+      throw new AppError(
+        409,
+        'A team member with this email already exists in this shop',
+      );
   }
 
   const member = await prisma.userShop.create({
@@ -113,7 +125,9 @@ export const createTeamMember = async (
     select: MEMBER_SELECT,
   });
 
-  logger.info(`Team member ${member.id} created in shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Team member ${member.id} created in shop ${shopId} by user ${userId}`,
+  );
 
   if (dto.sendEmail !== false) {
     await sendLoginInvite(userId, shopId, member.id);
@@ -137,15 +151,29 @@ export const updateMemberRole = async (
     const ownerCount = await prisma.userShop.count({
       where: { shopId, role: 'owner' },
     });
-    if (ownerCount <= 1) throw new AppError(400, 'Cannot demote the only owner');
+    if (ownerCount <= 1)
+      throw new AppError(400, 'Cannot demote the only owner');
   }
 
-  const email = dto.email !== undefined ? (dto.email ? dto.email.toLowerCase() : null) : undefined;
+  const email =
+    dto.email !== undefined
+      ? dto.email
+        ? dto.email.toLowerCase()
+        : null
+      : undefined;
   if (email && email !== member.email) {
     const existing = await prisma.userShop.findFirst({
-      where: { shopId, email: { equals: email, mode: 'insensitive' }, id: { not: memberId } },
+      where: {
+        shopId,
+        email: { equals: email, mode: 'insensitive' },
+        id: { not: memberId },
+      },
     });
-    if (existing) throw new AppError(409, 'A team member with this email already exists in this shop');
+    if (existing)
+      throw new AppError(
+        409,
+        'A team member with this email already exists in this shop',
+      );
   }
 
   // The owner must always be able to access their own shop — active can
@@ -153,7 +181,8 @@ export const updateMemberRole = async (
   // implicitly reactivates them.
   let active: boolean;
   if (dto.role === 'owner') {
-    if (dto.active === false) throw new AppError(400, 'The owner cannot be set inactive');
+    if (dto.active === false)
+      throw new AppError(400, 'The owner cannot be set inactive');
     active = true;
   } else {
     active = dto.active !== undefined ? dto.active : member.active;
@@ -162,10 +191,14 @@ export const updateMemberRole = async (
   // Deactivating a member turns off both bookable toggles too — they should
   // never be selectable anywhere while inactive, regardless of what was sent.
   const bookableByCustomers = active
-    ? (dto.bookableByCustomers !== undefined ? dto.bookableByCustomers : member.bookableByCustomers)
+    ? dto.bookableByCustomers !== undefined
+      ? dto.bookableByCustomers
+      : member.bookableByCustomers
     : false;
   const bookableInternally = active
-    ? (dto.bookableInternally !== undefined ? dto.bookableInternally : member.bookableInternally)
+    ? dto.bookableInternally !== undefined
+      ? dto.bookableInternally
+      : member.bookableInternally
     : false;
 
   const updated = await prisma.userShop.update({
@@ -183,11 +216,17 @@ export const updateMemberRole = async (
     select: MEMBER_SELECT,
   });
 
-  logger.info(`Member ${memberId} role updated to ${dto.role} in shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Member ${memberId} role updated to ${dto.role} in shop ${shopId} by user ${userId}`,
+  );
   return shapeMember(updated);
 };
 
-export const removeMember = async (userId: string, shopId: string, memberId: string) => {
+export const removeMember = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
   await requireOwner(userId, shopId);
   const member = await requireMemberInShop(memberId, shopId);
 
@@ -196,31 +235,48 @@ export const removeMember = async (userId: string, shopId: string, memberId: str
     const ownerCount = await prisma.userShop.count({
       where: { shopId, role: 'owner' },
     });
-    if (ownerCount <= 1) throw new AppError(400, 'Cannot remove the only owner');
+    if (ownerCount <= 1)
+      throw new AppError(400, 'Cannot remove the only owner');
   }
 
   await prisma.userShop.delete({
     where: { id: memberId },
   });
 
-  logger.info(`Member ${memberId} removed from shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Member ${memberId} removed from shop ${shopId} by user ${userId}`,
+  );
 };
 
 // Sends (or resends) the login invite for a member who has no login yet.
 // Rotates the token each time, since the plain token from a prior send was
 // never stored — this same function backs "send now", "send later", and
 // "resend" from the team member's own page.
-export const sendLoginInvite = async (userId: string, shopId: string, memberId: string) => {
+export const sendLoginInvite = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
   await requireOwner(userId, shopId);
   const member = await requireMemberInShop(memberId, shopId);
 
   if (member.userId) throw new AppError(400, 'This member already has a login');
-  if (!member.email) throw new AppError(400, 'Add an email for this member before sending a login invite');
+  if (!member.email)
+    throw new AppError(
+      400,
+      'Add an email for this member before sending a login invite',
+    );
 
-  const shop = await prisma.shop.findUnique({ where: { id: shopId }, select: { id: true, name: true } });
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    select: { id: true, name: true },
+  });
   if (!shop) throw new AppError(404, 'Shop not found');
 
-  const createdBy = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  const createdBy = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
   if (!createdBy) throw new AppError(404, 'User not found');
 
   const plainToken = generateRandomToken();
@@ -233,7 +289,11 @@ export const sendLoginInvite = async (userId: string, shopId: string, memberId: 
   if (existingInvite) {
     await prisma.shopInvite.update({
       where: { id: existingInvite.id },
-      data: { tokenHash, expiresAt: getInviteTokenExpiry(), email: member.email },
+      data: {
+        tokenHash,
+        expiresAt: getInviteTokenExpiry(),
+        email: member.email,
+      },
     });
   } else {
     await prisma.shopInvite.create({
@@ -249,15 +309,27 @@ export const sendLoginInvite = async (userId: string, shopId: string, memberId: 
     });
   }
 
-  await sendInviteEmail(member.email, plainToken, shop.name, createdBy.email, member.role);
-  logger.info(`Login invite sent to ${member.email} for member ${memberId} in shop ${shopId}`);
+  await sendInviteEmail(
+    member.email,
+    plainToken,
+    shop.name,
+    createdBy.email,
+    member.role,
+  );
+  logger.info(
+    `Login invite sent to ${member.email} for member ${memberId} in shop ${shopId}`,
+  );
 
   return getMember(userId, shopId, memberId);
 };
 
 // Withdraws a pending login invite without touching the member itself — they
 // keep their booking history and stay bookable, just without a pending offer.
-export const cancelLoginInvite = async (userId: string, shopId: string, memberId: string) => {
+export const cancelLoginInvite = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
   await requireOwner(userId, shopId);
   await requireMemberInShop(memberId, shopId);
 
@@ -265,6 +337,8 @@ export const cancelLoginInvite = async (userId: string, shopId: string, memberId
     where: { userShopId: memberId, status: 'pending' },
   });
 
-  logger.info(`Pending login invite cancelled for member ${memberId} in shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Pending login invite cancelled for member ${memberId} in shop ${shopId} by user ${userId}`,
+  );
   return getMember(userId, shopId, memberId);
 };

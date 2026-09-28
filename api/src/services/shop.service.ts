@@ -22,7 +22,10 @@ export interface UpdateShopDto {
 }
 
 export const createShop = async (userId: string, dto: CreateShopDto) => {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { isPro: true, name: true, email: true } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isPro: true, name: true, email: true },
+  });
   if (!user?.isPro) {
     throw new AppError(403, 'Creating a shop requires a Pro account.');
   }
@@ -64,19 +67,25 @@ export const getShopById = async (userId: string, shopId: string) => {
   return { ...membership.shop, role: membership.role };
 };
 
-export const updateShop = async (userId: string, shopId: string, dto: UpdateShopDto) => {
+export const updateShop = async (
+  userId: string,
+  shopId: string,
+  dto: UpdateShopDto,
+) => {
   const membership = await prisma.userShop.findUnique({
     where: { userId_shopId: { userId, shopId } },
   });
 
   if (!membership) throw new AppError(404, 'Shop not found');
-  if (membership.role !== 'owner') throw new AppError(403, 'Only the shop owner can update this shop');
+  if (membership.role !== 'owner')
+    throw new AppError(403, 'Only the shop owner can update this shop');
 
   if (dto.slug) {
     const existing = await prisma.shop.findFirst({
       where: { slug: dto.slug, NOT: { id: shopId } },
     });
-    if (existing) throw new AppError(409, 'A shop with this slug already exists');
+    if (existing)
+      throw new AppError(409, 'A shop with this slug already exists');
   }
 
   const shop = await prisma.shop.update({
@@ -94,7 +103,8 @@ export const deleteShop = async (userId: string, shopId: string) => {
   });
 
   if (!membership) throw new AppError(404, 'Shop not found');
-  if (membership.role !== 'owner') throw new AppError(403, 'Only the shop owner can delete this shop');
+  if (membership.role !== 'owner')
+    throw new AppError(403, 'Only the shop owner can delete this shop');
 
   await prisma.shop.delete({ where: { id: shopId } });
 

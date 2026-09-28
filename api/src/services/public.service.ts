@@ -1,47 +1,52 @@
-import { AppError } from "../middleware/errorHandler";
+import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
 
-export const getShopInfoService = async ( slug: string) => {
+export const getShopInfoService = async (slug: string) => {
   if (!slug) throw new AppError(404, 'Slug is required');
-const shop = await prisma.shop.findUnique({
-  where: { slug, isActive: true },
-  include: {
-    services: {
-      where: { isActive: true },
-      select: { id: true, name: true, description: true, duration: true, price: true }
+  const shop = await prisma.shop.findUnique({
+    where: { slug, isActive: true },
+    include: {
+      services: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          duration: true,
+          price: true,
+        },
+      },
+      shopWorkingSchedules: {
+        where: { isActive: true, staffId: null }, // shop-level schedule only
+        include: {
+          days: {
+            include: { hours: true },
+          },
+        },
+      },
+      members: {
+        where: { active: true },
+        select: {
+          id: true,
+          shopId: true,
+          role: true,
+          name: true,
+          createdAt: true,
+          bookableByCustomers: true,
+          bookableInternally: true,
+          staffServices: {
+            include: {
+              service: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+        },
+      },
     },
-    shopWorkingSchedules: {
-      where: { isActive: true, staffId: null }, // shop-level schedule only
-      include: {
-        days: {
-          include: { hours: true }
-        }
-      }
-    },
-    members: {
-      where: { active: true },
-      select: {
-        id: true,
-        shopId: true,
-        role: true,
-        name: true,
-        createdAt: true,
-        bookableByCustomers: true,
-        bookableInternally: true,
-        staffServices: {
-          include: {
-            service: {
-              select: { id: true, name: true }
-            }
-          }
-        }
-      }
-    }
-  }
-})
+  });
 
   if (!shop) throw new AppError(404, 'Shop not found');
 
   return shop;
 };
-

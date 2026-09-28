@@ -13,7 +13,9 @@ const REQUIRED_VARS = [
 
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
 if (missing.length > 0) {
-  console.error(`[env] Missing required environment variables:\n  ${missing.join('\n  ')}`);
+  console.error(
+    `[env] Missing required environment variables:\n  ${missing.join('\n  ')}`,
+  );
   process.exit(1);
 }
 

@@ -4,22 +4,28 @@ import { logger } from './logger';
 export const cleanupExpiredTokens = async () => {
   const now = new Date();
 
-  const [refreshTokens, pendingRegistrations, passwordResetTokens, expiredInvites] =
-    await Promise.all([
-      prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
-      prisma.pendingRegistration.deleteMany({ where: { expiresAt: { lt: now } } }),
-      prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: now } } }),
-      prisma.shopInvite.updateMany({
-        where: { expiresAt: { lt: now }, status: 'pending' },
-        data: { status: 'expired' },
-      }),
-    ]);
+  const [
+    refreshTokens,
+    pendingRegistrations,
+    passwordResetTokens,
+    expiredInvites,
+  ] = await Promise.all([
+    prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+    prisma.pendingRegistration.deleteMany({
+      where: { expiresAt: { lt: now } },
+    }),
+    prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+    prisma.shopInvite.updateMany({
+      where: { expiresAt: { lt: now }, status: 'pending' },
+      data: { status: 'expired' },
+    }),
+  ]);
 
   logger.info(
     `Cleanup: removed ${refreshTokens.count} refresh tokens, ` +
-    `${pendingRegistrations.count} pending registrations, ` +
-    `${passwordResetTokens.count} password reset tokens, ` +
-    `expired ${expiredInvites.count} shop invites`,
+      `${pendingRegistrations.count} pending registrations, ` +
+      `${passwordResetTokens.count} password reset tokens, ` +
+      `expired ${expiredInvites.count} shop invites`,
   );
 };
 
@@ -28,10 +34,14 @@ export const startCleanupJob = () => {
   const INTERVAL_MS = 6 * 60 * 60 * 1000;
 
   // Run once on startup, then on interval
-  cleanupExpiredTokens().catch((err) => logger.error(err, 'Cleanup job failed'));
+  cleanupExpiredTokens().catch((err) =>
+    logger.error(err, 'Cleanup job failed'),
+  );
 
   setInterval(() => {
-    cleanupExpiredTokens().catch((err) => logger.error(err, 'Cleanup job failed'));
+    cleanupExpiredTokens().catch((err) =>
+      logger.error(err, 'Cleanup job failed'),
+    );
   }, INTERVAL_MS);
 
   logger.info('Token cleanup job started (runs every 6 hours)');

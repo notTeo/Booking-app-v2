@@ -21,12 +21,48 @@ import {
 // mergeParams: true lets us access :shopId from the parent router
 const router = Router({ mergeParams: true });
 
-router.post('/', authenticate, createScheduleValidation, validate, createSchedule);
+router.post(
+  '/',
+  authenticate,
+  createScheduleValidation,
+  validate,
+  createSchedule,
+);
 router.get('/', authenticate, getSchedules);
-router.get('/:scheduleId', authenticate, scheduleIdParamValidation, validate, getSchedule);
-router.patch('/:scheduleId', authenticate, updateScheduleValidation, validate, updateSchedule);
-router.delete('/:scheduleId', authenticate, scheduleIdParamValidation, validate, deleteSchedule);
-router.put('/:scheduleId/days', authenticate, upsertDaysValidation, validate, upsertDays);
-router.patch('/:scheduleId/days/:day', authenticate, updateDayValidation, validate, updateDay);
+router.get(
+  '/:scheduleId',
+  authenticate,
+  scheduleIdParamValidation,
+  validate,
+  getSchedule,
+);
+router.patch(
+  '/:scheduleId',
+  authenticate,
+  updateScheduleValidation,
+  validate,
+  updateSchedule,
+);
+router.delete(
+  '/:scheduleId',
+  authenticate,
+  scheduleIdParamValidation,
+  validate,
+  deleteSchedule,
+);
+router.put(
+  '/:scheduleId/days',
+  authenticate,
+  upsertDaysValidation,
+  validate,
+  upsertDays,
+);
+router.patch(
+  '/:scheduleId/days/:day',
+  authenticate,
+  updateDayValidation,
+  validate,
+  updateDay,
+);
 
 export default router;

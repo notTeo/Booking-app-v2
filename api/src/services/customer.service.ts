@@ -12,13 +12,18 @@ async function requireMembership(userId: string, shopId: string) {
 }
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
-  const customer = await prisma.customer.findUnique({ where: { id: customerId } });
-  if (!customer || customer.shopId !== shopId) throw new AppError(404, 'Customer not found');
+  const customer = await prisma.customer.findUnique({
+    where: { id: customerId },
+  });
+  if (!customer || customer.shopId !== shopId)
+    throw new AppError(404, 'Customer not found');
   return customer;
 }
 
-const canView = (membership: { role: string; canViewCustomerDetails: boolean }) =>
-  membership.role === 'owner' || membership.canViewCustomerDetails;
+const canView = (membership: {
+  role: string;
+  canViewCustomerDetails: boolean;
+}) => membership.role === 'owner' || membership.canViewCustomerDetails;
 
 export const listCustomers = async (
   userId: string,
@@ -57,7 +62,11 @@ export const listCustomers = async (
   };
 };
 
-export const getCustomer = async (userId: string, shopId: string, customerId: string) => {
+export const getCustomer = async (
+  userId: string,
+  shopId: string,
+  customerId: string,
+) => {
   const membership = await requireMembership(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
@@ -78,25 +87,44 @@ export const getCustomer = async (userId: string, shopId: string, customerId: st
     }),
   ]);
 
-  const completed = allBookings.filter((b) => b.status === BookingStatus.COMPLETED);
+  const completed = allBookings.filter(
+    (b) => b.status === BookingStatus.COMPLETED,
+  );
   const totalVisits = completed.length;
   const totalSpent = completed.reduce((sum, b) => sum + b.service.price, 0);
 
   if (!customer) return customer;
-  return { ...redactCustomer(customer, canView(membership)), totalVisits, totalSpent };
+  return {
+    ...redactCustomer(customer, canView(membership)),
+    totalVisits,
+    totalSpent,
+  };
 };
 
 export const updateCustomer = async (
   userId: string,
   shopId: string,
   customerId: string,
-  data: { name?: string; phone?: string; email?: string | null; notes?: string | null },
+  data: {
+    name?: string;
+    phone?: string;
+    email?: string | null;
+    notes?: string | null;
+  },
 ) => {
   const membership = await requireMembership(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
-  if (!canView(membership) && (data.name !== undefined || data.phone !== undefined || data.email !== undefined)) {
-    throw new AppError(403, 'You do not have permission to edit customer contact details');
+  if (
+    !canView(membership) &&
+    (data.name !== undefined ||
+      data.phone !== undefined ||
+      data.email !== undefined)
+  ) {
+    throw new AppError(
+      403,
+      'You do not have permission to edit customer contact details',
+    );
   }
 
   return prisma.customer.update({

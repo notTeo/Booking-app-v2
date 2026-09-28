@@ -1,8 +1,19 @@
 import { Router } from 'express';
 import { validate } from '../middleware/validate';
-import { getShopInfoValidation, cancelBookingValidation } from '../validators/public.validator';
-import { createBookingValidation, getPublicSlotsValidation } from '../validators/booking.validator';
-import { getShopInfo, createBooking, cancelBooking, getPublicSlots } from '../controllers/public.controller';
+import {
+  getShopInfoValidation,
+  cancelBookingValidation,
+} from '../validators/public.validator';
+import {
+  createBookingValidation,
+  getPublicSlotsValidation,
+} from '../validators/booking.validator';
+import {
+  getShopInfo,
+  createBooking,
+  cancelBooking,
+  getPublicSlots,
+} from '../controllers/public.controller';
 
 const router = Router();
 

@@ -5,12 +5,19 @@ export const createServiceValidation = [
   body('name').notEmpty().trim().withMessage('Name is required'),
   body('description').optional().trim(),
   body('duration')
-    .notEmpty().withMessage('Duration is required')
-    .isInt({ min: 1 }).withMessage('Duration must be a positive integer (minutes)'),
+    .notEmpty()
+    .withMessage('Duration is required')
+    .isInt({ min: 1 })
+    .withMessage('Duration must be a positive integer (minutes)'),
   body('price')
-    .notEmpty().withMessage('Price is required')
-    .isInt({ min: 0 }).withMessage('Price must be a non-negative integer (cents)'),
-  body('isActive').optional().isBoolean().withMessage('isActive must be a boolean'),
+    .notEmpty()
+    .withMessage('Price is required')
+    .isInt({ min: 0 })
+    .withMessage('Price must be a non-negative integer (cents)'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
 ];
 
 export const updateServiceValidation = [
@@ -20,11 +27,16 @@ export const updateServiceValidation = [
   body('description').optional().trim(),
   body('duration')
     .optional()
-    .isInt({ min: 1 }).withMessage('Duration must be a positive integer (minutes)'),
+    .isInt({ min: 1 })
+    .withMessage('Duration must be a positive integer (minutes)'),
   body('price')
     .optional()
-    .isInt({ min: 0 }).withMessage('Price must be a non-negative integer (cents)'),
-  body('isActive').optional().isBoolean().withMessage('isActive must be a boolean'),
+    .isInt({ min: 0 })
+    .withMessage('Price must be a non-negative integer (cents)'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
 ];
 
 export const serviceParamsValidation = [

@@ -13,7 +13,10 @@ const TEST_EMAIL = 'test@example.com';
 const TEST_PASSWORD = 'Password123!';
 
 // Helper: create a verified user directly in DB
-async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
+async function createVerifiedUser(
+  email = TEST_EMAIL,
+  password = TEST_PASSWORD,
+) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(password, 4); // low rounds for speed in tests
   return prisma.user.create({
@@ -23,9 +26,7 @@ async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) 
 
 // Helper: login and return tokens
 async function loginUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
-  const res = await request(app)
-    .post('/auth/login')
-    .send({ email, password });
+  const res = await request(app).post('/auth/login').send({ email, password });
   const cookies = res.headers['set-cookie'] as string[] | string;
   const cookieHeader = Array.isArray(cookies) ? cookies[0] : cookies;
   return {
@@ -46,9 +47,15 @@ describe('POST /auth/register', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.status).toBe('success');
-    expect(sendVerificationEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String), 'Test User');
+    expect(sendVerificationEmail).toHaveBeenCalledWith(
+      TEST_EMAIL,
+      expect.any(String),
+      'Test User',
+    );
 
-    const pending = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
+    const pending = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
     expect(pending).not.toBeNull();
   });
 
@@ -82,10 +89,16 @@ describe('POST /auth/register', () => {
 
 describe('GET /auth/verify-email', () => {
   it('verifies email and creates user', async () => {
-    await request(app).post('/auth/register').send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
-    const pending = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
+    await request(app)
+      .post('/auth/register')
+      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+    const pending = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
 
-    const res = await request(app).get(`/auth/verify-email?token=${pending!.token}`);
+    const res = await request(app).get(
+      `/auth/verify-email?token=${pending!.token}`,
+    );
 
     expect(res.status).toBe(200);
     expect(res.body.data.user.email).toBe(TEST_EMAIL);
@@ -178,14 +191,18 @@ describe('POST /auth/refresh', () => {
     await request(app).post('/auth/refresh').set('Cookie', cookieHeader);
 
     // Use the original token again — reuse attack
-    const res = await request(app).post('/auth/refresh').set('Cookie', cookieHeader);
+    const res = await request(app)
+      .post('/auth/refresh')
+      .set('Cookie', cookieHeader);
 
     expect(res.status).toBe(401);
     expect(res.body.message).toContain('Session invalidated');
 
     // All sessions for user should be wiped
     const user = await prisma.user.findUnique({ where: { email: TEST_EMAIL } });
-    const sessions = await prisma.refreshToken.findMany({ where: { userId: user!.id } });
+    const sessions = await prisma.refreshToken.findMany({
+      where: { userId: user!.id },
+    });
     expect(sessions).toHaveLength(0);
   });
 });
@@ -216,11 +233,18 @@ describe('POST /auth/forgot-password', () => {
 
   it('sends reset email for existing user', async () => {
     await createVerifiedUser();
-    const { sendPasswordResetEmail } = await import('../services/email.service');
+    const { sendPasswordResetEmail } =
+      await import('../services/email.service');
 
-    await request(app).post('/auth/forgot-password').send({ email: TEST_EMAIL });
+    await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: TEST_EMAIL });
 
-    expect(sendPasswordResetEmail).toHaveBeenCalledWith(TEST_EMAIL, expect.any(String), 'Test User');
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+      TEST_EMAIL,
+      expect.any(String),
+      'Test User',
+    );
   });
 });
 
@@ -230,10 +254,15 @@ describe('POST /auth/reset-password', () => {
     const { loginUser: login } = await import('../services/auth.service');
 
     // Create a reset token
-    const { generateRandomToken, getPasswordResetTokenExpiry } = await import('../utils/jwt');
+    const { generateRandomToken, getPasswordResetTokenExpiry } =
+      await import('../utils/jwt');
     const token = generateRandomToken();
     await prisma.passwordResetToken.create({
-      data: { token, userId: user.id, expiresAt: getPasswordResetTokenExpiry() },
+      data: {
+        token,
+        userId: user.id,
+        expiresAt: getPasswordResetTokenExpiry(),
+      },
     });
 
     const res = await request(app)
@@ -263,12 +292,20 @@ describe('POST /auth/resend-verification', () => {
     const { sendVerificationEmail } = await import('../services/email.service');
     vi.clearAllMocks();
 
-    await request(app).post('/auth/register').send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
-    const before = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
+    await request(app)
+      .post('/auth/register')
+      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+    const before = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
 
-    await request(app).post('/auth/resend-verification').send({ email: TEST_EMAIL });
+    await request(app)
+      .post('/auth/resend-verification')
+      .send({ email: TEST_EMAIL });
 
-    const after = await prisma.pendingRegistration.findUnique({ where: { email: TEST_EMAIL } });
+    const after = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
     expect(after!.token).not.toBe(before!.token);
     expect(sendVerificationEmail).toHaveBeenCalledTimes(2); // once on register, once on resend
   });

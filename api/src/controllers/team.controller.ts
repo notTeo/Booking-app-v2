@@ -12,7 +12,11 @@ import {
   CreateTeamMemberDto,
 } from '../services/team.service';
 
-export const getMembers = async (req: Request, res: Response, next: NextFunction) => {
+export const getMembers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -23,7 +27,11 @@ export const getMembers = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getMember = async (req: Request, res: Response, next: NextFunction) => {
+export const getMember = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -35,7 +43,11 @@ export const getMember = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-export const createTeamMember = async (req: Request, res: Response, next: NextFunction) => {
+export const createTeamMember = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -47,7 +59,11 @@ export const createTeamMember = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const sendLoginInvite = async (req: Request, res: Response, next: NextFunction) => {
+export const sendLoginInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -59,7 +75,11 @@ export const sendLoginInvite = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const cancelLoginInvite = async (req: Request, res: Response, next: NextFunction) => {
+export const cancelLoginInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -71,7 +91,11 @@ export const cancelLoginInvite = async (req: Request, res: Response, next: NextF
   }
 };
 
-export const updateMemberRole = async (req: Request, res: Response, next: NextFunction) => {
+export const updateMemberRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
@@ -84,7 +108,11 @@ export const updateMemberRole = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const removeMember = async (req: Request, res: Response, next: NextFunction) => {
+export const removeMember = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;

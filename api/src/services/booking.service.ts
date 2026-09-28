@@ -1,12 +1,19 @@
 import { randomUUID } from 'crypto';
-import { BookingStatus, DayOfWeek, UserShop } from '../../dist/generated/prisma';
+import {
+  BookingStatus,
+  DayOfWeek,
+  UserShop,
+} from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
 
 // Whether the calling member can see customer contact info — owners always
 // can; staff only when their own membership flag allows it.
-export const canViewCustomerDetails = async (userId: string, shopId: string) => {
+export const canViewCustomerDetails = async (
+  userId: string,
+  shopId: string,
+) => {
   const membership = await prisma.userShop.findUnique({
     where: { userId_shopId: { userId, shopId } },
   });
@@ -28,7 +35,8 @@ const resolveBookableStaff = async (
   serviceId: string,
   context: BookingContext,
 ): Promise<UserShop | null> => {
-  const bookableField = context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
+  const bookableField =
+    context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
 
   if (staffId) {
     return prisma.userShop.findFirst({
@@ -63,18 +71,27 @@ export const createBooking = async (
   const shop = await prisma.shop.findUnique({ where: { slug } });
   if (!shop) throw new AppError(404, 'Shop not found');
 
-  const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+  const service = await prisma.service.findUnique({
+    where: { id: data.serviceId },
+  });
   if (!service) throw new AppError(404, 'Service not found');
 
   const startTime = new Date(data.startTime);
   const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
   const cancelToken = randomUUID();
 
-  const staff = await resolveBookableStaff(shop.id, data.staffId, data.serviceId, 'public');
+  const staff = await resolveBookableStaff(
+    shop.id,
+    data.staffId,
+    data.serviceId,
+    'public',
+  );
   if (!staff) {
     throw new AppError(
       400,
-      data.staffId ? 'Selected staff member is not available for booking' : 'No staff available for this service',
+      data.staffId
+        ? 'Selected staff member is not available for booking'
+        : 'No staff available for this service',
     );
   }
   const staffId = staff.id;
@@ -97,7 +114,12 @@ export const createBooking = async (
         const customer = await tx.customer.upsert({
           where: { shopId_phone: { shopId: shop.id, phone: data.phone } },
           update: { name: data.name, email: data.email ?? undefined },
-          create: { shopId: shop.id, name: data.name, phone: data.phone, email: data.email },
+          create: {
+            shopId: shop.id,
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+          },
         });
 
         return tx.booking.create({
@@ -111,14 +133,20 @@ export const createBooking = async (
             notes: data.notes,
             cancelToken,
           },
-          include: { customer: true, service: true, shop: true, staff: { select: { id: true, name: true, email: true } } },
+          include: {
+            customer: true,
+            service: true,
+            shop: true,
+            staff: { select: { id: true, name: true, email: true } },
+          },
         });
       },
       { isolationLevel: 'Serializable' },
     );
   } catch (err: any) {
     // P2034 = transaction conflict under Serializable — safe to retry, but for MVP just 409
-    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    if (err?.code === 'P2034')
+      throw new AppError(409, 'Booking conflict, please try again');
     throw err;
   }
 };
@@ -144,18 +172,27 @@ export const createBookingForShop = async (
   });
   if (!membership) throw new AppError(404, 'Shop not found');
 
-  const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+  const service = await prisma.service.findUnique({
+    where: { id: data.serviceId },
+  });
   if (!service) throw new AppError(404, 'Service not found');
 
   const startTime = new Date(data.startTime);
   const endTime = new Date(startTime.getTime() + service.duration * 60 * 1000);
   const cancelToken = randomUUID();
 
-  const staff = await resolveBookableStaff(shopId, data.staffId, data.serviceId, 'internal');
+  const staff = await resolveBookableStaff(
+    shopId,
+    data.staffId,
+    data.serviceId,
+    'internal',
+  );
   if (!staff) {
     throw new AppError(
       400,
-      data.staffId ? 'Selected staff member is not available for booking' : 'No staff available for this service',
+      data.staffId
+        ? 'Selected staff member is not available for booking'
+        : 'No staff available for this service',
     );
   }
   const staffId = staff.id;
@@ -177,7 +214,12 @@ export const createBookingForShop = async (
         const customer = await tx.customer.upsert({
           where: { shopId_phone: { shopId, phone: data.phone } },
           update: { name: data.name, email: data.email ?? undefined },
-          create: { shopId, name: data.name, phone: data.phone, email: data.email },
+          create: {
+            shopId,
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+          },
         });
 
         return tx.booking.create({
@@ -191,13 +233,19 @@ export const createBookingForShop = async (
             notes: data.notes,
             cancelToken,
           },
-          include: { customer: true, service: true, shop: true, staff: { select: { id: true, name: true, email: true } } },
+          include: {
+            customer: true,
+            service: true,
+            shop: true,
+            staff: { select: { id: true, name: true, email: true } },
+          },
         });
       },
       { isolationLevel: 'Serializable' },
     );
   } catch (err: any) {
-    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    if (err?.code === 'P2034')
+      throw new AppError(409, 'Booking conflict, please try again');
     throw err;
   }
 };
@@ -220,9 +268,8 @@ export const getAvailableSlots = async (
   serviceId: string,
   context: BookingContext = 'public',
 ): Promise<SlotsResult> => {
-
   // 1. Get the day's working hours
-  const DAY_MAP = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const DAY_MAP = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const dayOfWeek = DAY_MAP[new Date(date).getDay()] as DayOfWeek;
 
   // Booking-conflict checks always need a concrete, bookable staff member.
@@ -245,10 +292,7 @@ export const getAvailableSlots = async (
       staffId,
       isActive: true,
       startDate: { lte: requestedDate },
-      OR: [
-        { endDate: null },
-        { endDate: { gte: requestedDate } },
-      ],
+      OR: [{ endDate: null }, { endDate: { gte: requestedDate } }],
     },
     include: {
       days: {
@@ -271,10 +315,12 @@ export const getAvailableSlots = async (
   // don't actually hold the slot (matches the create-time conflict check's
   // exclusion set), so a canceled/no-show booking doesn't keep blocking its
   // old time from being offered again.
-  const existingBookings = (await listBookings(shopId, {
-    date,
-    staffId: resolvedStaffId ?? undefined,
-  })).filter((b) => !['CANCELED', 'NO_SHOW', 'COMPLETED'].includes(b.status));
+  const existingBookings = (
+    await listBookings(shopId, {
+      date,
+      staffId: resolvedStaffId ?? undefined,
+    })
+  ).filter((b) => !['CANCELED', 'NO_SHOW', 'COMPLETED'].includes(b.status));
 
   // 4. Generate every theoretical slot in the open window, flagged with
   // whether it's actually free — callers decide whether to filter these
@@ -287,21 +333,25 @@ export const getAvailableSlots = async (
   };
 
   const toHHMM = (mins: number) => {
-    const h = Math.floor(mins / 60).toString().padStart(2, '0');
+    const h = Math.floor(mins / 60)
+      .toString()
+      .padStart(2, '0');
     const m = (mins % 60).toString().padStart(2, '0');
     return `${h}:${m}`;
   };
 
   for (const hourRange of day.hours) {
-    const open = toMins(hourRange.startTime);   // e.g. 540  (09:00)
-    const close = toMins(hourRange.endTime);     // e.g. 1080 (18:00)
+    const open = toMins(hourRange.startTime); // e.g. 540  (09:00)
+    const close = toMins(hourRange.endTime); // e.g. 1080 (18:00)
 
     for (let start = open; start + service.duration <= close; start += 30) {
       const candidateStart = new Date(`${date}T${toHHMM(start)}:00`);
-      const candidateEnd = new Date(`${date}T${toHHMM(start + service.duration)}:00`);
+      const candidateEnd = new Date(
+        `${date}T${toHHMM(start + service.duration)}:00`,
+      );
 
       const hasOverlap = existingBookings.some(
-        (b) => b.startTime < candidateEnd && b.endTime > candidateStart
+        (b) => b.startTime < candidateEnd && b.endTime > candidateStart,
       );
 
       slots.push({ time: toHHMM(start), available: !hasOverlap });
@@ -320,13 +370,13 @@ export const listBookings = async (
 ) => {
   const where: Record<string, unknown> = { shopId };
 
-if (filters.date) {
-  const start = new Date(filters.date);
-  start.setUTCHours(0, 0, 0, 0);
-  const end = new Date(filters.date);
-  end.setUTCHours(23, 59, 59, 999);
-  where['startTime'] = { gte: start, lte: end };
-}
+  if (filters.date) {
+    const start = new Date(filters.date);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(filters.date);
+    end.setUTCHours(23, 59, 59, 999);
+    where['startTime'] = { gte: start, lte: end };
+  }
 
   if (filters.status) where['status'] = filters.status;
   if (filters.staffId) where['staffId'] = filters.staffId;
@@ -337,10 +387,16 @@ if (filters.date) {
     orderBy: { startTime: 'asc' },
   });
 
-  return bookings.map((b) => ({ ...b, customer: redactCustomer(b.customer, canViewCustomer) }));
+  return bookings.map((b) => ({
+    ...b,
+    customer: redactCustomer(b.customer, canViewCustomer),
+  }));
 };
 
-export const getBookingStats = async (shopId: string, canViewCustomer = true) => {
+export const getBookingStats = async (
+  shopId: string,
+  canViewCustomer = true,
+) => {
   const now = new Date();
   const startOfToday = new Date(now);
   startOfToday.setUTCHours(0, 0, 0, 0);
@@ -368,7 +424,11 @@ export const getBookingStats = async (shopId: string, canViewCustomer = true) =>
         startTime: { gte: now },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
       },
-      include: { customer: true, service: true, staff: { select: { id: true, name: true, email: true } } },
+      include: {
+        customer: true,
+        service: true,
+        staff: { select: { id: true, name: true, email: true } },
+      },
       orderBy: { startTime: 'asc' },
       take: 5,
     }),
@@ -377,25 +437,41 @@ export const getBookingStats = async (shopId: string, canViewCustomer = true) =>
   return {
     todayCount,
     upcomingCount,
-    upcoming: upcoming.map((b) => ({ ...b, customer: redactCustomer(b.customer, canViewCustomer) })),
+    upcoming: upcoming.map((b) => ({
+      ...b,
+      customer: redactCustomer(b.customer, canViewCustomer),
+    })),
   };
 };
 
-export const getBooking = async (shopId: string, bookingId: string, canViewCustomer = true) => {
+export const getBooking = async (
+  shopId: string,
+  bookingId: string,
+  canViewCustomer = true,
+) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: { customer: true, service: true },
   });
 
-  if (!booking || booking.shopId !== shopId) throw new AppError(404, 'Booking not found');
+  if (!booking || booking.shopId !== shopId)
+    throw new AppError(404, 'Booking not found');
 
-  return { ...booking, customer: redactCustomer(booking.customer, canViewCustomer) };
+  return {
+    ...booking,
+    customer: redactCustomer(booking.customer, canViewCustomer),
+  };
 };
 
 export const updateBooking = async (
   shopId: string,
   bookingId: string,
-  data: { startTime?: string; serviceId?: string; staffId?: string; notes?: string },
+  data: {
+    startTime?: string;
+    serviceId?: string;
+    staffId?: string;
+    notes?: string;
+  },
   canViewCustomer = true,
 ) => {
   const existing = await getBooking(shopId, bookingId); // throws 404 if not found
@@ -407,7 +483,9 @@ export const updateBooking = async (
     startTime = new Date(data.startTime);
     let duration = existing.service.duration;
     if (data.serviceId && data.serviceId !== existing.serviceId) {
-      const newService = await prisma.service.findUnique({ where: { id: data.serviceId } });
+      const newService = await prisma.service.findUnique({
+        where: { id: data.serviceId },
+      });
       if (!newService) throw new AppError(404, 'Service not found');
       duration = newService.duration;
     }
@@ -424,7 +502,8 @@ export const updateBooking = async (
   // Only re-run the overlap check when the edit actually touches scheduling
   // (time and/or staff). Non-scheduling edits (notes, service-only, etc.)
   // skip straight to a plain update, same as before this fix.
-  const staffChanged = data.staffId !== undefined && data.staffId !== existing.staffId;
+  const staffChanged =
+    data.staffId !== undefined && data.staffId !== existing.staffId;
   const schedulingChanged = !!startTime || staffChanged;
 
   if (!schedulingChanged) {
@@ -433,7 +512,10 @@ export const updateBooking = async (
       data: updateData,
       include: { customer: true, service: true },
     });
-    return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
+    return {
+      ...updated,
+      customer: redactCustomer(updated.customer, canViewCustomer),
+    };
   }
 
   const finalStaffId = data.staffId ?? existing.staffId;
@@ -461,13 +543,17 @@ export const updateBooking = async (
           data: updateData,
           include: { customer: true, service: true },
         });
-        return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
+        return {
+          ...updated,
+          customer: redactCustomer(updated.customer, canViewCustomer),
+        };
       },
       { isolationLevel: 'Serializable' },
     );
   } catch (err: any) {
     // P2034 = transaction conflict under Serializable — same 409 shape as createBooking
-    if (err?.code === 'P2034') throw new AppError(409, 'Booking conflict, please try again');
+    if (err?.code === 'P2034')
+      throw new AppError(409, 'Booking conflict, please try again');
     throw err;
   }
 };
@@ -490,7 +576,10 @@ export const updateBookingStatus = async (
     data: { status },
     include: { customer: true, service: true },
   });
-  return { ...updated, customer: redactCustomer(updated.customer, canViewCustomer) };
+  return {
+    ...updated,
+    customer: redactCustomer(updated.customer, canViewCustomer),
+  };
 };
 
 export const cancelBookingByToken = async (token: string) => {
@@ -500,7 +589,8 @@ export const cancelBookingByToken = async (token: string) => {
   });
 
   if (!booking) throw new AppError(404, 'Booking not found');
-  if (booking.status === BookingStatus.CANCELED) throw new AppError(409, 'Booking is already cancelled');
+  if (booking.status === BookingStatus.CANCELED)
+    throw new AppError(409, 'Booking is already cancelled');
 
   return prisma.booking.update({
     where: { id: booking.id },

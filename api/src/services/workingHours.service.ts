@@ -53,7 +53,8 @@ async function requireMembership(userId: string, shopId: string) {
 
 async function requireOwner(userId: string, shopId: string) {
   const membership = await requireMembership(userId, shopId);
-  if (membership.role !== 'owner') throw new AppError(403, 'Only the shop owner can manage working hours');
+  if (membership.role !== 'owner')
+    throw new AppError(403, 'Only the shop owner can manage working hours');
   return membership;
 }
 
@@ -75,8 +76,10 @@ async function assertNoActiveOverlap(
   });
 
   for (const existing of existingActive) {
-    const newStartBeforeExistingEnd = existing.endDate === null || startDate < existing.endDate;
-    const existingStartBeforeNewEnd = endDate === null || existing.startDate < endDate;
+    const newStartBeforeExistingEnd =
+      existing.endDate === null || startDate < existing.endDate;
+    const existingStartBeforeNewEnd =
+      endDate === null || existing.startDate < endDate;
 
     if (newStartBeforeExistingEnd && existingStartBeforeNewEnd) {
       if (existing.endDate === null) {
@@ -101,7 +104,8 @@ async function requireScheduleInShop(
   const schedule = await prisma.shopWorkingSchedule.findUnique({
     where: { id: scheduleId },
   });
-  if (!schedule || schedule.shopId !== shopId) throw new AppError(404, 'Schedule not found');
+  if (!schedule || schedule.shopId !== shopId)
+    throw new AppError(404, 'Schedule not found');
   // When staffId is explicitly provided, verify the schedule belongs to that staff member
   if (staffId !== undefined && schedule.staffId !== (staffId ?? null)) {
     throw new AppError(404, 'Schedule not found');
@@ -123,7 +127,8 @@ export const createSchedule = async (
     const staffMembership = await prisma.userShop.findFirst({
       where: { id: staffId, shopId },
     });
-    if (!staffMembership) throw new AppError(404, 'Staff member not found in this shop');
+    if (!staffMembership)
+      throw new AppError(404, 'Staff member not found in this shop');
   }
 
   const newIsActive = dto.isActive ?? true;
@@ -219,13 +224,17 @@ export const updateSchedule = async (
     where: { id: scheduleId },
     data: {
       ...(dto.startDate && { startDate: new Date(dto.startDate) }),
-      ...(dto.endDate !== undefined && { endDate: dto.endDate ? new Date(dto.endDate) : null }),
+      ...(dto.endDate !== undefined && {
+        endDate: dto.endDate ? new Date(dto.endDate) : null,
+      }),
       ...(dto.isActive !== undefined && { isActive: dto.isActive }),
     },
     include: WITH_DAYS,
   });
 
-  logger.info(`Schedule updated: ${scheduleId} for shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Schedule updated: ${scheduleId} for shop ${shopId} by user ${userId}`,
+  );
   return schedule;
 };
 
@@ -240,7 +249,9 @@ export const deleteSchedule = async (
 
   await prisma.shopWorkingSchedule.delete({ where: { id: scheduleId } });
 
-  logger.info(`Schedule deleted: ${scheduleId} for shop ${shopId} by user ${userId}`);
+  logger.info(
+    `Schedule deleted: ${scheduleId} for shop ${shopId} by user ${userId}`,
+  );
 };
 
 export const upsertDays = async (
@@ -266,7 +277,9 @@ export const upsertDays = async (
         });
 
         if (hours !== undefined) {
-          await tx.shopWorkingHourRange.deleteMany({ where: { dayId: existingDay.id } });
+          await tx.shopWorkingHourRange.deleteMany({
+            where: { dayId: existingDay.id },
+          });
           if (hours.length > 0) {
             await tx.shopWorkingHourRange.createMany({
               data: hours.map((h) => ({ ...h, dayId: existingDay.id })),
@@ -323,7 +336,9 @@ export const updateDay = async (
     }
 
     if (dto.hours !== undefined) {
-      await tx.shopWorkingHourRange.deleteMany({ where: { dayId: workingDay.id } });
+      await tx.shopWorkingHourRange.deleteMany({
+        where: { dayId: workingDay.id },
+      });
       if (dto.hours.length > 0) {
         await tx.shopWorkingHourRange.createMany({
           data: dto.hours.map((h) => ({ ...h, dayId: workingDay.id })),
@@ -337,6 +352,8 @@ export const updateDay = async (
     });
   });
 
-  logger.info(`Day ${day} updated for schedule ${scheduleId} by user ${userId}`);
+  logger.info(
+    `Day ${day} updated for schedule ${scheduleId} by user ${userId}`,
+  );
   return result;
 };

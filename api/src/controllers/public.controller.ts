@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 import { getShopInfoService } from '../services/public.service';
-import { createBooking as createBookingService, cancelBookingByToken, getAvailableSlots } from '../services/booking.service';
+import {
+  createBooking as createBookingService,
+  cancelBookingByToken,
+  getAvailableSlots,
+} from '../services/booking.service';
 import {
   sendBookingConfirmationEmail,
   sendCancellationConfirmationEmail,
@@ -11,7 +15,11 @@ import {
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 
-export const getShopInfo = async (req: Request, res: Response, next: NextFunction) => {
+export const getShopInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const slug = req.params.slug as string;
     const data = await getShopInfoService(slug);
@@ -21,7 +29,11 @@ export const getShopInfo = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const createBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const slug = req.params.slug as string;
     const booking = await createBookingService(slug, req.body);
@@ -39,7 +51,9 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         timezone: booking.shop.timezone,
         formattedAddress: booking.shop.formattedAddress,
         cancelToken: booking.cancelToken,
-      }).catch((err) => logger.error(err, 'Failed to send booking confirmation email'));
+      }).catch((err) =>
+        logger.error(err, 'Failed to send booking confirmation email'),
+      );
     }
 
     prisma.userShop
@@ -57,13 +71,19 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
           timezone: booking.shop.timezone,
         });
       })
-      .catch((err) => logger.error(err, 'Failed to send new booking notification email'));
+      .catch((err) =>
+        logger.error(err, 'Failed to send new booking notification email'),
+      );
   } catch (err) {
     next(err);
   }
 };
 
-export const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+export const cancelBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const booking = await cancelBookingByToken(req.body.token as string);
     successResponse(res, {
@@ -83,14 +103,20 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
         serviceName: booking.service.name,
         startTime: booking.startTime,
         timezone: booking.shop.timezone,
-      }).catch((err) => logger.error(err, 'Failed to send cancellation confirmation email'));
+      }).catch((err) =>
+        logger.error(err, 'Failed to send cancellation confirmation email'),
+      );
     }
   } catch (err) {
     next(err);
   }
 };
 
-export const getPublicSlots = async (req: Request, res: Response, next: NextFunction) => {
+export const getPublicSlots = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const slug = req.params.slug as string;
     const date = req.query['date'] as string;
@@ -107,7 +133,13 @@ export const getPublicSlots = async (req: Request, res: Response, next: NextFunc
     });
     if (!shop) throw new AppError(404, 'Shop not found');
 
-    const slots = await getAvailableSlots(shop.id, date, staffId, serviceId, internal ? 'internal' : 'public');
+    const slots = await getAvailableSlots(
+      shop.id,
+      date,
+      staffId,
+      serviceId,
+      internal ? 'internal' : 'public',
+    );
     successResponse(res, slots);
   } catch (err) {
     next(err);

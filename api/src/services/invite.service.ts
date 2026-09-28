@@ -87,7 +87,11 @@ export const acceptInvite = async (userId: string, inviteId: string) => {
   ]);
 
   logger.info(`Invite ${inviteId} accepted by user ${userId}`);
-  return { shopId: invite.shopId, shopSlug: invite.shop!.slug, role: invite.role };
+  return {
+    shopId: invite.shopId,
+    shopSlug: invite.shop!.slug,
+    role: invite.role,
+  };
 };
 
 export const declineInvite = async (userId: string, inviteId: string) => {
@@ -97,7 +101,9 @@ export const declineInvite = async (userId: string, inviteId: string) => {
   });
   if (!user) throw new AppError(404, 'User not found');
 
-  const invite = await prisma.shopInvite.findUnique({ where: { id: inviteId } });
+  const invite = await prisma.shopInvite.findUnique({
+    where: { id: inviteId },
+  });
 
   if (!invite || invite.email.toLowerCase() !== user.email.toLowerCase())
     throw new AppError(404, 'Invite not found');
@@ -125,8 +131,10 @@ export const lookupInviteByToken = async (plainToken: string) => {
   });
 
   if (!invite) throw new AppError(404, 'Invite not found');
-  if (invite.status !== 'pending') throw new AppError(400, 'Invite already used');
-  if (invite.expiresAt < new Date()) throw new AppError(400, 'Invite has expired');
+  if (invite.status !== 'pending')
+    throw new AppError(400, 'Invite already used');
+  if (invite.expiresAt < new Date())
+    throw new AppError(400, 'Invite has expired');
 
   return {
     inviteId: invite.id,

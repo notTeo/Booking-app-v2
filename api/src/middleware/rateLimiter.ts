@@ -11,7 +11,10 @@ export const authLimiter: RequestHandler = isTest
       max: 10,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { status: 'error', message: 'Too many requests, please try again later.' },
+      message: {
+        status: 'error',
+        message: 'Too many requests, please try again later.',
+      },
     });
 
 export const forgotPasswordLimiter: RequestHandler = isTest
@@ -21,5 +24,8 @@ export const forgotPasswordLimiter: RequestHandler = isTest
       max: 5,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { status: 'error', message: 'Too many password reset requests, please try again later.' },
+      message: {
+        status: 'error',
+        message: 'Too many password reset requests, please try again later.',
+      },
     });

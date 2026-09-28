@@ -25,7 +25,13 @@ router.post('/', authenticate, createShopValidation, validate, createShop);
 router.get('/', authenticate, getMyShops);
 router.get('/:id', authenticate, shopIdParamValidation, validate, getShop);
 router.patch('/:id', authenticate, updateShopValidation, validate, updateShop);
-router.delete('/:id', authenticate, shopIdParamValidation, validate, deleteShop);
+router.delete(
+  '/:id',
+  authenticate,
+  shopIdParamValidation,
+  validate,
+  deleteShop,
+);
 
 router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);

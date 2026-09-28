@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { prisma } from '../utils/prisma';
-import { createBookingForShop, updateBooking, getAvailableSlots } from '../services/booking.service';
+import {
+  createBookingForShop,
+  updateBooking,
+  getAvailableSlots,
+} from '../services/booking.service';
 import { createSchedule } from '../services/workingHours.service';
 
 let counter = 0;
@@ -12,7 +16,11 @@ function unique() {
 async function setupShop() {
   const id = unique();
   const owner = await prisma.user.create({
-    data: { name: 'Shop Owner', email: `owner-${id}@example.com`, isVerified: true },
+    data: {
+      name: 'Shop Owner',
+      email: `owner-${id}@example.com`,
+      isVerified: true,
+    },
   });
 
   const shop = await prisma.shop.create({
@@ -20,7 +28,12 @@ async function setupShop() {
   });
 
   const staff = await prisma.userShop.create({
-    data: { userId: owner.id, shopId: shop.id, role: 'owner', name: owner.name ?? 'Shop Owner' },
+    data: {
+      userId: owner.id,
+      shopId: shop.id,
+      role: 'owner',
+      name: owner.name ?? 'Shop Owner',
+    },
   });
 
   const service = await prisma.service.create({
@@ -39,10 +52,19 @@ async function setupShop() {
 async function addStaffMember(shopId: string) {
   const id = unique();
   const user = await prisma.user.create({
-    data: { name: 'Staff Member', email: `staff-${id}@example.com`, isVerified: true },
+    data: {
+      name: 'Staff Member',
+      email: `staff-${id}@example.com`,
+      isVerified: true,
+    },
   });
   return prisma.userShop.create({
-    data: { userId: user.id, shopId, role: 'staff', name: user.name ?? 'Staff Member' },
+    data: {
+      userId: user.id,
+      shopId,
+      role: 'staff',
+      name: user.name ?? 'Staff Member',
+    },
   });
 }
 
@@ -85,8 +107,13 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     await expect(
-      updateBooking(shop.id, bookingA.id, { startTime: '2027-01-05T11:00:00.000Z' }),
-    ).rejects.toMatchObject({ statusCode: 409, message: 'Time slot is already booked' });
+      updateBooking(shop.id, bookingA.id, {
+        startTime: '2027-01-05T11:00:00.000Z',
+      }),
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: 'Time slot is already booked',
+    });
   });
 
   it('does not false-positive when re-saving a booking at its own current slot', async () => {
@@ -129,7 +156,9 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-07T12:00:00.000Z',
     });
 
-    const updated = await updateBooking(shop.id, bookingA.id, { notes: 'Client requested extra time' });
+    const updated = await updateBooking(shop.id, bookingA.id, {
+      notes: 'Client requested extra time',
+    });
 
     expect(updated.notes).toBe('Client requested extra time');
     expect(updated.startTime.toISOString()).toBe('2027-01-07T10:00:00.000Z');
@@ -145,7 +174,13 @@ describe('getAvailableSlots', () => {
 
     await createSchedule(owner.id, shop.id, {
       startDate: MONDAY,
-      days: [{ day: 'MON', isOpen: true, hours: [{ startTime: '09:00', endTime: '11:00' }] }],
+      days: [
+        {
+          day: 'MON',
+          isOpen: true,
+          hours: [{ startTime: '09:00', endTime: '11:00' }],
+        },
+      ],
     });
 
     const result = await getAvailableSlots(shop.id, MONDAY, null, service.id);
@@ -163,16 +198,36 @@ describe('getAvailableSlots', () => {
 
     await createSchedule(owner.id, shop.id, {
       startDate: MONDAY,
-      days: [{ day: 'MON', isOpen: true, hours: [{ startTime: '09:00', endTime: '11:00' }] }],
+      days: [
+        {
+          day: 'MON',
+          isOpen: true,
+          hours: [{ startTime: '09:00', endTime: '11:00' }],
+        },
+      ],
     });
     await createSchedule(
       owner.id,
       shop.id,
-      { startDate: MONDAY, days: [{ day: 'MON', isOpen: true, hours: [{ startTime: '13:00', endTime: '14:00' }] }] },
+      {
+        startDate: MONDAY,
+        days: [
+          {
+            day: 'MON',
+            isOpen: true,
+            hours: [{ startTime: '13:00', endTime: '14:00' }],
+          },
+        ],
+      },
       staffMember.id,
     );
 
-    const result = await getAvailableSlots(shop.id, MONDAY, staffMember.id, service.id);
+    const result = await getAvailableSlots(
+      shop.id,
+      MONDAY,
+      staffMember.id,
+      service.id,
+    );
 
     expect(result.status).toBe('ok');
     if (result.status === 'ok') {
@@ -188,10 +243,21 @@ describe('getAvailableSlots', () => {
 
     await createSchedule(owner.id, shop.id, {
       startDate: MONDAY,
-      days: [{ day: 'MON', isOpen: true, hours: [{ startTime: '09:00', endTime: '11:00' }] }],
+      days: [
+        {
+          day: 'MON',
+          isOpen: true,
+          hours: [{ startTime: '09:00', endTime: '11:00' }],
+        },
+      ],
     });
 
-    const result = await getAvailableSlots(shop.id, MONDAY, staffMember.id, service.id);
+    const result = await getAvailableSlots(
+      shop.id,
+      MONDAY,
+      staffMember.id,
+      service.id,
+    );
 
     expect(result).toEqual({ status: 'closed' });
   });
@@ -209,7 +275,13 @@ describe('getAvailableSlots', () => {
 
     await createSchedule(owner.id, shop.id, {
       startDate: MONDAY,
-      days: [{ day: 'MON', isOpen: true, hours: [{ startTime: '09:00', endTime: '11:00' }] }],
+      days: [
+        {
+          day: 'MON',
+          isOpen: true,
+          hours: [{ startTime: '09:00', endTime: '11:00' }],
+        },
+      ],
     });
 
     // getAvailableSlots builds candidate windows from `${date}T${time}:00` with

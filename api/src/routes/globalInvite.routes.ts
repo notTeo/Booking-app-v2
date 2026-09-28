@@ -18,7 +18,19 @@ const router = Router();
 router.get('/lookup', lookupTokenQueryValidation, validate, lookupInvite);
 
 router.get('/', authenticate, getMyInvites);
-router.post('/:inviteId/accept', authenticate, inviteIdParamValidation, validate, acceptInvite);
-router.post('/:inviteId/decline', authenticate, inviteIdParamValidation, validate, declineInvite);
+router.post(
+  '/:inviteId/accept',
+  authenticate,
+  inviteIdParamValidation,
+  validate,
+  acceptInvite,
+);
+router.post(
+  '/:inviteId/decline',
+  authenticate,
+  inviteIdParamValidation,
+  validate,
+  declineInvite,
+);
 
 export default router;

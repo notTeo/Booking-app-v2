@@ -7,7 +7,11 @@ import {
   lookupInviteByToken,
 } from '../services/invite.service';
 
-export const getMyInvites = async (req: Request, res: Response, next: NextFunction) => {
+export const getMyInvites = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const invites = await getMyInvitesService(userId);
@@ -17,7 +21,11 @@ export const getMyInvites = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const acceptInvite = async (req: Request, res: Response, next: NextFunction) => {
+export const acceptInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const inviteId = req.params.inviteId as string;
@@ -28,7 +36,11 @@ export const acceptInvite = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const declineInvite = async (req: Request, res: Response, next: NextFunction) => {
+export const declineInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = req.user!.userId!;
     const inviteId = req.params.inviteId as string;
@@ -39,7 +51,11 @@ export const declineInvite = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const lookupInvite = async (req: Request, res: Response, next: NextFunction) => {
+export const lookupInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const token = req.query.token as string;
     const invite = await lookupInviteByToken(token);

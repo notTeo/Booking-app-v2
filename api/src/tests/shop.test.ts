@@ -21,7 +21,9 @@ async function createVerifiedUser(email: string, isPro: boolean) {
 }
 
 async function loginUser(email: string) {
-  const res = await request(app).post('/auth/login').send({ email, password: TEST_PASSWORD });
+  const res = await request(app)
+    .post('/auth/login')
+    .send({ email, password: TEST_PASSWORD });
   return res.body.data?.accessToken as string;
 }
 

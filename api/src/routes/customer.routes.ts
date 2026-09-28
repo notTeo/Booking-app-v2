@@ -16,7 +16,19 @@ import {
 const router = Router({ mergeParams: true });
 
 router.get('/', authenticate, listCustomersValidation, validate, listCustomers);
-router.get('/:customerId', authenticate, customerParamsValidation, validate, getCustomer);
-router.patch('/:customerId', authenticate, updateCustomerValidation, validate, updateCustomer);
+router.get(
+  '/:customerId',
+  authenticate,
+  customerParamsValidation,
+  validate,
+  getCustomer,
+);
+router.patch(
+  '/:customerId',
+  authenticate,
+  updateCustomerValidation,
+  validate,
+  updateCustomer,
+);
 
 export default router;

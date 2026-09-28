@@ -13,7 +13,10 @@ vi.mock('../services/email.service', () => ({
 const TEST_EMAIL = 'user@example.com';
 const TEST_PASSWORD = 'password123';
 
-async function createVerifiedUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
+async function createVerifiedUser(
+  email = TEST_EMAIL,
+  password = TEST_PASSWORD,
+) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(password, 4);
   return prisma.user.create({
@@ -27,7 +30,9 @@ async function loginUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
 }
 
 describe('GET /user/me', () => {
-  beforeEach(async () => { await createVerifiedUser(); });
+  beforeEach(async () => {
+    await createVerifiedUser();
+  });
 
   it('returns current user profile', async () => {
     const token = await loginUser();
@@ -48,7 +53,9 @@ describe('GET /user/me', () => {
 });
 
 describe('PATCH /user/me', () => {
-  beforeEach(async () => { await createVerifiedUser(); });
+  beforeEach(async () => {
+    await createVerifiedUser();
+  });
 
   it('sends verification email to new address and does not change email immediately', async () => {
     const token = await loginUser();
@@ -83,7 +90,9 @@ describe('PATCH /user/me', () => {
 
     // All refresh tokens should be gone
     const user = await prisma.user.findUnique({ where: { email: TEST_EMAIL } });
-    const sessions = await prisma.refreshToken.findMany({ where: { userId: user!.id } });
+    const sessions = await prisma.refreshToken.findMany({
+      where: { userId: user!.id },
+    });
     expect(sessions).toHaveLength(0);
   });
 
@@ -110,10 +119,14 @@ describe('PATCH /user/me', () => {
 });
 
 describe('GET /auth/verify-email-change', () => {
-  beforeEach(async () => { await createVerifiedUser(); });
+  beforeEach(async () => {
+    await createVerifiedUser();
+  });
 
   it('updates email when valid token is provided', async () => {
-    const user = await prisma.user.findUniqueOrThrow({ where: { email: TEST_EMAIL } });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email: TEST_EMAIL },
+    });
     const expiry = new Date();
     expiry.setHours(expiry.getHours() + 24);
 
@@ -126,7 +139,9 @@ describe('GET /auth/verify-email-change', () => {
       },
     });
 
-    const res = await request(app).get('/auth/verify-email-change?token=valid-token-abc123');
+    const res = await request(app).get(
+      '/auth/verify-email-change?token=valid-token-abc123',
+    );
 
     expect(res.status).toBe(200);
     expect(res.body.data.user.email).toBe('changed@example.com');
@@ -140,7 +155,9 @@ describe('GET /auth/verify-email-change', () => {
   });
 
   it('returns 400 for an expired token', async () => {
-    const user = await prisma.user.findUniqueOrThrow({ where: { email: TEST_EMAIL } });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email: TEST_EMAIL },
+    });
     const expired = new Date();
     expired.setHours(expired.getHours() - 1);
 
@@ -153,13 +170,17 @@ describe('GET /auth/verify-email-change', () => {
       },
     });
 
-    const res = await request(app).get('/auth/verify-email-change?token=expired-token-xyz');
+    const res = await request(app).get(
+      '/auth/verify-email-change?token=expired-token-xyz',
+    );
 
     expect(res.status).toBe(400);
   });
 
   it('returns 400 for an invalid token', async () => {
-    const res = await request(app).get('/auth/verify-email-change?token=bogus-token');
+    const res = await request(app).get(
+      '/auth/verify-email-change?token=bogus-token',
+    );
     expect(res.status).toBe(400);
   });
 
@@ -170,7 +191,9 @@ describe('GET /auth/verify-email-change', () => {
 });
 
 describe('DELETE /user/me', () => {
-  beforeEach(async () => { await createVerifiedUser(); });
+  beforeEach(async () => {
+    await createVerifiedUser();
+  });
 
   it('deletes account when correct password provided', async () => {
     const token = await loginUser();

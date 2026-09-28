@@ -18,6 +18,4 @@ export const updateMeValidation = [
     .withMessage('Password must contain at least one special character'),
 ];
 
-export const deleteAccountValidation = [
-  body('password').optional().isString(),
-];
+export const deleteAccountValidation = [body('password').optional().isString()];

@@ -5,7 +5,7 @@ export const registerValidation = [
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
-    body('name')
+  body('name')
     .isLength({ max: 50 })
     .withMessage('Valid name is required max 50 char'),
   body('password')
@@ -28,9 +28,7 @@ export const loginValidation = [
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required'),
+  body('password').notEmpty().withMessage('Password is required'),
 ];
 
 export const forgotPasswordValidation = [
@@ -48,9 +46,7 @@ export const resendVerificationValidation = [
 ];
 
 export const resetPasswordValidation = [
-  body('token')
-    .notEmpty()
-    .withMessage('Token is required'),
+  body('token').notEmpty().withMessage('Token is required'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
