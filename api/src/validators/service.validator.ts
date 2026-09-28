@@ -7,8 +7,8 @@ export const createServiceValidation = [
   body('duration')
     .notEmpty()
     .withMessage('Duration is required')
-    .isInt({ min: 1 })
-    .withMessage('Duration must be a positive integer (minutes)'),
+    .isInt({ min: 1, max: 1440 })
+    .withMessage('Duration must be a whole number of minutes, 1 to 1440'),
   body('price')
     .notEmpty()
     .withMessage('Price is required')
@@ -27,8 +27,8 @@ export const updateServiceValidation = [
   body('description').optional().trim(),
   body('duration')
     .optional()
-    .isInt({ min: 1 })
-    .withMessage('Duration must be a positive integer (minutes)'),
+    .isInt({ min: 1, max: 1440 })
+    .withMessage('Duration must be a whole number of minutes, 1 to 1440'),
   body('price')
     .optional()
     .isInt({ min: 0 })

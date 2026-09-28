@@ -16,6 +16,27 @@ import { serializableTransaction } from '../utils/serializable';
 // Only these statuses release a slot. COMPLETED does NOT — that time was
 // really used — so it blocks overlap like PENDING/CONFIRMED do.
 export const SLOT_FREEING_STATUSES: BookingStatus[] = ['CANCELED', 'NO_SHOW'];
+// No booking may run longer than this (services are capped at it, and writes
+// re-check). The overlap query relies on it: an existing booking that overlaps
+// a new one must START within this window before the new start, so Postgres can
+// use a tight two-sided range on (staffId, startTime) instead of reading — and
+// predicate-locking — the provider's entire history, which made unrelated
+// concurrent bookings abort each other.
+export const MAX_BOOKING_MINUTES = 24 * 60;
+
+const assertBookingLength = (startTime: Date, endTime: Date) => {
+  if (
+    (endTime.getTime() - startTime.getTime()) / 60_000 >
+    MAX_BOOKING_MINUTES
+  ) {
+    throw new AppError(
+      422,
+      'A booking cannot be longer than 24 hours.',
+      'BOOKING_TOO_LONG',
+    );
+  }
+};
+
 /** WHERE clause for "another booking holds this provider's time". */
 const overlapWhere = (
   staffId: string,
@@ -26,7 +47,10 @@ const overlapWhere = (
   staffId,
   ...(excludeBookingId && { id: { not: excludeBookingId } }),
   status: { notIn: SLOT_FREEING_STATUSES },
-  startTime: { lt: endTime },
+  startTime: {
+    lt: endTime,
+    gt: new Date(startTime.getTime() - MAX_BOOKING_MINUTES * 60_000),
+  },
   endTime: { gt: startTime },
 });
 
@@ -122,6 +146,7 @@ const claimSlotAndCreate = async (
     cancelToken: string;
   },
 ) => {
+  assertBookingLength(p.startTime, p.endTime);
   const conflict = await tx.booking.findFirst({
     where: overlapWhere(p.staffId, p.startTime, p.endTime),
   });
@@ -178,7 +203,6 @@ export const createBooking = async (
   const cancelToken = randomUUID(); // only persisted by the attempt that commits
 
   return serializableTransaction(async (tx) => {
-    // An inactive shop is invisible to the public (info and slots already 404).
     const shop = await tx.shop.findFirst({ where: { slug, isActive: true } });
     if (!shop) throw new AppError(404, 'Shop not found');
 
@@ -593,6 +617,7 @@ export const updateBooking = async (
     }
 
     // Same overlap check as creation, excluding this booking itself.
+    assertBookingLength(finalStartTime, finalEndTime);
     const conflict = await tx.booking.findFirst({
       where: overlapWhere(
         finalStaffId,
