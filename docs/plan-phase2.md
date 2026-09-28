@@ -392,10 +392,20 @@ npm run e2e                                                     # from repo root
 ## LATER (triaged, not launch-critical)
 
 - **Intermittent API test failures under full-suite load** (3 in ~20 full runs
-  while doing out-of-hours commit 1; each passed on rerun and in isolation, 6/6):
+  while doing out-of-hours commit 1; each passed on rerun and in isolation):
   `concurrency.test.ts` "simultaneous OVERLAPPING" (Athens) and "SAME customer
   phone" (New York) — bodies not captured; `overlapIntegrity.test.ts` "CANCELED
-  -> CONFIRMED onto a re-booked slot" (New York) — 15 s test timeout. Same family
-  as the earlier unexplained single failure/timeout under "Known open items".
-  Classified LATER: no double booking was observed (those tests assert exactly
-  that), but the cause is unproven. Next time one fails, keep the response body.
+  -> CONFIRMED onto a re-booked slot" (New York) — 15 s test timeout.
+  **Investigated** with an instrumented copy of the two files (journals every
+  request's status/body/timing; snapshots bookings + `pg_stat_activity` + locks
+  twice on failure): 50/50 clean isolated runs of `concurrency.test.ts`, then 24
+  full-suite runs (23 clean, 1 failure; loop stopped there at the owner's
+  request). The one captured failure (`owner bookings with override cannot both
+  win either`, New York, 30 s timeout) had 9 of 10 requests reach the app (1x201,
+  8x409, all <= 22 ms) and the 10th never arrived at the HTTP handler; DB had
+  exactly one active booking, zero overlaps, no stuck queries or locks.
+  Classified **test-infra** (supertest client/connection stall), not an
+  invariant violation — but one sample, and the missing request's fate is
+  unobserved. The three original failures remain **unclassified** (no data).
+  The capture kit is not in the repo. Classified LATER; next time one fails,
+  keep the response bodies.
