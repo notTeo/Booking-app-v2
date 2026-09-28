@@ -2,6 +2,7 @@ import { DayOfWeek } from '../../dist/generated/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
+import { loadDayHours, type DayHours } from './bookingRules.service';
 
 export interface HourRangeDto {
   startTime: string;
@@ -356,4 +357,37 @@ export const updateDay = async (
     `Day ${day} updated for schedule ${scheduleId} by user ${userId}`,
   );
   return result;
+};
+
+/**
+ * Every member's opening ranges for one calendar date (the shop's local date),
+ * for the calendar's per-provider "not working" shading. A member is `null`
+ * (closed) when they have no active schedule that day or the day is off; a
+ * member with no schedule of their own is never given the shop-wide hours.
+ * Inactive members and members without a login are included: their bookings
+ * still show on the calendar.
+ */
+export const getDaySchedule = async (
+  userId: string,
+  shopId: string,
+  date: string,
+): Promise<Record<string, DayHours[] | null>> => {
+  await requireMembership(userId, shopId); // 404 for non-members
+  const members = await prisma.userShop.findMany({
+    where: { shopId },
+    select: { id: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  const entries = await Promise.all(
+    members.map(async (m) => {
+      const hours = await loadDayHours(prisma, shopId, m.id, date);
+      const ranges = hours
+        ? hours
+            .map(({ startTime, endTime }) => ({ startTime, endTime }))
+            .sort((a, b) => a.startTime.localeCompare(b.startTime))
+        : null;
+      return [m.id, ranges] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
 };

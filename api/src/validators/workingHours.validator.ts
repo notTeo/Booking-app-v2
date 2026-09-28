@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const TIME_REGEX = /^\d{2}:\d{2}$/;
@@ -92,4 +92,13 @@ export const updateDayValidation = [
 
 export const scheduleIdParamValidation = [
   param('scheduleId').notEmpty().withMessage('scheduleId is required'),
+];
+
+export const dayScheduleValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  query('date')
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('date must be YYYY-MM-DD')
+    .isISO8601({ strict: true })
+    .withMessage('date must be a valid calendar date'),
 ];

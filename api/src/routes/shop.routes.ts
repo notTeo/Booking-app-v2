@@ -14,6 +14,8 @@ import {
   deleteShop,
 } from '../controllers/shop.controller';
 import workingHoursRouter from './workingHours.routes';
+import { dayScheduleValidation } from '../validators/workingHours.validator';
+import { getDaySchedule } from '../controllers/workingHours.controller';
 import teamRouter from './team.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
@@ -33,6 +35,14 @@ router.delete(
   deleteShop,
 );
 
+// Declared before the schedules router so 'day' is never read as a :scheduleId.
+router.get(
+  '/:shopId/schedules/day',
+  authenticate,
+  dayScheduleValidation,
+  validate,
+  getDaySchedule,
+);
 router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/services', serviceRouter);

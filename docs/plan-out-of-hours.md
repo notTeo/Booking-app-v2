@@ -84,6 +84,15 @@ truth if work continues in a new session. Branch: `prod-readiness`.
    for commit 9: the calendar assertions (06:15 / 22:30 bookings, closed-day
    booking visible), which need commit 7.
 
+9. **Day-schedule endpoint (commit 5), pulled forward into Phase A** so the
+   calendar (commit 7) can shade non-working hours:
+   `GET /api/shops/:shopId/schedules/day?date=YYYY-MM-DD` (any member) returns
+   `{ [memberId]: [{startTime, endTime}, …] | null }` for EVERY member of the shop
+   (inactive and login-less included), ranges sorted by start, `null` = closed
+   (no active schedule, day off, or outside the schedule's dates; a member is
+   never given the shop-wide hours). Registered on the shop router ahead of the
+   schedules router so `day` is never read as a `:scheduleId`.
+
 ### Approved order (bugs before features)
 
 0. Commit the Playwright scaffold; mark the obsolete override-dialog E2E

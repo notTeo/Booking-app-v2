@@ -8,6 +8,7 @@ import {
   updateSchedule as updateScheduleService,
   deleteSchedule as deleteScheduleService,
   upsertDays as upsertDaysService,
+  getDaySchedule as getDayScheduleService,
   updateDay as updateDayService,
   CreateScheduleDto,
   UpdateScheduleDto,
@@ -156,6 +157,21 @@ export const updateDay = async (
       staffId,
     );
     successResponse(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getDaySchedule = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const date = req.query['date'] as string;
+    successResponse(res, await getDayScheduleService(userId, shopId, date));
   } catch (err) {
     next(err);
   }
