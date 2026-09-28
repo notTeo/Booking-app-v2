@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma';
 import { signAccessToken } from '../utils/jwt';
+import type { BookingStatus } from '../../dist/generated/prisma';
 
 let counter = 0;
 export const unique = () => `${Date.now()}-${++counter}`;
@@ -40,6 +41,7 @@ export type Tenant = Awaited<ReturnType<typeof createTenant>>;
 export async function createBookingRow(
   t: Tenant,
   start = '2027-07-01T09:00:00.000Z',
+  status?: BookingStatus,
 ) {
   const customer = await prisma.customer.create({
     data: { shopId: t.shop.id, name: 'Cust', phone: unique() },
@@ -53,6 +55,7 @@ export async function createBookingRow(
       staffId: t.staff.id,
       startTime,
       endTime: new Date(startTime.getTime() + 30 * 60 * 1000),
+      ...(status && { status }),
     },
   });
 }

@@ -7,6 +7,13 @@ import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
 import { buildSlotCandidates } from '../utils/slots';
 import { assertBookingRules, loadDayHours } from './bookingRules.service';
 
+// Hard rule: two bookings that hold a provider's time can never overlap.
+// Only these statuses release a slot. COMPLETED does NOT — that time was
+// really used — so it blocks overlap like PENDING/CONFIRMED do.
+export const SLOT_FREEING_STATUSES: BookingStatus[] = ['CANCELED', 'NO_SHOW'];
+const freesSlot = (status: BookingStatus) =>
+  SLOT_FREEING_STATUSES.includes(status);
+
 // Throws 404 (not 403, so shop existence isn't revealed) unless the caller
 // belongs to the shop.
 export const requireMembership = async (userId: string, shopId: string) => {
@@ -124,7 +131,7 @@ export const createBooking = async (
         const conflict = await tx.booking.findFirst({
           where: {
             staffId,
-            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+            status: { notIn: SLOT_FREEING_STATUSES },
             startTime: { lt: endTime },
             endTime: { gt: startTime },
           },
@@ -244,7 +251,7 @@ export const createBookingForShop = async (
         const conflict = await tx.booking.findFirst({
           where: {
             staffId,
-            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+            status: { notIn: SLOT_FREEING_STATUSES },
             startTime: { lt: endTime },
             endTime: { gt: startTime },
           },
@@ -357,7 +364,7 @@ export const getAvailableSlots = async (
     where: {
       shopId,
       staffId: resolvedStaffId,
-      status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+      status: { notIn: SLOT_FREEING_STATUSES },
       startTime: { lt: dayEnd },
       endTime: { gt: dayStart },
     },
@@ -582,7 +589,7 @@ export const updateBooking = async (
           where: {
             id: { not: bookingId },
             staffId: finalStaffId,
-            status: { notIn: ['CANCELED', 'NO_SHOW', 'COMPLETED'] },
+            status: { notIn: SLOT_FREEING_STATUSES },
             startTime: { lt: finalEndTime },
             endTime: { gt: finalStartTime },
           },
@@ -630,17 +637,58 @@ export const updateBookingStatus = async (
   status: BookingStatus,
   canViewCustomer = true,
 ) => {
-  await getBooking(shopId, bookingId); // throws 404 if not found
+  const existing = await getBooking(shopId, bookingId); // throws 404 if not found
 
-  const updated = await prisma.booking.update({
-    where: { id: bookingId },
-    data: { status },
-    include: { customer: true, service: true },
-  });
-  return {
-    ...updated,
-    customer: redactCustomer(updated.customer, canViewCustomer),
-  };
+  const include = { customer: true, service: true } as const;
+  // Moving a booking from a slot-freeing status (CANCELED/NO_SHOW) back to one
+  // that holds the provider's time re-occupies that slot. Someone else may
+  // have booked it meanwhile, so the overlap check must run again — inside a
+  // serializable transaction, like every other write that takes a slot.
+  const reoccupies = freesSlot(existing.status) && !freesSlot(status);
+  if (!reoccupies) {
+    const updated = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status },
+      include,
+    });
+    return {
+      ...updated,
+      customer: redactCustomer(updated.customer, canViewCustomer),
+    };
+  }
+
+  try {
+    return await prisma.$transaction(
+      async (tx) => {
+        const conflict = await tx.booking.findFirst({
+          where: {
+            id: { not: bookingId },
+            staffId: existing.staffId,
+            status: { notIn: SLOT_FREEING_STATUSES },
+            startTime: { lt: existing.endTime },
+            endTime: { gt: existing.startTime },
+          },
+        });
+        if (conflict)
+          throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
+
+        const updated = await tx.booking.update({
+          where: { id: bookingId },
+          data: { status },
+          include,
+        });
+        return {
+          ...updated,
+          customer: redactCustomer(updated.customer, canViewCustomer),
+        };
+      },
+      { isolationLevel: 'Serializable' },
+    );
+  } catch (err: any) {
+    if (err?.code === 'P2034')
+      throw new AppError(409, 'Booking conflict, please try again');
+    throw err;
+  }
 };
 
 export const cancelBookingByToken = async (token: string) => {
