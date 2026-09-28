@@ -27,6 +27,11 @@ export const createShopValidation = [
     .trim()
     .isIn((Intl as any).supportedValuesOf('timeZone'))
     .withMessage('Invalid timezone'),
+  body('maxAdvanceDays')
+    .optional()
+    .isInt({ min: 1, max: 730 })
+    .withMessage('maxAdvanceDays must be a whole number between 1 and 730')
+    .toInt(),
 ];
 
 export const updateShopValidation = [
@@ -56,6 +61,11 @@ export const updateShopValidation = [
     .trim()
     .isIn((Intl as any).supportedValuesOf('timeZone'))
     .withMessage('Invalid timezone'),
+  body('maxAdvanceDays')
+    .optional()
+    .isInt({ min: 1, max: 730 })
+    .withMessage('maxAdvanceDays must be a whole number between 1 and 730')
+    .toInt(),
   body('isActive')
     .optional()
     .isBoolean()

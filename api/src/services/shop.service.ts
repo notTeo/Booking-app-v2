@@ -9,6 +9,7 @@ export interface CreateShopDto {
   phone?: string;
   formattedAddress?: string;
   timezone?: string;
+  maxAdvanceDays?: number;
 }
 
 export interface UpdateShopDto {
@@ -17,6 +18,7 @@ export interface UpdateShopDto {
   phone?: string;
   formattedAddress?: string;
   timezone?: string;
+  maxAdvanceDays?: number;
   isActive?: boolean;
 }
 
@@ -30,6 +32,7 @@ const CREATE_FIELDS = [
   'phone',
   'formattedAddress',
   'timezone',
+  'maxAdvanceDays',
 ] as const;
 // slug is deliberately absent: it is immutable after creation.
 const UPDATE_FIELDS = [
@@ -38,6 +41,7 @@ const UPDATE_FIELDS = [
   'phone',
   'formattedAddress',
   'timezone',
+  'maxAdvanceDays',
   'isActive',
 ] as const;
 

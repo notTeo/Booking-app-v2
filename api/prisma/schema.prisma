@@ -27,18 +27,20 @@ enum BookingStatus {
 }
 
 model Shop {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   phone       String?
 
   formattedAddress String?
 
-  timezone    String   @default("Europe/Athens")
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @db.Timestamptz(3) @default(now())
-  updatedAt   DateTime @db.Timestamptz(3) @updatedAt
+  timezone       String   @default("Europe/Athens")
+  // How many calendar days ahead customers may book (shop-local date).
+  maxAdvanceDays Int      @default(60)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
 
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
@@ -51,14 +53,14 @@ model Shop {
 model ShopWorkingSchedule {
   id        String    @id @default(cuid())
   shopId    String
-  staffId   String?   // null = shop schedule, User.id = staff member schedule
-  startDate DateTime @db.Timestamptz(3)
+  staffId   String? // null = shop schedule, User.id = staff member schedule
+  startDate DateTime  @db.Timestamptz(3)
   endDate   DateTime? @db.Timestamptz(3)
 
   isActive Boolean @default(true)
 
-  createdAt DateTime @db.Timestamptz(3) @default(now())
-  updatedAt DateTime @db.Timestamptz(3) @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   shop Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
   days ShopWorkingDay[]
@@ -102,7 +104,7 @@ model ShopWorkingHourRange {
 }
 
 model UserShop {
-  id     String  @id @default(cuid())
+  id     String   @id @default(cuid())
   userId String? // null = team member has no login yet (not-yet-accepted invite)
   shopId String
   role   ShopRole @default(staff)
@@ -120,7 +122,7 @@ model UserShop {
   bookableByCustomers Boolean @default(true)
   bookableInternally  Boolean @default(true)
 
-  createdAt DateTime @db.Timestamptz(3) @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   shop Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
@@ -138,44 +140,44 @@ model Service {
   shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  duration    Int      // minutes
-  price       Int      // cents
+  duration    Int // minutes
+  price       Int // cents
   isActive    Boolean  @default(true)
-  createdAt   DateTime @db.Timestamptz(3) @default(now())
-  updatedAt   DateTime @db.Timestamptz(3) @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
 
   staffServices StaffService[]
   bookings      Booking[]
 }
 
 model StaffService {
-  id          String   @id @default(cuid())
-  userShopId  String
-  serviceId   String
-  userShop    UserShop @relation(fields: [userShopId], references: [id], onDelete: Cascade)
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @db.Timestamptz(3) @default(now())
+  id         String   @id @default(cuid())
+  userShopId String
+  serviceId  String
+  userShop   UserShop @relation(fields: [userShopId], references: [id], onDelete: Cascade)
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
 
   @@unique([userShopId, serviceId])
 }
 
 model User {
-  id               String        @id @default(cuid())
-  name             String
-  email            String        @unique
-  passwordHash     String?
-  isVerified       Boolean       @default(false)
-  isPro            Boolean       @default(false)
-  createdAt        DateTime @db.Timestamptz(3)      @default(now())
-  updatedAt        DateTime @db.Timestamptz(3)      @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  isVerified   Boolean  @default(false)
+  isPro        Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
 
   refreshTokens          RefreshToken[]
   emailVerificationToken EmailVerificationToken?
   passwordResetToken     PasswordResetToken?
   pendingEmailChange     PendingEmailChange?
   userShops              UserShop[]
-  sentInvites            ShopInvite[] @relation("InviteCreatedBy")
-  acceptedInvites        ShopInvite[] @relation("InviteAcceptedBy")
+  sentInvites            ShopInvite[]            @relation("InviteCreatedBy")
+  acceptedInvites        ShopInvite[]            @relation("InviteAcceptedBy")
 }
 
 model Customer {
@@ -185,8 +187,8 @@ model Customer {
   phone     String
   email     String?
   notes     String?
-  createdAt DateTime @db.Timestamptz(3) @default(now())
-  updatedAt DateTime @db.Timestamptz(3) @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   bookings Booking[]
@@ -196,18 +198,18 @@ model Customer {
 }
 
 model Booking {
-  id         String        @id @default(cuid())
-  shopId     String
-  customerId String
-  serviceId  String
-  staffId    String
-  startTime DateTime @db.Timestamptz(3)
-  endTime   DateTime @db.Timestamptz(3)
-  status     BookingStatus @default(CONFIRMED)
+  id          String        @id @default(cuid())
+  shopId      String
+  customerId  String
+  serviceId   String
+  staffId     String
+  startTime   DateTime      @db.Timestamptz(3)
+  endTime     DateTime      @db.Timestamptz(3)
+  status      BookingStatus @default(CONFIRMED)
   notes       String?
   cancelToken String?       @unique
-  createdAt   DateTime @db.Timestamptz(3)      @default(now())
-  updatedAt   DateTime @db.Timestamptz(3)      @updatedAt
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
 
   shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -227,7 +229,7 @@ model RefreshToken {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime @db.Timestamptz(3)
-  createdAt DateTime @db.Timestamptz(3) @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model EmailVerificationToken {
@@ -236,7 +238,7 @@ model EmailVerificationToken {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime @db.Timestamptz(3)
-  createdAt DateTime @db.Timestamptz(3) @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model PasswordResetToken {
@@ -246,7 +248,7 @@ model PasswordResetToken {
   user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime @db.Timestamptz(3)
   used      Boolean  @default(false)
-  createdAt DateTime @db.Timestamptz(3) @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model PendingRegistration {
@@ -256,7 +258,7 @@ model PendingRegistration {
   passwordHash String
   token        String   @unique
   expiresAt    DateTime @db.Timestamptz(3)
-  createdAt    DateTime @db.Timestamptz(3) @default(now())
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model PendingEmailChange {
@@ -265,7 +267,7 @@ model PendingEmailChange {
   newEmail  String
   token     String   @unique
   expiresAt DateTime @db.Timestamptz(3)
-  createdAt DateTime @db.Timestamptz(3) @default(now())
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -273,22 +275,22 @@ model PendingEmailChange {
 model ShopInvite {
   id           String       @id @default(cuid())
   shopId       String
-  userShopId   String       // the placeholder team member this invite grants a login to
+  userShopId   String // the placeholder team member this invite grants a login to
   email        String
   role         ShopRole     @default(staff)
   status       InviteStatus @default(pending)
   tokenHash    String       @unique
-  expiresAt    DateTime @db.Timestamptz(3)
+  expiresAt    DateTime     @db.Timestamptz(3)
   createdById  String
   acceptedById String?
 
   shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   userShop   UserShop @relation(fields: [userShopId], references: [id], onDelete: Cascade)
-  createdBy  User     @relation("InviteCreatedBy",  fields: [createdById],  references: [id])
+  createdBy  User     @relation("InviteCreatedBy", fields: [createdById], references: [id])
   acceptedBy User?    @relation("InviteAcceptedBy", fields: [acceptedById], references: [id])
 
-  createdAt DateTime @db.Timestamptz(3) @default(now())
-  updatedAt DateTime @db.Timestamptz(3) @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   @@index([shopId])
   @@index([email])

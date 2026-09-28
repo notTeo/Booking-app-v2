@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Shop" ADD COLUMN "maxAdvanceDays" INTEGER NOT NULL DEFAULT 60;
