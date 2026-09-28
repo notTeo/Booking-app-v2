@@ -1,7 +1,7 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** Checkpoint after the two bug commits (S1 `28e9c7d`, S2 `0ea6259`
-+ `d6b9441`) — then out-of-hours commits **1 + 2** (migration
+**Next step:** Checkpoint (retry-safety review is done: `742acb6`, `053ac8b`,
+`c7e79fd`, `d08f231`, `47ac29a`). Then out-of-hours commits **1 + 2** (migration
 `Booking.overriddenRules` / `createdById`, then the explicit `overrideRules`
 rules contract), then checkpoint again **before any UI work**. See
 `docs/plan-out-of-hours.md` for the order and details.
@@ -149,7 +149,7 @@ before continuing.
 | 2 Timezones | **done** | `a8becd9` server (Luxon, shop tz); `6689f90` web (+ vitest, `test:tz`); follow-ups below |
 | 3 Booking rules | **partly done / partly superseded** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field. Remainder = out-of-hours plan (`overrideRules` contract, storage, UI) |
 | 4 Customer upsert | not started | — |
-| 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + 409 mapping at all four serializable sites, concurrency tests |
+| 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
 | 6 Rate limiting / JSON errors | not started | — |
 | 7 Validation | not started | — |
 | 8 Slugs | not started | — (note: `updateShop` already ignores `slug`; must become a 400 before deploy) |
@@ -178,15 +178,35 @@ before continuing.
 - `0ea6259` overlap hardening: re-occupying a slot (CANCELED/NO_SHOW →
   active) re-checks overlap; COMPLETED blocks.
 - `fb4c1e3`, `80d4ab8` out-of-hours plan doc and its decision-4 addendum.
+- `742acb6` retried booking transactions re-read everything inside the tx; retry
+  policy narrowed to 40001 / TransactionWriteConflict / P2034, capped, logged.
+- `053ac8b` inactive shop can no longer be booked through the public endpoint.
+- `c7e79fd` booking length capped at 24 h (service duration 1–1440, defensive
+  422 `BOOKING_TOO_LONG`) and a bounded overlap query.
+- `d08f231` hard time cap: 3 s / 5 attempts, per-attempt Prisma timeout +
+  Postgres `statement_timeout`/`lock_timeout`, 503 `BOOKING_BUSY`.
+- `47ac29a` Playwright owner-wizard smoke test (uses the authenticated slots
+  endpoint, never the public one).
 
 ## Known open items / notes
 
 - Web lint: 30 errors, 18 warnings (mostly `no-explicit-any`, React-hooks
   rules). Not yet fixed → group 13.
 - One unexplained, non-reproduced 404 in a single run of the overlapping-
-  bookings concurrency test right after `d6b9441` was written; 0 failures in
-  30 subsequent full-file runs. The tests now print unexpected response bodies
-  to help if it recurs.
+  bookings concurrency test right after `d6b9441` was written. Every 404 site in
+  the booking flow is listed below and none can be produced by a retry on its
+  own; 0 failures in 60+ full-file runs since (30 before and 30 after the
+  restructuring). The concurrency tests print unexpected response bodies if it
+  recurs.
+- The same single run also had a 15 s test timeout once in 30 runs — the
+  trigger for the hard time cap in `d08f231` (root cause of that one slow
+  request not proven; the cap now makes a hang impossible).
+- `BOOKING_BUSY` (503) and `BOOKING_TOO_LONG` (422) have server messages only
+  (English); the public page shows the server text — add translations in group
+  10/UI work if wanted.
+- UX gotcha in the owner wizard: changing the phone field clears the name (it
+  triggers the customer look-up), so typing the name first and the phone second
+  silently wipes the name. Not fixed.
 - Public shop info (`GET /public/:slug`) still lists active members who are
   not bookable by customers (names only, no contact data); the owner wizard
   relies on it. Consider tightening when the wizard moves to authenticated
@@ -197,10 +217,114 @@ before continuing.
   validation gaps (7), slug rules (8), ops/env (9), GDPR (10), root routing
   (11), tenant creation + Hairology seed (12), CI (13), runbook (14).
 
+## Retry safety and contention: findings and decision
+
+Reviewed at the owner's request after the concurrency work (`d6b9441`).
+
+### Findings
+
+1. **Side effects (PASS).** Emails run in the controllers after the service
+   returns (`public.controller.ts:43,63`, `booking.controller.ts:26`), never inside
+   the retried function.
+2. **Reads inside the transaction (was FAIL, fixed in `742acb6`).** The shop,
+   service, staff and schedule (and on PATCH/status the booking) were read before
+   the transaction and reused across retries, so a retry could book with a
+   deactivated provider, a stale duration or a closed day, and a booking deleted
+   meanwhile gave a 500 (Prisma `P2025`) instead of 404. Now every dependent read
+   is inside the retried function; tests force a first-attempt failure, change the
+   data, and check the retry sees it. (`cancelToken` is generated before the tx —
+   harmless, only the committing attempt persists it.)
+3. **Retry policy (was FAIL, fixed in `742acb6` + `d08f231`).** It also retried
+   unique violations, had no total-time cap and no logging. Now: only
+   40001 / `TransactionWriteConflict` / `P2034`; max 5 attempts and 3 s total; each
+   retry logged with its attempt number; a request can no longer hang (see
+   `d08f231`).
+4. **Real bug found on the way (`053ac8b`).** `POST /public/:slug/book` did not
+   check `isActive` — a deactivated shop accepted bookings.
+
+### Every 404 site in the booking flow (`api/src/services/booking.service.ts`)
+
+| Line | Where | Cause |
+|---|---|---|
+| 207 | public create | shop by slug missing **or inactive** |
+| 212 | public create | service not in that shop |
+| 276 | owner create | caller not a member of the shop |
+| 281 | owner create | service not in that shop |
+| 520 | PATCH / status (`loadBooking`) | booking missing or belongs to another shop |
+| 560 / 566 | PATCH | new service / new staff not in that shop |
+| 66 / 79 | `requireMembership` / `canViewCustomerDetails` | caller not a member |
+| 331 | slots (`getShopTimezone`) | shop missing |
+| 704 | cancel by token | unknown token |
+| `public.controller.ts:129`, `public.service.ts:5,49` | public slots / info | shop missing or inactive |
+
+A retry can only produce a 404 if the row was really deleted, deactivated or
+revoked between attempts; because the reads are now inside the transaction, the
+404 then reflects the true state (tests: shop deactivated, booking deleted,
+membership revoked between attempts).
+
+### Query plan (EXPLAIN on 200k bookings)
+
+The overlap query was **not** a sequential scan: it used
+`Booking_staffId_startTime_idx`, but with an open lower bound it read and
+discarded 354 rows (the provider's whole history, growing with time; 12 buffers).
+Bounded to `startTime > newStart - 24h` it reads a tight range (3 buffers, no
+discarded rows) on the same index — no new index needed (`c7e79fd`). That
+requires bookings to be at most 24 h, which is enforced.
+
+### Retry counts under synthetic contention (10 rounds each)
+
+Requests that should all succeed but were aborted and retried by Postgres
+(serializable "false conflicts"). Zero 5xx, zero exhausted retries, zero
+double bookings, ~30–60 ms per round in every variant.
+
+| Variant | A: 10 same slot (retries) | B: 6 different slots, 1 provider (retries / 60 req) | C: 6 providers, same time (retries / 60 req) | D: 6 different shops (retries / 60 req) |
+|---|---|---|---|---|
+| Unbounded query, test DB | 90 | 70 | 60 | — |
+| Bounded query, test DB | 90 | 76 | 49 | 65 |
+| Unbounded, 200k-row DB | 90 | 87 | 45 | — |
+| Bounded, 200k-row DB | 90 | 75 | 55 | — |
+| + `enable_seqscan=off` | 90 | 70 | 46 | — |
+| + customer write removed | 90 | 81 | 55 | — |
+| + both | 90 | 72 | 56 | 59 |
+
+(A's 90 = the nine losers each retrying once before seeing the real overlap.)
+
+Conflicts occur even between different shops, and none of the tested
+interventions changed the rate, so the cause was **not isolated** (the working
+theory is Postgres SSI's page-level predicate locks on tiny indexes; unproven).
+
+### Decision: stop tuning
+
+Retry counts under artificial 10-way contention are not a launch concern;
+correctness is. The behaviour is correct: exactly one winner, everything else a
+clean 409, no 5xx, no hangs. **The retry-rate investigation is closed.** The
+bounded query and length cap stay (cheap, tested, scan cost no longer grows with
+history).
+
+**Planned structural fix:** the Postgres exclusion constraint (out-of-hours plan,
+decision 5): `btree_gist` over the provider and a time range, filtered to
+slot-holding statuses. It makes overlap impossible at the database level
+regardless of isolation level, and would let the application drop to a cheaper
+scheme (retry only on the constraint violation) — removing serializable false
+conflicts at scale. Preconditions unchanged: verify `btree_gist` on a real
+Railway Postgres, and confirm `prisma migrate diff` neither reports drift nor
+tries to drop it; if either fails, skip it and say so.
+
+### Hard time cap (`d08f231`)
+
+3 s total and 5 attempts per operation; every attempt receives the *remaining*
+budget as Prisma `timeout`/`maxWait` **and** Postgres `statement_timeout` /
+`lock_timeout` (`set_config`, transaction-local), so a statement blocked on a
+lock is cancelled too (Prisma's timeout alone only fires between statements —
+verified against the real DB for raw SQL and ORM calls). Out of budget/attempts →
+**503 `BOOKING_BUSY`** with `Retry-After: 1` (not a hang, not a 500, and no longer
+a misleading "slot taken"). Timeouts are not retried. Verification: the 10-request
+concurrency file ×30 runs — zero failures, zero 5xx, every request < 4 s.
+
 ## How to verify the current state
 
 ```bash
-cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 177 tests x 3 zones
+cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 210 tests x 3 zones
 cd web && npx tsc -b && npm run test:tz && npm run build        # lint has 30 known errors
-npm run e2e                                                     # from repo root
+npm run e2e                                                     # from repo root (5 pass, 1 skipped)
 ```
