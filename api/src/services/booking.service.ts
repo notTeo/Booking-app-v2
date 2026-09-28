@@ -6,6 +6,7 @@ import { redactCustomer } from '../utils/customerVisibility';
 import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
 import { buildSlotCandidates } from '../utils/slots';
 import { assertBookingRules, loadDayHours } from './bookingRules.service';
+import { withSerializableRetry } from '../utils/serializable';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
 // Only these statuses release a slot. COMPLETED does NOT — that time was
@@ -124,8 +125,8 @@ export const createBooking = async (
     endTime,
   });
 
-  try {
-    return await prisma.$transaction(
+  return await withSerializableRetry(() =>
+    prisma.$transaction(
       async (tx) => {
         // Overlap check: any booking for same staff where ranges intersect
         const conflict = await tx.booking.findFirst({
@@ -171,13 +172,8 @@ export const createBooking = async (
         });
       },
       { isolationLevel: 'Serializable' },
-    );
-  } catch (err: any) {
-    // P2034 = transaction conflict under Serializable — safe to retry, but for MVP just 409
-    if (err?.code === 'P2034')
-      throw new AppError(409, 'Booking conflict, please try again');
-    throw err;
-  }
+    ),
+  );
 };
 
 // ── Owner / Staff booking creation ──────────────────────────────────────────
@@ -245,8 +241,8 @@ export const createBookingForShop = async (
     });
   }
 
-  try {
-    return await prisma.$transaction(
+  return await withSerializableRetry(() =>
+    prisma.$transaction(
       async (tx) => {
         const conflict = await tx.booking.findFirst({
           where: {
@@ -291,12 +287,8 @@ export const createBookingForShop = async (
         });
       },
       { isolationLevel: 'Serializable' },
-    );
-  } catch (err: any) {
-    if (err?.code === 'P2034')
-      throw new AppError(409, 'Booking conflict, please try again');
-    throw err;
-  }
+    ),
+  );
 };
 
 // The shop's IANA timezone — every wall-clock <-> UTC conversion uses it.
@@ -581,8 +573,8 @@ export const updateBooking = async (
     });
   }
 
-  try {
-    return await prisma.$transaction(
+  return await withSerializableRetry(() =>
+    prisma.$transaction(
       async (tx) => {
         // Same overlap check as createBooking, excluding this booking itself.
         const conflict = await tx.booking.findFirst({
@@ -609,13 +601,8 @@ export const updateBooking = async (
         };
       },
       { isolationLevel: 'Serializable' },
-    );
-  } catch (err: any) {
-    // P2034 = transaction conflict under Serializable — same 409 shape as createBooking
-    if (err?.code === 'P2034')
-      throw new AppError(409, 'Booking conflict, please try again');
-    throw err;
-  }
+    ),
+  );
 };
 
 export const deleteBooking = async (
@@ -657,8 +644,8 @@ export const updateBookingStatus = async (
     };
   }
 
-  try {
-    return await prisma.$transaction(
+  return await withSerializableRetry(() =>
+    prisma.$transaction(
       async (tx) => {
         const conflict = await tx.booking.findFirst({
           where: {
@@ -683,12 +670,8 @@ export const updateBookingStatus = async (
         };
       },
       { isolationLevel: 'Serializable' },
-    );
-  } catch (err: any) {
-    if (err?.code === 'P2034')
-      throw new AppError(409, 'Booking conflict, please try again');
-    throw err;
-  }
+    ),
+  );
 };
 
 export const cancelBookingByToken = async (token: string) => {
