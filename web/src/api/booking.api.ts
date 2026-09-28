@@ -72,7 +72,38 @@ export interface OwnerCreateBookingPayload {
   staffId?: string;
   startTime: string; // ISO 8601
   notes?: string;
+  /** Bypass the booking rules (never the overlap check). Sent only after the
+   * user confirmed a rule violation the server reported with a 422 `code`. */
+  override?: boolean;
 }
 
 export const createOwnerBooking = (shopId: string, payload: OwnerCreateBookingPayload) =>
   client.post(base(shopId), payload).then((r) => r.data.data as Booking);
+
+/** Server-side booking-rule violations (HTTP 422). Owners may override these. */
+export const BOOKING_RULE_CODES = [
+  'BOOKING_IN_PAST',
+  'BOOKING_BEYOND_ADVANCE_WINDOW',
+  'SHOP_CLOSED',
+  'OUTSIDE_OPENING_HOURS',
+  'OFF_SLOT_GRID',
+] as const;
+export type BookingRuleCode = (typeof BOOKING_RULE_CODES)[number];
+
+export interface ApiErrorInfo {
+  status?: number;
+  code?: string;
+  message?: string;
+}
+
+/** Pull status / machine code / message out of an axios error. */
+export const getApiError = (err: unknown): ApiErrorInfo => {
+  const r = (err as { response?: { status?: number; data?: { code?: string; message?: string } } })
+    ?.response;
+  return { status: r?.status, code: r?.data?.code, message: r?.data?.message };
+};
+
+export const isBookingRuleViolation = (
+  e: ApiErrorInfo,
+): e is ApiErrorInfo & { code: BookingRuleCode } =>
+  e.status === 422 && (BOOKING_RULE_CODES as readonly string[]).includes(e.code ?? '');

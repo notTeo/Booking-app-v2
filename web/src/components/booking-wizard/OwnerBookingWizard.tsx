@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { createOwnerBooking, type Booking } from '../../api/booking.api';
+import {
+  createOwnerBooking,
+  getApiError,
+  isBookingRuleViolation,
+  type Booking,
+  type BookingRuleCode,
+} from '../../api/booking.api';
+import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
 import WizardStepsIndicator from './WizardStepsIndicator';
@@ -31,6 +38,12 @@ export default function OwnerBookingWizard({
   const wizard = useBookingWizard({ slug, initialMemberId, initialDate, internal: true });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Set when the server rejected the booking for a rule violation (422). The
+  // form values are kept so "book anyway" can resend them with override.
+  const [pendingOverride, setPendingOverride] = useState<{
+    values: OwnerCustomerFormValues;
+    code: BookingRuleCode;
+  } | null>(null);
 
   if (wizard.loading) {
     return <div className="public-loading"><div className="spinner" /></div>;
@@ -41,7 +54,7 @@ export default function OwnerBookingWizard({
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
 
-  async function handleSubmit(values: OwnerCustomerFormValues) {
+  async function handleSubmit(values: OwnerCustomerFormValues, override = false) {
     if (!wizard.selectedServiceId) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -54,13 +67,22 @@ export default function OwnerBookingWizard({
         staffId: wizard.selectedMemberId ?? undefined,
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: values.notes,
+        ...(override && { override: true }),
       });
+      setPendingOverride(null);
       onDone(booking);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })
-          ?.response?.data?.message ?? t.bookings.createError;
-      setSubmitError(msg);
+      const info = getApiError(err);
+      if (isBookingRuleViolation(info)) {
+        // Ask before breaking a rule; overlap (409) is never offered an override.
+        setPendingOverride({ values, code: info.code });
+      } else if (info.code === 'SLOT_TAKEN') {
+        setPendingOverride(null);
+        setSubmitError(t.bookings.override.SLOT_TAKEN);
+      } else {
+        setPendingOverride(null);
+        setSubmitError(info.message ?? t.bookings.createError);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -118,10 +140,22 @@ export default function OwnerBookingWizard({
           selectedMember={selectedMember}
           date={wizard.date}
           time={wizard.time}
-          onSubmit={handleSubmit}
+          onSubmit={(values) => handleSubmit(values)}
           onBack={handleBackFromForm}
           submitting={submitting}
           error={submitError}
+        />
+      )}
+
+      {pendingOverride && (
+        <ConfirmDialog
+          title={t.bookings.override.title}
+          message={t.bookings.override[pendingOverride.code]}
+          confirmLabel={t.bookings.override.confirm}
+          cancelLabel={t.bookings.override.cancel}
+          busy={submitting}
+          onConfirm={() => handleSubmit(pendingOverride.values, true)}
+          onCancel={() => setPendingOverride(null)}
         />
       )}
     </section>

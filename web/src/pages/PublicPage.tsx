@@ -10,7 +10,8 @@ import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
-import { todayInZone } from '../utils/shopTime';
+import { shiftDate, todayInZone } from '../utils/shopTime';
+import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import '../styles/pages/public.css';
 
 export default function PublicPage() {
@@ -55,9 +56,12 @@ export default function PublicPage() {
       });
       setConfirmed(true);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })
-          ?.response?.data?.message ?? t.public.somethingWrong;
+      const info = getApiError(err);
+      const msg = isBookingRuleViolation(info)
+        ? t.public.ruleErrors[info.code]
+        : info.code === 'SLOT_TAKEN'
+          ? t.public.ruleErrors.SLOT_TAKEN
+          : (info.message ?? t.public.somethingWrong);
       setSubmitError(msg);
     } finally {
       setSubmitting(false);
@@ -134,6 +138,7 @@ export default function PublicPage() {
                 selectedService={wizard.selectedService}
                 selectedMember={selectedMember}
                 minDate={todayInZone(shop.timezone)}
+                maxDate={shiftDate(todayInZone(shop.timezone), shop.maxAdvanceDays)}
                 mode="public"
                 onDateChange={wizard.handleDateChange}
                 onSelectTime={wizard.setTime}

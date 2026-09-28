@@ -10,6 +10,7 @@ export interface Shop {
   phone?: string;
   formattedAddress?: string;
   timezone: string;
+  maxAdvanceDays: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -23,6 +24,7 @@ export interface CreateShopDto {
   phone?: string;
   formattedAddress?: string;
   timezone?: string;
+  maxAdvanceDays?: number;
 }
 export interface UpdateShopDto extends Partial<CreateShopDto> {
   isActive?: boolean;

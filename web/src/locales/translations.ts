@@ -1,5 +1,15 @@
 export type Language = 'el' | 'en';
 
+// Messages for the server's booking-rule violations (422 `code`s) + slot conflict.
+export interface RuleMessages {
+  BOOKING_IN_PAST: string;
+  BOOKING_BEYOND_ADVANCE_WINDOW: string;
+  SHOP_CLOSED: string;
+  OUTSIDE_OPENING_HOURS: string;
+  OFF_SLOT_GRID: string;
+  SLOT_TAKEN: string;
+}
+
 export interface Translations {
   nav: {
     login: string;
@@ -601,6 +611,8 @@ export interface Translations {
     errorDelete: string;
     yesDeleteShop: string;
     areYouSure: string;
+    maxAdvanceLabel: string;
+    maxAdvanceHint: string;
   };
   sharing: {
     title: string;
@@ -639,6 +651,7 @@ export interface Translations {
     bookingConfirmedMsg: string;
     shopNotFound: string;
     somethingWrong: string;
+    ruleErrors: RuleMessages;
     closedThisDay: string;
     closedOrNoSchedule: string;
     manageWorkingHours: string;
@@ -714,6 +727,11 @@ export interface Translations {
     creating: string;
     createSuccess: string;
     createError: string;
+    override: RuleMessages & {
+      title: string;
+      confirm: string;
+      cancel: string;
+    };
   };
   cancelBooking: {
     invalidLink: string;
@@ -1330,6 +1348,8 @@ home: {
       errorDelete: 'Αποτυχία διαγραφής καταστήματος.',
       yesDeleteShop: 'Ναι, Διαγραφή Καταστήματος',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το {name} και όλα τα δεδομένα του.',
+      maxAdvanceLabel: 'Παράθυρο κρατήσεων (ημέρες)',
+      maxAdvanceHint: 'Πόσες ημέρες μπροστά μπορούν οι πελάτες να κλείσουν ραντεβού.',
     },
     sharing: {
       title: 'Ο σύνδεσμος κράτησής σας',
@@ -1375,6 +1395,14 @@ home: {
       serviceContext: 'Υπηρεσία:',
       staffContext: 'Προσωπικό:',
       atLabel: 'στις',
+      ruleErrors: {
+        BOOKING_IN_PAST: 'Αυτή η ώρα έχει ήδη περάσει. Επιλέξτε άλλη.',
+        BOOKING_BEYOND_ADVANCE_WINDOW: 'Δεν δεχόμαστε κρατήσεις τόσο μακριά στο μέλλον. Επιλέξτε πιο κοντινή ημερομηνία.',
+        SHOP_CLOSED: 'Το κατάστημα είναι κλειστό αυτή την ημέρα.',
+        OUTSIDE_OPENING_HOURS: 'Η ώρα αυτή είναι εκτός ωραρίου λειτουργίας.',
+        OFF_SLOT_GRID: 'Η ώρα αυτή δεν είναι διαθέσιμη για κράτηση.',
+        SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
+      },
     },
     overview: {
       greeting: 'Γεια σου, {name}!',
@@ -1443,6 +1471,17 @@ home: {
       creating: 'Δημιουργία…',
       createSuccess: 'Το ραντεβού δημιουργήθηκε!',
       createError: 'Αποτυχία δημιουργίας ραντεβού.',
+      override: {
+        BOOKING_IN_PAST: 'Η ώρα αυτή βρίσκεται στο παρελθόν.',
+        BOOKING_BEYOND_ADVANCE_WINDOW: 'Η ημερομηνία είναι πέρα από το επιτρεπόμενο διάστημα κρατήσεων.',
+        SHOP_CLOSED: 'Το κατάστημα είναι κλειστό αυτή την ημέρα.',
+        OUTSIDE_OPENING_HOURS: 'Η ώρα αυτή είναι εκτός ωραρίου λειτουργίας.',
+        OFF_SLOT_GRID: 'Η ώρα αυτή δεν είναι τυπική ώρα κράτησης.',
+        SLOT_TAKEN: 'Η ώρα αυτή είναι ήδη κρατημένη για τον συνεργάτη.',
+        title: 'Να γίνει η κράτηση παρ’ όλα αυτά;',
+        confirm: 'Κράτηση παρ’ όλα αυτά',
+        cancel: 'Άκυρο',
+      },
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -2058,6 +2097,8 @@ home: {
       errorDelete: 'Failed to delete shop.',
       yesDeleteShop: 'Yes, Delete Shop',
       areYouSure: 'Are you sure? This will permanently delete {name} and all its data.',
+      maxAdvanceLabel: 'Booking window (days)',
+      maxAdvanceHint: 'How many days ahead customers can book an appointment.',
     },
     sharing: {
       title: 'Your booking link',
@@ -2103,6 +2144,14 @@ home: {
       serviceContext: 'Service:',
       staffContext: 'Staff:',
       atLabel: 'at',
+      ruleErrors: {
+        BOOKING_IN_PAST: 'That time has already passed. Please choose another.',
+        BOOKING_BEYOND_ADVANCE_WINDOW: "We don't take bookings that far ahead. Please choose an earlier date.",
+        SHOP_CLOSED: 'The shop is closed on that day.',
+        OUTSIDE_OPENING_HOURS: 'That time is outside opening hours.',
+        OFF_SLOT_GRID: 'That time is not available for booking.',
+        SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
+      },
     },
     overview: {
       greeting: 'Hello, {name}!',
@@ -2171,6 +2220,17 @@ home: {
       creating: 'Creating…',
       createSuccess: 'Booking created!',
       createError: 'Failed to create booking.',
+      override: {
+        BOOKING_IN_PAST: 'That time is in the past.',
+        BOOKING_BEYOND_ADVANCE_WINDOW: "That date is beyond the shop's booking window.",
+        SHOP_CLOSED: 'The shop is closed on that day.',
+        OUTSIDE_OPENING_HOURS: 'That time is outside opening hours.',
+        OFF_SLOT_GRID: "That isn't a regular booking time.",
+        SLOT_TAKEN: 'That time is already booked for this team member.',
+        title: 'Book anyway?',
+        confirm: 'Book anyway',
+        cancel: 'Cancel',
+      },
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

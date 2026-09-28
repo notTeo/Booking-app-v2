@@ -20,6 +20,7 @@ export default function DateTimeStep({
   selectedService,
   selectedMember,
   minDate,
+  maxDate,
   timeHint,
   mode,
   closedLinkTo,
@@ -34,6 +35,7 @@ export default function DateTimeStep({
   selectedService: Service | null;
   selectedMember: ShopMember | null;
   minDate?: string;
+  maxDate?: string;
   timeHint?: string;
   /** 'public' = customer-facing booking page, 'internal' = owner/staff creating a booking. */
   mode: 'public' | 'internal';
@@ -94,6 +96,7 @@ export default function DateTimeStep({
           value={date}
           onChange={onDateChange}
           min={minDate}
+          max={maxDate}
         />
       </div>
 

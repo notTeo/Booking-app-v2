@@ -49,6 +49,7 @@ export default function ShopSettingsPage() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [timezone, setTimezone] = useState('');
+  const [maxAdvanceDays, setMaxAdvanceDays] = useState('60');
   const [isActive, setIsActive] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
@@ -73,6 +74,7 @@ export default function ShopSettingsPage() {
           setPhone(found.phone ?? '');
           setAddress(found.formattedAddress ?? '');
           setTimezone(found.timezone);
+          setMaxAdvanceDays(String(found.maxAdvanceDays));
           setIsActive(found.isActive);
         }
       })
@@ -99,6 +101,7 @@ export default function ShopSettingsPage() {
         ...(phone !== undefined && { phone }),
         formattedAddress: address,
         timezone,
+        maxAdvanceDays: Number(maxAdvanceDays),
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
@@ -233,6 +236,21 @@ export default function ShopSettingsPage() {
                 <option key={tz} value={tz}>{tz}</option>
               ))}
             </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
+            <input
+              id="detail-max-advance"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={730}
+              step={1}
+              value={maxAdvanceDays}
+              onChange={(e) => setMaxAdvanceDays(e.target.value)}
+              required
+            />
+            <small className="form-hint">{t.shopSettings.maxAdvanceHint}</small>
           </div>
         </div>
 

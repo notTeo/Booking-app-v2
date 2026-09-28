@@ -58,6 +58,7 @@ export interface ShopInfo {
   phone: string | null;
   formattedAddress: string | null;
   timezone: string;
+  maxAdvanceDays: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
