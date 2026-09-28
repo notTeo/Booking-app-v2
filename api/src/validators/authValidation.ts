@@ -15,7 +15,7 @@ export const registerValidation = [
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)
     .withMessage('Password must contain at least one number')
-    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/)
+    .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
   body('inviteToken')
     .optional()
@@ -58,6 +58,6 @@ export const resetPasswordValidation = [
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)
     .withMessage('Password must contain at least one number')
-    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/)
+    .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
 ];

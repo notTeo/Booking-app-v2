@@ -14,7 +14,7 @@ export const updateMeValidation = [
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)
     .withMessage('Password must contain at least one number')
-    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/)
+    .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
 ];
 
