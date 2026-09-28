@@ -1,12 +1,20 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** out-of-hours commit **7** — web calendar (dynamic range, override
-styling, out-of-view safety net, real "Other" column). Its per-provider
-non-working shading needs the commit-5 day-schedule endpoint, which is Phase B:
-the owner decides whether to pull commit 5 forward or ship commit 7 without
-shading. Done and pushed: commits 1, 2, 4, 6, the web dialog fix and a calendar
-stale-response fix. (Commit 9 is partly done: the form spec exists; the calendar
-assertions wait for commit 7.)
+**Next step:** finish out-of-hours commit **7** (web calendar). Done so far: the
+day-schedule endpoint (commit 5, `8a66659`) and the pure, tested calendar model
+`web/src/pages/calendarModel.ts` (visible range, hatched segments, override tags,
+block geometry). NOT yet done, in order: (1) `getDaySchedule` in
+`web/src/api/workingHours.api.ts` and add `endTime`/`overriddenRules`/`createdById`
+to the web `Booking` type; (2) wire `ShopBookingsPage.tsx` to the model (dynamic
+rows instead of GRID_START/GRID_END, hatched off-segments with an "Off" label,
+dashed border + ☾ + text tag from the stored codes, midnight-crossing clamp with
+"→ next day", a real "Other" column, an "N bookings outside the visible range"
+banner, clicking a hatched area opens the form with the toggle on via a new
+`defaultShowOutside` prop on `DateTimeStep`); (3) CSS + el/en translations
+(`bookings.calendar.*`); (4) the calendar assertions in
+`e2e/tests/owner-outside-hours.spec.ts` (06:15 and 22:30 bookings visible, a
+closed-day booking visible and tagged). Then commit 8 (mobile), the rest of
+Phase A. Pushed through `9cbab41`; commit 5 and the model are local only.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
