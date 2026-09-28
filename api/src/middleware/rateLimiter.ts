@@ -1,7 +1,13 @@
 import rateLimit from 'express-rate-limit';
 import { RequestHandler } from 'express';
 
-const isTest = process.env.NODE_ENV === 'test';
+// Limiters are off in tests, and can be switched off with RATE_LIMIT_DISABLED=true
+// for non-production runs only (the e2e suite drives a real browser through many
+// logins and page loads from one IP). Production ALWAYS keeps them on.
+const isTest =
+  process.env.NODE_ENV === 'test' ||
+  (process.env.RATE_LIMIT_DISABLED === 'true' &&
+    process.env.NODE_ENV !== 'production');
 const passThrough: RequestHandler = (_req, _res, next) => next();
 
 export const authLimiter: RequestHandler = isTest

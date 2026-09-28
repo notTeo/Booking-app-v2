@@ -13,6 +13,9 @@ const apiEnv = {
   JWT_REFRESH_SECRET: 'e2e-refresh-secret',
   RESEND_API_KEY: 're_e2e_dummy',
   EMAIL_FROM: 'e2e@example.com',
+  // One browser IP does many logins/page loads; the 10-per-15-min auth limiter
+  // would block the suite. (Ignored by the API in production.)
+  RATE_LIMIT_DISABLED: 'true',
 };
 
 export default defineConfig({
