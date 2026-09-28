@@ -27,6 +27,11 @@ async function setupShop() {
     data: { shopId: shop.id, name: 'Haircut', duration: 30, price: 2000 },
   });
 
+  // The "no staff preference" flow only considers staff assigned to the service.
+  await prisma.staffService.create({
+    data: { userShopId: staff.id, serviceId: service.id },
+  });
+
   return { owner, shop, staff, service };
 }
 
