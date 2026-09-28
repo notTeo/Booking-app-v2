@@ -260,7 +260,8 @@ describe('side effects only happen after a successful commit', () => {
     vi.spyOn(txRunner, 'run').mockImplementation((() =>
       Promise.reject(conflict())) as never);
     const res = await pub(t);
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe('BOOKING_BUSY');
     await new Promise((r) => setTimeout(r, 50));
     expect(email.sendBookingConfirmationEmail).not.toHaveBeenCalled();
   });
@@ -303,11 +304,11 @@ describe('withSerializableRetry: what is retried, and the caps', () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 
-  it(`is capped at ${SERIALIZABLE_RETRY.maxAttempts} attempts, then a clean 409 SLOT_TAKEN`, async () => {
+  it(`is capped at ${SERIALIZABLE_RETRY.maxAttempts} attempts, then a clean 503 BOOKING_BUSY`, async () => {
     const run = vi.fn().mockRejectedValue(conflict());
     await expect(withSerializableRetry(run)).rejects.toMatchObject({
-      statusCode: 409,
-      code: 'SLOT_TAKEN',
+      statusCode: 503,
+      code: 'BOOKING_BUSY',
     });
     expect(run).toHaveBeenCalledTimes(SERIALIZABLE_RETRY.maxAttempts);
     expect(retryStats.exhausted).toBe(1);
@@ -321,7 +322,7 @@ describe('withSerializableRetry: what is retried, and the caps', () => {
     const t0 = performance.now();
     await expect(
       withSerializableRetry(run, { maxAttempts: 100, maxElapsedMs: 100 }),
-    ).rejects.toMatchObject({ statusCode: 409 });
+    ).rejects.toMatchObject({ statusCode: 503 });
     expect(performance.now() - t0).toBeLessThan(400);
     expect(run.mock.calls.length).toBeGreaterThan(1);
     expect(run.mock.calls.length).toBeLessThan(10);
@@ -357,5 +358,129 @@ describe('withSerializableRetry: what is retried, and the caps', () => {
       succeededAfterRetry: 1,
       exhausted: 0,
     });
+  });
+});
+
+describe('a request can never hang: hard total time cap', () => {
+  it('continuous serialization failures with slow attempts stop at ~3s with 503, not later', async () => {
+    // Each attempt takes up to 700 ms but honours the budget it is given (as
+    // Prisma\'s transaction timeout does), then fails with a conflict.
+    const run = vi.fn(async (b?: { timeoutMs: number }) => {
+      await new Promise((r) =>
+        setTimeout(r, Math.min(700, b?.timeoutMs ?? 700)),
+      );
+      throw conflict();
+    });
+    const t0 = performance.now();
+    await expect(
+      withSerializableRetry(run, { maxAttempts: 100 }),
+    ).rejects.toMatchObject({
+      statusCode: 503,
+      code: 'BOOKING_BUSY',
+    });
+    const elapsed = performance.now() - t0;
+    expect(elapsed).toBeGreaterThan(SERIALIZABLE_RETRY.maxElapsedMs - 200);
+    expect(elapsed).toBeLessThan(SERIALIZABLE_RETRY.maxElapsedMs + 400);
+  }, 10_000);
+
+  it('each attempt is handed the REMAINING time budget (it shrinks)', async () => {
+    const budgets: number[] = [];
+    const run = vi.fn(async (b?: { timeoutMs: number }) => {
+      budgets.push(b!.timeoutMs);
+      await new Promise((r) => setTimeout(r, 300));
+      throw conflict();
+    });
+    await expect(
+      withSerializableRetry(run, { maxAttempts: 100, maxElapsedMs: 1000 }),
+    ).rejects.toBeDefined();
+    expect(budgets.length).toBeGreaterThan(1);
+    expect(budgets[0]).toBeLessThanOrEqual(1000);
+    for (let i = 1; i < budgets.length; i++)
+      expect(budgets[i]).toBeLessThan(budgets[i - 1]);
+  });
+
+  it('HTTP: continuous conflicts return 503 + Retry-After within the cap; nothing written, no email', async () => {
+    const t = await shop();
+    vi.spyOn(txRunner, 'run').mockImplementation((async (
+      _fn: unknown,
+      b?: { timeoutMs: number },
+    ) => {
+      await new Promise((r) =>
+        setTimeout(r, Math.min(600, b?.timeoutMs ?? 600)),
+      );
+      throw conflict();
+    }) as never);
+    const t0 = performance.now();
+    const res = await pub(t);
+    const elapsed = performance.now() - t0;
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe('BOOKING_BUSY');
+    expect(res.headers['retry-after']).toBe('1');
+    expect(elapsed).toBeLessThan(SERIALIZABLE_RETRY.maxElapsedMs + 500);
+    expect(await prisma.booking.count()).toBe(0);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(email.sendBookingConfirmationEmail).not.toHaveBeenCalled();
+  }, 10_000);
+
+  it('REAL DB: an attempt stuck in a slow query is cancelled at its budget -> 503, quickly', async () => {
+    const t0 = performance.now();
+    await expect(
+      withSerializableRetry(
+        (budget) =>
+          txRunner.run(async (tx) => {
+            await tx.$queryRaw`select pg_sleep(2)`;
+          }, budget),
+        { maxElapsedMs: 400 },
+      ),
+    ).rejects.toMatchObject({ statusCode: 503, code: 'BOOKING_BUSY' });
+    expect(performance.now() - t0).toBeLessThan(1200);
+  });
+
+  for (const kind of ['raw SQL', 'ORM call'] as const) {
+    it(`REAL DB: an attempt waiting on a lock held by another transaction gives up at its budget -> 503 (${kind})`, async () => {
+      const t = await createTenant('Lock');
+      let release!: () => void;
+      const held = new Promise<void>((r) => (release = r));
+      const holder = prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`select id from "Shop" where id = ${t.shop.id} for update`;
+        await held;
+      });
+      await new Promise((r) => setTimeout(r, 200)); // let the holder take the lock
+      const t0 = performance.now();
+      try {
+        await expect(
+          withSerializableRetry(
+            (budget) =>
+              txRunner.run(async (tx) => {
+                if (kind === 'raw SQL') {
+                  await tx.$queryRaw`update "Shop" set name = 'blocked' where id = ${t.shop.id}`;
+                } else {
+                  await tx.shop.update({
+                    where: { id: t.shop.id },
+                    data: { name: 'blocked' },
+                  });
+                }
+              }, budget),
+            { maxElapsedMs: 500 },
+          ),
+        ).rejects.toMatchObject({ statusCode: 503, code: 'BOOKING_BUSY' });
+        expect(performance.now() - t0).toBeLessThan(1500);
+      } finally {
+        release();
+        await holder;
+      }
+    });
+  }
+
+  it('a transaction timeout (P2028) surfaces as 503 BOOKING_BUSY, not a 500', async () => {
+    const timeout = Object.assign(new Error('Transaction API error'), {
+      code: 'P2028',
+    });
+    const run = vi.fn().mockRejectedValue(timeout);
+    await expect(withSerializableRetry(run)).rejects.toMatchObject({
+      statusCode: 503,
+      code: 'BOOKING_BUSY',
+    });
+    expect(run).toHaveBeenCalledTimes(1); // a timeout is not retried
   });
 });

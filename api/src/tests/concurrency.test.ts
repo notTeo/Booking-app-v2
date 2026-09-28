@@ -16,6 +16,9 @@ vi.mock('../services/email.service');
 // Exactly ONE may win; every loser is a clean 409; there must never be a 5xx
 // (serialization failures from Postgres are retried, then reported as 409).
 const ROUNDS = 6;
+// No single request may take anywhere near a proxy/client timeout.
+const MAX_REQUEST_MS = 4000;
+vi.setConfig({ testTimeout: 30_000 });
 const N = 10;
 const SLOT = '2026-12-08T10:00:00+02:00';
 
@@ -28,22 +31,40 @@ const activeCount = (t: Tenant) =>
   prisma.booking.count({
     where: { staffId: t.staff.id, status: { notIn: ['CANCELED', 'NO_SHOW'] } },
   });
-const codes = (rs: { status: number }[]) => rs.map((r) => r.status).sort();
+type Timed = { status: number; elapsedMs?: number };
+// Statuses of a burst, sorted. Also fails if any request was slow: a request
+// must never hang, whatever the contention.
+const codes = (rs: Timed[]) => {
+  const slow = rs.filter((r) => (r.elapsedMs ?? 0) > MAX_REQUEST_MS);
+  if (slow.length > 0) {
+    throw new Error(
+      `${slow.length} request(s) took longer than ${MAX_REQUEST_MS} ms (slowest ${Math.round(Math.max(...slow.map((r) => r.elapsedMs ?? 0)))} ms)`,
+    );
+  }
+  return rs.map((r) => r.status).sort();
+};
+const timed = async <T extends object>(p: PromiseLike<T>) => {
+  const t0 = performance.now();
+  const r = await p;
+  return Object.assign(r, { elapsedMs: performance.now() - t0 });
+};
 // Shown in failure messages: the bodies of any response that is not a clean win/409.
 const odd = (rs: { status: number; body: unknown }[]) =>
   JSON.stringify(
     rs.filter((r) => r.status !== 201 && r.status !== 409).map((r) => r.body),
   );
 const publicBook = (t: Tenant, i: number, startTime: string, phone?: string) =>
-  request(app)
-    .post(`/public/${t.shop.slug}/book`)
-    .send({
-      name: `C${i}`,
-      phone: phone ?? `69000${String(i).padStart(5, '0')}`,
-      serviceId: t.service.id,
-      staffId: t.staff.id,
-      startTime,
-    });
+  timed(
+    request(app)
+      .post(`/public/${t.shop.slug}/book`)
+      .send({
+        name: `C${i}`,
+        phone: phone ?? `69000${String(i).padStart(5, '0')}`,
+        serviceId: t.service.id,
+        staffId: t.staff.id,
+        startTime,
+      }),
+  );
 
 describe('concurrent bookings for the same provider', () => {
   it(`${N} simultaneous public bookings, same slot, distinct customers: exactly 1 wins, no 5xx (x${ROUNDS} rounds)`, async () => {
