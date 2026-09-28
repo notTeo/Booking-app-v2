@@ -178,7 +178,8 @@ export const createBooking = async (
   const cancelToken = randomUUID(); // only persisted by the attempt that commits
 
   return serializableTransaction(async (tx) => {
-    const shop = await tx.shop.findFirst({ where: { slug } });
+    // An inactive shop is invisible to the public (info and slots already 404).
+    const shop = await tx.shop.findFirst({ where: { slug, isActive: true } });
     if (!shop) throw new AppError(404, 'Shop not found');
 
     const service = await tx.service.findFirst({

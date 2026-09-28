@@ -121,6 +121,27 @@ describe('a retried booking re-reads everything it depends on (nothing stale)', 
     expect(res.body.code).toBe('SHOP_CLOSED');
   });
 
+  it('public: shop deactivated between attempts -> 404', async () => {
+    const t = await shop();
+    failFirstAttempt(() =>
+      prisma.shop.update({
+        where: { id: t.shop.id },
+        data: { isActive: false },
+      }),
+    );
+    expect((await pub(t)).status).toBe(404);
+    expect(await prisma.booking.count()).toBe(0);
+  });
+
+  it('public: an INACTIVE shop cannot be booked at all (404), like its slots and info', async () => {
+    const t = await shop();
+    await prisma.shop.update({
+      where: { id: t.shop.id },
+      data: { isActive: false },
+    });
+    expect((await pub(t)).status).toBe(404);
+  });
+
   it('owner: membership revoked between attempts -> 404, nothing booked', async () => {
     const t = await shop();
     // revoke the login link (the membership row itself is referenced elsewhere)
