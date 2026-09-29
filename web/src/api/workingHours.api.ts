@@ -46,6 +46,16 @@ export interface UpsertDaysDto {
   }[];
 }
 
+/** memberId -> that day's opening ranges, or null when the member is closed
+ * (no active schedule, day off, or outside the schedule's dates). Every
+ * member of the shop is included, even inactive or login-less ones. */
+export type DaySchedule = Record<string, HourRange[] | null>;
+
+export const getDaySchedule = (shopId: string, date: string) =>
+  client
+    .get(`/api/shops/${shopId}/schedules/day`, { params: { date } })
+    .then((r) => r.data.data as DaySchedule);
+
 export const getSchedules = (shopId: string) =>
   client.get(`/api/shops/${shopId}/schedules`).then((r) => r.data.data as Schedule[]);
 

@@ -24,6 +24,7 @@ export default function OwnerBookingWizard({
   initialMemberId,
   initialDate,
   timeHint,
+  defaultShowOutside,
   onDone,
   hideTitle,
 }: {
@@ -32,6 +33,8 @@ export default function OwnerBookingWizard({
   initialMemberId?: string;
   initialDate?: string;
   timeHint?: string;
+  /** Start the date/time step with the out-of-hours toggle already on. */
+  defaultShowOutside?: boolean;
   onDone: (booking: Booking) => void;
   /** Skip the internal heading when the wizard is embedded under a panel that already shows its own title (e.g. the calendar's quick-create panel). */
   hideTitle?: boolean;
@@ -135,6 +138,7 @@ export default function OwnerBookingWizard({
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           timeHint={timeHint}
+          defaultShowOutside={defaultShowOutside}
           // Owners may log past bookings; the advance window is never overridable.
           maxDate={shiftDate(todayInZone(wizard.shop.timezone), wizard.shop.maxAdvanceDays)}
           mode="internal"

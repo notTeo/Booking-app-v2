@@ -25,6 +25,7 @@ export default function DateTimeStep({
   timeHint,
   mode,
   closedLinkTo,
+  defaultShowOutside,
   onDateChange,
   onSelectTime,
   onBack,
@@ -42,6 +43,8 @@ export default function DateTimeStep({
   mode: 'public' | 'internal';
   /** Internal mode only — link to the working-hours page to fix a closed/no-schedule day. */
   closedLinkTo?: string;
+  /** Internal mode only — start with the out-of-hours toggle already on (e.g. the calendar's hatched area was clicked). */
+  defaultShowOutside?: boolean;
   onDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectTime: (time: string) => void;
   onBack: () => void;
@@ -53,7 +56,7 @@ export default function DateTimeStep({
   // Owner/staff can also book outside working hours: the slot list carries the
   // out-of-hours grid, shown only when the toggle is on. (A closed day still
   // shows its "closed" note and can offer the grid too.)
-  const [showOutside, setShowOutside] = useState(false);
+  const [showOutside, setShowOutside] = useState(defaultShowOutside ?? false);
   const [customTime, setCustomTime] = useState('');
   const internal = mode === 'internal';
   const allSlots: SlotInfo[] = slots.slots ?? [];

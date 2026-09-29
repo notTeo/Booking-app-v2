@@ -1,20 +1,22 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** finish out-of-hours commit **7** (web calendar). Done so far: the
-day-schedule endpoint (commit 5, `8a66659`) and the pure, tested calendar model
-`web/src/pages/calendarModel.ts` (visible range, hatched segments, override tags,
-block geometry). NOT yet done, in order: (1) `getDaySchedule` in
-`web/src/api/workingHours.api.ts` and add `endTime`/`overriddenRules`/`createdById`
-to the web `Booking` type; (2) wire `ShopBookingsPage.tsx` to the model (dynamic
-rows instead of GRID_START/GRID_END, hatched off-segments with an "Off" label,
-dashed border + ☾ + text tag from the stored codes, midnight-crossing clamp with
-"→ next day", a real "Other" column, an "N bookings outside the visible range"
-banner, clicking a hatched area opens the form with the toggle on via a new
-`defaultShowOutside` prop on `DateTimeStep`); (3) CSS + el/en translations
-(`bookings.calendar.*`); (4) the calendar assertions in
+**Next step:** start out-of-hours commit **8** (mobile layout: provider paging,
+sticky gutter, bottom sheet, form tap targets), then the rest of Phase A.
+
+Commit 7 (web calendar) is done: `getDaySchedule` in
+`web/src/api/workingHours.api.ts` + `endTime`/`overriddenRules`/`createdById` on
+the web `Booking` type; `ShopBookingsPage.tsx` wired to `calendarModel.ts`
+(dynamic rows from `computeVisibleRange`, hatched off-segments with an
+"Off"/"Closed day" label, dashed border + ☾ + text tag from the stored codes,
+midnight-crossing clamp with "→ next day", a real "Other" column, an "N
+bookings outside the visible range" banner, clicking a hatched area opens the
+form with the toggle already on via the new `defaultShowOutside` prop threaded
+through `OwnerBookingWizard` → `DateTimeStep`); CSS + el/en translations
+(`bookings.calendar.*`); calendar assertions added to
 `e2e/tests/owner-outside-hours.spec.ts` (06:15 and 22:30 bookings visible, a
-closed-day booking visible and tagged). Then commit 8 (mobile), the rest of
-Phase A. Pushed through `9cbab41`; commit 5 and the model are local only.
+closed-day booking visible and tagged, all passing). Full suite green: api
+279 tests × 3 TZs, web 52 tests × 3 TZs, e2e 17/17, tsc clean, lint has only
+the same 48 pre-existing problems in unrelated files.
 
 *(Keep this line updated after every commit or checkpoint.)*
 

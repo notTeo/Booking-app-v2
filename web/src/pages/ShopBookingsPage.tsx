@@ -13,17 +13,17 @@ import {
   type BookingStatus,
 } from '../api/booking.api';
 import { getMembers, type TeamMember } from '../api/team.api';
+import { getDaySchedule, type DaySchedule } from '../api/workingHours.api';
 import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
+import { blockGeometry, computeVisibleRange, offSegments, overrideTags, type OverrideTag } from './calendarModel';
 import '../styles/pages/bookings.css';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
-const GRID_START  = 7;                            // 07:00
-const GRID_END    = 23;                           // 23:00
 const SLOT_H      = 64;                           // px per hour
 const PX_PER_MIN  = SLOT_H / 60;
 const MIN_BLOCK_H = 28;                           // minimum block height px
-const HOURS = Array.from({ length: GRID_END - GRID_START }, (_, i) => GRID_START + i);
+const OTHER_COLUMN_ID = '__other__';
 
 const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED', 'NO_SHOW'];
 
@@ -45,6 +45,7 @@ const toHHMM = (mins: number) => {
 interface CreatingSlot {
   staffId: string;
   timeHint: string;
+  showOutside: boolean;
 }
 
 // ── component ────────────────────────────────────────────────────────────────
@@ -58,6 +59,7 @@ export default function ShopBookingsPage() {
 
   const [bookings, setBookings]               = useState<Booking[]>([]);
   const [members, setMembers]                 = useState<TeamMember[]>([]);
+  const [daySchedule, setDaySchedule]         = useState<DaySchedule | null>(null);
   const [loading, setLoading]                 = useState(true);
   const [error, setError]                     = useState('');
   // The calendar day is a shop-local date. Until the user picks one it follows
@@ -95,11 +97,12 @@ export default function ShopBookingsPage() {
     const membersPromise = members.length > 0
       ? Promise.resolve(members)
       : getMembers(shop.id);
-    Promise.all([listBookings(shop.id, { date }), membersPromise])
-      .then(([bkgs, mems]) => {
+    Promise.all([listBookings(shop.id, { date }), membersPromise, getDaySchedule(shop.id, date)])
+      .then(([bkgs, mems, schedule]) => {
         if (seq !== requestSeq.current) return;
         setBookings(bkgs);
         if (members.length === 0) setMembers(mems);
+        setDaySchedule(schedule);
       })
       .catch(() => { if (seq === requestSeq.current) setError(t.bookings.errorLoad); })
       .finally(() => { if (seq === requestSeq.current) setLoading(false); });
@@ -146,21 +149,53 @@ export default function ShopBookingsPage() {
     setCreatingSlot(null);
   };
 
-  const openCreateSlot = (staffId: string, timeHint: string) => {
-    setCreatingSlot({ staffId, timeHint });
+  const openCreateSlot = (staffId: string, timeHint: string, showOutside: boolean) => {
+    setCreatingSlot({ staffId, timeHint, showOutside });
     setSelectedBooking(null);
     setConfirmDeleteId(null);
   };
 
   // ── derived ──────────────────────────────────────────────────────────────
 
-const columns = members.map(m => ({ id: m.id, label: m.name }));
+  const memberIds = new Set(members.map(m => m.id));
+  const hasOtherBookings = bookings.some(b => !memberIds.has(b.staffId));
+
+  const columns = [
+    ...members.map(m => ({ id: m.id, label: m.name, isOther: false })),
+    ...(hasOtherBookings ? [{ id: OTHER_COLUMN_ID, label: t.bookings.calendar.otherColumn, isOther: true }] : []),
+  ];
 
   const bookingsByStaff = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
-    const key = members.some(m => m.id === b.staffId) ? b.staffId : 'unassigned';
+    const key = memberIds.has(b.staffId) ? b.staffId : OTHER_COLUMN_ID;
     acc[key] = [...(acc[key] ?? []), b];
     return acc;
   }, {});
+
+  // Every booking's position in shop-local minutes, keyed by id — computed
+  // once so the visible range, the blocks and the "outside range" banner all
+  // agree on the same numbers.
+  const bookingMinutes = new Map(
+    bookings.map(b => {
+      const startMin = minutesOfDayInZone(b.startTime, zone);
+      const durationMin = (new Date(b.endTime).getTime() - new Date(b.startTime).getTime()) / 60_000;
+      return [b.id, { startMin, durationMin }] as const;
+    }),
+  );
+
+  const range = computeVisibleRange(
+    daySchedule,
+    [...bookingMinutes.values()].map(({ startMin, durationMin }) => ({ startMin, endMin: startMin + durationMin })),
+  );
+  const HOURS = Array.from({ length: (range.end - range.start) / 60 }, (_, i) => range.start / 60 + i);
+
+  const geometryOf = (b: Booking) => {
+    const { startMin, durationMin } = bookingMinutes.get(b.id)!;
+    return blockGeometry(startMin, durationMin, range, PX_PER_MIN, MIN_BLOCK_H);
+  };
+
+  const outsideRangeCount = bookings.filter(b => geometryOf(b).outsideView).length;
+
+  const tagLabel = (tag: OverrideTag) => t.bookings.calendar.tags[tag];
 
   // ── loading ───────────────────────────────────────────────────────────────
 
@@ -232,6 +267,7 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
               initialMemberId={creatingSlot.staffId}
               initialDate={date}
               timeHint={creatingSlot.timeHint}
+              defaultShowOutside={creatingSlot.showOutside}
               hideTitle
               onDone={() => { setCreatingSlot(null); refetchBookings(); }}
             />
@@ -319,87 +355,120 @@ const columns = members.map(m => ({ id: m.id, label: m.name }));
       {loading ? (
         <div className="shops-spinner-wrap"><div className="spinner" /></div>
       ) : (
-        <div className="cal-scroll">
-          <div className="cal-grid">
-
-            {/* Column headers */}
-            <div className="cal-header-row">
-              <div className="cal-gutter-cell" />
-              {columns.map(col => (
-                <div key={col.id} className="cal-col-header">{col.label}</div>
-              ))}
+        <>
+          {outsideRangeCount > 0 && (
+            <div className="cal-outside-banner">
+              {t.bookings.calendar.outsideBanner.replace('{count}', String(outsideRangeCount))}
             </div>
+          )}
+          <div className="cal-scroll">
+            <div className="cal-grid">
 
-            {/* Body */}
-            <div className="cal-body">
-
-              {/* Time gutter */}
-              <div className="cal-gutter">
-                {HOURS.map(h => (
-                  <div key={h} className="cal-hour-label">
-                    {h.toString().padStart(2, '0')}:00
-                  </div>
+              {/* Column headers */}
+              <div className="cal-header-row">
+                <div className="cal-gutter-cell" />
+                {columns.map(col => (
+                  <div key={col.id} className="cal-col-header">{col.label}</div>
                 ))}
               </div>
 
-              {/* Staff columns */}
-              {columns.map(col => (
-                <div
-                  key={col.id}
-                  className={`cal-col${isOwner ? ' cal-col--creatable' : ''}`}
-                  style={{ height: HOURS.length * SLOT_H }}
-                  onClick={isOwner ? (e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const y = e.clientY - rect.top;
-                    const rawMinutes = GRID_START * 60 + y / PX_PER_MIN;
-                    const rounded = Math.max(GRID_START * 60, Math.round(rawMinutes / 30) * 30);
-                    openCreateSlot(col.id, toHHMM(rounded));
-                  } : undefined}
-                >
-                  {/* Hour lines */}
-                  {HOURS.map((h, i) => (
-                    <div
-                      key={h}
-                      className="cal-hour-line"
-                      style={{ top: i * SLOT_H }}
-                    />
+              {/* Body */}
+              <div className="cal-body">
+
+                {/* Time gutter */}
+                <div className="cal-gutter">
+                  {HOURS.map(h => (
+                    <div key={h} className="cal-hour-label">
+                      {h.toString().padStart(2, '0')}:00
+                    </div>
                   ))}
-
-                  {/* Booking blocks */}
-                  {(bookingsByStaff[col.id] ?? []).map(b => {
-                    const mins = minutesOfDayInZone(b.startTime, zone);
-                    const top = (mins - GRID_START * 60) * PX_PER_MIN;
-                    const height = Math.max(b.service.duration * PX_PER_MIN, MIN_BLOCK_H);
-                    const isSelected = selectedBooking?.id === b.id;
-
-                    return (
-                      <div
-                        key={b.id}
-                        className={[
-                          'cal-block',
-                          `cal-block--${b.status.toLowerCase()}`,
-                          isSelected ? 'cal-block--selected' : '',
-                        ].join(' ').trim()}
-                        style={{ top, height }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openBookingDetail(b, isSelected);
-                        }}
-                      >
-                        <div className="cal-block-time">{formatTimeInZone(b.startTime, zone)}</div>
-                        <div className="cal-block-name">
-                          {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
-                        </div>
-                        <div className="cal-block-service">{b.service.name}</div>
-                      </div>
-                    );
-                  })}
                 </div>
-              ))}
 
+                {/* Staff columns */}
+                {columns.map(col => {
+                  const offs = col.isOther ? [] : offSegments(daySchedule?.[col.id] ?? null, range.start, range.end);
+                  const creatable = isOwner && !col.isOther;
+
+                  return (
+                    <div
+                      key={col.id}
+                      className={`cal-col${creatable ? ' cal-col--creatable' : ''}`}
+                      style={{ height: HOURS.length * SLOT_H }}
+                      onClick={creatable ? (e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const y = e.clientY - rect.top;
+                        const rawMinutes = range.start + y / PX_PER_MIN;
+                        const rounded = Math.max(range.start, Math.round(rawMinutes / 30) * 30);
+                        const showOutside = offs.some(s => rounded >= s.from && rounded < s.to);
+                        openCreateSlot(col.id, toHHMM(rounded), showOutside);
+                      } : undefined}
+                    >
+                      {/* Off-hours hatching (never colour alone: labelled) */}
+                      {offs.map((seg, i) => (
+                        <div
+                          key={i}
+                          className="cal-off-segment"
+                          style={{ top: (seg.from - range.start) * PX_PER_MIN, height: (seg.to - seg.from) * PX_PER_MIN }}
+                        >
+                          <span className="cal-off-label">{seg.closed ? t.bookings.calendar.closed : t.bookings.calendar.off}</span>
+                        </div>
+                      ))}
+
+                      {/* Hour lines */}
+                      {HOURS.map((h, i) => (
+                        <div
+                          key={h}
+                          className="cal-hour-line"
+                          style={{ top: i * SLOT_H }}
+                        />
+                      ))}
+
+                      {/* Booking blocks */}
+                      {(bookingsByStaff[col.id] ?? []).map(b => {
+                        const geom = geometryOf(b);
+                        const tags = overrideTags(b.overriddenRules ?? []);
+                        const isSelected = selectedBooking?.id === b.id;
+
+                        return (
+                          <div
+                            key={b.id}
+                            className={[
+                              'cal-block',
+                              `cal-block--${b.status.toLowerCase()}`,
+                              tags.length > 0 ? 'cal-block--override' : '',
+                              isSelected ? 'cal-block--selected' : '',
+                            ].join(' ').trim()}
+                            style={{ top: geom.top, height: geom.height }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openBookingDetail(b, isSelected);
+                            }}
+                          >
+                            <div className="cal-block-time">
+                              {tags.length > 0 && <span aria-hidden="true">☾ </span>}
+                              {formatTimeInZone(b.startTime, zone)}
+                            </div>
+                            <div className="cal-block-name">
+                              {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                            </div>
+                            <div className="cal-block-service">{b.service.name}</div>
+                            {tags.length > 0 && (
+                              <div className="cal-block-tag">{tags.map(tagLabel).join(' · ')}</div>
+                            )}
+                            {geom.crossesNextDay && (
+                              <div className="cal-block-next-day">{t.bookings.calendar.nextDay}</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
     </div>

@@ -25,8 +25,13 @@ export interface Booking {
   serviceId: string;
   staffId: string;
   startTime: string;          // ISO datetime
+  endTime: string;             // ISO datetime
   status: BookingStatus;
   notes: string | null;
+  /** Overridable rule codes this booking violated AND the creator accepted, stored at creation time (never recomputed). */
+  overriddenRules: string[];
+  /** Who created it (owner/staff), or null if the creating member's account was later deleted. */
+  createdById: string | null;
   createdAt: string;
   updatedAt: string;
   customer: BookingCustomer;

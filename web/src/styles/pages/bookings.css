@@ -202,6 +202,18 @@
   border-color: var(--error) !important;
 }
 
+/* ── Outside-range banner (safety net: no booking is ever hidden) ──────────── */
+
+.cal-outside-banner {
+  background: color-mix(in srgb, var(--warning) 15%, var(--bg-card));
+  border: 1px solid var(--warning);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
 /* ── Calendar scroll wrapper ─────────────────────────────────────────────── */
 
 .cal-scroll {
@@ -305,6 +317,39 @@
   pointer-events: none;
 }
 
+/* ── Off-hours hatching (not-working parts of a column) ─────────────────────
+   Pattern, never colour alone: a repeating diagonal stripe plus a text label. */
+
+.cal-off-segment {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--text-muted) 14%, transparent) 0,
+    color-mix(in srgb, var(--text-muted) 14%, transparent) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cal-off-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
 /* ── Booking blocks ──────────────────────────────────────────────────────── */
 
 .cal-block {
@@ -356,6 +401,32 @@
   background: color-mix(in srgb, var(--error) 15%, var(--bg-card));
   border-left-color: var(--error);
   opacity: 0.8;
+}
+
+/* Out-of-hours exceptions: dashed border (never colour alone), ☾ icon + text
+   tag are rendered inline in the block's markup. */
+.cal-block--override {
+  border: 1px dashed var(--text-muted);
+  border-left-width: 3px;
+}
+
+.cal-block-tag {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.cal-block-next-day {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.2;
 }
 
 /* Block text */

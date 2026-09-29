@@ -749,6 +749,19 @@ export interface Translations {
       panelBody: string;
       confirmButton: string;
     };
+    calendar: {
+      otherColumn: string;
+      off: string;
+      closed: string;
+      nextDay: string;
+      outsideBanner: string;
+      tags: {
+        OUTSIDE_OPENING_HOURS: string;
+        SHOP_CLOSED: string;
+        BOOKING_IN_PAST: string;
+        OFF_SLOT_GRID: string;
+      };
+    };
   };
   cancelBooking: {
     invalidLink: string;
@@ -1516,6 +1529,19 @@ home: {
         panelBody: 'Η κράτηση θα αποθηκευτεί ως εξαίρεση.',
         confirmButton: 'Κράτηση εκτός ωραρίου',
       },
+      calendar: {
+        otherColumn: 'Άλλο',
+        off: 'Κλειστά',
+        closed: 'Κλειστή ημέρα',
+        nextDay: '→ επόμενη ημέρα',
+        outsideBanner: '{count} ραντεβού εκτός της προβαλλόμενης περιόδου',
+        tags: {
+          OUTSIDE_OPENING_HOURS: 'Εκτός ωραρίου',
+          SHOP_CLOSED: 'Κλειστή ημέρα',
+          BOOKING_IN_PAST: 'Παλαιότερη καταχώρηση',
+          OFF_SLOT_GRID: 'Προσαρμοσμένη ώρα',
+        },
+      },
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -2281,6 +2307,19 @@ home: {
         panelTitle: 'Outside working hours',
         panelBody: 'This booking will be saved as an exception.',
         confirmButton: 'Book outside working hours',
+      },
+      calendar: {
+        otherColumn: 'Other',
+        off: 'Off',
+        closed: 'Closed day',
+        nextDay: '→ next day',
+        outsideBanner: '{count} booking(s) outside the visible range',
+        tags: {
+          OUTSIDE_OPENING_HOURS: 'After hours',
+          SHOP_CLOSED: 'Closed day',
+          BOOKING_IN_PAST: 'Past entry',
+          OFF_SLOT_GRID: 'Custom time',
+        },
       },
     },
     cancelBooking: {

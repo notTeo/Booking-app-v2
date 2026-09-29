@@ -22,7 +22,11 @@ test.afterAll(async () => {
   await query(`update "ShopWorkingHourRange" set "startTime"='00:00', "endTime"='23:30'`);
 });
 
-async function openWizard(page: Page, context: import('@playwright/test').BrowserContext) {
+async function openWizard(
+  page: Page,
+  context: import('@playwright/test').BrowserContext,
+  targetDate: string = date,
+) {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto('/login');
   await page.locator('#email').fill(E2E.owner.email);
@@ -32,8 +36,10 @@ async function openWizard(page: Page, context: import('@playwright/test').Browse
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
   await page.locator('.public-service-card--selectable').first().click();
   await page.locator('.public-team-card--selectable').first().click();
-  await page.locator('#booking-date').fill(date);
-  await expect(page.locator('.public-slot-btn', { hasText: /^10:00$/ })).toBeVisible();
+  await page.locator('#booking-date').fill(targetDate);
+  if (targetDate === date) {
+    await expect(page.locator('.public-slot-btn', { hasText: /^10:00$/ })).toBeVisible();
+  }
 }
 
 const toggle = (page: Page) => page.locator('.ooh-toggle input');
@@ -196,4 +202,77 @@ test('the public booking page never offers those times', async ({ request }) => 
   });
   expect(book.status()).toBe(422);
   expect((await book.json()).code).toBe('OUTSIDE_OPENING_HOURS');
+});
+
+test('a 06:15 booking (before opening) lands on the calendar', async ({ page, context }) => {
+  await openWizard(page, context);
+  await toggle(page).check();
+  await page.getByRole('button', { name: '06:15, outside working hours' }).click();
+  await page.getByRole('button', { name: /continue/i }).click();
+  await page.locator('#b-name').fill('Early Bird');
+  await page.locator('#b-phone').fill('6900000205');
+  await page.getByRole('button', { name: 'Book outside working hours' }).click();
+  await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+  await page.locator('#bookings-date').fill(date);
+  await expect(page.locator('.cal-block', { hasText: 'Early Bird' })).toBeVisible();
+});
+
+test('a 22:30 booking (after closing, via "Other time") lands on the calendar', async ({ page, context }) => {
+  // 22:30 is beyond the 4h-after-closing cap, so it is off-grid: typed via
+  // "Other time" and confirmed through the dialog fallback (like 21:10 above).
+  await openWizard(page, context);
+  await toggle(page).check();
+  await page.locator('#booking-other-time').fill('22:30');
+  await page.getByRole('button', { name: /continue/i }).click();
+  await page.locator('#b-name').fill('Night Owl');
+  await page.locator('#b-phone').fill('6900000206');
+  await page.getByRole('button', { name: /create booking/i }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Book anyway' }).click();
+  await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+  await page.locator('#bookings-date').fill(date);
+  await expect(page.locator('.cal-block', { hasText: 'Night Owl' })).toBeVisible();
+});
+
+test.describe('a booking on a fully closed day', () => {
+  // A weekday not used by any other test in this file, narrowed to a full day
+  // off (the seeded provider's only schedule) so the calendar's closed-day
+  // fallback grid (08:00–22:00, decision 4) applies.
+  const closedDate = addDays(date, 2);
+  const closedWeekday = (['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] as const)[
+    new Date(`${closedDate}T00:00:00Z`).getUTCDay()
+  ];
+
+  test.beforeAll(async () => {
+    await query('update "ShopWorkingDay" set "isOpen"=false where "scheduleId"=\'sch1\' and day=$1', [closedWeekday]);
+  });
+  test.afterAll(async () => {
+    await query('update "ShopWorkingDay" set "isOpen"=true where "scheduleId"=\'sch1\' and day=$1', [closedWeekday]);
+  });
+
+  test('is visible on the calendar and tagged as a closed-day exception', async ({ page, context }) => {
+    await openWizard(page, context, closedDate);
+    await expect(page.locator('.public-closed-message')).toBeVisible();
+    await toggle(page).check();
+    await expect(page.getByRole('heading', { name: /closed day/i })).toBeVisible();
+
+    await page.getByRole('button', { name: '10:00, outside working hours' }).click();
+    await page.getByRole('button', { name: /continue/i }).click();
+    await page.locator('#b-name').fill('Sunday Regular');
+    await page.locator('#b-phone').fill('6900000207');
+    await expect(page.locator('.ooh-panel')).toContainText(/outside working hours/i);
+    await page.getByRole('button', { name: 'Book outside working hours' }).click();
+    await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+    const row = await lastBooking();
+    expect(row.overriddenRules).toEqual(['SHOP_CLOSED']);
+
+    await page.locator('#bookings-date').fill(closedDate);
+    const block = page.locator('.cal-block', { hasText: 'Sunday Regular' });
+    await expect(block).toBeVisible();
+    // tagged in words, not colour alone
+    await expect(block).toContainText(/closed day/i);
+    expect(await block.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('dashed');
+  });
 });

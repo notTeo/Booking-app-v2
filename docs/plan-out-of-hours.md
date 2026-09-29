@@ -80,9 +80,9 @@ truth if work continues in a new session. Branch: `prod-readiness`.
    violations); a typed time that equals a listed slot is treated as that slot.
    The wizard's date input is capped at the shop's advance window.
    **Browser spec (pulled forward from commit 9):** `e2e/tests/owner-outside-hours.spec.ts`
-   (phone viewport) replaces the obsolete `override-dialog.spec.ts`. Still to do
-   for commit 9: the calendar assertions (06:15 / 22:30 bookings, closed-day
-   booking visible), which need commit 7.
+   (phone viewport) replaces the obsolete `override-dialog.spec.ts`. The calendar
+   assertions (06:15 / 22:30 bookings, closed-day booking visible and tagged)
+   were added once commit 7 landed; nothing left for commit 9 here.
 
 9. **Day-schedule endpoint (commit 5), pulled forward into Phase A** so the
    calendar (commit 7) can shade non-working hours:
@@ -92,6 +92,23 @@ truth if work continues in a new session. Branch: `prod-readiness`.
    (no active schedule, day off, or outside the schedule's dates; a member is
    never given the shop-wide hours). Registered on the shop router ahead of the
    schedules router so `day` is never read as a `:scheduleId`.
+
+10. **Web calendar (commit 7), as built:** `ShopBookingsPage.tsx` fetches the
+    day schedule alongside bookings and wires it through `calendarModel.ts`.
+    Rows come from `computeVisibleRange` (no more fixed 07:00–23:00). Each
+    provider column hatches its `offSegments` with a text label ("Off" /
+    "Closed day" — never colour alone); clicking inside a hatched area opens
+    the create form with the out-of-hours toggle already on
+    (`defaultShowOutside`, threaded through `OwnerBookingWizard` →
+    `DateTimeStep`). A booking whose `overriddenRules` is non-empty gets a
+    dashed border, a ☾ icon and its mapped tag text (`OUTSIDE_OPENING_HOURS` →
+    "After hours", `SHOP_CLOSED` → "Closed day", `BOOKING_IN_PAST` → "Past
+    entry", `OFF_SLOT_GRID` → "Custom time"); one that crosses midnight is
+    clamped to the visible range and marked "→ next day". A booking whose
+    `staffId` isn't in the members list renders in a real "Other" column
+    (not the old dead `unassigned` bucket) instead of being hidden. Any
+    booking `blockGeometry` flags as `outsideView` (in practice, midnight
+    crossers) is counted in an "N bookings outside the visible range" banner.
 
 ### Approved order (bugs before features)
 
