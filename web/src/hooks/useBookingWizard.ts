@@ -32,6 +32,8 @@ export interface UseBookingWizardResult {
   shop: ShopInfo | null;
   loading: boolean;
   error: string | null;
+  /** The API said this slug doesn't exist (as opposed to a network/server error). */
+  notFound: boolean;
   step: WizardStep;
   setStep: (s: WizardStep) => void;
   selectedServiceId: string | null;
@@ -60,6 +62,7 @@ export function useBookingWizard({
   const [shop, setShop] = useState<ShopInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   const [step, setStep] = useState<WizardStep>(1);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
@@ -72,7 +75,10 @@ export function useBookingWizard({
     if (!slug) return;
     getShopInfo(slug)
       .then(setShop)
-      .catch(() => setError(t.public.shopNotFound))
+      .catch((err) => {
+        setNotFound(err?.response?.status === 404);
+        setError(t.public.shopNotFound);
+      })
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -146,6 +152,7 @@ export function useBookingWizard({
     shop,
     loading,
     error,
+    notFound,
     step,
     setStep,
     selectedServiceId,

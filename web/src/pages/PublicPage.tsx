@@ -12,12 +12,22 @@ import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
+import { isPlausibleSlug } from '../utils/publicLink';
+import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
+// Mounted at /:slug, so it also receives every mistyped top-level URL. Anything
+// that can't be a slug, or that the API says doesn't exist, gets the real 404
+// page instead of an inline "shop not found".
 export default function PublicPage() {
   const { slug } = useParams<{ slug: string }>();
+  if (!slug || !isPlausibleSlug(slug)) return <NotFoundPage />;
+  return <PublicBookingPage slug={slug} />;
+}
+
+function PublicBookingPage({ slug }: { slug: string }) {
   const { t } = useLang();
-  const wizard = useBookingWizard({ slug: slug ?? '' });
+  const wizard = useBookingWizard({ slug });
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
   const [name, setName] = useState('');
@@ -37,6 +47,7 @@ export default function PublicPage() {
   if (wizard.loading) {
     return <div className="public-loading"><div className="spinner" /></div>;
   }
+  if (wizard.notFound) return <NotFoundPage />;
   if (wizard.error || !wizard.shop) {
     return <div className="public-error"><p>{wizard.error ?? t.public.somethingWrong}</p></div>;
   }

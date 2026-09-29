@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route, useLocation, useParams } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './context/AuthContext';
 import { ShopContextProvider } from './context/ShopContext';
@@ -40,6 +40,14 @@ import DpaPage from './pages/DpaPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/ScrollToTop';
+import { publicShopPath } from './utils/publicLink';
+
+// Old public links (/p/<slug>) live in QR codes, messages and bookmarks.
+function LegacyPublicRedirect() {
+  const { slug } = useParams<{ slug: string }>();
+  const { search } = useLocation();
+  return <Navigate to={`${publicShopPath(slug ?? '')}${search}`} replace />;
+}
 
 export default function App() {
   return (
@@ -68,7 +76,7 @@ export default function App() {
                 <Route path="/dpa" element={<DpaPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/p/:slug" element={<PublicPage />} />
+                <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AppLayout />}>
@@ -94,6 +102,9 @@ export default function App() {
                   </Route>
                 </Route>
 
+                {/* Last on purpose: static routes above always win, and slugs can't
+                    collide with them (API RESERVED_SLUGS). Unknown -> NotFoundPage. */}
+                <Route path="/:slug" element={<PublicPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </ShopContextProvider>

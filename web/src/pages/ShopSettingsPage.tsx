@@ -1,3 +1,4 @@
+import { publicShopUrl } from '../utils/publicLink';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
@@ -168,14 +169,14 @@ export default function ShopSettingsPage() {
         </div>
       </div>
 
-      {/* Booking link — copyable public /p/:slug link */}
+      {/* Booking link — copyable public /:slug link */}
       <div className="settings-section shop-settings-section">
         <p className="settings-section-title">
           <FontAwesomeIcon icon={faLink} className="settings-section-icon" />
           {t.sharing.title}
         </p>
         <p className="shop-field-hint">{t.sharing.desc}</p>
-        <CopyLinkButton link={`${window.location.origin}/p/${shop.slug}`} />
+        <CopyLinkButton link={publicShopUrl(shop.slug)} />
       </div>
 
       <form onSubmit={handleSave}>

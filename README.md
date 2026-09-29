@@ -3,7 +3,7 @@
 Free online booking for barbershops and salons. Shop owners manage staff, services, and working hours, and get a public booking page their clients can book from directly — no calls, no payments to configure.
 
 **What it does:**
-- Public booking page per shop at `/p/:slug`
+- Public booking page per shop at `/:slug` (old `/p/:slug` links redirect)
 - Staff, service, and working-hours management
 - Email notifications (booking confirmations, cancellations, staff invites, account verification)
 - Multi-tenant: one account can own or staff multiple shops
@@ -90,7 +90,7 @@ npm run dev             # http://localhost:5173
 | `/api/invites` | global invite lookup/accept |
 | `/public` | public-facing shop/service/availability data for the booking page |
 
-The public booking page itself is a frontend route: `/p/:slug`.
+The public booking page itself is a frontend route: `/:slug` (registered last, after every static route; `/p/:slug` redirects to it).
 
 ## Scripts
 

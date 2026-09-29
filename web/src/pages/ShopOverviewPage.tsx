@@ -1,3 +1,4 @@
+import { publicShopUrl } from '../utils/publicLink';
 import { formatDateTimeInZone, formatTimeInZone, todayInZone } from '../utils/shopTime';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -100,7 +101,7 @@ export default function ShopOverviewPage() {
         <div className="shop-overview-card__body">
           <section className="field-group">
             <h3 className="field-group__title">{t.sharing.title}</h3>
-            <CopyLinkButton link={`${window.location.origin}/p/${shop.slug}`} compact />
+            <CopyLinkButton link={publicShopUrl(shop.slug)} compact />
           </section>
 
           {loadingStats ? (

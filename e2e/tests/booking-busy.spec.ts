@@ -19,7 +19,7 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
   context,
 }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
-  await page.goto(`/p/${E2E.shop.slug}`);
+  await page.goto(`/${E2E.shop.slug}`);
   await page.locator('.public-service-card--selectable').first().click();
   await page.locator('.public-team-card--selectable').first().click();
   await page.locator('#booking-date').fill(date);

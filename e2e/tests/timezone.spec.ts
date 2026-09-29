@@ -29,7 +29,7 @@ async function pickDate(page: Page, date: string) {
 }
 
 async function startPublicBooking(page: Page, date: string) {
-  await page.goto(`/p/${E2E.shop.slug}`);
+  await page.goto(`/${E2E.shop.slug}`);
   await page.locator('.public-service-card--selectable').first().click();
   await page.locator('.public-team-card--selectable').first().click();
   await expect(page.locator('#booking-date')).toBeVisible();
