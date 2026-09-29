@@ -7,6 +7,7 @@ import {
   serviceParamsValidation,
   assignStaffValidation,
   unassignStaffValidation,
+  shopIdParamValidation,
 } from '../validators/service.validator';
 import * as serviceController from '../controllers/service.controller';
 
@@ -19,7 +20,13 @@ router.post(
   validate,
   serviceController.createService,
 );
-router.get('/', authenticate, serviceController.getServices);
+router.get(
+  '/',
+  authenticate,
+  shopIdParamValidation,
+  validate,
+  serviceController.getServices,
+);
 router.get(
   '/:serviceId',
   authenticate,

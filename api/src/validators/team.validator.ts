@@ -4,6 +4,10 @@ export const memberIdParamValidation = [
   param('memberId').notEmpty().withMessage('memberId is required'),
 ];
 
+export const shopIdParamValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+];
+
 export const updateMemberRoleValidation = [
   param('memberId').notEmpty().withMessage('memberId is required'),
   body('role')

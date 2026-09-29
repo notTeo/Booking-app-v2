@@ -8,6 +8,7 @@ import {
   bookingParamsValidation,
   updateBookingValidation,
   updateStatusValidation,
+  shopIdParamValidation,
 } from '../validators/booking.validator';
 import * as bookingController from '../controllers/booking.controller';
 
@@ -27,7 +28,13 @@ router.get(
   validate,
   bookingController.listBookings,
 );
-router.get('/stats', authenticate, bookingController.getBookingStats);
+router.get(
+  '/stats',
+  authenticate,
+  shopIdParamValidation,
+  validate,
+  bookingController.getBookingStats,
+);
 // Declared before /:bookingId so 'slots' is not treated as a booking id.
 router.get(
   '/slots',

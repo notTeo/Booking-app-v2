@@ -5,6 +5,7 @@ import {
   memberIdParamValidation,
   updateMemberRoleValidation,
   createTeamMemberValidation,
+  shopIdParamValidation,
 } from '../validators/team.validator';
 import {
   getMembers,
@@ -21,7 +22,7 @@ import workingHoursRouter from './workingHours.routes';
 // mergeParams: true lets us access :shopId from the parent shop router
 const router = Router({ mergeParams: true });
 
-router.get('/', authenticate, getMembers);
+router.get('/', authenticate, shopIdParamValidation, validate, getMembers);
 router.post(
   '/',
   authenticate,

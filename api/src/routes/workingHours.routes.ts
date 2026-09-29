@@ -7,6 +7,7 @@ import {
   upsertDaysValidation,
   updateDayValidation,
   scheduleIdParamValidation,
+  shopIdParamValidation,
 } from '../validators/workingHours.validator';
 import {
   createSchedule,
@@ -28,7 +29,7 @@ router.post(
   validate,
   createSchedule,
 );
-router.get('/', authenticate, getSchedules);
+router.get('/', authenticate, shopIdParamValidation, validate, getSchedules);
 router.get(
   '/:scheduleId',
   authenticate,

@@ -109,6 +109,10 @@ export const ownerCreateBookingValidation = [
   ...overrideRulesValidation,
 ];
 
+export const shopIdParamValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+];
+
 export const listBookingsValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   query('date')

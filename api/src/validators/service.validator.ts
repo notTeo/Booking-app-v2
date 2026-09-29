@@ -1,5 +1,9 @@
 import { body, param } from 'express-validator';
 
+export const shopIdParamValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+];
+
 export const createServiceValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   body('name').notEmpty().trim().withMessage('Name is required'),

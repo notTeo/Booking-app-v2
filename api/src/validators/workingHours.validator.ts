@@ -3,6 +3,13 @@ import { body, param, query } from 'express-validator';
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const TIME_REGEX = /^\d{2}:\d{2}$/;
 
+// This router is mounted both directly under /api/shops/:shopId/schedules
+// and nested under /api/shops/:shopId/team/:memberId/schedules — shopId is
+// present (mergeParams) either way.
+export const shopIdParamValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+];
+
 const hourRangeValidation = (prefix: string) => [
   body(`${prefix}.startTime`)
     .notEmpty()
