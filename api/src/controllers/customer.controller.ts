@@ -4,6 +4,8 @@ import {
   listCustomers as listCustomersService,
   getCustomer as getCustomerService,
   updateCustomer as updateCustomerService,
+  exportCustomer as exportCustomerService,
+  deleteCustomer as deleteCustomerService,
 } from '../services/customer.service';
 
 export const listCustomers = async (
@@ -64,6 +66,42 @@ export const updateCustomer = async (
       req.body,
     );
     successResponse(res, customer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const exportCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const data = await exportCustomerService(userId, shopId, customerId);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="customer-${customerId}.json"`,
+    );
+    successResponse(res, data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    await deleteCustomerService(userId, shopId, customerId);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

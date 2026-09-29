@@ -12,6 +12,8 @@
     "test:tz": "for tz in UTC Europe/Athens America/New_York; do echo \"== TZ=$tz\"; TZ=$tz vitest run || exit 1; done"
   },
   "dependencies": {
+    "@fontsource/league-spartan": "^5.3.0",
+    "@fontsource/poppins": "^5.3.0",
     "@fortawesome/free-brands-svg-icons": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.2.0",

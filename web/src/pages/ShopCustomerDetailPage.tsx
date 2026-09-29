@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getCustomer, updateCustomer, type CustomerDetail } from '../api/customer.api';
+import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
 import type { BookingStatus } from '../api/booking.api';
 import '../styles/pages/team.css';
 
@@ -34,6 +34,9 @@ export default function ShopCustomerDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
+
+  const [privacyBusy, setPrivacyBusy] = useState<'export' | 'delete' | null>(null);
+  const [privacyError, setPrivacyError] = useState('');
 
   useEffect(() => {
     if (!shop || !customerId) return;
@@ -68,6 +71,41 @@ export default function ShopCustomerDetailPage() {
       setSaveError(t.customers.errorUpdate);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!shop || !customerId) return;
+    setPrivacyBusy('export');
+    setPrivacyError('');
+    try {
+      const data = await exportCustomer(shop.id, customerId);
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      );
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `customer-${customerId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setPrivacyError(t.customers.exportError);
+    } finally {
+      setPrivacyBusy(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!shop || !customerId) return;
+    if (!window.confirm(t.customers.deleteConfirm)) return;
+    setPrivacyBusy('delete');
+    setPrivacyError('');
+    try {
+      await deleteCustomer(shop.id, customerId);
+      navigate(`/shops/${slug}/customers`, { replace: true });
+    } catch {
+      setPrivacyError(t.customers.deleteError);
+      setPrivacyBusy(null);
     }
   };
 
@@ -169,6 +207,23 @@ export default function ShopCustomerDetailPage() {
           >
             {saving ? t.customers.saving : t.customers.save}
           </button>
+        </div>
+      )}
+
+      {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
+      {shop?.role === 'owner' && (
+        <div className="card team-role-card">
+          <h2>{t.customers.privacyHeading}</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
+          {privacyError && <div className="alert alert-error">{privacyError}</div>}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button className="btn btn-ghost" onClick={handleExport} disabled={privacyBusy !== null}>
+              {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
+            </button>
+            <button className="btn btn-danger" onClick={handleDelete} disabled={privacyBusy !== null}>
+              {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
+            </button>
+          </div>
         </div>
       )}
 

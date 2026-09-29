@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState(emailFromInvite);
   const [name, setName] = useState('')
   const [password, setPassword] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +37,7 @@ export default function RegisterPage() {
     setSuccess('');
     setIsLoading(true);
     try {
-      const data = await register(name, email, password, inviteToken || undefined);
+      const data = await register(name, email, password, acceptTerms, inviteToken || undefined);
 
       // Invite path: response contains accessToken + user — auto-login and redirect
       if (data.data?.accessToken) {
@@ -121,6 +122,24 @@ export default function RegisterPage() {
               </ul>
             )}
           </div>
+          <div className="form-group">
+            <label htmlFor="acceptTerms" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontWeight: 400 }}>
+              <input
+                id="acceptTerms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                required
+                style={{ width: 'auto', marginTop: '0.25rem' }}
+              />
+              <span>
+                {t.register.acceptPrefix}{' '}
+                <Link to="/terms" target="_blank">{t.terms.linkLabel}</Link>{' '}
+                {t.register.acceptAnd}{' '}
+                <Link to="/privacy" target="_blank">{t.privacy.linkLabel}</Link>.
+              </span>
+            </label>
+          </div>
           {error && <div className="alert alert-error">{error}</div>}
           {success && (
             <>
@@ -144,7 +163,7 @@ export default function RegisterPage() {
             </>
           )}
           {!success && (
-            <button className="btn btn-primary" type="submit" disabled={isLoading}>
+            <button className="btn btn-primary" type="submit" disabled={isLoading || !acceptTerms}>
               {isLoading ? 'Registering...' : 'Register'}
             </button>
           )}

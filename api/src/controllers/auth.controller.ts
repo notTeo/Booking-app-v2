@@ -24,8 +24,12 @@ export const register = async (
   next: NextFunction,
 ) => {
   try {
-    const { inviteToken, ...dto }: RegisterDto & { inviteToken?: string } =
-      req.body;
+    // acceptTerms is validated to be true; it's dropped here so the service
+    // stamps the version/time itself instead of trusting client input.
+    const { inviteToken, name, email, password } = req.body as RegisterDto & {
+      inviteToken?: string;
+    };
+    const dto: RegisterDto = { name, email, password };
 
     if (inviteToken) {
       const { refreshToken, shopSlug, ...result } =

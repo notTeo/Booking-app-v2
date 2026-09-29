@@ -168,6 +168,10 @@ model User {
   passwordHash String?
   isVerified   Boolean  @default(false)
   isPro        Boolean  @default(false)
+  // Version of the terms accepted at registration (null = account predates
+  // versioned acceptance), and when.
+  termsVersion    String?
+  termsAcceptedAt DateTime? @db.Timestamptz(3)
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime @updatedAt @db.Timestamptz(3)
 
@@ -264,6 +268,8 @@ model PendingRegistration {
   email        String   @unique
   passwordHash String
   token        String   @unique
+  termsVersion    String?
+  termsAcceptedAt DateTime? @db.Timestamptz(3)
   expiresAt    DateTime @db.Timestamptz(3)
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
 }

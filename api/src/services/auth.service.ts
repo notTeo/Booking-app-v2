@@ -14,6 +14,7 @@ import {
   verifyRefreshToken,
 } from '../utils/jwt';
 import { randomUUID } from 'crypto';
+import { TERMS_VERSION } from '../config/terms';
 import {
   sendEmailChangeVerification,
   sendPasswordResetEmail,
@@ -44,6 +45,8 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
       email,
       passwordHash,
       token,
+      termsVersion: TERMS_VERSION,
+      termsAcceptedAt: new Date(),
       expiresAt: getEmailTokenExpiry(),
     },
   });
@@ -98,7 +101,14 @@ export const registerUserWithInvite = async (
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { name, email, passwordHash, isVerified: true },
+      data: {
+        name,
+        email,
+        passwordHash,
+        isVerified: true,
+        termsVersion: TERMS_VERSION,
+        termsAcceptedAt: new Date(),
+      },
       select: {
         id: true,
         name: true,
@@ -274,6 +284,8 @@ export const verifyEmail = async (token: string) => {
       email: pending.email,
       passwordHash: pending.passwordHash,
       isVerified: true,
+      termsVersion: pending.termsVersion,
+      termsAcceptedAt: pending.termsAcceptedAt,
     },
     select: {
       id: true,

@@ -41,9 +41,12 @@ describe('POST /auth/register', () => {
   it('creates a pending registration and sends verification email', async () => {
     const { sendVerificationEmail } = await import('../services/email.service');
 
-    const res = await request(app)
-      .post('/auth/register')
-      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+    const res = await request(app).post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.status).toBe('success');
@@ -62,18 +65,23 @@ describe('POST /auth/register', () => {
   it('returns 409 if email already registered', async () => {
     await createVerifiedUser();
 
-    const res = await request(app)
-      .post('/auth/register')
-      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+    const res = await request(app).post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
 
     expect(res.status).toBe(409);
     expect(res.body.message).toBe('Email already in use');
   });
 
   it('returns 400 for invalid email', async () => {
-    const res = await request(app)
-      .post('/auth/register')
-      .send({ email: 'not-an-email', password: TEST_PASSWORD });
+    const res = await request(app).post('/auth/register').send({
+      email: 'not-an-email',
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
 
     expect(res.status).toBe(400);
   });
@@ -81,17 +89,75 @@ describe('POST /auth/register', () => {
   it('returns 400 for short password', async () => {
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: TEST_EMAIL, password: '123' });
+      .send({ email: TEST_EMAIL, password: '123', acceptTerms: true });
 
     expect(res.status).toBe(400);
   });
 });
 
-describe('GET /auth/verify-email', () => {
-  it('verifies email and creates user', async () => {
+describe('terms acceptance at registration', () => {
+  const base = {
+    name: 'Test User',
+    email: TEST_EMAIL,
+    password: TEST_PASSWORD,
+  };
+
+  it.each([
+    ['missing', {}],
+    ['false', { acceptTerms: false }],
+    ['a truthy string', { acceptTerms: 'true' }],
+  ])('rejects registration when acceptTerms is %s', async (_l, extra) => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ ...base, ...extra });
+
+    expect(res.status).toBe(400);
+    expect(await prisma.pendingRegistration.count()).toBe(0);
+  });
+
+  it('stamps the server terms version and time on the user after verification', async () => {
+    const { TERMS_VERSION } = await import('../config/terms');
+    const before = Date.now();
     await request(app)
       .post('/auth/register')
-      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+      // a client-supplied version must be ignored
+      .send({ ...base, acceptTerms: true, termsVersion: 'client-lies' });
+    const pending = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
+    await request(app).get(`/auth/verify-email?token=${pending!.token}`);
+
+    const user = await prisma.user.findUnique({ where: { email: TEST_EMAIL } });
+    expect(user!.termsVersion).toBe(TERMS_VERSION);
+    expect(user!.termsAcceptedAt!.getTime()).toBeGreaterThanOrEqual(before);
+    expect(user!.termsAcceptedAt!.getTime()).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('keeps the original acceptance when the verification email is resent', async () => {
+    await request(app)
+      .post('/auth/register')
+      .send({ ...base, acceptTerms: true });
+    const first = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
+    await request(app)
+      .post('/auth/resend-verification')
+      .send({ email: TEST_EMAIL });
+    const second = await prisma.pendingRegistration.findUnique({
+      where: { email: TEST_EMAIL },
+    });
+    expect(second!.termsAcceptedAt).toEqual(first!.termsAcceptedAt);
+  });
+});
+
+describe('GET /auth/verify-email', () => {
+  it('verifies email and creates user', async () => {
+    await request(app).post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
     const pending = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
     });
@@ -292,9 +358,12 @@ describe('POST /auth/resend-verification', () => {
     const { sendVerificationEmail } = await import('../services/email.service');
     vi.clearAllMocks();
 
-    await request(app)
-      .post('/auth/register')
-      .send({ name: 'Test User', email: TEST_EMAIL, password: TEST_PASSWORD });
+    await request(app).post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
     const before = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
     });

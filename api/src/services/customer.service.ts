@@ -2,6 +2,7 @@ import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { redactCustomer } from '../utils/customerVisibility';
+import { logger } from '../utils/logger';
 
 async function requireMembership(userId: string, shopId: string) {
   const membership = await prisma.userShop.findUnique({
@@ -136,4 +137,76 @@ export const updateCustomer = async (
       ...(data.notes !== undefined && { notes: data.notes }),
     },
   });
+};
+
+// GDPR access/erasure requests are handled by the shop (the data controller),
+// so only the owner may run them — not staff, even with canViewCustomerDetails.
+async function requireOwner(userId: string, shopId: string) {
+  const membership = await requireMembership(userId, shopId);
+  if (membership.role !== 'owner') {
+    throw new AppError(403, 'Only the shop owner can do this');
+  }
+}
+
+// Everything we hold about one customer, for a data-access request.
+export const exportCustomer = async (
+  userId: string,
+  shopId: string,
+  customerId: string,
+) => {
+  await requireOwner(userId, shopId);
+  const customer = await requireCustomerInShop(customerId, shopId);
+
+  const bookings = await prisma.booking.findMany({
+    where: { customerId, shopId },
+    orderBy: { startTime: 'asc' },
+    include: {
+      service: { select: { name: true } },
+      staff: { select: { name: true } },
+    },
+  });
+
+  logger.info(`Customer exported: ${customerId} shop ${shopId} by ${userId}`);
+  return {
+    exportedAt: new Date().toISOString(),
+    customer: {
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      notes: customer.notes,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt,
+    },
+    bookings: bookings.map((b) => ({
+      id: b.id,
+      startTime: b.startTime,
+      endTime: b.endTime,
+      status: b.status,
+      notes: b.notes,
+      service: b.service.name,
+      staff: b.staff.name,
+      createdAt: b.createdAt,
+    })),
+  };
+};
+
+// Erasure: hard delete. Bookings go with the customer (onDelete: Cascade), so
+// the freed slots reopen — that's inherent to erasing the person.
+export const deleteCustomer = async (
+  userId: string,
+  shopId: string,
+  customerId: string,
+) => {
+  await requireOwner(userId, shopId);
+  await requireCustomerInShop(customerId, shopId);
+
+  const { count } = await prisma.booking.deleteMany({
+    where: { customerId, shopId },
+  });
+  await prisma.customer.delete({ where: { id: customerId } });
+
+  logger.info(
+    `Customer deleted: ${customerId} shop ${shopId} by ${userId} (${count} bookings)`,
+  );
 };

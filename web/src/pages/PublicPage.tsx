@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faClock, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { createBooking } from '../api/public.api';
@@ -235,6 +235,12 @@ export default function PublicPage() {
                       rows={3}
                     />
                   </div>
+
+                  <p className="public-field-hint">
+                    {t.public.privacyNoticeBefore}{' '}
+                    <Link to="/privacy" target="_blank" rel="noopener">{t.public.privacyNoticeLink}</Link>
+                    {t.public.privacyNoticeAfter}
+                  </p>
 
                   {busyNotice && <p className="public-submit-notice" role="status">{busyNotice}</p>}
                   {submitError && <p className="public-submit-error">{submitError}</p>}

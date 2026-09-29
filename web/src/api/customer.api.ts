@@ -56,3 +56,24 @@ export const getCustomer = (shopId: string, customerId: string) =>
 
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);
+
+export interface CustomerExport {
+  exportedAt: string;
+  customer: Customer;
+  bookings: {
+    id: string;
+    startTime: string;
+    endTime: string;
+    status: BookingStatus;
+    notes: string | null;
+    service: string;
+    staff: string;
+    createdAt: string;
+  }[];
+}
+
+export const exportCustomer = (shopId: string, customerId: string) =>
+  client.get(`${base(shopId)}/${customerId}/export`).then((r) => r.data.data as CustomerExport);
+
+export const deleteCustomer = (shopId: string, customerId: string) =>
+  client.delete(`${base(shopId)}/${customerId}`).then(() => undefined);

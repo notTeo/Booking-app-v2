@@ -10,6 +10,8 @@ import {
   listCustomers,
   getCustomer,
   updateCustomer,
+  exportCustomer,
+  deleteCustomer,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
@@ -29,6 +31,21 @@ router.patch(
   updateCustomerValidation,
   validate,
   updateCustomer,
+);
+
+router.get(
+  '/:customerId/export',
+  authenticate,
+  customerParamsValidation,
+  validate,
+  exportCustomer,
+);
+router.delete(
+  '/:customerId',
+  authenticate,
+  customerParamsValidation,
+  validate,
+  deleteCustomer,
 );
 
 export default router;

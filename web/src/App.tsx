@@ -36,6 +36,7 @@ import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import DpaPage from './pages/DpaPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/ScrollToTop';
@@ -64,6 +65,7 @@ export default function App() {
                 <Route path="/cancel" element={<CancelBookingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/dpa" element={<DpaPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/p/:slug" element={<PublicPage />} />

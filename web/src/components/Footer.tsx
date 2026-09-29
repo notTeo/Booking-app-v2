@@ -42,6 +42,7 @@ export default function Footer() {
               <ul className="home-footer-links">
                 <li><Link to="/privacy">{t.privacy.linkLabel}</Link></li>
                 <li><Link to="/terms">{t.terms.linkLabel}</Link></li>
+                <li><Link to="/dpa">{t.dpa.linkLabel}</Link></li>
               </ul>
             </div>
           </div>

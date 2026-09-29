@@ -2,6 +2,8 @@ export interface RegisterDto {
   email: string;
   name: string;
   password: string;
+  // Must be literally true (validated); the server stamps version and time.
+  acceptTerms?: boolean;
 }
 
 export interface LoginDto {

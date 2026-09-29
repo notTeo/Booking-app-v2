@@ -274,6 +274,27 @@ export interface Translations {
     pwSpecial: string;
     nameLabel: string;
     inviteNotice: string;
+    acceptPrefix: string;
+    acceptAnd: string;
+    termsRequired: string;
+  };
+  dpa: {
+    linkLabel: string;
+    title: string;
+    lastUpdated: string;
+    placeholderNotice: string;
+    intro: string;
+    rolesHeading: string;
+    rolesBody: string;
+    processingHeading: string;
+    processingBody: string;
+    subprocessorsHeading: string;
+    subprocessorsBody: string;
+    securityHeading: string;
+    securityBody: string;
+    rightsHeading: string;
+    rightsBody: string;
+    contact: string;
   };
   forgotPassword: {
     title: string;
@@ -643,6 +664,9 @@ export interface Translations {
     emailLabel: string;
     emailOptional: string;
     emailHint: string;
+    privacyNoticeBefore: string;
+    privacyNoticeLink: string;
+    privacyNoticeAfter: string;
     emailPlaceholder: string;
     notesLabel: string;
     notesOptional: string;
@@ -704,6 +728,15 @@ export interface Translations {
     totalSpentLabel: string;
     recentBookings: string;
     noBookings: string;
+    privacyHeading: string;
+    privacyBody: string;
+    exportData: string;
+    exporting: string;
+    exportError: string;
+    deleteCustomer: string;
+    deleting: string;
+    deleteConfirm: string;
+    deleteError: string;
     serviceCol: string;
     dateTimeCol: string;
     statusCol: string;
@@ -1046,6 +1079,27 @@ home: {
       pwSpecial: 'Ένας ειδικός χαρακτήρας (!@#$%...)',
       nameLabel: 'Όνομα',
       inviteNotice: 'Δημιουργήστε τον λογαριασμό σας για να αποδεχτείτε την πρόσκληση.',
+      acceptPrefix: 'Αποδέχομαι τους',
+      acceptAnd: 'και την',
+      termsRequired: 'Πρέπει να αποδεχτείτε τους Όρους Χρήσης και την Πολιτική Απορρήτου για να συνεχίσετε.',
+    },
+    dpa: {
+      linkLabel: 'Συμφωνία Επεξεργασίας Δεδομένων',
+      title: 'Συμφωνία Επεξεργασίας Δεδομένων (DPA)',
+      lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
+      placeholderNotice: 'Προσωρινό κείμενο: η τελική Συμφωνία Επεξεργασίας Δεδομένων θα δημοσιευτεί πριν την επίσημη λειτουργία της υπηρεσίας.',
+      intro: 'Το παρόν περιγράφει πώς το Bookly επεξεργάζεται προσωπικά δεδομένα για λογαριασμό των καταστημάτων που το χρησιμοποιούν.',
+      rolesHeading: 'Ρόλοι',
+      rolesBody: 'Το κατάστημα είναι ο υπεύθυνος επεξεργασίας των δεδομένων των πελατών του. Το Bookly ενεργεί ως εκτελών την επεξεργασία και επεξεργάζεται τα δεδομένα μόνο βάσει των οδηγιών του καταστήματος.',
+      processingHeading: 'Αντικείμενο επεξεργασίας',
+      processingBody: 'Όνομα, τηλέφωνο, προαιρετικό email και σημειώσεις πελατών, καθώς και το ιστορικό των κρατήσεών τους, με σκοπό τη διαχείριση ραντεβού.',
+      subprocessorsHeading: 'Υπο-εκτελούντες',
+      subprocessorsBody: 'Πάροχος φιλοξενίας της εφαρμογής και της βάσης δεδομένων, και πάροχος αποστολής email συναλλαγών. Ο ακριβής κατάλογος θα δημοσιευτεί στην τελική έκδοση.',
+      securityHeading: 'Ασφάλεια',
+      securityBody: 'Κρυπτογραφημένες συνδέσεις (HTTPS), περιορισμένη πρόσβαση ανά κατάστημα και κατακερματισμός κωδικών πρόσβασης.',
+      rightsHeading: 'Δικαιώματα υποκειμένων',
+      rightsBody: 'Ο ιδιοκτήτης του καταστήματος μπορεί να εξάγει ή να διαγράψει τα δεδομένα ενός πελάτη από τη σελίδα του πελάτη στον πίνακα ελέγχου.',
+      contact: 'Επικοινωνία για θέματα προστασίας δεδομένων:',
     },
     forgotPassword: {
       title: 'Ξεχάσατε τον Κωδικό',
@@ -1415,6 +1469,9 @@ home: {
       emailLabel: 'Email',
       emailOptional: '(προαιρετικό)',
       emailHint: 'Προσθέστε email για να λάβετε λεπτομέρειες κράτησης και σύνδεσμο ακύρωσης',
+      privacyNoticeBefore: 'Τα στοιχεία σας χρησιμοποιούνται μόνο για τη διαχείριση της κράτησής σας από το κατάστημα. Δείτε την',
+      privacyNoticeLink: 'Πολιτική Απορρήτου',
+      privacyNoticeAfter: '.',
       emailPlaceholder: 'εσεις@παραδειγμα.com',
       notesLabel: 'Σημειώσεις',
       notesOptional: '(προαιρετικό)',
@@ -1483,6 +1540,15 @@ home: {
       totalSpentLabel: 'Συνολική δαπάνη',
       recentBookings: 'Πρόσφατα Ραντεβού',
       noBookings: 'Δεν υπάρχουν ραντεβού ακόμα.',
+      privacyHeading: 'Προσωπικά δεδομένα',
+      privacyBody: 'Εξαγωγή όλων των δεδομένων που διατηρούνται για αυτόν τον πελάτη (JSON), ή οριστική διαγραφή του πελάτη και όλων των ραντεβού του.',
+      exportData: 'Εξαγωγή δεδομένων',
+      exporting: 'Εξαγωγή...',
+      exportError: 'Αποτυχία εξαγωγής δεδομένων.',
+      deleteCustomer: 'Διαγραφή πελάτη',
+      deleting: 'Διαγραφή...',
+      deleteConfirm: 'Οριστική διαγραφή αυτού του πελάτη και ΟΛΩΝ των ραντεβού του; Η ενέργεια δεν αναιρείται.',
+      deleteError: 'Αποτυχία διαγραφής πελάτη.',
       serviceCol: 'Υπηρεσία',
       dateTimeCol: 'Ημερομηνία & Ώρα',
       statusCol: 'Κατάσταση',
@@ -1830,6 +1896,27 @@ home: {
       pwSpecial: 'One special character (!@#$%...)',
       nameLabel: 'Name',
       inviteNotice: 'Create your account to accept the invitation.',
+      acceptPrefix: 'I accept the',
+      acceptAnd: 'and the',
+      termsRequired: 'You must accept the Terms of Service and Privacy Policy to continue.',
+    },
+    dpa: {
+      linkLabel: 'Data Processing Agreement',
+      title: 'Data Processing Agreement (DPA)',
+      lastUpdated: 'Last updated: September 2026',
+      placeholderNotice: 'Placeholder text: the final Data Processing Agreement will be published before the service officially launches.',
+      intro: 'This describes how Bookly processes personal data on behalf of the shops that use it.',
+      rolesHeading: 'Roles',
+      rolesBody: "The shop is the controller of its customers' data. Bookly acts as processor and processes that data only on the shop's instructions.",
+      processingHeading: 'What is processed',
+      processingBody: "Customers' name, phone number, optional email and notes, and their booking history, for the purpose of managing appointments.",
+      subprocessorsHeading: 'Sub-processors',
+      subprocessorsBody: 'The hosting provider for the application and database, and a transactional email provider. The exact list will be published in the final version.',
+      securityHeading: 'Security',
+      securityBody: 'Encrypted connections (HTTPS), per-shop access restrictions, and hashed passwords.',
+      rightsHeading: 'Data subject rights',
+      rightsBody: "The shop owner can export or delete a customer's data from the customer's page in the dashboard.",
+      contact: 'Data protection contact:',
     },
     forgotPassword: {
       title: 'Forgot Password',
@@ -2199,6 +2286,9 @@ home: {
       emailLabel: 'Email',
       emailOptional: '(optional)',
       emailHint: 'Add your email to receive booking details and a cancellation link',
+      privacyNoticeBefore: 'Your details are used only so the shop can manage your booking. See our',
+      privacyNoticeLink: 'Privacy Policy',
+      privacyNoticeAfter: '.',
       emailPlaceholder: 'you@example.com',
       notesLabel: 'Notes',
       notesOptional: '(optional)',
@@ -2267,6 +2357,15 @@ home: {
       totalSpentLabel: 'Total spent',
       recentBookings: 'Recent Bookings',
       noBookings: 'No bookings yet.',
+      privacyHeading: 'Personal data',
+      privacyBody: 'Export everything held about this customer (JSON), or permanently delete the customer and all their bookings.',
+      exportData: 'Export data',
+      exporting: 'Exporting...',
+      exportError: 'Failed to export data.',
+      deleteCustomer: 'Delete customer',
+      deleting: 'Deleting...',
+      deleteConfirm: 'Permanently delete this customer and ALL their bookings? This cannot be undone.',
+      deleteError: 'Failed to delete customer.',
       serviceCol: 'Service',
       dateTimeCol: 'Date & Time',
       statusCol: 'Status',

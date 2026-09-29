@@ -21,6 +21,9 @@ export const registerValidation = [
     .optional()
     .isString()
     .withMessage('Invite token must be a string'),
+  body('acceptTerms')
+    .custom((value) => value === true)
+    .withMessage('You must accept the Terms of Service and Privacy Policy'),
 ];
 
 export const loginValidation = [
