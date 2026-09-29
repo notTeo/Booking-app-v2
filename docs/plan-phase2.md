@@ -1,10 +1,11 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** decide on commit **10** (the conditional Postgres exclusion
-constraint — verify `btree_gist` on a throwaway Railway Postgres and that
-`prisma migrate diff` reports no drift; skip and report if either fails), then
-commit 11: resume the remainder of production-readiness group 3, then groups
-4–14.
+**Next step:** commit **11** — resume the remainder of production-readiness
+group 3 (`BOOKING_BUSY`/`BOOKING_TOO_LONG` translations + neutral 503
+handling), then groups 4, 6, 7, 8, 9, 10, 11, 12, 14 in that order (Phase A
+priority list). Commit 10 (the conditional Postgres exclusion constraint) is
+**skipped by explicit owner instruction** — not a failed precondition, a
+choice to defer it — and moves to the Phase B list alongside CI/lint.
 
 Commit 8 (mobile layout) is done: booking-wizard out-of-hours sections
 (`BEFORE_OPENING`/`BREAK`/`AFTER_CLOSING`/`CLOSED_DAY`) are now a native
