@@ -33,6 +33,27 @@ export const ErrorHandler = (
       ...err.details,
     });
   }
+
+  // Not our own AppError, but still the client's mistake, not a server
+  // failure — e.g. a malformed JSON body throws a plain SyntaxError from
+  // body-parser (upstream of our own routes) with status/statusCode 400.
+  // Respect that instead of masking every non-AppError as a 500. Restricted
+  // to 4xx so an unexpected 5xx-ish status on some other error still gets
+  // logged and the generic message below (never leaking arbitrary internals).
+  const status =
+    (err as { status?: unknown }).status ??
+    (err as { statusCode?: unknown }).statusCode;
+  if (typeof status === 'number' && status >= 400 && status < 500) {
+    const isMalformedJson =
+      (err as { type?: string }).type === 'entity.parse.failed';
+    return res.status(status).json({
+      status: 'error',
+      message: isMalformedJson
+        ? 'Malformed JSON in request body.'
+        : err.message,
+    });
+  }
+
   logger.error({ err, path: req.path, method: req.method }, 'Unhandled error');
   return res.status(500).json({
     status: 'error',

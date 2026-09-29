@@ -21,13 +21,17 @@ import {
 } from '../validators/authValidation';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
-import { authLimiter, forgotPasswordLimiter } from '../middleware/rateLimiter';
+import {
+  authLimiter,
+  forgotPasswordLimiter,
+  refreshLimiter,
+} from '../middleware/rateLimiter';
 
 const router = Router();
 
 router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
-router.post('/refresh', authLimiter, refresh);
+router.post('/refresh', refreshLimiter, refresh);
 router.post('/logout', logout);
 router.get('/verify-email', verifyEmailController);
 router.get('/verify-email-change', verifyEmailChangeController);

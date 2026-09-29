@@ -14,12 +14,40 @@ import {
   cancelBooking,
   getPublicSlots,
 } from '../controllers/public.controller';
+import {
+  publicReadLimiter,
+  publicWriteLimiter,
+} from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.post('/cancel', cancelBookingValidation, validate, cancelBooking);
-router.get('/:slug/slots', getPublicSlotsValidation, validate, getPublicSlots);
-router.get('/:slug', getShopInfoValidation, validate, getShopInfo);
-router.post('/:slug/book', createBookingValidation, validate, createBooking);
+router.post(
+  '/cancel',
+  publicWriteLimiter,
+  cancelBookingValidation,
+  validate,
+  cancelBooking,
+);
+router.get(
+  '/:slug/slots',
+  publicReadLimiter,
+  getPublicSlotsValidation,
+  validate,
+  getPublicSlots,
+);
+router.get(
+  '/:slug',
+  publicReadLimiter,
+  getShopInfoValidation,
+  validate,
+  getShopInfo,
+);
+router.post(
+  '/:slug/book',
+  publicWriteLimiter,
+  createBookingValidation,
+  validate,
+  createBooking,
+);
 
 export default router;

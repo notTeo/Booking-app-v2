@@ -1,21 +1,22 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **6** (rate limiting,
-including the shared-IP login lockout fix — see "Group 6, new finding"
-below), then groups 7, 8, 9, 10, 11, 12, 14 in that order (Phase A priority
-list). Commit 10 (the conditional Postgres exclusion constraint) is
-**skipped by explicit owner instruction** — not a failed precondition, a
-choice to defer it — and moves to the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **7** (validation:
+express-validator on every route listed as missing, including query-string
+tokens and path params; length caps and types on all public booking fields),
+then groups 8, 9, 10, 11, 12, 14 in that order (Phase A priority list).
+Commit 10 (the conditional Postgres exclusion constraint) is **skipped by
+explicit owner instruction** — not a failed precondition, a choice to defer
+it — and moves to the Phase B list alongside CI/lint.
 
-Groups 3 and 4 are done this session (commit 11; see the status table and
+Groups 3, 4 and 6 are done this session (commit 11; see the status table and
 "Additional items by group" for what was built and why). Commit 8 (mobile
-layout) is also done — see the out-of-hours plan doc for detail on both.
+layout) is also done — see the out-of-hours plan doc for detail.
 
-Full suite green as of group 4: api 280 tests × 3 TZs (the already-documented
-`concurrency.test.ts` flake recurred twice more this session, both times
-right after a new test file was added, both times gone on immediate rerun —
-see LATER), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint at the same
-48-problem web baseline (api: 0 errors, 6 pre-existing warnings), build
+Full suite green as of group 6: api 294 tests × 3 TZs (the already-documented
+`concurrency.test.ts` flake recurred three more times this session, every
+time right after a new test file was added, every time gone on immediate
+rerun — see LATER), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint at the
+same 48-problem web baseline (api: 0 errors, 6 pre-existing warnings), build
 succeeds.
 
 *(Keep this line updated after every commit or checkpoint.)*
@@ -183,7 +184,7 @@ before continuing.
 | 3 Booking rules | **done** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field; out-of-hours plan (`overrideRules` contract, storage, UI, commits 1/2/4/6/7/8); commit 11's group 3 remainder = `BOOKING_TOO_LONG`/`BOOKING_BUSY` translations + neutral 503 handling (see "Additional items by group") |
 | 4 Customer upsert | **done** | commit 11 continued: `findOrCreateCustomer` in `booking.service.ts` — the public path no longer overwrites an existing customer's name/email (only creates when new); the owner/staff path keeps the old upsert-with-update behaviour (deliberate, matches the wizard's autofill UI) |
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
-| 6 Rate limiting / JSON errors | not started | — (see the shared-login-budget finding under "Additional items by group") |
+| 6 Rate limiting / JSON errors | **done** | commit 11 continued: `publicReadLimiter` (100/15min: shop info, slots) + `publicWriteLimiter` (20/15min: book, cancel) in `api/src/middleware/rateLimiter.ts`, wired in `public.routes.ts`; `refreshLimiter` replaces `authLimiter` on `/auth/refresh` (60/15min, skipped entirely with no refresh cookie) fixing the shared-IP lockout finding below; `ErrorHandler` now respects a plain error's `status`/`statusCode` in the 4xx range (never 5xx, to avoid leaking internals), which also turns a malformed JSON body from a 500 into a clean 400 |
 | 7 Validation | not started | — |
 | 8 Slugs | not started | — (note: `updateShop` already ignores `slug`; must become a 400 before deploy) |
 | 9 Ops/env | not started | — |
@@ -312,14 +313,23 @@ Original spec, for reference:
 
 ### Group 6 (rate limiting) — new finding
 
-`authLimiter` (10 requests / 15 min per IP) is shared by `/auth/login` **and**
-`/auth/refresh`, and every full page load calls `POST /auth/refresh` — including
-anonymous visitors of the public booking page. One login flow costs 3 hits. On a
-shared IP (a shop's Wi-Fi, a mobile-carrier NAT) ordinary browsing can exhaust the
-budget and lock a staff member out of logging in. When group 6 is done: give
-refresh its own, much looser limiter (or skip it when there is no refresh cookie),
-keep login strict, and keep the new `/public/*` limiters separate. The
-`RATE_LIMIT_DISABLED` switch (`70c710d`) exists only for the e2e suite.
+**Done in commit 11.** `authLimiter` (10 requests / 15 min per IP) was shared
+by `/auth/login` **and** `/auth/refresh`, and every full page load calls
+`POST /auth/refresh` — including anonymous visitors of the public booking
+page. One login flow costs 3 hits. On a shared IP (a shop's Wi-Fi, a
+mobile-carrier NAT) ordinary browsing could exhaust the budget and lock a
+staff member out of logging in.
+
+As built: `refreshLimiter` (`api/src/middleware/rateLimiter.ts`) replaces
+`authLimiter` on `POST /auth/refresh`. It `skip`s entirely when the request
+carries no `refreshToken` cookie — an anonymous visitor never counts against
+it at all, since there's nothing to refresh — and is generous (60/15min) even
+when one is present, as a backstop against a genuine runaway refresh loop
+without login's strictness. `authLimiter` itself is unchanged and now applies
+only to `/auth/login`, `/auth/register` and `/auth/reset-password`. The new
+`publicReadLimiter`/`publicWriteLimiter` are separate limiters entirely (see
+the group 6 status-table row). The `RATE_LIMIT_DISABLED` switch (`70c710d`)
+still covers all of these the same way, verified by test.
 
 ## Retry safety and contention: findings and decision
 
@@ -444,16 +454,18 @@ npm run e2e                                                     # from repo root
   bookings for different providers/slots all succeed" failed once (UTC, full
   suite, while finishing out-of-hours commit 2); passed on every rerun. That test
   expects six 201s, so a failure means a valid booking was rejected (409/503),
-  not a double booking. No body captured — unclassified. **Recurred twice
-  more**, both times immediately after adding a new (unrelated) test file to
-  the suite, and both times passed on the very next run — once (America/New
-  York, full `test:tz`) while finishing commit 11's group 3 remainder (a
-  translations/CORS/web-UI change, nothing touching booking concurrency), and
-  again (UTC, full `test:tz`) right after adding `customerUpsert.test.ts`
-  (commit 11's group 4 — again nothing touching the concurrency path itself).
-  Both times passed immediately on rerun, in isolation and as part of the
-  full suite. Still unclassified, no body captured any time. The correlation
-  with "a new test file just got added" across all three most recent
+  not a double booking. No body captured — unclassified. **Recurred three
+  times more**, every time immediately after adding a new (unrelated) test
+  file to the suite, and every time passed on the very next run: (1)
+  America/New York, full `test:tz`, finishing commit 11's group 3 remainder
+  (translations/CORS/web-UI, nothing touching booking concurrency); (2) UTC,
+  full `test:tz`, right after adding `customerUpsert.test.ts` (commit 11's
+  group 4); (3) UTC again, full `test:tz`, right after adding
+  `errorHandler.test.ts` + `publicRateLimiter.test.ts` (commit 11's group 6 —
+  rate limiting and error handling, again nothing touching the concurrency
+  path). All three passed immediately on rerun, in isolation and as part of
+  the full suite. Still unclassified, no body captured any time. The
+  correlation with "a new test file just got added" across all four
   occurrences may be a clue (e.g. a first-run cost — connection pool
   warm-up, query planner cache — under the full suite's load) rather than
   pure chance; worth a look if it recurs again, but not launch-blocking.
