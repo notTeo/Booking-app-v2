@@ -459,9 +459,32 @@ deploy fails at migration time, visibly, with nothing else affected.
 
 Application: a violation (SQLSTATE 23P01, `DriverAdapterError` with
 `cause.originalCode`) is mapped to the same `409 SLOT_TAKEN` inside
-`withSerializableRetry`, not retried. The serializable-transaction scheme is
-**unchanged** — dropping to a cheaper retry-only-on-constraint scheme (the
-plan's stretch idea) is a separate, riskier change, deliberately not done.
+`withSerializableRetry`, not retried.
+
+**Concurrency design changed after CI caught a regression (booking
+transactions are no longer SERIALIZABLE).** First push of the constraint left
+the isolation scheme alone; CI then went red on all three API jobs and a fresh
+clone reproduced it (`concurrency.test.ts`: 10 simultaneous same-slot bookings
+returned `503 BOOKING_BUSY`). Measured on fresh databases: **0 of 8** runs failed
+before the constraint, **3 of 10** with it. Cause: under SERIALIZABLE the new
+GiST index adds coarse page-level predicate locks, so unrelated bookings falsely
+conflict (retries burned in ~250 ms, or attempts stuck on the 1 s `lock_timeout`)
+— the theory the plan already had for tiny indexes. The constraint makes
+SERIALIZABLE unnecessary for the overlap invariant, so: booking transactions now
+run **READ COMMITTED** (`BOOKING_TX_ISOLATION`), and every write path takes a
+per-provider **advisory lock first** (`lockProvider`, in `claimSlotAndCreate`,
+reschedule and re-activation): contenders for one provider queue, the loser then
+sees the winner's committed row and gets the ordinary 409, and the constraint
+stays the backstop. A transaction takes at most one such lock, so they cannot
+deadlock each other. READ COMMITTED *alone* was tried first and is not enough
+(the same-customer-phone race then 500s) — that is why the lock is there.
+Verified: concurrency file **30/30 on a single pinned CPU core** (the CI
+runners' pessimistic stand-in), full API suite 409/409 under all three
+timezones, plus `providerLock.test.ts` pinning the lock's behaviour. Trade-off
+to know: two people editing the *same* booking at the same instant no longer
+abort each other (last write wins on non-time fields); overlap safety is
+unaffected. **Lesson:** the `concurrency.test.ts` flake described below was
+sometimes a real sensitivity to contention, not just test infrastructure.
 Tests: 15 in `bookingNoOverlapConstraint.test.ts` (overlap kinds, half-open,
 other providers, each status, re-activation, moving a booking, error mapping).
 Finding while doing it: `bookingTimezone.test.ts` wrote two overlapping

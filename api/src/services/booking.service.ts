@@ -19,7 +19,7 @@ import {
   loadDayHours,
   loadShopRegularHours,
 } from './bookingRules.service';
-import { serializableTransaction } from '../utils/serializable';
+import { lockProvider, serializableTransaction } from '../utils/serializable';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
 // Only these statuses release a slot. COMPLETED does NOT — that time was
@@ -191,6 +191,9 @@ const claimSlotAndCreate = async (
   },
 ) => {
   assertBookingLength(p.startTime, p.endTime);
+  // First thing: queue behind any other booking write for this provider, so
+  // the overlap check below sees everything committed before us.
+  await lockProvider(tx, p.staffId);
   const conflict = await tx.booking.findFirst({
     where: overlapWhere(p.staffId, p.startTime, p.endTime),
   });
@@ -718,6 +721,7 @@ export const updateBooking = async (
 
     // Same overlap check as creation, excluding this booking itself.
     assertBookingLength(finalStartTime, finalEndTime);
+    await lockProvider(tx, finalStaffId); // queue behind other writes for this provider
     const conflict = await tx.booking.findFirst({
       where: overlapWhere(
         finalStaffId,
@@ -773,6 +777,7 @@ export const updateBookingStatus = async (
     // one that holds the provider's time re-occupies that slot. Someone else
     // may have booked it meanwhile, so the overlap check runs again.
     if (freesSlot(existing.status) && !freesSlot(status)) {
+      await lockProvider(tx, existing.staffId);
       const conflict = await tx.booking.findFirst({
         where: overlapWhere(
           existing.staffId,

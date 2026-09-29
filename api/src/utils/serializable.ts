@@ -195,7 +195,40 @@ export const withSerializableRetry = async <T>(
   }
 };
 
-/** The one place a serializable interactive transaction is started. Exposed as
+/**
+ * Isolation level of every booking transaction: READ COMMITTED, with a
+ * per-provider advisory lock (lockProvider) instead of SERIALIZABLE.
+ *
+ * The "no overlapping bookings for one provider" invariant is enforced by the
+ * Booking_no_overlap exclusion constraint, which is correct at any isolation
+ * level. Under SERIALIZABLE the constraint's GiST index adds coarse page-level
+ * predicate locks, so unrelated bookings falsely conflict: measured on a fresh
+ * database, 3 of 10 runs of the 10-way concurrency test failed with
+ * BOOKING_BUSY, against 0 of 8 before the constraint. Plain READ COMMITTED is
+ * not enough either (racing customer upserts and overlap re-checks then fail
+ * with 500s), so contenders for the SAME provider are made to queue on an
+ * advisory lock: the second one then simply sees the first one's committed
+ * booking and answers 409 through the ordinary overlap check. The constraint
+ * stays as the backstop for anything that gets past it.
+ */
+export const BOOKING_TX_ISOLATION = 'ReadCommitted' as const;
+
+/**
+ * Serialises booking writes for one provider (UserShop id) until the
+ * transaction ends. Call it FIRST, before reading anything the decision
+ * depends on. A transaction takes at most one such lock, so two of them can
+ * never deadlock each other. Waiting counts against the transaction's
+ * lock_timeout, so a stuck holder becomes a clean BOOKING_BUSY, never a hang.
+ */
+export const lockProvider = async (
+  tx: Prisma.TransactionClient,
+  staffId: string,
+): Promise<void> => {
+  // $executeRaw: the function returns void, which $queryRaw cannot deserialize.
+  await tx.$executeRaw`select pg_advisory_xact_lock(hashtextextended(${staffId}::text, 0))`;
+};
+
+/** The one place a booking interactive transaction is started. Exposed as
  * an object so tests can make individual attempts fail (the Prisma client is a
  * proxy and cannot be spied on directly). */
 export const txRunner = {
@@ -217,7 +250,7 @@ export const txRunner = {
         return fn(tx);
       },
       {
-        isolationLevel: 'Serializable',
+        isolationLevel: BOOKING_TX_ISOLATION,
         timeout: budget.timeoutMs,
         maxWait: budget.maxWaitMs,
       },
