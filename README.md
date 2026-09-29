@@ -92,6 +92,10 @@ npm run dev             # http://localhost:5173
 
 The public booking page itself is a frontend route: `/:slug` (registered last, after every static route; `/p/:slug` redirects to it).
 
+## Deploying
+
+See [docs/runbook.md](docs/runbook.md): launch blockers, environment variables, first deploy, smoke test, routine deploys and rollback.
+
 ## Scripts
 
 ```bash

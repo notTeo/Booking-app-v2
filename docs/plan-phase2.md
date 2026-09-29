@@ -1,12 +1,13 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **14** (deploy runbook +
-rollback plan) — the last Phase A item. Then Phase B. Commit 10 (the
-conditional Postgres exclusion constraint) is **skipped by explicit owner
-instruction** — not a failed precondition, a choice to defer it — and moves to
-the Phase B list alongside CI/lint.
+**Next step:** **all Phase A groups are done.** Before launch, close the six
+blockers listed in section 1 of `docs/runbook.md` (Hairology data, real legal
+text, owner's reserved slugs, same-site domains, Resend domain, DB backup).
+Then Phase B: out-of-hours commits 5, 8, 9; group 13 CI + web lint fixes; the
+conditional Postgres exclusion constraint (commit 10 — **skipped by explicit
+owner instruction**, a choice to defer, not a failed precondition).
 
-Groups 3, 4, 6, 7, 8, 9, 10, 11 and 12 are done this session (commit 11; see the status table
+Groups 3, 4, 6, 7, 8, 9, 10, 11, 12 and 14 are done this session (commit 11; see the status table
 and "Additional items by group" for what was built and why). Commit 8
 (mobile layout) is also done — see the out-of-hours plan doc for detail.
 
@@ -189,7 +190,7 @@ before continuing.
 | 11 Root routing | **done** | Public booking page now at `/:slug`, registered after every static route (`App.tsx`); `/p/:slug` → `LegacyPublicRedirect` (`replace`, keeps `?query`) since old links live in QR codes/bookmarks. `PublicPage` is a wrapper: a path that can't be a slug (`utils/publicLink.ts` mirrors the API rules) or a 404 from `/public/:slug` renders the real `NotFoundPage` — no API call for junk like `/not_a_slug`, and `useBookingWizard` now exposes `notFound` so a network/server error is still shown as an error, not a 404. Copy-link buttons (shop overview, shop settings) use `publicShopUrl()`. **Email links needed no change**: no email links to the public page (cancel/verify/reset/invite are all static routes). Vercel's catch-all rewrite already serves `/:slug`. Reserved slugs (group 8) guarantee no shop can collide with a static route. e2e: existing specs moved to `/<slug>`; new `root-routing.spec.ts` (5 tests: slug page, legacy redirect, static routes not shadowed, unknown slug = 404, non-slug path = 404 with zero API calls) — e2e 24/24. **Ops note:** anything external pointing at `/p/<slug>` keeps working via the redirect, but new links should be `/<slug>` |
 | 12 Tenant ops / seeds | **done** | Logic lives in `api/src/admin/` (type-checked, tested against the test DB); `api/scripts/` are thin CLIs. `npm run tenant:create -- --owner-name … --owner-email … --shop-name … --slug … [--timezone]`: one transaction creating a verified Pro owner + shop + owner membership; slug goes through the group-8 rules; email lower-cased; password from `TENANT_PASSWORD` (keeps it out of shell history) or generated (meets the password rules) and printed once; **never overwrites** — existing email or slug is an error and creates nothing. `npm run seed:hairology` (needs `HAIROLOGY_OWNER_NAME`/`HAIROLOGY_OWNER_EMAIL`, optional `HAIROLOGY_OWNER_PASSWORD`): shop `hairology`, owner, extra staff, services, everyone assigned to every service, shop-level weekly hours; no customers/bookings; refuses if the shop exists; safe on production. `seed-visual-check.ts` renamed `dev-seed-visual-check.ts` (`npm run seed:dev-visual-check`) and guarded by `assertDevEnvironment`: runs only with `NODE_ENV` explicitly `development`/`test` — production **and unset** are refused (stricter than the plan: an unset NODE_ENV on a prod shell must not seed known passwords). Tests: 16 (createTenant incl. real login + public page, seed, guard); CLIs also smoke-run against a scratch DB. **BLOCKER before running the Hairology seed on production: `api/src/admin/hairologyData.ts` holds PLACEHOLDER services/hours/team (they'd appear on the public page), and the seed refuses to run until the owner replaces them and flips `HAIROLOGY_DATA_CONFIRMED = true`.** To run against prod the script needs prod `DATABASE_URL` in its environment (e.g. `railway run`, using the DB's public URL) — group 14 runbook should spell this out |
 | 13 CI | not started | — (also: fix 30 web lint errors, lint blocking) |
-| 14 Runbook | not started | — |
+| 14 Runbook | **done** | `docs/runbook.md`: launch blockers, architecture + domain plan, env var tables (API/web), Railway/Vercel/Resend/DNS setup, ordered first deploy, smoke-test checklist, routine-deploy procedure with the migration rule (additive only, backup first), rollback decision table + DB restore procedure, admin CLI usage against production, incident guide, known limits. Written from the repo's actual behaviour; dashboard-specific steps are marked **(verify)** because Railway/Vercel/Resend UIs weren't available to check. **Key risk it documents:** the refresh cookie is `SameSite=None; Secure`, so web and API must be on the same registrable domain (`example.gr` + `api.example.gr`) or Safari will log users out |
 
 ### Related commits (not tied to a single group)
 
