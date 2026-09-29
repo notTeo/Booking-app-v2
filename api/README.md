@@ -63,6 +63,24 @@ Validated at startup by `src/config/parseEnv.ts`; the process exits with the ful
 - **Logs contain no email addresses**; log lines identify users by id.
 - Migrations run automatically on container start (`prisma migrate deploy`).
 
+## Tenant operations (admin only)
+
+```bash
+# Create a customer: verified Pro owner + shop + owner membership.
+# Password from TENANT_PASSWORD, or generated and printed once. Never overwrites.
+npm run tenant:create -- --owner-name "Maria K" --owner-email maria@example.com \
+  --shop-name "Maria's Salon" --slug marias-salon [--timezone Europe/Athens]
+
+# Hairology tenant (no demo data; refuses if it exists). Edit
+# src/admin/hairologyData.ts and set HAIROLOGY_DATA_CONFIRMED = true first.
+HAIROLOGY_OWNER_NAME=... HAIROLOGY_OWNER_EMAIL=... npm run seed:hairology
+
+# Local dev demo data only — refuses unless NODE_ENV is development/test.
+npm run seed:dev-visual-check
+```
+
+These run against whatever `DATABASE_URL` is in the environment (`api/.env` locally).
+
 ## API reference
 
 Interactive docs at `/docs` (non-production only, from `src/docs/openapi.yaml`). Route groups:
