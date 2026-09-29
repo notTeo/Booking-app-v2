@@ -465,7 +465,8 @@
   align-items: center;
   gap: 0.4rem;
   padding: clamp(0.5rem, 1.45cqw, 1rem) clamp(0.65rem, 1.8cqw, 1.25rem);
-  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  
+  /* border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent); */
 }
 
 .home-preview-dot {
@@ -536,10 +537,12 @@
   flex-shrink: 0;
   padding: clamp(0.6rem, 1.8cqw, 1.25rem) clamp(0.4rem, 1.1cqw, 0.75rem);
   border-right: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   display: flex;
   flex-direction: column;
   gap: clamp(0.1rem, 0.3cqw, 0.2rem);
   overflow-y: hidden;
+  border-radius:0  var(--radius)  var(--radius)  var(--radius);
 }
 
 /* Without this, a short card (mobile aspect-ratio) squashes every row to
@@ -612,6 +615,7 @@
 }
 
 .home-preview-main {
+  background: var(--gb-card);
   flex: 1;
   min-width: 0;
   padding: clamp(1rem, 2.9cqw, 2rem) clamp(1.1rem, 3.3cqw, 2.25rem) clamp(1.2rem, 3.6cqw, 2.5rem);
@@ -649,13 +653,14 @@
    scaled with clamp()/cqw like the rest of this mockup card instead of fixed
    rem sizes, so it keeps reading the same at any rendered card size. ─────── */
 .home-preview-overview-card {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   overflow: hidden;
 }
 
 .home-preview-overview-header {
+  background: var(--bg-input);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -795,7 +800,7 @@
 }
 
 .home-preview-booking-title {
-  margin: 0 0 0.15rem;
+  margin: 0;
   font-size: clamp(0.6rem, 1.1cqw, 0.78rem);
   font-weight: 700;
   color: var(--text-muted);
@@ -813,7 +818,7 @@
 /* ─── Shared table (team / invites / customers) — mirrors .data-table from
    components.css, scaled with clamp()/cqw. ──────────────────────────────── */
 .home-preview-table-card {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   overflow: hidden;
@@ -883,7 +888,7 @@
    shared/components.css so colors/borders/focus match the real app exactly,
    just scaled down to the preview card. ──────────────────────────────────── */
 .home-preview-input {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   border-radius: clamp(6px, 1cqw, 10px);
   padding: clamp(0.4rem, 1.2cqw, 0.65rem) clamp(0.6rem, 1.6cqw, 0.9rem);
@@ -937,7 +942,7 @@
 }
 
 .home-preview-invite-form-card {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   padding: clamp(0.7rem, 2cqw, 1.25rem);
@@ -958,7 +963,7 @@
 }
 
 .home-preview-service-row {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   padding: clamp(0.6rem, 1.8cqw, 1rem);
@@ -1025,7 +1030,7 @@
 
 /* ─── Working hours preview — mirrors WorkingHoursPanel.tsx / working-hours.css. */
 .home-preview-wh-schedule-card {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   overflow: hidden;
@@ -1175,7 +1180,7 @@
   text-decoration: underline;
 }
 
-/* ─── Settings preview — reuses .home-preview-stat*/.home-preview-badges from
+/* ─── Settings preview — reuses .home-preview-stat.home-preview-badges from
    the overview block above. ──────────────────────────────────────────────── */
 .home-preview-settings-section {
   display: flex;
@@ -1291,7 +1296,7 @@
 }
 
 .home-preview-service-card {
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   padding: clamp(0.6rem, 1.8cqw, 1rem);
@@ -1367,7 +1372,7 @@
   flex-direction: column;
   align-items: center;
   gap: clamp(0.3rem, 0.9cqw, 0.5rem);
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   padding: clamp(0.6rem, 1.8cqw, 1rem) clamp(0.4rem, 1.2cqw, 0.7rem);
