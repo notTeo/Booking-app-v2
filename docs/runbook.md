@@ -70,7 +70,7 @@ The API validates its environment at startup and exits, listing **every** proble
 | `JWT_ACCESS_EXPIRES_IN` | `15m` (default) | Format: number + `s`/`m`/`h`/`d`/`w`. A bare number is rejected. |
 | `JWT_REFRESH_EXPIRES_IN` | `30d` (default) | Also the cookie lifetime. |
 | `RESEND_API_KEY` | from Resend | |
-| `EMAIL_FROM` | `Bookly <noreply@example.gr>` | Must be on the **verified** Resend domain. |
+| `EMAIL_FROM` | `BeBooked <noreply@example.gr>` | Must be on the **verified** Resend domain. |
 | `PORT` | leave unset | Railway injects it. |
 | `INVITE_EMAIL_OVERRIDE` | **must be unset** | Dev-only: it redirects every team-invite email to one address. |
 | `RATE_LIMIT_DISABLED` | **must be unset** | Ignored in production anyway. |

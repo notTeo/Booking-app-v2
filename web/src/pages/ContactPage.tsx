@@ -11,7 +11,7 @@ export default function ContactPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">Bookly</span></Link>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark">BeBooked</span></Link>
         <span className="home-label about-badge">{t.contact.badge}</span>
         <h1 className="legal-title">{t.contact.title}</h1>
         <p className="legal-body">{t.contact.intro}</p>

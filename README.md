@@ -1,4 +1,4 @@
-# Bookly
+# BeBooked
 
 Free online booking for barbershops and salons. Shop owners manage staff, services, and working hours, and get a public booking page their clients can book from directly — no calls, no payments to configure.
 

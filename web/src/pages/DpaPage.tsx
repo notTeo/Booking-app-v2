@@ -15,7 +15,7 @@ export default function DpaPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">Bookly</span></Link>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark">BeBooked</span></Link>
         <h1 className="legal-title">{t.dpa.title}</h1>
         <p className="legal-updated">{t.dpa.lastUpdated}</p>
         <p className="legal-body"><strong>{t.dpa.placeholderNotice}</strong></p>

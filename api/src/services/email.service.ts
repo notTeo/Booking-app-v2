@@ -71,12 +71,12 @@ const baseTemplate = (title: string, pageLabel: string, content: string) => `
   <div style="${styles.wrapper}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
       <tr>
-        <td style="${styles.brand}">BOOKLY</td>
+        <td style="${styles.brand}">BEBOOKED</td>
         <td style="${styles.pageLabel}">${pageLabel}</td>
       </tr>
     </table>
     ${content}
-    <p style="${styles.footer}">&copy; ${new Date().getFullYear()} Bookly. All rights reserved.</p>
+    <p style="${styles.footer}">&copy; ${new Date().getFullYear()} BeBooked. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -123,7 +123,7 @@ export const sendVerificationEmail = async (
       `
       <h1 style="${styles.h1}">${heading}</h1>
       <p style="${styles.p}">Confirm this email to activate your account and keep your access secure.</p>
-      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>. If you didn't create a Bookly account, you can ignore this email.</p>
+      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>. If you didn't create a BeBooked account, you can ignore this email.</p>
       <div style="margin:28px 0 16px;">
         ${btnOutline(verificationUrl, 'Verify email')}
       </div>

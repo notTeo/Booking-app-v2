@@ -12,7 +12,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">Bookly</span></Link>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark">BeBooked</span></Link>
         <span className="home-label about-badge">{t.about.badge}</span>
         <h1 className="legal-title">{t.about.title}</h1>
         <p className="legal-body">{t.about.intro}</p>

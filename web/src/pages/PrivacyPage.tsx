@@ -16,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">Bookly</span></Link>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark">BeBooked</span></Link>
         <h1 className="legal-title">{t.privacy.title}</h1>
         <p className="legal-updated">{t.privacy.lastUpdated}</p>
         <p className="legal-body">{t.privacy.intro}</p>

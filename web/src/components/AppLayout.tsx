@@ -28,7 +28,7 @@ export default function AppLayout() {
         >
           <IconMenu />
         </button>
-        <span className="app-mobile-brand">Bookly</span>
+        <span className="app-mobile-brand">BeBooked</span>
       </header>
 
       {/* Backdrop — mobile only, only when drawer is open */}

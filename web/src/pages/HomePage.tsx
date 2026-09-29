@@ -324,8 +324,8 @@ export default function HomePage() {
         <div className="home-container home-nav" ref={navRowRef}>
 
           <div className="home-nav-left">
-            <Link to="/" className="home-nav-logo-link" aria-label="Bookly home">
-              <span className="home-logo-text">Bookly</span>
+            <Link to="/" className="home-nav-logo-link" aria-label="BeBooked home">
+              <span className="home-logo-text">BeBooked</span>
             </Link>
 
             <div className="home-nav-links">
@@ -446,7 +446,7 @@ export default function HomePage() {
             <div className="home-preview-card-body">
               {/* Mobile-only — the real app's own mobile top header
                   (components/AppLayout.tsx), reused exactly: hamburger button +
-                  Bookly wordmark in a pill rounded only on the right, flush left.
+                  BeBooked wordmark in a pill rounded only on the right, flush left.
                   Positioned so the drawer (below) can overlap it, same as the
                   real app's z-index relationship between the two. */}
               <header className="app-mobile-header">
@@ -458,14 +458,14 @@ export default function HomePage() {
                 >
                   <PreviewMenuIcon />
                 </button>
-                <span className="app-mobile-brand">Bookly</span>
+                <span className="app-mobile-brand">BeBooked</span>
               </header>
 
               {/* Clickable, non-functional mockup of the real app sidebar — same
                   classes/CSS as components/Sidebar.tsx, for visual accuracy. */}
               <div className={`home-preview-sidebar${previewMenuOpen ? ' is-open' : ''}`}>
                 <div className="sidebar-header">
-                  <h4 className="sidebar-link-label">Bookly</h4>
+                  <h4 className="sidebar-link-label">BeBooked</h4>
                   <button
                     className="sidebar-back-link"
                     aria-label="Close menu"
@@ -1211,7 +1211,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from">Bookly</span>
+                    <span className="home-feature-email-from">BeBooked</span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeAgo}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsIncomingSubject}</div>
@@ -1222,7 +1222,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from">Bookly</span>
+                    <span className="home-feature-email-from">BeBooked</span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeNow}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsConfirmedSubject}</div>

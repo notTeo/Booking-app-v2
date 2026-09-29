@@ -379,7 +379,7 @@ textarea:focus-visible {
   text-decoration: none;
 }
 
-/* The Bookly wordmark, wherever it appears as a logo/brand mark rather than
+/* The BeBooked wordmark, wherever it appears as a logo/brand mark rather than
    plain copy — matches the script logo used on the marketing home page. */
 .brand-wordmark {
   font-family: var(--font-logo);

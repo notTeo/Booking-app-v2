@@ -30,7 +30,7 @@ export default function LoginPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">Bookly</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark">BeBooked</span></Link>
         <h1>Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
