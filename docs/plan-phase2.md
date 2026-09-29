@@ -1,40 +1,22 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **4** (customer upsert:
-public bookings must not overwrite an existing customer's name/email), then
-groups 6, 7, 8, 9, 10, 11, 12, 14 in that order (Phase A priority list).
-Commit 10 (the conditional Postgres exclusion constraint) is **skipped by
-explicit owner instruction** — not a failed precondition, a choice to defer
-it — and moves to the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **6** (rate limiting,
+including the shared-IP login lockout fix — see "Group 6, new finding"
+below), then groups 7, 8, 9, 10, 11, 12, 14 in that order (Phase A priority
+list). Commit 10 (the conditional Postgres exclusion constraint) is
+**skipped by explicit owner instruction** — not a failed precondition, a
+choice to defer it — and moves to the Phase B list alongside CI/lint.
 
-Group 3's remainder is done (see "Additional items by group" and the status
-table): `BOOKING_TOO_LONG` (422) and `BOOKING_BUSY` (503) translations
-(EL+EN) on both the public page and the owner wizard; `BOOKING_BUSY` renders
-as a genuinely neutral notice (new `.public-submit-notice` class, never
-`.public-submit-error`), keeps the typed values, and re-enables the submit
-button after the server's `Retry-After` window instead of instantly (a
-one-line CORS fix, `exposedHeaders: ['Retry-After']` in `api/src/app.ts`, was
-needed — the header wasn't reaching the browser at all). New e2e file
-`e2e/tests/booking-busy.spec.ts` covers both forms via `page.route()`
-response interception (a new pattern for this repo).
+Groups 3 and 4 are done this session (commit 11; see the status table and
+"Additional items by group" for what was built and why). Commit 8 (mobile
+layout) is also done — see the out-of-hours plan doc for detail on both.
 
-Commit 8 (mobile layout) is done: booking-wizard out-of-hours sections
-(`BEFORE_OPENING`/`BREAK`/`AFTER_CLOSING`/`CLOSED_DAY`) are now a native
-`<details>/<summary>` accordion (open by default, so nothing regresses for
-anyone who doesn't touch it) with a slot count in the heading — the heading
-stays an `<h4>` nested inside `<summary>` so it keeps its accessible role. A
-`≤640px` media query gives the form a 3-column slot grid and ≥44px tap
-targets, and turns the calendar into one-provider-per-page: scroll-snap
-columns, a sticky time gutter, provider chips (with a ☾ out-of-hours badge)
-to jump between columns, and the detail/create panel as a bottom sheet.
-`>640px` is pixel-identical to before.
-
-Full suite green: api 280 tests × 3 TZs (one intermittent, already-documented
-`concurrency.test.ts` flake recurred once under New York, unrelated to this
-diff — see LATER — and passed on immediate rerun, both isolated and as part
-of the full suite), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint has only
-the same 48 pre-existing web problems in unrelated files (api lint: 0 errors,
-6 pre-existing warnings), build succeeds.
+Full suite green as of group 4: api 280 tests × 3 TZs (the already-documented
+`concurrency.test.ts` flake recurred twice more this session, both times
+right after a new test file was added, both times gone on immediate rerun —
+see LATER), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint at the same
+48-problem web baseline (api: 0 errors, 6 pre-existing warnings), build
+succeeds.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -199,7 +181,7 @@ before continuing.
 | 1 Tenant isolation | **done** | `be099d1` delete membership; `7647e8e` serviceId/staffId scoping (create, PATCH, slots); `783e4e2` field whitelists; `2f27ae8` delete owner-only |
 | 2 Timezones | **done** | `a8becd9` server (Luxon, shop tz); `6689f90` web (+ vitest, `test:tz`); follow-ups below |
 | 3 Booking rules | **done** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field; out-of-hours plan (`overrideRules` contract, storage, UI, commits 1/2/4/6/7/8); commit 11's group 3 remainder = `BOOKING_TOO_LONG`/`BOOKING_BUSY` translations + neutral 503 handling (see "Additional items by group") |
-| 4 Customer upsert | not started | — |
+| 4 Customer upsert | **done** | commit 11 continued: `findOrCreateCustomer` in `booking.service.ts` — the public path no longer overwrites an existing customer's name/email (only creates when new); the owner/staff path keeps the old upsert-with-update behaviour (deliberate, matches the wizard's autofill UI) |
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
 | 6 Rate limiting / JSON errors | not started | — (see the shared-login-budget finding under "Additional items by group") |
 | 7 Validation | not started | — |
@@ -462,11 +444,19 @@ npm run e2e                                                     # from repo root
   bookings for different providers/slots all succeed" failed once (UTC, full
   suite, while finishing out-of-hours commit 2); passed on every rerun. That test
   expects six 201s, so a failure means a valid booking was rejected (409/503),
-  not a double booking. No body captured — unclassified. **Recurred once more**
-  (America/New_York, full `test:tz` run, while finishing commit 11's group 3
-  remainder — a translations/CORS/web-UI change with nothing touching booking
-  concurrency); passed immediately on rerun in isolation and as part of the
-  full suite. Still unclassified, no body captured either time.
+  not a double booking. No body captured — unclassified. **Recurred twice
+  more**, both times immediately after adding a new (unrelated) test file to
+  the suite, and both times passed on the very next run — once (America/New
+  York, full `test:tz`) while finishing commit 11's group 3 remainder (a
+  translations/CORS/web-UI change, nothing touching booking concurrency), and
+  again (UTC, full `test:tz`) right after adding `customerUpsert.test.ts`
+  (commit 11's group 4 — again nothing touching the concurrency path itself).
+  Both times passed immediately on rerun, in isolation and as part of the
+  full suite. Still unclassified, no body captured any time. The correlation
+  with "a new test file just got added" across all three most recent
+  occurrences may be a clue (e.g. a first-run cost — connection pool
+  warm-up, query planner cache — under the full suite's load) rather than
+  pure chance; worth a look if it recurs again, but not launch-blocking.
 - **Intermittent API test failures under full-suite load** (3 in ~20 full runs
   while doing out-of-hours commit 1; each passed on rerun and in isolation):
   `concurrency.test.ts` "simultaneous OVERLAPPING" (Athens) and "SAME customer

@@ -139,6 +139,35 @@ const BOOKING_INCLUDE = {
 } as const;
 
 /**
+ * Find-or-create the customer for a booking, by (shopId, phone).
+ *
+ * `overwriteExisting` controls what happens when the phone already belongs to
+ * a customer: owner/staff bookings may correct a customer's name/email on the
+ * way (deliberate front-desk behaviour, matches the wizard's autofill UI) —
+ * but the PUBLIC path must never let a booking submitted with a different
+ * name/email silently rewrite someone else's existing record. Either way a
+ * new customer is always created with the submitted details; only an
+ * existing match is affected.
+ */
+const findOrCreateCustomer = (
+  tx: Prisma.TransactionClient,
+  shopId: string,
+  customer: { name: string; phone: string; email?: string },
+  overwriteExisting: boolean,
+) =>
+  overwriteExisting
+    ? tx.customer.upsert({
+        where: { shopId_phone: { shopId, phone: customer.phone } },
+        update: { name: customer.name, email: customer.email ?? undefined },
+        create: { shopId, ...customer },
+      })
+    : tx.customer.upsert({
+        where: { shopId_phone: { shopId, phone: customer.phone } },
+        update: {},
+        create: { shopId, ...customer },
+      });
+
+/**
  * Overlap check + customer + insert, for a provider's time. Runs inside the
  * caller's serializable transaction. Never bypassable.
  */
@@ -151,6 +180,9 @@ const claimSlotAndCreate = async (
     startTime: Date;
     endTime: Date;
     customer: { name: string; phone: string; email?: string };
+    // Public bookings must never overwrite an existing customer's name/email;
+    // owner/staff bookings may (see findOrCreateCustomer).
+    overwriteCustomer: boolean;
     notes?: string;
     cancelToken: string;
     // Owner/staff creation only: the rules accepted, and who created it.
@@ -165,16 +197,12 @@ const claimSlotAndCreate = async (
   if (conflict)
     throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  const customer = await tx.customer.upsert({
-    where: { shopId_phone: { shopId: p.shopId, phone: p.customer.phone } },
-    update: { name: p.customer.name, email: p.customer.email ?? undefined },
-    create: {
-      shopId: p.shopId,
-      name: p.customer.name,
-      phone: p.customer.phone,
-      email: p.customer.email,
-    },
-  });
+  const customer = await findOrCreateCustomer(
+    tx,
+    p.shopId,
+    p.customer,
+    p.overwriteCustomer,
+  );
 
   return tx.booking.create({
     data: {
@@ -256,6 +284,7 @@ export const createBooking = async (
       startTime,
       endTime,
       customer: { name: data.name, phone: data.phone, email: data.email },
+      overwriteCustomer: false,
       notes: data.notes,
       cancelToken,
     });
@@ -331,6 +360,9 @@ export const createBookingForShop = async (
       startTime,
       endTime,
       customer: { name: data.name, phone: data.phone, email: data.email },
+      // Owner/staff may correct a customer's details on the way (matches the
+      // wizard's autofill UI); the public path never may (see claimSlotAndCreate).
+      overwriteCustomer: true,
       notes: data.notes,
       cancelToken,
       overriddenRules,
