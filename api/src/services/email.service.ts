@@ -134,11 +134,11 @@ export const sendVerificationEmail = async (
   });
 
   if (error) {
-    logger.error(error, `Failed to send verification email to ${email}`);
+    logger.error(error, `Failed to send verification email`);
     throw new Error('Failed to send verification email');
   }
 
-  logger.info(`Verification email sent to ${email}`);
+  logger.info(`Verification email sent`);
 };
 
 export const sendEmailChangeVerification = async (
@@ -168,14 +168,11 @@ export const sendEmailChangeVerification = async (
   });
 
   if (error) {
-    logger.error(
-      error,
-      `Failed to send email change verification to ${newEmail}`,
-    );
+    logger.error(error, `Failed to send email change verification`);
     throw new Error('Failed to send email change verification');
   }
 
-  logger.info(`Email change verification sent to ${newEmail}`);
+  logger.info(`Email change verification sent`);
 };
 
 export const sendPasswordResetEmail = async (
@@ -209,11 +206,11 @@ export const sendPasswordResetEmail = async (
   });
 
   if (error) {
-    logger.error(error, `Failed to send reset email to ${email}`);
+    logger.error(error, `Failed to send reset email`);
     throw new Error('Failed to send password reset email');
   }
 
-  logger.info(`Password reset email sent to ${email}`);
+  logger.info(`Password reset email sent`);
 };
 
 export const sendBookingConfirmationEmail = async (params: {
@@ -285,14 +282,11 @@ export const sendBookingConfirmationEmail = async (params: {
   });
 
   if (error) {
-    logger.error(
-      error,
-      `Failed to send booking confirmation email to ${params.email}`,
-    );
+    logger.error(error, `Failed to send booking confirmation email`);
     throw new Error('Failed to send booking confirmation email');
   }
 
-  logger.info(`Booking confirmation email sent to ${params.email}`);
+  logger.info(`Booking confirmation email sent`);
 };
 
 export const sendCancellationConfirmationEmail = async (params: {
@@ -340,11 +334,11 @@ export const sendCancellationConfirmationEmail = async (params: {
   });
 
   if (error) {
-    logger.error(error, `Failed to send cancellation email to ${params.email}`);
+    logger.error(error, `Failed to send cancellation email`);
     throw new Error('Failed to send cancellation confirmation email');
   }
 
-  logger.info(`Cancellation confirmation email sent to ${params.email}`);
+  logger.info(`Cancellation confirmation email sent`);
 };
 
 export const sendNewBookingNotificationEmail = async (params: {
@@ -395,14 +389,11 @@ export const sendNewBookingNotificationEmail = async (params: {
   });
 
   if (error) {
-    logger.error(
-      error,
-      `Failed to send new booking notification to ${params.email}`,
-    );
+    logger.error(error, `Failed to send new booking notification`);
     throw new Error('Failed to send new booking notification email');
   }
 
-  logger.info(`New booking notification sent to ${params.email}`);
+  logger.info(`New booking notification sent`);
 };
 
 export const sendInviteEmail = async (
@@ -436,9 +427,9 @@ export const sendInviteEmail = async (
   });
 
   if (error) {
-    logger.error(error, `Failed to send invite email to ${recipientEmail}`);
+    logger.error(error, `Failed to send invite email`);
     throw new Error('Failed to send invite email');
   }
 
-  logger.info(`Invite email sent to ${recipientEmail} (delivered to ${to})`);
+  logger.info(`Invite email sent`);
 };

@@ -1,12 +1,12 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **9** (ops/env), then groups
-10, 11, 12, 14 in that order (Phase A priority list). Commit 10 (the
-conditional Postgres exclusion constraint) is **skipped by explicit owner
-instruction** — not a failed precondition, a choice to defer it — and moves to
-the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **10** (GDPR), then groups
+11, 12, 14 in that order (Phase A priority list). Commit 10 (the conditional
+Postgres exclusion constraint) is **skipped by explicit owner instruction** —
+not a failed precondition, a choice to defer it — and moves to the Phase B
+list alongside CI/lint.
 
-Groups 3, 4, 6, 7 and 8 are done this session (commit 11; see the status table
+Groups 3, 4, 6, 7, 8 and 9 are done this session (commit 11; see the status table
 and "Additional items by group" for what was built and why). Commit 8
 (mobile layout) is also done — see the out-of-hours plan doc for detail.
 
@@ -184,7 +184,7 @@ before continuing.
 | 6 Rate limiting / JSON errors | **done** | commit 11 continued: `publicReadLimiter` (100/15min: shop info, slots) + `publicWriteLimiter` (20/15min: book, cancel) in `api/src/middleware/rateLimiter.ts`, wired in `public.routes.ts`; `refreshLimiter` replaces `authLimiter` on `/auth/refresh` (60/15min, skipped entirely with no refresh cookie) fixing the shared-IP lockout finding below; `ErrorHandler` now respects a plain error's `status`/`statusCode` in the 4xx range (never 5xx, to avoid leaking internals), which also turns a malformed JSON body from a 500 into a clean 400 |
 | 7 Validation | **done** | commit 11 continued, 3 commits: (1) name ≤100 / notes ≤1000 / phone format (`isPlausiblePhone`, lenient by design) / staffId type / email length on the public and owner booking bodies and customer PATCH, shared via new `validators/common.ts`, plus `PATCH /user/me`'s previously-unvalidated `name`; (2) every query/body "token" (verify-email, verify-email-change, reset-password, cancel) now checked `isString()`, not just `notEmpty()` — an array-shaped token used to reach Prisma and come back as a 500, now a clean 400; (3) the 5 routes with no validation chain at all now have one (shopId/memberId), plus their first HTTP-level test coverage. A repo-wide gap the audit found (every path-param id validated `.notEmpty()` only, never checked against the cuid shape Prisma generates) is **not** fixed — logged in LATER, not currently exploitable |
 | 8 Slugs | **done** | `api/src/validators/slug.ts`: 3–40 chars, `a-z0-9-`, no leading/trailing hyphen, `RESERVED_SLUGS` (checked by test against every route in `web/src/App.tsx` and every mount in `api/src/app.ts`). `POST /api/shops` enforces it; `PATCH /api/shops/:id` with a `slug` field is now a 400 (was silently ignored). Web: slug input on shop settings is read-only, create form hint updated. **The owner's own reserved list was not in the repo** — the non-route names (admin, www, support, billing, …) are a best guess; owner to confirm/extend |
-| 9 Ops/env | not started | — |
+| 9 Ops/env | **done** | `parseEnv.ts` validates env at startup (all problems listed, exit 1): `NODE_ENV` required with no default, `CLIENT_URLS` comma list (falls back to `CLIENT_URL`; first = email links, all = CORS), JWT durations parsed as `Ns/m/h/d/w` and a bare number is rejected (the old `parseInt(...replace('d',''))` turned `12h` into 12 days, and jsonwebtoken reads a bare numeric string as ms). Refresh cookie `maxAge` now follows `JWT_REFRESH_EXPIRES_IN` (was hardcoded 30d). `/health` runs `SELECT 1` (3s timeout) → 503 `{db:"down"}` without error detail. `X-Request-Id` (incoming id reused if `[A-Za-z0-9._-]{1,64}`) + `requestId` on every log line via AsyncLocalStorage; one `request` log per call, query string never logged. SIGTERM/SIGINT graceful shutdown (`utils/shutdown.ts`: close server → `prisma.$disconnect` → exit, 10s force), `unhandledRejection`/`uncaughtException` log then shut down with 1. Emails removed from all log lines (info/warn/error; users identified by id). Dockerfile sets `NODE_ENV=production`. Both `.env.example` files and `api/README.md` rewritten (Stripe/OAuth gone). Dead `web/config/env.ts` deleted. `vitest.config.ts` now excludes `dist/` (a local `npm run build` had made vitest run the compiled tests). **Deploy note:** Railway must have `NODE_ENV=production` (Docker image sets it) and existing `.env` files need `NODE_ENV` added or the API refuses to start |
 | 10 GDPR | not started | — |
 | 11 Root routing | not started | — |
 | 12 Tenant ops / seeds | not started | — |

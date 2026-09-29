@@ -15,11 +15,15 @@ import { parse } from 'yaml';
 import shopRoutes from './routes/shop.routes';
 import globalInviteRoutes from './routes/globalInvite.routes';
 import publicRoutes from './routes/public.routes';
+import { requestId } from './middleware/requestId';
+import { prisma } from './utils/prisma';
+import { createShutdown } from './utils/shutdown';
 
 const app = express();
 
 //Middleware
 app.set('trust proxy', 1);
+app.use(requestId);
 app.use(
   helmet({
     // Strict-Transport-Security: force HTTPS for 1 year in production
@@ -42,7 +46,7 @@ app.use(
 
 app.use(
   cors({
-    origin: env.clientUrl,
+    origin: env.clientUrls,
     credentials: true,
     // Not in the CORS response-header safelist, so the browser hides it from
     // client JS unless explicitly exposed (needed for BOOKING_BUSY's 503 to
@@ -53,8 +57,28 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Liveness + DB reachability. 503 (no detail) when the DB is down so a
+// platform health check restarts/stops routing instead of reporting healthy.
+app.get('/health', async (_req, res) => {
+  try {
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('db health check timed out')),
+          3000,
+        ).unref(),
+      ),
+    ]);
+    res.json({ status: 'ok', db: 'up', timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error(err, 'Health check failed');
+    res.status(503).json({
+      status: 'error',
+      db: 'down',
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // API docs — only in non-production environments
@@ -76,8 +100,29 @@ app.use(ErrorHandler);
 export default app;
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(env.port, () => {
+  const server = app.listen(env.port, () => {
     logger.info(`🚀 Server running on http://localhost:${env.port}`);
-    startCleanupJob();
+  });
+  const cleanupTimer = startCleanupJob();
+
+  const shutdown = createShutdown({
+    server,
+    disconnect: () => prisma.$disconnect(),
+    onShutdown: () => clearInterval(cleanupTimer),
+    log: logger,
+    exit: (code) => process.exit(code),
+  });
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+  // Node's default (crash with no cleanup) is fine for correctness but loses
+  // the log line and skips draining; log it, then shut down non-zero.
+  process.on('unhandledRejection', (reason) => {
+    logger.error({ err: reason }, 'Unhandled promise rejection');
+    void shutdown('unhandledRejection', 1);
+  });
+  process.on('uncaughtException', (err) => {
+    logger.error({ err }, 'Uncaught exception');
+    void shutdown('uncaughtException', 1);
   });
 }

@@ -1,203 +1,89 @@
-# API — Auth Boilerplate
+# API
 
-Express + TypeScript backend. Handles authentication, token management, email, Google OAuth, user management, and Stripe billing.
+Express + TypeScript + Prisma + PostgreSQL backend for the booking app: email/password auth, multi-tenant shops (team, services, working hours, customers, bookings), and a public booking API. Free scheduling only — no payments, no OAuth.
 
-Local dev runs on: `http://localhost:3000`
-Docker runs on: `http://localhost:5001` (mapped from internal port 3000)
+Local dev: `http://localhost:3000`. Docker (root `docker-compose.yml`): `http://localhost:5001`.
 
 ## Stack
 
-| Tool | Purpose |
-|---|---|
-| Express | HTTP framework |
-| TypeScript | Type safety |
-| Prisma | ORM + migrations |
-| PostgreSQL | Database |
-| jsonwebtoken | Sign and verify JWTs |
-| bcrypt | Password hashing |
-| Resend | Transactional email |
-| Stripe | Billing, subscriptions, webhooks |
-| express-validator | Input validation |
-| express-rate-limit | Rate limiting |
-| helmet | Security headers |
-| passport-google-oauth20 | Google OAuth strategy |
+Express, TypeScript, Prisma (`@prisma/adapter-pg`), PostgreSQL, jsonwebtoken, bcrypt, Luxon, Resend (transactional email), express-validator, express-rate-limit, helmet, pino, Vitest + Supertest.
 
-## Folder Structure
+## Layout
 
 ```
 api/
-├── prisma/
-│   ├── schema.prisma         ← User, Subscription models
-│   └── migrations/           ← committed SQL migration history
-├── src/
-│   ├── config/
-│   │   ├── env.ts            ← validated env variables
-│   │   └── passport.ts       ← Google OAuth strategy setup
-│   ├── controllers/
-│   │   ├── auth.controller.ts
-│   │   ├── user.controller.ts   ← getMe, updateMe, deleteMe
-│   │   └── billing.controller.ts ← checkout, portal, webhook
-│   ├── middleware/
-│   │   ├── authenticate.ts   ← JWT Bearer token guard
-│   │   ├── validate.ts       ← express-validator error handler
-│   │   ├── rateLimiter.ts    ← rate limit configs
-│   │   └── errorHandler.ts   ← global error handler
-│   ├── routes/
-│   │   ├── auth.routes.ts
-│   │   ├── user.routes.ts
-│   │   └── billing.routes.ts
-│   ├── services/
-│   │   ├── auth.service.ts      ← register, login, refresh, logout, verify, reset, update, delete
-│   │   ├── email.service.ts     ← Resend email templates
-│   │   ├── oauth.service.ts     ← Google OAuth user creation/linking
-│   │   └── billing.service.ts   ← Stripe customer, checkout, portal, webhook handlers
-│   ├── utils/
-│   │   ├── jwt.ts            ← sign/verify helpers + token expiry
-│   │   ├── prisma.ts         ← Prisma client singleton
-│   │   ├── logger.ts
-│   │   └── response.ts       ← consistent success response shape
-│   ├── validators/
-│   │   └── authValidation.ts ← express-validator chains
-│   └── app.ts
-├── .env.example
-├── tsconfig.json
-└── package.json
+├── prisma/            schema + committed migrations
+├── scripts/           dev-only helpers
+└── src/
+    ├── config/        env parsing/validation (parseEnv.ts, env.ts)
+    ├── controllers/   HTTP layer
+    ├── services/      business logic (bookings, booking rules, email, ...)
+    ├── routes/        route tables, validation chains + rate limiters wired here
+    ├── validators/    express-validator chains, slug rules
+    ├── middleware/    authenticate, validate, rateLimiter, requestId, errorHandler
+    ├── utils/         jwt, prisma, logger, slots, shutdown, ...
+    ├── docs/          openapi.yaml (served at /docs outside production)
+    ├── tests/         Vitest suites (need a Postgres test database)
+    └── app.ts         app setup + server start
 ```
 
-## Local Dev Setup
-
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL running locally or a remote connection string
-- [Resend](https://resend.com) account and API key
-- [Google Cloud](https://console.cloud.google.com) OAuth 2.0 credentials
-- [Stripe](https://stripe.com) account + [Stripe CLI](https://stripe.com/docs/stripe-cli) for webhooks
-
-### Steps
+## Local setup
 
 ```bash
 cd api
-cp .env.example .env
+cp .env.example .env      # fill in secrets; NODE_ENV is required
 npm install
 npx prisma migrate dev
 npm run dev
 ```
 
-### Stripe webhooks (local dev)
+Requires Node 20+, PostgreSQL, and a [Resend](https://resend.com) API key.
 
-In a separate terminal, forward Stripe events to your local server:
+## Environment variables
 
-```bash
-stripe listen --forward-to localhost:3000/billing/webhook
-```
+Validated at startup by `src/config/parseEnv.ts`; the process exits with the full list of problems if anything is wrong. See `.env.example` for a template.
 
-Copy the `whsec_...` secret printed by the CLI and set it as `STRIPE_WEBHOOK_SECRET` in `api/.env`. Restart the API after updating.
-
-## Docker
-
-In Docker, the API is built and run via the root `docker-compose.yml`. It reads env vars from the **root `.env`** — not from `api/.env`.
-
-`api/.env` is only used for local development.
-
-```bash
-# From the project root
-docker compose up --build
-```
-
-The API will be available at `http://localhost:5001`.
-
-Prisma migrations run automatically on container start (`prisma migrate deploy`).
-
-## Environment Variables
-
-For **local dev**, copy and fill in `api/.env.example`:
-
-```env
-PORT=3000
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-
-DATABASE_URL=postgresql://user:password@localhost:5432/auth_boilerplate
-
-JWT_ACCESS_SECRET=your_access_secret
-JWT_REFRESH_SECRET=your_refresh_secret
-JWT_ACCESS_EXPIRES_IN=15m
-JWT_REFRESH_EXPIRES_IN=30d
-
-RESEND_API_KEY=re_xxxxxxxxxxxx
-EMAIL_FROM=noreply@yourdomain.com
-
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
-
-STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx  # from: stripe listen --forward-to ...
-STRIPE_PRO_PRICE_ID=price_xxxxxxxxxxxx
-```
-
-For **Docker**, fill in the root `.env`. Key differences:
-- `CLIENT_URL=http://localhost` (frontend on port 80)
-- `DATABASE_URL` uses `postgres` as the hostname (Docker service name)
-- `GOOGLE_CALLBACK_URL=http://localhost:5001/auth/google/callback`
-- Use a real Stripe webhook secret from the Stripe Dashboard (not the CLI one)
-
-> Never commit `.env`. It is already in `.gitignore`.
-
-## Endpoints
-
-### System
-
-| Method | Endpoint | Description |
+| Variable | Required | Notes |
 |---|---|---|
-| GET | `/health` | Returns `{ status: "ok", timestamp }` |
-| GET | `/docs` | Swagger UI — **local dev only**, disabled in production |
+| `NODE_ENV` | yes | `development`, `test` or `production`. No default — unset would silently disable HSTS, secure cookies and rate limiting. |
+| `DATABASE_URL` | yes | `postgresql://USER:PASSWORD@HOST:PORT/DATABASE` |
+| `CLIENT_URLS` | yes* | Comma-separated frontend origins. All are allowed by CORS; the **first** is used in email links. *`CLIENT_URL` (single origin) still works if `CLIENT_URLS` is unset. |
+| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | yes | e.g. `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+| `JWT_ACCESS_EXPIRES_IN` | no | Default `15m`. Format: number + `s`/`m`/`h`/`d`/`w`. |
+| `JWT_REFRESH_EXPIRES_IN` | no | Default `30d`. Same format; also sets the refresh cookie lifetime. A bare number is rejected. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | yes | |
+| `PORT` | no | Default `3000`. |
+| `INVITE_EMAIL_OVERRIDE` | no | Dev only: send all invite emails to this address. |
 
-### Auth — `/auth`
+## Operations
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/auth/register` | Create pending registration, send verification email |
-| POST | `/auth/login` | Login, set refresh token cookie, return access token |
-| POST | `/auth/logout` | Invalidate refresh token |
-| POST | `/auth/refresh` | Rotate refresh token, return new access token |
-| GET | `/auth/verify-email?token=` | Verify email, create user account |
-| POST | `/auth/forgot-password` | Send password reset email |
-| POST | `/auth/reset-password` | Reset password, invalidate all sessions |
-| GET | `/auth/google` | Redirect to Google OAuth |
-| GET | `/auth/google/callback` | Handle Google OAuth callback |
+- `GET /health` — `200 {status:"ok", db:"up"}` when the database answers `SELECT 1`, otherwise `503 {status:"error", db:"down"}`. Use it as the platform health check.
+- **Graceful shutdown** — on `SIGTERM`/`SIGINT` the server stops accepting connections, drains in-flight requests, disconnects Prisma, and exits (forced exit after 10s). `unhandledRejection`/`uncaughtException` are logged and trigger the same path with exit code 1.
+- **Request IDs** — every response carries `X-Request-Id` (an incoming, well-formed one from the proxy is reused) and every log line written during the request includes it as `requestId`. Query strings are never logged.
+- **Logs contain no email addresses**; log lines identify users by id.
+- Migrations run automatically on container start (`prisma migrate deploy`).
 
-### User — `/user`
+## API reference
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/user/me` | ✅ | Get current authenticated user + subscription |
-| PATCH | `/user/me` | ✅ | Update email or password |
-| DELETE | `/user/me` | ✅ | Delete account (requires `password` in body) |
+Interactive docs at `/docs` (non-production only, from `src/docs/openapi.yaml`). Route groups:
 
-### Billing — `/billing`
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/billing/create-checkout-session` | ✅ | Create Stripe Checkout session, returns `{ url }` |
-| POST | `/billing/create-portal-session` | ✅ | Create Stripe Billing Portal session, returns `{ url }` |
-| POST | `/billing/webhook` | ❌ (Stripe signature) | Receive and process Stripe webhook events |
-
-#### Webhook events handled
-
-| Event | Action |
+| Mount | Purpose |
 |---|---|
-| `checkout.session.completed` | Create/update subscription record in DB |
-| `customer.subscription.updated` | Sync status, `cancelAtPeriodEnd`, and period end |
-| `customer.subscription.deleted` | Mark subscription as `canceled` |
+| `/auth` | register, login, refresh, logout, email verification, password reset, sessions |
+| `/user` | current user: get / update / delete |
+| `/api/shops` | shops the user belongs to and everything under `/:shopId` (team, services, schedules, bookings, customers) |
+| `/api/invites` | invites addressed to the current user |
+| `/public` | unauthenticated: shop info, slots, create/cancel booking (rate limited) |
+| `/health` | see above |
 
 ## Scripts
 
 ```bash
-npm run dev        # start with ts-node-dev (hot reload)
-npm run build      # compile TypeScript to /dist
-npm run start      # run compiled /dist/app.js
-npm run lint       # ESLint
-npx prisma studio  # open Prisma DB browser
+npm run dev        # ts-node-dev with reload
+npm run build      # compile to dist/
+npm start          # run dist/app.js
+npm test           # Vitest (needs a Postgres test DB, see .env.test / TEST_DATABASE_URL)
+npm run test:tz    # suite under UTC, Europe/Athens, America/New_York
+npm run lint
+npx prisma studio
 ```

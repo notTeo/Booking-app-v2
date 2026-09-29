@@ -38,11 +38,12 @@ export const startCleanupJob = () => {
     logger.error(err, 'Cleanup job failed'),
   );
 
-  setInterval(() => {
+  const timer = setInterval(() => {
     cleanupExpiredTokens().catch((err) =>
       logger.error(err, 'Cleanup job failed'),
     );
   }, INTERVAL_MS);
 
   logger.info('Token cleanup job started (runs every 6 hours)');
+  return timer;
 };

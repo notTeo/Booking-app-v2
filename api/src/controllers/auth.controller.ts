@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../config/env';
 import { LoginDto, RegisterDto } from '../types/auth.types';
 import {
   forgotPassword,
@@ -33,7 +34,7 @@ export const register = async (
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+        maxAge: env.jwt.refreshExpiresInSeconds * 1000,
       });
       return successResponse(res, { ...result, shopSlug }, 200);
     }
@@ -62,7 +63,7 @@ export const login = async (
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in ms
+      maxAge: env.jwt.refreshExpiresInSeconds * 1000,
     });
 
     successResponse(res, result, 200);
@@ -89,7 +90,7 @@ export const refresh = async (
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: env.jwt.refreshExpiresInSeconds * 1000,
     });
 
     successResponse(res, { accessToken });

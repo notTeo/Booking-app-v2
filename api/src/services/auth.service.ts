@@ -23,7 +23,7 @@ import {
 export const registerUser = async ({ name, email, password }: RegisterDto) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    logger.warn(`Registration attempt with existing email: ${email}`);
+    logger.warn('Registration attempt with existing email');
     throw new AppError(409, 'Email already in use');
   }
 
@@ -50,7 +50,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
 
   await sendVerificationEmail(email, token, name);
 
-  logger.info(`Pending registration created for: ${email}`);
+  logger.info('Pending registration created');
 };
 
 export const registerUserWithInvite = async (
@@ -136,7 +136,9 @@ export const registerUserWithInvite = async (
     createdUser = user;
   });
 
-  logger.info(`User registered via invite: ${email} → shop ${invite.shopId}`);
+  logger.info(
+    `User ${createdUser!.id} registered via invite → shop ${invite.shopId}`,
+  );
   return {
     user: createdUser!,
     accessToken: finalAccessToken,
@@ -151,7 +153,7 @@ export const loginUser = async ({ email, password }: LoginDto) => {
   });
 
   if (!user) {
-    logger.warn(`Login attempt with existing email: ${email}`);
+    logger.warn('Login attempt for unknown email');
     throw new AppError(401, 'Invalid credentials');
   }
 
@@ -163,7 +165,7 @@ export const loginUser = async ({ email, password }: LoginDto) => {
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
-    logger.warn(`Failed login attempt for: ${email}`);
+    logger.warn(`Failed login attempt for userId: ${user.id}`);
     throw new AppError(401, 'Invalid credentials');
   }
 
@@ -180,7 +182,7 @@ export const loginUser = async ({ email, password }: LoginDto) => {
     },
   });
 
-  logger.info(`User logged in: ${user.email}`);
+  logger.info(`User logged in: ${user.id}`);
 
   return {
     user: {
@@ -284,14 +286,14 @@ export const verifyEmail = async (token: string) => {
 
   await prisma.pendingRegistration.delete({ where: { token } });
 
-  logger.info(`Email verified and user created: ${user.email}`);
+  logger.info(`Email verified and user created: ${user.id}`);
   return user;
 };
 
 export const forgotPassword = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    logger.warn(`Password reset attempt for non-existent email: ${email}`);
+    logger.warn('Password reset attempt for unknown email');
     return;
   }
 
@@ -309,7 +311,7 @@ export const forgotPassword = async (email: string) => {
 
   await sendPasswordResetEmail(email, token, user.name);
 
-  logger.info(`Password reset token created for: ${email}`);
+  logger.info(`Password reset token created for userId: ${user.id}`);
 };
 
 export const getSessions = async (userId: string) => {
@@ -444,9 +446,7 @@ export const verifyEmailChange = async (token: string) => {
 
   await prisma.pendingEmailChange.delete({ where: { token } });
 
-  logger.info(
-    `Email changed for userId: ${pending.userId} → ${pending.newEmail}`,
-  );
+  logger.info(`Email changed for userId: ${pending.userId}`);
   return user;
 };
 
@@ -475,9 +475,7 @@ export const resendVerificationEmail = async (email: string) => {
 
   if (!pending) {
     // Don't reveal whether the email exists or not
-    logger.warn(
-      `Resend verification requested for unknown/verified email: ${email}`,
-    );
+    logger.warn('Resend verification requested for unknown/verified email');
     return;
   }
 
@@ -493,7 +491,7 @@ export const resendVerificationEmail = async (email: string) => {
 
   await sendVerificationEmail(email, token, pending.name);
 
-  logger.info(`Verification email resent to: ${email}`);
+  logger.info('Verification email resent');
 };
 
 export const resetPassword = async (token: string, newPassword: string) => {

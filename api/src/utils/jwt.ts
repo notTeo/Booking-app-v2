@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 export const signAccessToken = (userId: string): string => {
   const options: SignOptions = {
-    expiresIn: env.jwt.accessExpiresIn as SignOptions['expiresIn'],
+    expiresIn: env.jwt.accessExpiresInSeconds,
   };
   return jwt.sign({ userId }, env.jwt.accessSecret, options);
 };
@@ -15,7 +15,7 @@ export const verifyAccessToken = (token: string): { userId: string } => {
 
 export const signRefreshToken = (userId: string): string => {
   const options: SignOptions = {
-    expiresIn: env.jwt.refreshExpiresIn as SignOptions['expiresIn'],
+    expiresIn: env.jwt.refreshExpiresInSeconds,
     jwtid: crypto.randomUUID(),
   };
   return jwt.sign({ userId }, env.jwt.refreshSecret, options);
@@ -26,10 +26,7 @@ export const verifyRefreshToken = (token: string): { userId: string } => {
 };
 
 export const getRefreshTokenExpiry = (): Date => {
-  const days = parseInt(env.jwt.refreshExpiresIn.replace('d', ''));
-  const expiry = new Date();
-  expiry.setDate(expiry.getDate() + days);
-  return expiry;
+  return new Date(Date.now() + env.jwt.refreshExpiresInSeconds * 1000);
 };
 
 export const generateRandomToken = (): string => {
