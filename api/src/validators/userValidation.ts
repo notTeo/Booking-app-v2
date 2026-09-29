@@ -1,6 +1,12 @@
 import { body } from 'express-validator';
 
 export const updateMeValidation = [
+  body('name')
+    .optional()
+    .notEmpty()
+    .withMessage('Name cannot be empty')
+    .isLength({ max: 50 })
+    .withMessage('Name must be 50 characters or fewer'),
   body('email')
     .optional()
     .isEmail()

@@ -1,4 +1,5 @@
 import { body, param, query } from 'express-validator';
+import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
 
 export const customerParamsValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
@@ -21,15 +22,31 @@ export const listCustomersValidation = [
 export const updateCustomerValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   param('customerId').notEmpty().withMessage('customerId is required'),
-  body('name').optional().notEmpty().trim().withMessage('Name cannot be empty'),
+  body('name')
+    .optional()
+    .notEmpty()
+    .withMessage('Name cannot be empty')
+    .trim()
+    .isLength({ max: NAME_MAX_LENGTH })
+    .withMessage(`Name must be ${NAME_MAX_LENGTH} characters or fewer`),
   body('phone')
     .optional()
     .notEmpty()
+    .withMessage('Phone cannot be empty')
     .trim()
-    .withMessage('Phone cannot be empty'),
+    .custom(isPlausiblePhone)
+    .withMessage('Phone must be a valid phone number'),
   body('email')
     .optional({ nullable: true })
     .isEmail()
-    .withMessage('Invalid email'),
-  body('notes').optional({ nullable: true }).isString().trim(),
+    .withMessage('Invalid email')
+    .isLength({ max: 254 })
+    .withMessage('Email must be 254 characters or fewer'),
+  body('notes')
+    .optional({ nullable: true })
+    .isString()
+    .withMessage('notes must be a string')
+    .trim()
+    .isLength({ max: NOTES_MAX_LENGTH })
+    .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`),
 ];

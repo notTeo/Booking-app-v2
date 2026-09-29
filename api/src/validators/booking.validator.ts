@@ -1,6 +1,7 @@
 import { body, param, query } from 'express-validator';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { OVERRIDABLE_RULE_CODES } from '../services/bookingRules.service';
+import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
 
 const validStatuses = Object.values(BookingStatus);
 
@@ -26,18 +27,47 @@ const overrideRulesValidation = [
     ),
 ];
 
+// Shared by the public and owner/staff booking-creation bodies, which accept
+// identical customer fields.
+const customerFieldsValidation = [
+  body('name')
+    .notEmpty()
+    .withMessage('Name is required')
+    .trim()
+    .isLength({ max: NAME_MAX_LENGTH })
+    .withMessage(`Name must be ${NAME_MAX_LENGTH} characters or fewer`),
+  body('phone')
+    .notEmpty()
+    .withMessage('Phone is required')
+    .trim()
+    .custom(isPlausiblePhone)
+    .withMessage('Phone must be a valid phone number'),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Invalid email')
+    .isLength({ max: 254 })
+    .withMessage('Email must be 254 characters or fewer'),
+];
+
+const notesValidation = body('notes')
+  .optional()
+  .isString()
+  .withMessage('notes must be a string')
+  .trim()
+  .isLength({ max: NOTES_MAX_LENGTH })
+  .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`);
+
 export const createBookingValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
-  body('name').notEmpty().trim().withMessage('Name is required'),
-  body('phone').notEmpty().trim().withMessage('Phone is required'),
-  body('email').optional().isEmail().withMessage('Invalid email'),
+  ...customerFieldsValidation,
   body('serviceId').notEmpty().withMessage('serviceId is required'),
-  body('staffId').optional(),
+  body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
-  body('notes').optional().trim(),
+  notesValidation,
 ];
 
 export const getPublicSlotsValidation = [
@@ -68,16 +98,14 @@ export const ownerSlotsValidation = [
 
 export const ownerCreateBookingValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
-  body('name').notEmpty().trim().withMessage('Name is required'),
-  body('phone').notEmpty().trim().withMessage('Phone is required'),
-  body('email').optional().isEmail().withMessage('Invalid email'),
+  ...customerFieldsValidation,
   body('serviceId').notEmpty().withMessage('serviceId is required'),
-  body('staffId').optional(),
+  body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
-  body('notes').optional().trim(),
+  notesValidation,
   ...overrideRulesValidation,
 ];
 
@@ -110,8 +138,13 @@ export const updateBookingValidation = [
     .optional()
     .notEmpty()
     .withMessage('serviceId cannot be empty'),
-  body('staffId').optional().notEmpty().withMessage('staffId cannot be empty'),
-  body('notes').optional().trim(),
+  body('staffId')
+    .optional()
+    .notEmpty()
+    .withMessage('staffId cannot be empty')
+    .isString()
+    .withMessage('staffId must be a string'),
+  notesValidation,
   ...overrideRulesValidation,
 ];
 
