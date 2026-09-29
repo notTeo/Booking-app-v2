@@ -28,6 +28,10 @@ export default function PublicPage() {
   // ── Submission state ──
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // The server is momentarily out of retry budget (503 BOOKING_BUSY) — never
+  // shown as an error; kept separate from submitError so it can't render in
+  // the red error style.
+  const [busyNotice, setBusyNotice] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
 
   if (wizard.loading) {
@@ -44,6 +48,7 @@ export default function PublicPage() {
     if (!slug || !wizard.selectedServiceId) return;
     setSubmitting(true);
     setSubmitError(null);
+    setBusyNotice(null);
     try {
       await createBooking(slug, {
         name,
@@ -55,21 +60,32 @@ export default function PublicPage() {
         notes: notes || undefined,
       });
       setConfirmed(true);
+      setSubmitting(false);
     } catch (err: unknown) {
       const info = getApiError(err);
+      if (info.status === 503 && info.code === 'BOOKING_BUSY') {
+        // Not a rejection — the system is momentarily out of retry budget.
+        // Keep the button disabled for the server's Retry-After window so the
+        // customer doesn't immediately retry into the same contention.
+        setBusyNotice(t.public.bookingBusy);
+        setTimeout(() => setSubmitting(false), (info.retryAfterSeconds ?? 1) * 1000);
+        return;
+      }
       const msg = isBookingRuleViolation(info)
         ? t.public.ruleErrors[info.code]
-        : info.code === 'SLOT_TAKEN'
-          ? t.public.ruleErrors.SLOT_TAKEN
-          : (info.message ?? t.public.somethingWrong);
+        : info.code === 'BOOKING_TOO_LONG'
+          ? t.public.ruleErrors.BOOKING_TOO_LONG
+          : info.code === 'SLOT_TAKEN'
+            ? t.public.ruleErrors.SLOT_TAKEN
+            : (info.message ?? t.public.somethingWrong);
       setSubmitError(msg);
-    } finally {
       setSubmitting(false);
     }
   }
 
   function handleBackFromForm() {
     setSubmitError(null);
+    setBusyNotice(null);
     wizard.setStep(3);
   }
 
@@ -220,6 +236,7 @@ export default function PublicPage() {
                     />
                   </div>
 
+                  {busyNotice && <p className="public-submit-notice" role="status">{busyNotice}</p>}
                   {submitError && <p className="public-submit-error">{submitError}</p>}
                 </div>
 

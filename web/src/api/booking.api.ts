@@ -127,6 +127,8 @@ export interface ApiErrorInfo {
   message?: string;
   /** Every booking rule the request broke (422), not just the first. */
   violations?: RuleViolation[];
+  /** From the `Retry-After` response header on a 503 BOOKING_BUSY, in seconds. */
+  retryAfterSeconds?: number;
 }
 
 /** Pull status / machine code / message out of an axios error. */
@@ -136,14 +138,17 @@ export const getApiError = (err: unknown): ApiErrorInfo => {
       response?: {
         status?: number;
         data?: { code?: string; message?: string; violations?: RuleViolation[] };
+        headers?: Record<string, string>;
       };
     }
   )?.response;
+  const retryAfter = Number(r?.headers?.['retry-after']);
   return {
     status: r?.status,
     code: r?.data?.code,
     message: r?.data?.message,
     violations: r?.data?.violations,
+    retryAfterSeconds: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
   };
 };
 

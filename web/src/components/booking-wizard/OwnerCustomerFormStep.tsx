@@ -23,6 +23,7 @@ export default function OwnerCustomerFormStep({
   onBack,
   submitting,
   error,
+  notice,
 }: {
   shopId: string;
   selectedService: Service | null;
@@ -35,6 +36,8 @@ export default function OwnerCustomerFormStep({
   onBack: () => void;
   submitting: boolean;
   error: string | null;
+  /** A non-error notice (e.g. the server is momentarily busy) — never rendered in the error style. */
+  notice?: string | null;
 }) {
   const { t } = useLang();
 
@@ -196,6 +199,7 @@ export default function OwnerCustomerFormStep({
           </div>
         )}
 
+        {notice && <p className="public-submit-notice" role="status">{notice}</p>}
         {error && <p className="public-submit-error">{error}</p>}
       </div>
 

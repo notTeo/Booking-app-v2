@@ -1,11 +1,22 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11** — resume the remainder of production-readiness
-group 3 (`BOOKING_BUSY`/`BOOKING_TOO_LONG` translations + neutral 503
-handling), then groups 4, 6, 7, 8, 9, 10, 11, 12, 14 in that order (Phase A
-priority list). Commit 10 (the conditional Postgres exclusion constraint) is
-**skipped by explicit owner instruction** — not a failed precondition, a
-choice to defer it — and moves to the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **4** (customer upsert:
+public bookings must not overwrite an existing customer's name/email), then
+groups 6, 7, 8, 9, 10, 11, 12, 14 in that order (Phase A priority list).
+Commit 10 (the conditional Postgres exclusion constraint) is **skipped by
+explicit owner instruction** — not a failed precondition, a choice to defer
+it — and moves to the Phase B list alongside CI/lint.
+
+Group 3's remainder is done (see "Additional items by group" and the status
+table): `BOOKING_TOO_LONG` (422) and `BOOKING_BUSY` (503) translations
+(EL+EN) on both the public page and the owner wizard; `BOOKING_BUSY` renders
+as a genuinely neutral notice (new `.public-submit-notice` class, never
+`.public-submit-error`), keeps the typed values, and re-enables the submit
+button after the server's `Retry-After` window instead of instantly (a
+one-line CORS fix, `exposedHeaders: ['Retry-After']` in `api/src/app.ts`, was
+needed — the header wasn't reaching the browser at all). New e2e file
+`e2e/tests/booking-busy.spec.ts` covers both forms via `page.route()`
+response interception (a new pattern for this repo).
 
 Commit 8 (mobile layout) is done: booking-wizard out-of-hours sections
 (`BEFORE_OPENING`/`BREAK`/`AFTER_CLOSING`/`CLOSED_DAY`) are now a native
@@ -16,15 +27,14 @@ stays an `<h4>` nested inside `<summary>` so it keeps its accessible role. A
 targets, and turns the calendar into one-provider-per-page: scroll-snap
 columns, a sticky time gutter, provider chips (with a ☾ out-of-hours badge)
 to jump between columns, and the detail/create panel as a bottom sheet.
-`>640px` is pixel-identical to before. Verified against a real browser at
-390×844 (not just the test suite) — caught and fixed one bug that way
-(tapping a chip was nudging the whole page's vertical scroll; switched from
-`scrollIntoView` to a direct `scrollLeft` set). Chips/scroll-snap/bottom-sheet
-were checked visually rather than with a dedicated multi-provider e2e test —
-the seeded shop only has one staff member, and adding a second was out of
-scope here. Full suite green: api 279 tests × 3 TZs, web 52 tests × 3 TZs,
-e2e 17/17 (incl. a new collapsible-section assertion), tsc clean, lint has
-only the same 48 pre-existing problems in unrelated files.
+`>640px` is pixel-identical to before.
+
+Full suite green: api 280 tests × 3 TZs (one intermittent, already-documented
+`concurrency.test.ts` flake recurred once under New York, unrelated to this
+diff — see LATER — and passed on immediate rerun, both isolated and as part
+of the full suite), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint has only
+the same 48 pre-existing web problems in unrelated files (api lint: 0 errors,
+6 pre-existing warnings), build succeeds.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -188,7 +198,7 @@ before continuing.
 | 0 Housekeeping | **done** | `caf9ee6` self-migrating test DB (+ refuses non-*test* DBs); `46fad4f` stale booking tests; `cf1fff1` no-useless-escape + lint glob; `7c8b787` prettier-only |
 | 1 Tenant isolation | **done** | `be099d1` delete membership; `7647e8e` serviceId/staffId scoping (create, PATCH, slots); `783e4e2` field whitelists; `2f27ae8` delete owner-only |
 | 2 Timezones | **done** | `a8becd9` server (Luxon, shop tz); `6689f90` web (+ vitest, `test:tz`); follow-ups below |
-| 3 Booking rules | **partly done / partly superseded** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field. Remainder = out-of-hours plan (`overrideRules` contract, storage, UI) **+ the translation / 503 items under "Additional items by group"** |
+| 3 Booking rules | **done** | `a057990` `maxAdvanceDays`; `266490b` 422 rules + codes + endTime recompute + owner `override`; `907b9cd` dashboard dialog + settings field; out-of-hours plan (`overrideRules` contract, storage, UI, commits 1/2/4/6/7/8); commit 11's group 3 remainder = `BOOKING_TOO_LONG`/`BOOKING_BUSY` translations + neutral 503 handling (see "Additional items by group") |
 | 4 Customer upsert | not started | — |
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
 | 6 Rate limiting / JSON errors | not started | — (see the shared-login-budget finding under "Additional items by group") |
@@ -269,6 +279,36 @@ before continuing.
 
 ### Group 3 (booking rules) — remaining UI/text work
 
+**Done in commit 11** (see the status table). As built:
+- `BOOKING_TOO_LONG` added to the shared `RuleMessages` interface (like
+  `SLOT_TAKEN`, not to `BOOKING_RULE_CODES` — it's not overridable, so it must
+  never reach `isBookingRuleViolation`/`acceptableRuleCodes`/the override
+  dialog), with EL+EN strings in both `t.public.ruleErrors` and
+  `t.bookings.override`.
+- `BOOKING_BUSY` is a new standalone key (`t.public.bookingBusy`,
+  `t.bookings.bookingBusy`) — deliberately outside `RuleMessages`, since it
+  isn't a rule violation at all. Both pages check `info.status === 503 &&
+  info.code === 'BOOKING_BUSY'` first (before the override/rule checks) and
+  render it via a new `.public-submit-notice` class (neutral colours —
+  `--text-muted`/`--border`/`--bg-input`, not `--error`) instead of
+  `.public-submit-error`. The submit button stays disabled for
+  `info.retryAfterSeconds` (default 1) via `setTimeout`, not reset by a
+  blanket `finally` (removed the `finally` from both `handleSubmit`s; every
+  branch now sets `submitting` explicitly, since `finally` still runs after a
+  `return` inside `catch` and would have undone the delayed reset).
+- `getApiError` now also returns `retryAfterSeconds`, parsed from the
+  `Retry-After` response header. That header wasn't reaching the browser at
+  all: the API's `cors()` config had no `exposedHeaders`, and `Retry-After`
+  isn't in the fetch/XHR CORS safelist — fixed with
+  `exposedHeaders: ['Retry-After']` in `api/src/app.ts` (test-first,
+  `api/src/tests/cors.test.ts`).
+- E2E: `e2e/tests/booking-busy.spec.ts` (new file, `page.route()` response
+  interception — the first use of that pattern in this repo) covers both the
+  public page and the owner wizard: neutral notice, no red error, no
+  booking actually created, typed values kept, button re-enabled after the
+  delay, and (owner wizard) never triggers the "book anyway" dialog.
+
+Original spec, for reference:
 - **Translations (el + en) for the two new server error codes**, on **both** the
   public booking page and the owner wizard (`web/src/locales/translations.ts`;
   stage only my hunks, never the owner's own edits):
@@ -422,7 +462,11 @@ npm run e2e                                                     # from repo root
   bookings for different providers/slots all succeed" failed once (UTC, full
   suite, while finishing out-of-hours commit 2); passed on every rerun. That test
   expects six 201s, so a failure means a valid booking was rejected (409/503),
-  not a double booking. No body captured — unclassified.
+  not a double booking. No body captured — unclassified. **Recurred once more**
+  (America/New_York, full `test:tz` run, while finishing commit 11's group 3
+  remainder — a translations/CORS/web-UI change with nothing touching booking
+  concurrency); passed immediately on rerun in isolation and as part of the
+  full suite. Still unclassified, no body captured either time.
 - **Intermittent API test failures under full-suite load** (3 in ~20 full runs
   while doing out-of-hours commit 1; each passed on rerun and in isolation):
   `concurrency.test.ts` "simultaneous OVERLAPPING" (Athens) and "SAME customer

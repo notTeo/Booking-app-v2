@@ -46,4 +46,30 @@ describe('getApiError', () => {
     };
     expect(getApiError(err).violations).toEqual([v('SHOP_CLOSED')]);
   });
+
+  it('parses Retry-After (seconds) off a 503 BOOKING_BUSY response', () => {
+    const err = {
+      response: {
+        status: 503,
+        data: { code: 'BOOKING_BUSY', message: 'busy' },
+        headers: { 'retry-after': '1' },
+      },
+    };
+    expect(getApiError(err).retryAfterSeconds).toBe(1);
+  });
+
+  it('has no retryAfterSeconds when the header is missing, blank or not a positive number', () => {
+    expect(getApiError({ response: { status: 503, data: {} } }).retryAfterSeconds).toBeUndefined();
+    expect(
+      getApiError({ response: { status: 503, data: {}, headers: {} } }).retryAfterSeconds,
+    ).toBeUndefined();
+    expect(
+      getApiError({ response: { status: 503, data: {}, headers: { 'retry-after': '0' } } })
+        .retryAfterSeconds,
+    ).toBeUndefined();
+    expect(
+      getApiError({ response: { status: 503, data: {}, headers: { 'retry-after': 'not-a-number' } } })
+        .retryAfterSeconds,
+    ).toBeUndefined();
+  });
 });

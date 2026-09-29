@@ -43,6 +43,10 @@ export default function OwnerBookingWizard({
   const wizard = useBookingWizard({ slug, shopId, initialMemberId, initialDate, internal: true });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // The server is momentarily out of retry budget (503 BOOKING_BUSY) — never
+  // shown as an error; kept separate from submitError so it can't render in
+  // the red error style.
+  const [busyNotice, setBusyNotice] = useState<string | null>(null);
   // Set when the server rejected the booking for a rule violation (422). The
   // form values are kept so "book anyway" can resend them, accepting exactly
   // the violations the server listed.
@@ -70,6 +74,7 @@ export default function OwnerBookingWizard({
     if (!wizard.selectedServiceId) return;
     setSubmitting(true);
     setSubmitError(null);
+    setBusyNotice(null);
     try {
       const booking = await createOwnerBooking(shopId, {
         name: values.name,
@@ -83,8 +88,18 @@ export default function OwnerBookingWizard({
       });
       setPendingOverride(null);
       onDone(booking);
+      setSubmitting(false);
     } catch (err: unknown) {
       const info = getApiError(err);
+      if (info.status === 503 && info.code === 'BOOKING_BUSY') {
+        // Not a rejection — the system is momentarily out of retry budget.
+        // Never offered as an override; keep the button disabled for the
+        // server's Retry-After window instead of resetting immediately.
+        setPendingOverride(null);
+        setBusyNotice(t.bookings.bookingBusy);
+        setTimeout(() => setSubmitting(false), (info.retryAfterSeconds ?? 1) * 1000);
+        return;
+      }
       const acceptable = acceptableRuleCodes(info);
       if (acceptable) {
         // Ask before breaking a rule; overlap (409) is never offered an override.
@@ -94,6 +109,9 @@ export default function OwnerBookingWizard({
         // don't offer "book anyway".
         setPendingOverride(null);
         setSubmitError(t.public.ruleErrors[info.code] ?? info.message ?? t.bookings.createError);
+      } else if (info.code === 'BOOKING_TOO_LONG') {
+        setPendingOverride(null);
+        setSubmitError(t.bookings.override.BOOKING_TOO_LONG);
       } else if (info.code === 'SLOT_TAKEN') {
         setPendingOverride(null);
         setSubmitError(t.bookings.override.SLOT_TAKEN);
@@ -101,13 +119,13 @@ export default function OwnerBookingWizard({
         setPendingOverride(null);
         setSubmitError(info.message ?? t.bookings.createError);
       }
-    } finally {
       setSubmitting(false);
     }
   }
 
   function handleBackFromForm() {
     setSubmitError(null);
+    setBusyNotice(null);
     wizard.setStep(3);
   }
 
@@ -166,6 +184,7 @@ export default function OwnerBookingWizard({
           onBack={handleBackFromForm}
           submitting={submitting}
           error={submitError}
+          notice={busyNotice}
         />
       )}
 

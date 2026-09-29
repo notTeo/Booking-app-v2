@@ -8,6 +8,7 @@ export interface RuleMessages {
   OUTSIDE_OPENING_HOURS: string;
   OFF_SLOT_GRID: string;
   SLOT_TAKEN: string;
+  BOOKING_TOO_LONG: string;
 }
 
 export interface Translations {
@@ -651,6 +652,8 @@ export interface Translations {
     bookingConfirmedMsg: string;
     shopNotFound: string;
     somethingWrong: string;
+    /** The server is momentarily out of retry budget (503) — never shown as an error. */
+    bookingBusy: string;
     ruleErrors: RuleMessages;
     closedThisDay: string;
     closedOrNoSchedule: string;
@@ -727,6 +730,8 @@ export interface Translations {
     creating: string;
     createSuccess: string;
     createError: string;
+    /** The server is momentarily out of retry budget (503) — never shown as an error. */
+    bookingBusy: string;
     override: RuleMessages & {
       title: string;
       confirm: string;
@@ -1418,6 +1423,7 @@ home: {
       bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
       shopNotFound: 'Το κατάστημα δεν βρέθηκε',
       somethingWrong: 'Κάτι πήγε στραβά',
+      bookingBusy: 'Το σύστημα κρατήσεων είναι απασχολημένο — δοκιμάστε ξανά σε λίγο.',
       closedThisDay: 'Δεν υπάρχουν διαθέσιμες κρατήσεις για αυτήν την ημερομηνία. Δοκιμάστε άλλον συνεργάτη ή άλλη μέρα.',
       closedOrNoSchedule: 'Κλειστό ή δεν υπάρχει πρόγραμμα για αυτή την ημέρα.',
       manageWorkingHours: 'Μετάβαση στο ωράριο εργασίας για διόρθωση',
@@ -1432,6 +1438,7 @@ home: {
         OUTSIDE_OPENING_HOURS: 'Η ώρα αυτή είναι εκτός ωραρίου λειτουργίας.',
         OFF_SLOT_GRID: 'Η ώρα αυτή δεν είναι διαθέσιμη για κράτηση.',
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
+        BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
     },
     overview: {
@@ -1501,6 +1508,7 @@ home: {
       creating: 'Δημιουργία…',
       createSuccess: 'Το ραντεβού δημιουργήθηκε!',
       createError: 'Αποτυχία δημιουργίας ραντεβού.',
+      bookingBusy: 'Το σύστημα κρατήσεων είναι απασχολημένο — δοκιμάστε ξανά σε λίγο.',
       override: {
         BOOKING_IN_PAST: 'Η ώρα αυτή βρίσκεται στο παρελθόν.',
         BOOKING_BEYOND_ADVANCE_WINDOW: 'Η ημερομηνία είναι πέρα από το επιτρεπόμενο διάστημα κρατήσεων.',
@@ -1508,6 +1516,7 @@ home: {
         OUTSIDE_OPENING_HOURS: 'Η ώρα αυτή είναι εκτός ωραρίου λειτουργίας.',
         OFF_SLOT_GRID: 'Η ώρα αυτή δεν είναι τυπική ώρα κράτησης.',
         SLOT_TAKEN: 'Η ώρα αυτή είναι ήδη κρατημένη για τον συνεργάτη.',
+        BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
         title: 'Να γίνει η κράτηση παρ’ όλα αυτά;',
         confirm: 'Κράτηση παρ’ όλα αυτά',
         cancel: 'Άκυρο',
@@ -2197,6 +2206,7 @@ home: {
       bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
       shopNotFound: 'Shop not found',
       somethingWrong: 'Something went wrong',
+      bookingBusy: 'The booking system is busy — please try again in a moment.',
       closedThisDay: 'No appointments available for this date. Please try another provider or date.',
       closedOrNoSchedule: 'Closed, or there is no schedule for this day.',
       manageWorkingHours: 'Go to working hours to fix this',
@@ -2211,6 +2221,7 @@ home: {
         OUTSIDE_OPENING_HOURS: 'That time is outside opening hours.',
         OFF_SLOT_GRID: 'That time is not available for booking.',
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
+        BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
     },
     overview: {
@@ -2280,6 +2291,7 @@ home: {
       creating: 'Creating…',
       createSuccess: 'Booking created!',
       createError: 'Failed to create booking.',
+      bookingBusy: 'The booking system is busy — please try again in a moment.',
       override: {
         BOOKING_IN_PAST: 'That time is in the past.',
         BOOKING_BEYOND_ADVANCE_WINDOW: "That date is beyond the shop's booking window.",
@@ -2287,6 +2299,7 @@ home: {
         OUTSIDE_OPENING_HOURS: 'That time is outside opening hours.',
         OFF_SLOT_GRID: "That isn't a regular booking time.",
         SLOT_TAKEN: 'That time is already booked for this team member.',
+        BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
         title: 'Book anyway?',
         confirm: 'Book anyway',
         cancel: 'Cancel',

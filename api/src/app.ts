@@ -44,6 +44,10 @@ app.use(
   cors({
     origin: env.clientUrl,
     credentials: true,
+    // Not in the CORS response-header safelist, so the browser hides it from
+    // client JS unless explicitly exposed (needed for BOOKING_BUSY's 503 to
+    // tell the frontend how long to wait before re-enabling the submit button).
+    exposedHeaders: ['Retry-After'],
   }),
 );
 app.use(cookieParser());
