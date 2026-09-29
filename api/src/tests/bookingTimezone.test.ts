@@ -240,7 +240,9 @@ describe('day ranges are the shop-local day (half-open)', () => {
     const t = await createTenant('Range');
     const inLate = await bookAt(t, '2027-02-01T23:30:00+02:00', 30); // 21:30Z
     const inEarly = await bookAt(t, '2027-02-01T00:00:00+02:00', 30); // 22:00Z prev day
-    const outBefore = await bookAt(t, '2027-01-31T23:59:00+02:00', 30);
+    // 1 minute, so it ends exactly when inEarly starts (a longer one would
+    // overlap it, which the database now refuses).
+    const outBefore = await bookAt(t, '2027-01-31T23:59:00+02:00', 1);
     const outAfter = await bookAt(t, '2027-02-02T00:00:00+02:00', 30);
 
     const got = (await listBookings(t.shop.id, { date: '2027-02-01' })).map(

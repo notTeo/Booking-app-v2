@@ -35,6 +35,17 @@ export const isSerializationFailure = (err: unknown): boolean => {
 };
 
 /**
+ * The database's own overlap backstop (migration booking_no_overlap_constraint,
+ * SQLSTATE 23P01 exclusion_violation) fired. The application's overlap check
+ * normally answers first; this is what catches anything that slipped past it.
+ * Shape with @prisma/adapter-pg: DriverAdapterError { cause.originalCode }.
+ */
+export const isExclusionViolation = (err: unknown): boolean => {
+  const e = err as ErrLike | null;
+  return !!e && (e.cause?.originalCode === '23P01' || e.code === '23P01');
+};
+
+/**
  * Retry policy. ONLY serialization failures are retried (40001 /
  * TransactionWriteConflict / P2034); domain errors (AppError), unique
  * violations and anything else propagate immediately.
@@ -150,6 +161,11 @@ export const withSerializableRetry = async <T>(
           'serializable transaction exceeded its time budget',
         );
         throw busy();
+      }
+      // Same answer the application's own overlap check gives. Not retried:
+      // the slot is genuinely occupied.
+      if (isExclusionViolation(err)) {
+        throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
       }
       if (!isSerializationFailure(err)) throw err;
 

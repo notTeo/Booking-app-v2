@@ -21,10 +21,11 @@ variables · 4 Railway · 5 Vercel, Resend, DNS · 6 First deploy · 7 Smoke tes
 | 4 | **Same-site domains** for web and API (section 2) | Cross-site cookies are blocked by Safari and some browsers, which breaks staying logged in | DNS |
 | 5 | **Resend sending domain verified** | Unverified domain = verification / reset / invite emails don't arrive, so nobody can register | Resend + DNS |
 | 6 | **Database backup** confirmed working | Migrations are forward-only; a backup is the only way back from a bad data change | Railway (verify) |
+| 7 | **`btree_gist` allowed on Railway's Postgres** | The overlap-guard migration runs `CREATE EXTENSION btree_gist`. If the host refuses it, the first deploy fails at migration time. Check in 1 minute: create a throwaway Postgres on Railway and run `CREATE EXTENSION IF NOT EXISTS btree_gist;` in its query tab or `psql`. It should succeed (it is a trusted extension on PG13+). Delete the throwaway after. | Railway |
 
-Deferred by decision, not forgotten: the Postgres exclusion constraint against
-double booking (Phase B). Double booking is currently prevented by serializable
-transactions with retry, which the concurrency tests cover. There is no CI yet
+Double booking is prevented twice: the application checks and retries inside
+serializable transactions, and the database itself refuses overlapping
+bookings for one provider (`Booking_no_overlap`, section 4). There is no CI yet
 (Phase B), so **run the checks in section 8 yourself before each deploy**.
 
 ---
@@ -195,6 +196,8 @@ Deploys are triggered by pushing to the branch each service tracks (verify which
 | API down, DB fine | Check Railway deployment logs, then `/health`. Redeploy previous. | minutes |
 | Email not arriving | Not a rollback: section 10 | |
 
+**The overlap guard** (`Booking_no_overlap`) is an exclusion constraint on the `Booking` table: one provider cannot have two bookings whose time ranges overlap unless one is `CANCELED` or `NO_SHOW`. Back-to-back bookings (one ends exactly when the next starts) are fine. If it ever fires, the API answers `409 SLOT_TAKEN` (the same answer as the normal overlap check) and logs nothing unusual: that is expected under a race. It does not appear in `prisma/schema.prisma` because Prisma cannot model exclusion constraints; `prisma migrate diff` reports no difference and does not try to drop it. Anything that inserts bookings directly (a data import, a script) must respect it, and a migration to a database that already holds overlapping rows will fail until they are resolved.
+
 **Migrations are forward-only.** There is no automated "down" migration, and Prisma won't run one. Rolling the code back does not undo a schema change. That is why step 2 in section 8 exists.
 
 **Restoring the database** (verify the exact mechanism in Railway):
@@ -250,7 +253,7 @@ When the Terms or Privacy text changes materially, bump `TERMS_VERSION` in `api/
 
 - **No CI**: checks are manual (Phase B).
 - **Rate limiters are in-memory**: one API instance only.
-- **No database-level double-booking guard**: application-level serializable transactions only, until the exclusion constraint is done (Phase B).
+- **The overlap guard is per provider**: it stops one provider being double booked; it does not stop two different providers taking the same customer at the same time (that is allowed on purpose).
 - **Greek text uses a fallback font** for Greek glyphs: Poppins and League Spartan ship no Greek. Unchanged from before self-hosting.
 - **Hard delete only** for customers: erasing a customer removes their bookings and reopens those slots.
 - **No monitoring/alerting** is set up: add an uptime check on `/health` (any external pinger) so you find out before a customer does.

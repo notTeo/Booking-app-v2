@@ -1,11 +1,12 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** **all Phase A groups are done.** Before launch, close the six
+**Next step:** **all Phase A groups are done.** Before launch, close the seven
 blockers listed in section 1 of `docs/runbook.md` (Hairology data, real legal
-text, owner's reserved slugs, same-site domains, Resend domain, DB backup).
+text, owner's reserved slugs, same-site domains, Resend domain, DB backup,
+`btree_gist` on Railway).
 Then Phase B: out-of-hours commits 5, 8, 9; group 13 CI + web lint fixes; the
-conditional Postgres exclusion constraint (commit 10 — **skipped by explicit
-owner instruction**, a choice to defer, not a failed precondition).
+conditional Postgres exclusion constraint (commit 10 — **now done**, see the
+"Exclusion constraint" section below).
 
 Groups 3, 4, 6, 7, 8, 9, 10, 11, 12 and 14 are done this session (commit 11; see the status table
 and "Additional items by group" for what was built and why). Commit 8
@@ -440,6 +441,32 @@ cd api && npm run lint && npx tsc --noEmit && npm run test:tz   # 216 tests x 3 
 cd web && npx tsc -b && npm run test:tz && npm run build        # 21 tests x 3 zones; lint has 30 known errors
 npm run e2e                                                     # from repo root (9 pass, 1 skipped)
 ```
+
+## Exclusion constraint (out-of-hours commit 10) — done
+
+Migration `20260929130000_booking_no_overlap_constraint`: `EXCLUDE USING gist
+("staffId" WITH =, tstzrange("startTime","endTime",'[)') WITH &&) WHERE (status
+NOT IN ('CANCELED','NO_SHOW'))`, mirroring the app's `SLOT_FREEING_STATUSES`.
+Half-open ranges, so back-to-back bookings are allowed.
+
+Preconditions from the plan: **(b) no drift — verified**: `prisma migrate diff
+--from-config-datasource --to-schema` against a database built from the
+migrations reports "No difference detected" and does not try to drop it.
+**(a) `btree_gist` on a real Railway Postgres — NOT verified from here** (no
+Railway access); verified on local PostgreSQL 16 only. It is now blocker 7 in
+`docs/runbook.md` with the one-minute check. Risk if it fails: the first
+deploy fails at migration time, visibly, with nothing else affected.
+
+Application: a violation (SQLSTATE 23P01, `DriverAdapterError` with
+`cause.originalCode`) is mapped to the same `409 SLOT_TAKEN` inside
+`withSerializableRetry`, not retried. The serializable-transaction scheme is
+**unchanged** — dropping to a cheaper retry-only-on-constraint scheme (the
+plan's stretch idea) is a separate, riskier change, deliberately not done.
+Tests: 15 in `bookingNoOverlapConstraint.test.ts` (overlap kinds, half-open,
+other providers, each status, re-activation, moving a booking, error mapping).
+Finding while doing it: `bookingTimezone.test.ts` wrote two overlapping
+bookings for one provider straight to the DB (invalid data the app forbids);
+fixed the fixture, not the constraint.
 
 ## LATER (triaged, not launch-critical)
 
