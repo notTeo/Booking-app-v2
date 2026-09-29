@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api/auth.api';
 import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/reset-password.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -32,8 +33,8 @@ export default function ResetPasswordPage() {
     try {
       await resetPassword(token, password);
       navigate('/login');
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Reset failed.');
+    } catch (err: unknown) {
+      setError(apiErrorMessage(err, 'Reset failed.'));
     } finally {
       setIsLoading(false);
     }

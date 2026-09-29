@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -19,8 +20,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Login failed');
+    } catch (err: unknown) {
+      setError(apiErrorMessage(err, 'Login failed'));
     } finally {
       setIsLoading(false);
     }

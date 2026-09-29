@@ -25,8 +25,9 @@ variables · 4 Railway · 5 Vercel, Resend, DNS · 6 First deploy · 7 Smoke tes
 
 Double booking is prevented twice: the application checks and retries inside
 serializable transactions, and the database itself refuses overlapping
-bookings for one provider (`Booking_no_overlap`, section 4). There is no CI yet
-(Phase B), so **run the checks in section 8 yourself before each deploy**.
+bookings for one provider (`Booking_no_overlap`, section 4). CI (GitHub Actions,
+`.github/workflows/ci.yml`) runs on every push; section 8 says what to check
+before deploying.
 
 ---
 
@@ -131,7 +132,7 @@ Lower the TTL to 300 s a day before cutover so a mistake is quick to undo.
 
 ## 6. First deploy, in this order
 
-Pre-flight (on your machine, from a clean checkout of the branch you are deploying):
+Pre-flight: **CI must be green on the commit you are deploying** (API tests under three timezones, schema-vs-migrations check, web typecheck/lint/tests/build). To run the same checks yourself, from a clean checkout:
 
 ```bash
 cd api && npm ci && npx tsc --noEmit && npm run lint && npm test   # TEST_DATABASE_URL must point at a *test* DB
@@ -172,7 +173,7 @@ Use a real browser, on the real domain, ideally also on an iPhone (Safari is the
 
 Deploys are triggered by pushing to the branch each service tracks (verify which). Before pushing:
 
-1. Run the pre-flight commands from section 6. The API suite has one known intermittent failure (`concurrency.test.ts`, logged in the plan): if it's the only failure, rerun once; a second failure is real.
+1. **CI green** on the commit (or run the pre-flight commands from section 6). The API suite has one known intermittent failure (`concurrency.test.ts`, logged in the plan): if it is the only failure, re-run that job once; a second failure is real. The e2e browser suite (`npm run e2e`) is *not* in CI: run it locally before deploys that touch the booking flow, routing or auth.
 2. **Does the change include a migration** (`api/prisma/migrations/`)?
    - **No** → deploy.
    - **Yes** → take a **manual database backup first**, and check the migration is **additive only** (new table, or new nullable/defaulted column). Anything that drops, renames, retypes or backfills is a one-way door: do it in two deploys (expand, then later contract) or accept that the only way back is a restore (section 9).
@@ -233,6 +234,12 @@ Both refuse to overwrite an existing email or slug. Without a password variable,
 
 JSON, one object per line. Every request logs `method`, `path` (no query string, since tokens live there), `status`, `ms`, and a `requestId` that is also returned to the client as `X-Request-Id`. To trace a user's report: get the `X-Request-Id` from their failing request (browser network tab) and search for it. Log lines identify users by id, never by email.
 
+### Uptime monitoring
+
+`.github/workflows/uptime.yml` checks the API's `/health` (which includes the database) and, optionally, the web app every 15 minutes. If either is down, the run fails and GitHub emails the repository's watchers. **Turn it on** after the first deploy: repository *Settings → Secrets and variables → Actions → Variables* → add `HEALTH_URL` (`https://api.example.gr/health`) and optionally `WEB_URL` (`https://example.gr/`). Until `HEALTH_URL` is set it does nothing. Run it once by hand from the *Actions* tab to confirm it goes green.
+
+It is a floor, not a ceiling: GitHub's scheduler is best-effort (runs can be minutes late or skipped) and switches scheduled workflows **off after 60 days without repository activity**. For alerts you can rely on (SMS/phone, 1-minute checks) also point a dedicated external pinger at the same `/health` URL.
+
 ### Common incidents
 
 - **Everyone gets errors / `/health` is 503** → database. Check Railway Postgres status and connection count; the API reconnects by itself when it's back.
@@ -251,9 +258,9 @@ When the Terms or Privacy text changes materially, bump `TERMS_VERSION` in `api/
 
 ## 11. Known limits (accurate today, all deliberate or deferred)
 
-- **No CI**: checks are manual (Phase B).
+- **CI covers the API, schema and web, not the browser (e2e) suite**: run `npm run e2e` locally for booking-flow, routing or auth changes.
 - **Rate limiters are in-memory**: one API instance only.
 - **The overlap guard is per provider**: it stops one provider being double booked; it does not stop two different providers taking the same customer at the same time (that is allowed on purpose).
 - **Greek text uses a fallback font** for Greek glyphs: Poppins and League Spartan ship no Greek. Unchanged from before self-hosting.
 - **Hard delete only** for customers: erasing a customer removes their bookings and reopens those slots.
-- **No monitoring/alerting** is set up: add an uptime check on `/health` (any external pinger) so you find out before a customer does.
+- **Monitoring is a GitHub-Actions canary** (section 10), which can lag or be disabled after 60 days of inactivity; add an external pinger for anything you depend on.

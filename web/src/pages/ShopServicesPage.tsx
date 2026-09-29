@@ -17,6 +17,7 @@ import Switch from '../components/Switch';
 import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { apiErrorMessage } from '../utils/apiError';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -141,8 +142,8 @@ export default function ShopServicesPage() {
       setServices((prev) => [...prev, service]);
       setCreateForm({ ...emptyForm });
       setShowCreate(false);
-    } catch (err: any) {
-      setCreateError(err?.response?.data?.message ?? t.services.errorCreate);
+    } catch (err: unknown) {
+      setCreateError(apiErrorMessage(err, t.services.errorCreate));
     } finally {
       setCreating(false);
     }
@@ -158,8 +159,8 @@ export default function ShopServicesPage() {
       const updated = await updateService(shop.id, editingId, formToDto(editForm));
       setServices((prev) => prev.map((s) => (s.id === editingId ? updated : s)));
       setEditingId(null);
-    } catch (err: any) {
-      setEditError(err?.response?.data?.message ?? t.services.errorUpdate);
+    } catch (err: unknown) {
+      setEditError(apiErrorMessage(err, t.services.errorUpdate));
     } finally {
       setSaving(false);
     }
@@ -191,8 +192,8 @@ export default function ShopServicesPage() {
       const detail = await getService(shop.id, staffServiceId);
       setServiceDetail(detail);
       setSelectedUserShopId('');
-    } catch (err: any) {
-      setStaffError(err?.response?.data?.message ?? t.services.errorAssign);
+    } catch (err: unknown) {
+      setStaffError(apiErrorMessage(err, t.services.errorAssign));
     } finally {
       setAssigning(false);
     }

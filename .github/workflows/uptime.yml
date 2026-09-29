@@ -1,0 +1,40 @@
+name: Uptime check
+
+# A free, in-repo canary: pings the API's /health (which also checks the
+# database) and fails the run, which GitHub emails to the repo's watchers, when
+# it is down. Set the repository variable HEALTH_URL (Settings -> Secrets and
+# variables -> Actions -> Variables), e.g. https://api.example.gr/health.
+# Optional: WEB_URL, e.g. https://example.gr/.
+#
+# Limits: GitHub cron is best-effort (runs can start several minutes late or be
+# skipped under load) and scheduled workflows are switched off after 60 days
+# without repository activity. For real alerting also add a dedicated external
+# pinger on the same URL; this is the floor, not the ceiling.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HEALTH_URL: ${{ vars.HEALTH_URL }}
+      WEB_URL: ${{ vars.WEB_URL }}
+    steps:
+      - name: API /health (and its database)
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "::notice::HEALTH_URL is not set; nothing to check yet."
+            exit 0
+          fi
+          body="$(curl --fail --silent --show-error --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$HEALTH_URL")"
+          echo "$body"
+          echo "$body" | grep -q '"db":"up"' || { echo "::error::health responded but the database is not up"; exit 1; }
+      - name: Web app responds
+        run: |
+          if [ -z "$WEB_URL" ]; then exit 0; fi
+          curl --fail --silent --show-error --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors --output /dev/null "$WEB_URL"

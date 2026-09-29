@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { cancelBooking, type CancelBookingResult } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/invites.css';
+import { apiErrorField } from '../utils/apiError';
 
 export default function CancelBookingPage() {
   const [params] = useSearchParams();
@@ -19,6 +20,7 @@ export default function CancelBookingPage() {
     called.current = true;
 
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time token call on mount; the ref guard must stay in the effect (StrictMode double-run would spend the token twice)
       setError(t.cancelBooking.invalidLink);
       setLoading(false);
       return;
@@ -28,8 +30,8 @@ export default function CancelBookingPage() {
       .then((data) => {
         setResult(data);
       })
-      .catch((err: any) => {
-        const msg: string = err?.response?.data?.error ?? '';
+      .catch((err: unknown) => {
+        const msg: string = apiErrorField(err, 'error');
         if (msg.includes('already')) setError(t.cancelBooking.alreadyCancelled);
         else if (msg.includes('not found')) setError(t.cancelBooking.notFound);
         else setError(t.cancelBooking.errorCancel);

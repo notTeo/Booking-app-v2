@@ -8,6 +8,7 @@ import {
   type ShopInvite,
 } from '../api/invite.api';
 import '../styles/pages/invites.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 type Tab = 'received' | 'sent';
 
@@ -43,8 +44,8 @@ export default function InvitesPage() {
       const result = await acceptInvite(inviteId);
       setReceived((prev) => prev.filter((i) => i.id !== inviteId));
       navigate(`/shops/${result.shopSlug}`);
-    } catch (err: any) {
-      setActionError(err?.response?.data?.message ?? t.invites.errorAccept);
+    } catch (err: unknown) {
+      setActionError(apiErrorMessage(err, t.invites.errorAccept));
     } finally {
       setActionLoading(null);
     }

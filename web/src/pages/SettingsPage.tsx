@@ -16,6 +16,7 @@ import {
   faSun,
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
+import { apiErrorMessage } from '../utils/apiError';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -101,8 +102,8 @@ export default function SettingsPage() {
         setProfileSuccess(t.settings.successProfile);
       }
       setPassword('');
-    } catch (err: any) {
-      setProfileError(err.response?.data?.message ?? t.settings.errorProfile);
+    } catch (err: unknown) {
+      setProfileError(apiErrorMessage(err, t.settings.errorProfile));
     } finally {
       setProfileLoading(false);
     }
@@ -116,8 +117,8 @@ export default function SettingsPage() {
       await revokeAllSessions();
       setSessions([]);
       setRevokeSuccess(t.settings.successRevoke);
-    } catch (err: any) {
-      setRevokeError(err.response?.data?.message ?? t.settings.errorRevoke);
+    } catch (err: unknown) {
+      setRevokeError(apiErrorMessage(err, t.settings.errorRevoke));
     } finally {
       setRevokeLoading(false);
     }
@@ -131,8 +132,8 @@ export default function SettingsPage() {
       await deleteMe(user?.hasPassword ? deletePassword : undefined);
       await logout();
       navigate('/');
-    } catch (err: any) {
-      setDeleteError(err.response?.data?.message ?? 'Failed to delete account.');
+    } catch (err: unknown) {
+      setDeleteError(apiErrorMessage(err, 'Failed to delete account.'));
       setDeleteLoading(false);
     }
   };

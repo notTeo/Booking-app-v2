@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -50,8 +51,8 @@ export default function ShopNewPage() {
       };
       const shop = await createShop(dto);
       navigate(`/shops/${shop.slug}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Failed to create shop.');
+    } catch (err: unknown) {
+      setError(apiErrorMessage(err, 'Failed to create shop.'));
     } finally {
       setLoading(false);
     }

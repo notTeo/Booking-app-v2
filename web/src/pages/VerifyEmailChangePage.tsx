@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmailChange } from '../api/auth.api';
 import '../styles/pages/verify-email.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function VerifyEmailChangePage() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ export default function VerifyEmailChangePage() {
 
     const token = searchParams.get('token');
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time token call on mount; the ref guard must stay in the effect (StrictMode double-run would spend the token twice)
       setStatus('error');
       setMessage('Invalid verification link.');
       return;
@@ -26,8 +28,8 @@ export default function VerifyEmailChangePage() {
         setStatus('success');
         setMessage('Your email address has been updated successfully.');
       })
-      .catch((err: any) => {
-        const msg = err.response?.data?.message ?? 'Verification failed.';
+      .catch((err: unknown) => {
+        const msg = apiErrorMessage(err, 'Verification failed.');
         setStatus('error');
         setMessage(msg);
       });

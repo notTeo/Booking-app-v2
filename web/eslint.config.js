@@ -20,4 +20,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Context modules deliberately export their provider component together
+    // with its hook (useAuth, useLang, ...). That only costs Fast Refresh a
+    // full reload of the module when it is edited in dev.
+    files: ['src/context/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

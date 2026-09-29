@@ -45,13 +45,17 @@ export const getSessions = (): Promise<Session[]> =>
 export const revokeAllSessions = () =>
   client.delete('/auth/sessions').then((res) => res.data);
 
-let refreshPromise: Promise<any> | null = null;
+interface RefreshResponse {
+  data: { accessToken: string };
+}
+
+let refreshPromise: Promise<RefreshResponse> | null = null;
 
 export const refreshTokens = () => {
   if (!refreshPromise) {
     refreshPromise = refreshClient
       .post('/auth/refresh')
-      .then((res) => res.data)
+      .then((res) => res.data as RefreshResponse)
       .finally(() => { refreshPromise = null; });
   }
   return refreshPromise;

@@ -54,6 +54,7 @@ export default function ShopOverviewPage() {
 
   useEffect(() => {
     if (!shop) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query (see docs/plan-phase2.md LATER)
     setLoadingStats(true);
     Promise.all([
       listBookings(shop.id, { date: todayInZone(shop.timezone) }),

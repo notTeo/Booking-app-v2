@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { lookupInvite, acceptInvite, type InviteLookup } from '../api/invite.api';
 import '../styles/pages/invites.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function AcceptInvitePage() {
   const { t } = useLang();
@@ -27,8 +28,8 @@ export default function AcceptInvitePage() {
     }
     lookupInvite(token)
       .then(setInvite)
-      .catch((err: any) => {
-        const msg = err?.response?.data?.message ?? '';
+      .catch((err: unknown) => {
+        const msg = apiErrorMessage(err, '');
         if (msg.includes('expired')) setLookupError(t.invites.inviteExpired);
         else if (msg.includes('used') || msg.includes('accepted')) setLookupError(t.invites.inviteUsed);
         else setLookupError(t.invites.inviteNotFound);
@@ -43,8 +44,8 @@ export default function AcceptInvitePage() {
     try {
       const result = await acceptInvite(invite.inviteId);
       navigate(`/shops/${result.shopSlug}`);
-    } catch (err: any) {
-      setAcceptError(err?.response?.data?.message ?? t.invites.errorAccept);
+    } catch (err: unknown) {
+      setAcceptError(apiErrorMessage(err, t.invites.errorAccept));
     } finally {
       setAccepting(false);
     }

@@ -6,6 +6,7 @@ import { useLang } from '../context/LanguageContext';
 import { authStore } from '../store/authStore';
 import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/register.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
@@ -50,8 +51,8 @@ export default function RegisterPage() {
       // Normal path: verification email sent
       setRegisteredEmail(email);
       setSuccess('Verification email sent. Please check your inbox.');
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Registration failed');
+    } catch (err: unknown) {
+      setError(apiErrorMessage(err, 'Registration failed'));
     } finally {
       setIsLoading(false);
     }

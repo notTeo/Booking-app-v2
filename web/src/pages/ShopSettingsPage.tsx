@@ -14,6 +14,7 @@ import {
   faLink,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
+import { apiErrorMessage } from '../utils/apiError';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -105,8 +106,8 @@ export default function ShopSettingsPage() {
       if (updated.slug !== slug) {
         navigate(`/shops/${updated.slug}/settings`, { replace: true });
       }
-    } catch (err: any) {
-      setSaveError(err.response?.data?.message ?? t.shopSettings.errorUpdate);
+    } catch (err: unknown) {
+      setSaveError(apiErrorMessage(err, t.shopSettings.errorUpdate));
     } finally {
       setSaveLoading(false);
     }
@@ -120,8 +121,8 @@ export default function ShopSettingsPage() {
     try {
       await deleteShop(shop.id);
       navigate('/shops');
-    } catch (err: any) {
-      setDeleteError(err.response?.data?.message ?? t.shopSettings.errorDelete);
+    } catch (err: unknown) {
+      setDeleteError(apiErrorMessage(err, t.shopSettings.errorDelete));
       setDeleteLoading(false);
     }
   };

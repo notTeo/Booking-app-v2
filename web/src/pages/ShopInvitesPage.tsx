@@ -11,6 +11,7 @@ import {
 } from '../api/team.api';
 import Switch from '../components/Switch';
 import '../styles/pages/invites.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function ShopInvitesPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -73,8 +74,8 @@ export default function ShopInvitesPage() {
       setMembers((prev) => [member, ...prev]);
       resetForm();
       setSendFeedback({ type: 'success', msg: sendEmail ? t.invites.sentOk : t.invites.createdNoEmail });
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? t.invites.errorSend;
+    } catch (err: unknown) {
+      const msg = apiErrorMessage(err, t.invites.errorSend);
       setSendFeedback({ type: 'error', msg });
     } finally {
       setSending(false);

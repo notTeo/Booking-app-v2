@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api/auth.api';
 import '../styles/pages/forgot-password.css';
+import { apiErrorMessage } from '../utils/apiError';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -17,8 +18,8 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(email);
       setSuccess('If this email exists you will receive a reset link shortly.');
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Something went wrong.');
+    } catch (err: unknown) {
+      setError(apiErrorMessage(err, 'Something went wrong.'));
     } finally {
       setIsLoading(false);
     }
