@@ -1,15 +1,18 @@
 import { body, param } from 'express-validator';
+import { checkSlug, SLUG_MESSAGES } from './slug';
 
 export const createShopValidation = [
   body('name').notEmpty().withMessage('Name is required').trim(),
   body('slug')
+    .trim()
     .notEmpty()
     .withMessage('Slug is required')
-    .matches(/^[a-z0-9-]+$/)
-    .withMessage(
-      'Slug may only contain lowercase letters, numbers, and hyphens',
-    )
-    .trim(),
+    .bail()
+    .custom((value) => {
+      const problem = checkSlug(value);
+      if (problem) throw new Error(SLUG_MESSAGES[problem]);
+      return true;
+    }),
   body('description').optional().trim(),
   body('phone').optional().trim(),
   body('lat')
@@ -37,13 +40,12 @@ export const createShopValidation = [
 export const updateShopValidation = [
   param('id').notEmpty().withMessage('Shop ID is required'),
   body('name').optional().notEmpty().withMessage('Name cannot be empty').trim(),
+  // Immutable after creation: reject rather than silently ignore, so a stale
+  // client can't believe a rename succeeded.
   body('slug')
-    .optional()
-    .matches(/^[a-z0-9-]+$/)
-    .withMessage(
-      'Slug may only contain lowercase letters, numbers, and hyphens',
-    )
-    .trim(),
+    .not()
+    .exists()
+    .withMessage('Slug cannot be changed after creation'),
   body('description').optional().trim(),
   body('phone').optional().trim(),
   body('lat')

@@ -53,6 +53,7 @@ export interface Translations {
     name: string;
     slug: string;
     slugHint: string;
+    slugLockedHint: string;
     description: string;
     phone: string;
     address: string;
@@ -824,6 +825,7 @@ export const translations: Record<Language, Translations> = {
       name: 'Όνομα',
       slug: 'Slug',
       slugHint: 'Μόνο πεζά γράμματα, αριθμοί και παύλες (π.χ. my-shop)',
+      slugLockedHint: 'Η διεύθυνση του καταστήματος δεν μπορεί να αλλάξει μετά τη δημιουργία.',
       description: 'Περιγραφή',
       phone: 'Τηλέφωνο',
       address: 'Διεύθυνση',
@@ -1607,6 +1609,7 @@ home: {
       name: 'Name',
       slug: 'Slug',
       slugHint: 'Lowercase letters, numbers, and hyphens only (e.g. my-shop)',
+      slugLockedHint: 'The shop URL cannot be changed after creation.',
       description: 'Description',
       phone: 'Phone',
       address: 'Address',

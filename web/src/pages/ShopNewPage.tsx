@@ -88,10 +88,13 @@ export default function ShopNewPage() {
               value={slug}
               onChange={(e) => handleSlugInput(e.target.value)}
               placeholder="my-barbershop"
+              minLength={3}
+              maxLength={40}
               required
             />
             <span className="shop-field-hint">
-              Lowercase letters, numbers, and hyphens only. Used in your shop URL.
+              3-40 characters: lowercase letters, numbers, and hyphens (not at the start or end).
+              Used in your shop URL and cannot be changed later.
             </span>
           </div>
 

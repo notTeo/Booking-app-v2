@@ -78,7 +78,21 @@ describe('POST /api/shops — only whitelisted fields are accepted', () => {
 });
 
 describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => {
-  it('ignores slug, id and createdAt', async () => {
+  it('rejects a slug change with 400 and changes nothing', async () => {
+    const A = await createTenant('Alpha');
+
+    const res = await request(app)
+      .patch(`/api/shops/${A.shop.id}`)
+      .set(authHeader(A.token))
+      .send({ name: 'Renamed', slug: `hijack-${unique()}` });
+
+    expect(res.status).toBe(400);
+    const after = await prisma.shop.findUnique({ where: { id: A.shop.id } });
+    expect(after?.slug).toBe(A.shop.slug);
+    expect(after?.name).toBe(A.shop.name);
+  });
+
+  it('ignores id and createdAt', async () => {
     const A = await createTenant('Alpha');
 
     const res = await request(app)
@@ -86,7 +100,6 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
       .set(authHeader(A.token))
       .send({
         name: 'Renamed',
-        slug: `hijack-${unique()}`,
         id: 'other-id',
         createdAt: '2000-01-01T00:00:00.000Z',
       });

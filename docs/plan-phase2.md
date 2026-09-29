@@ -1,14 +1,12 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **8** (slugs: 3–40 chars,
-`a-z0-9` and hyphens, no leading/trailing hyphen, `RESERVED_SLUGS` including
-every existing route plus the owner's list, slug immutable after creation),
-then groups 9, 10, 11, 12, 14 in that order (Phase A priority list). Commit 10
-(the conditional Postgres exclusion constraint) is **skipped by explicit
-owner instruction** — not a failed precondition, a choice to defer it — and
-moves to the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **9** (ops/env), then groups
+10, 11, 12, 14 in that order (Phase A priority list). Commit 10 (the
+conditional Postgres exclusion constraint) is **skipped by explicit owner
+instruction** — not a failed precondition, a choice to defer it — and moves to
+the Phase B list alongside CI/lint.
 
-Groups 3, 4, 6 and 7 are done this session (commit 11; see the status table
+Groups 3, 4, 6, 7 and 8 are done this session (commit 11; see the status table
 and "Additional items by group" for what was built and why). Commit 8
 (mobile layout) is also done — see the out-of-hours plan doc for detail.
 
@@ -185,7 +183,7 @@ before continuing.
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
 | 6 Rate limiting / JSON errors | **done** | commit 11 continued: `publicReadLimiter` (100/15min: shop info, slots) + `publicWriteLimiter` (20/15min: book, cancel) in `api/src/middleware/rateLimiter.ts`, wired in `public.routes.ts`; `refreshLimiter` replaces `authLimiter` on `/auth/refresh` (60/15min, skipped entirely with no refresh cookie) fixing the shared-IP lockout finding below; `ErrorHandler` now respects a plain error's `status`/`statusCode` in the 4xx range (never 5xx, to avoid leaking internals), which also turns a malformed JSON body from a 500 into a clean 400 |
 | 7 Validation | **done** | commit 11 continued, 3 commits: (1) name ≤100 / notes ≤1000 / phone format (`isPlausiblePhone`, lenient by design) / staffId type / email length on the public and owner booking bodies and customer PATCH, shared via new `validators/common.ts`, plus `PATCH /user/me`'s previously-unvalidated `name`; (2) every query/body "token" (verify-email, verify-email-change, reset-password, cancel) now checked `isString()`, not just `notEmpty()` — an array-shaped token used to reach Prisma and come back as a 500, now a clean 400; (3) the 5 routes with no validation chain at all now have one (shopId/memberId), plus their first HTTP-level test coverage. A repo-wide gap the audit found (every path-param id validated `.notEmpty()` only, never checked against the cuid shape Prisma generates) is **not** fixed — logged in LATER, not currently exploitable |
-| 8 Slugs | not started | — (note: `updateShop` already ignores `slug`; must become a 400 before deploy) |
+| 8 Slugs | **done** | `api/src/validators/slug.ts`: 3–40 chars, `a-z0-9-`, no leading/trailing hyphen, `RESERVED_SLUGS` (checked by test against every route in `web/src/App.tsx` and every mount in `api/src/app.ts`). `POST /api/shops` enforces it; `PATCH /api/shops/:id` with a `slug` field is now a 400 (was silently ignored). Web: slug input on shop settings is read-only, create form hint updated. **The owner's own reserved list was not in the repo** — the non-route names (admin, www, support, billing, …) are a best guess; owner to confirm/extend |
 | 9 Ops/env | not started | — |
 | 10 GDPR | not started | — |
 | 11 Root routing | not started | — |

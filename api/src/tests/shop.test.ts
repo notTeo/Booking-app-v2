@@ -59,6 +59,27 @@ describe('POST /api/shops', () => {
     expect(second.status).toBe(201);
   });
 
+  it.each([
+    ['too short', 'ab'],
+    ['too long', 'a'.repeat(41)],
+    ['leading hyphen', '-shop'],
+    ['trailing hyphen', 'shop-'],
+    ['uppercase', 'My-Shop'],
+    ['reserved (route)', 'dashboard'],
+    ['reserved (owner list)', 'admin'],
+  ])('rejects an invalid slug: %s', async (_label, slug) => {
+    await createVerifiedUser('slug@example.com', true);
+    const token = await loginUser('slug@example.com');
+
+    const res = await request(app)
+      .post('/api/shops')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Test Shop', slug });
+
+    expect(res.status).toBe(400);
+    expect(await prisma.shop.count()).toBe(0);
+  });
+
   it('returns 403 for a Free user', async () => {
     await createVerifiedUser('free@example.com', false);
     const token = await loginUser('free@example.com');

@@ -82,10 +82,6 @@ export default function ShopSettingsPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  const handleSlugInput = (value: string) => {
-    setEditSlug(value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!shop) return;
@@ -95,7 +91,6 @@ export default function ShopSettingsPage() {
     try {
       const dto: UpdateShopDto = {
         name,
-        slug: editSlug,
         isActive,
         ...(description !== undefined && { description }),
         ...(phone !== undefined && { phone }),
@@ -200,10 +195,10 @@ export default function ShopSettingsPage() {
               id="detail-slug"
               type="text"
               value={editSlug}
-              onChange={(e) => handleSlugInput(e.target.value)}
-              required
+              readOnly
+              disabled
             />
-            <span className="shop-field-hint">{t.shops.slugHint}</span>
+            <span className="shop-field-hint">{t.shops.slugLockedHint}</span>
           </div>
           <div className="form-group">
             <label htmlFor="detail-description">{t.shops.description}</label>
