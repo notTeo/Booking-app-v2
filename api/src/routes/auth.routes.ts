@@ -18,6 +18,7 @@ import {
   registerValidation,
   resendVerificationValidation,
   resetPasswordValidation,
+  verifyEmailTokenValidation,
 } from '../validators/authValidation';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
@@ -33,8 +34,18 @@ router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
 router.post('/refresh', refreshLimiter, refresh);
 router.post('/logout', logout);
-router.get('/verify-email', verifyEmailController);
-router.get('/verify-email-change', verifyEmailChangeController);
+router.get(
+  '/verify-email',
+  verifyEmailTokenValidation,
+  validate,
+  verifyEmailController,
+);
+router.get(
+  '/verify-email-change',
+  verifyEmailTokenValidation,
+  validate,
+  verifyEmailChangeController,
+);
 router.post(
   '/resend-verification',
   forgotPasswordLimiter,

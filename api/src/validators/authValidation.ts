@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 
 export const registerValidation = [
   body('email')
@@ -45,8 +45,22 @@ export const resendVerificationValidation = [
     .normalizeEmail(),
 ];
 
+// GET /auth/verify-email and /verify-email-change both take the token as a
+// query-string param, otherwise unvalidated before hitting the service.
+export const verifyEmailTokenValidation = [
+  query('token')
+    .notEmpty()
+    .withMessage('Token is required')
+    .isString()
+    .withMessage('Token must be a string'),
+];
+
 export const resetPasswordValidation = [
-  body('token').notEmpty().withMessage('Token is required'),
+  body('token')
+    .notEmpty()
+    .withMessage('Token is required')
+    .isString()
+    .withMessage('Token must be a string'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
