@@ -187,17 +187,35 @@ export default function DateTimeStep({
       )}
 
       {internal &&
-        sections.map((g) => (
-          <section key={g.key} className="slot-section">
-            {(showOutside || g.key !== 'working') && (
-              <h4 className="slot-section-title">
-                {g.key !== 'working' && <span aria-hidden="true">☾ </span>}
-                {sectionTitle(g.key)}
-              </h4>
-            )}
-            <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
-          </section>
-        ))}
+        sections.map((g) => {
+          const heading = (
+            <>
+              {g.key !== 'working' && <span aria-hidden="true">☾ </span>}
+              {sectionTitle(g.key)}
+            </>
+          );
+          // Out-of-hours sections collapse (handy on a phone screen); working
+          // hours never do — it's the one section that's always relevant.
+          if (g.key === 'working') {
+            return (
+              <section key={g.key} className="slot-section">
+                {showOutside && <h4 className="slot-section-title">{heading}</h4>}
+                <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
+              </section>
+            );
+          }
+          return (
+            <details key={g.key} className="slot-section slot-section--collapsible" open>
+              <summary>
+                {/* <h4> (not <summary> itself) so this keeps its heading role for assistive tech and tests. */}
+                <h4 className="slot-section-title">
+                  {heading} <span className="slot-section-count">({g.slots.length})</span>
+                </h4>
+              </summary>
+              <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
+            </details>
+          );
+        })}
 
       {internal && showOutside && date !== '' && (
         <div className="ooh-other-time">

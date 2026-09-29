@@ -78,6 +78,13 @@ export default function ShopBookingsPage() {
   // of the day now on screen.
   const requestSeq = useRef(0);
 
+  // Phone layout only: which provider's column is scrolled into view, so its
+  // chip can be highlighted (the chip row and the scroll-snap columns are
+  // themselves CSS-only — this is just for the active-chip indicator).
+  const [activeColId, setActiveColId] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const colRefs = useRef(new Map<string, HTMLDivElement>());
+
   const refetchBookings = () => {
     if (!shop) return;
     const seq = ++requestSeq.current;
@@ -196,6 +203,45 @@ export default function ShopBookingsPage() {
   const outsideRangeCount = bookings.filter(b => geometryOf(b).outsideView).length;
 
   const tagLabel = (tag: OverrideTag) => t.bookings.calendar.tags[tag];
+
+  // Out-of-hours booking count per column, for the phone chip row's badge.
+  const overrideCountByCol = Object.fromEntries(
+    columns.map(col => [
+      col.id,
+      (bookingsByStaff[col.id] ?? []).filter(b => overrideTags(b.overriddenRules ?? []).length > 0).length,
+    ]),
+  );
+
+  const columnIds = columns.map(c => c.id).join(',');
+
+  // Phone layout: highlight whichever provider's column the scroll-snap has
+  // brought into view, so its chip lights up (the scroll-snapping itself is
+  // pure CSS — this only drives the chip row's active state).
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root) return;
+    const nodes = [...colRefs.current.entries()].filter(([id]) => columns.some(c => c.id === id));
+    if (nodes.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) setActiveColId(visible[0].target.getAttribute('data-col-id'));
+      },
+      { root, threshold: [0.5, 0.75, 1] },
+    );
+    for (const [, node] of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  // `columns` is a fresh array every render; `columnIds` is its stable key so
+  // the observer is only rebuilt when membership actually changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnIds, loading]);
+
+  const scrollToCol = (id: string) => {
+    // scrollLeft only — scrollIntoView also nudges the page's vertical scroll
+    // when the (very tall) column isn't fully in view.
+    const el = colRefs.current.get(id);
+    if (el && scrollRef.current) scrollRef.current.scrollTo({ left: el.offsetLeft, behavior: 'smooth' });
+  };
 
   // ── loading ───────────────────────────────────────────────────────────────
 
@@ -361,7 +407,27 @@ export default function ShopBookingsPage() {
               {t.bookings.calendar.outsideBanner.replace('{count}', String(outsideRangeCount))}
             </div>
           )}
-          <div className="cal-scroll">
+
+          {/* Phone layout only (CSS-hidden ≥641px): jump to a provider's page. */}
+          {columns.length > 1 && (
+            <div className="cal-chips">
+              {columns.map(col => (
+                <button
+                  key={col.id}
+                  type="button"
+                  className={`cal-chip${activeColId === col.id ? ' cal-chip--active' : ''}`}
+                  onClick={() => scrollToCol(col.id)}
+                >
+                  {col.label}
+                  {overrideCountByCol[col.id] > 0 && (
+                    <span className="cal-chip-badge">☾ {overrideCountByCol[col.id]}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="cal-scroll" ref={scrollRef}>
             <div className="cal-grid">
 
               {/* Column headers */}
@@ -392,6 +458,11 @@ export default function ShopBookingsPage() {
                   return (
                     <div
                       key={col.id}
+                      data-col-id={col.id}
+                      ref={(el) => {
+                        if (el) colRefs.current.set(col.id, el);
+                        else colRefs.current.delete(col.id);
+                      }}
                       className={`cal-col${creatable ? ' cal-col--creatable' : ''}`}
                       style={{ height: HOURS.length * SLOT_H }}
                       onClick={creatable ? (e) => {

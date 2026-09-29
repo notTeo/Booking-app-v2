@@ -456,3 +456,89 @@
   text-overflow: ellipsis;
   line-height: 1.2;
 }
+
+/* ── Phone provider chips (docs/plan-out-of-hours.md D2) ─────────────────────
+   Hidden ≥641px, where every provider column is already on screen at once. */
+
+.cal-chips {
+  display: none;
+}
+
+.cal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cal-chip--active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cal-chip-badge {
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .cal-chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* One provider column per "page"; swipe or tap a chip to move between them.
+     The header row scrolls in lockstep — both live inside .cal-scroll. */
+  .cal-scroll {
+    scroll-snap-type: x mandatory;
+  }
+
+  .cal-col-header,
+  .cal-col {
+    flex: 0 0 calc(100% - 56px);
+    min-width: calc(100% - 56px);
+    scroll-snap-align: start;
+  }
+
+  /* Sticky time gutter: stays put while the page swipes past it. */
+  .cal-gutter,
+  .cal-gutter-cell {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    background: var(--bg-card);
+  }
+
+  /* The detail / create panel becomes a bottom sheet instead of an inline card. */
+  .cal-detail-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+    animation: cal-sheet-in 0.2s ease;
+  }
+}
+
+@keyframes cal-sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}

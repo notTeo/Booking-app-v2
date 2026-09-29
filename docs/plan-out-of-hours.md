@@ -110,6 +110,29 @@ truth if work continues in a new session. Branch: `prod-readiness`.
     booking `blockGeometry` flags as `outsideView` (in practice, midnight
     crossers) is counted in an "N bookings outside the visible range" banner.
 
+11. **Mobile layout (commit 8), as built:** a `≤640px` media query only; the
+    desktop layout (`>640px`) is unchanged. Form: `.public-slots-grid` becomes
+    a 3-column CSS grid, slot buttons and the toggle get a 44px min-height.
+    Out-of-hours sections (`BEFORE_OPENING`/`BREAK`/`AFTER_CLOSING`/
+    `CLOSED_DAY`) are a native `<details>/<summary>` accordion with a slot
+    count in the heading, defaulting `open` (so collapsing is opt-in, nothing
+    regresses); the heading stays an `<h4>` nested inside `<summary>` so it
+    keeps its accessible `heading` role — `<summary>` itself doesn't have one,
+    which broke the existing heading-role assertions in
+    `owner-outside-hours.spec.ts` until this was caught. Calendar: each
+    provider column becomes a full-width scroll-snap "page"; a sticky time
+    gutter stays visible while swiping between them; a row of provider chips
+    (with a ☾ badge counting that provider's out-of-hours bookings) lets you
+    jump to a column, tracked via `IntersectionObserver` for which chip is
+    "active"; the detail/create panel becomes a fixed bottom sheet. Verified
+    against a real browser at 390×844, not just the test suite — caught a bug
+    that way (`scrollIntoView` on chip-tap was also nudging the page's
+    vertical scroll; fixed by setting the scroll container's `scrollLeft`
+    directly instead). The chip/scroll-snap/bottom-sheet behaviour was checked
+    visually rather than with a dedicated e2e test, since the seeded e2e shop
+    has only one staff member and a chip row needs at least two; adding a
+    second was out of scope for this commit.
+
 ### Approved order (bugs before features)
 
 0. Commit the Playwright scaffold; mark the obsolete override-dialog E2E

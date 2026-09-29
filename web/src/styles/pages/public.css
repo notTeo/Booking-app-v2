@@ -715,6 +715,40 @@
   color: var(--text-secondary, var(--text));
 }
 
+/* Out-of-hours sections are collapsible (<details>/<summary>): a native
+   disclosure widget, no JS needed. Working hours stays a plain <section>. */
+.slot-section--collapsible > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.slot-section--collapsible > summary .slot-section-title {
+  margin: 0;
+}
+
+.slot-section--collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.slot-section--collapsible > summary::before {
+  content: '▸';
+  display: inline-block;
+  width: 0.8em;
+  transition: transform 0.15s;
+}
+
+.slot-section--collapsible[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.slot-section-count {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .public-slot-btn--outside {
   border-style: dashed;
 }
@@ -811,4 +845,28 @@
 .customer-search-phone {
   color: var(--text-muted);
   font-size: 0.8125rem;
+}
+
+/* ── Mobile: bigger tap targets, a 3-column slot grid (docs/plan-out-of-hours.md D2) ── */
+
+@media (max-width: 640px) {
+  .public-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .public-slot-btn {
+    min-height: 44px;
+    padding: 0.4rem 0.25rem;
+  }
+
+  .ooh-toggle {
+    min-height: 44px;
+    padding: 0.25rem 0;
+  }
+
+  .public-field-input[type='time'] {
+    min-height: 44px;
+  }
 }

@@ -1,22 +1,29 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** start out-of-hours commit **8** (mobile layout: provider paging,
-sticky gutter, bottom sheet, form tap targets), then the rest of Phase A.
+**Next step:** decide on commit **10** (the conditional Postgres exclusion
+constraint — verify `btree_gist` on a throwaway Railway Postgres and that
+`prisma migrate diff` reports no drift; skip and report if either fails), then
+commit 11: resume the remainder of production-readiness group 3, then groups
+4–14.
 
-Commit 7 (web calendar) is done: `getDaySchedule` in
-`web/src/api/workingHours.api.ts` + `endTime`/`overriddenRules`/`createdById` on
-the web `Booking` type; `ShopBookingsPage.tsx` wired to `calendarModel.ts`
-(dynamic rows from `computeVisibleRange`, hatched off-segments with an
-"Off"/"Closed day" label, dashed border + ☾ + text tag from the stored codes,
-midnight-crossing clamp with "→ next day", a real "Other" column, an "N
-bookings outside the visible range" banner, clicking a hatched area opens the
-form with the toggle already on via the new `defaultShowOutside` prop threaded
-through `OwnerBookingWizard` → `DateTimeStep`); CSS + el/en translations
-(`bookings.calendar.*`); calendar assertions added to
-`e2e/tests/owner-outside-hours.spec.ts` (06:15 and 22:30 bookings visible, a
-closed-day booking visible and tagged, all passing). Full suite green: api
-279 tests × 3 TZs, web 52 tests × 3 TZs, e2e 17/17, tsc clean, lint has only
-the same 48 pre-existing problems in unrelated files.
+Commit 8 (mobile layout) is done: booking-wizard out-of-hours sections
+(`BEFORE_OPENING`/`BREAK`/`AFTER_CLOSING`/`CLOSED_DAY`) are now a native
+`<details>/<summary>` accordion (open by default, so nothing regresses for
+anyone who doesn't touch it) with a slot count in the heading — the heading
+stays an `<h4>` nested inside `<summary>` so it keeps its accessible role. A
+`≤640px` media query gives the form a 3-column slot grid and ≥44px tap
+targets, and turns the calendar into one-provider-per-page: scroll-snap
+columns, a sticky time gutter, provider chips (with a ☾ out-of-hours badge)
+to jump between columns, and the detail/create panel as a bottom sheet.
+`>640px` is pixel-identical to before. Verified against a real browser at
+390×844 (not just the test suite) — caught and fixed one bug that way
+(tapping a chip was nudging the whole page's vertical scroll; switched from
+`scrollIntoView` to a direct `scrollLeft` set). Chips/scroll-snap/bottom-sheet
+were checked visually rather than with a dedicated multi-provider e2e test —
+the seeded shop only has one staff member, and adding a second was out of
+scope here. Full suite green: api 279 tests × 3 TZs, web 52 tests × 3 TZs,
+e2e 17/17 (incl. a new collapsible-section assertion), tsc clean, lint has
+only the same 48 pre-existing problems in unrelated files.
 
 *(Keep this line updated after every commit or checkpoint.)*
 

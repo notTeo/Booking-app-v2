@@ -62,6 +62,16 @@ test('the out-of-hours grid is hidden until asked for, and is never colour alone
   await expect(page.getByRole('heading', { name: /before opening/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /after closing/i })).toBeVisible();
 
+  // out-of-hours sections are collapsible (a phone-friendly accordion) and
+  // start open; collapsing one hides its slots without touching the others
+  const beforeOpeningSlot = page.getByRole('button', { name: /^06:00,/ });
+  await expect(beforeOpeningSlot).toBeVisible();
+  await page.getByRole('heading', { name: /before opening/i }).click();
+  await expect(beforeOpeningSlot).toBeHidden();
+  await expect(page.getByRole('button', { name: /^21:00,/ })).toBeVisible();
+  await page.getByRole('heading', { name: /before opening/i }).click();
+  await expect(beforeOpeningSlot).toBeVisible();
+
   // 3 h before 09:00 and 4 h after 17:00, nothing beyond
   await expect(page.getByRole('button', { name: /^06:00,/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /^05:45/ })).toHaveCount(0);
