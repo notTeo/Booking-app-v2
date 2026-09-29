@@ -1,23 +1,22 @@
 # Phase 2 plan: production-readiness fixes
 
-**Next step:** commit **11 continues** with group **7** (validation:
-express-validator on every route listed as missing, including query-string
-tokens and path params; length caps and types on all public booking fields),
-then groups 8, 9, 10, 11, 12, 14 in that order (Phase A priority list).
-Commit 10 (the conditional Postgres exclusion constraint) is **skipped by
-explicit owner instruction** — not a failed precondition, a choice to defer
-it — and moves to the Phase B list alongside CI/lint.
+**Next step:** commit **11 continues** with group **8** (slugs: 3–40 chars,
+`a-z0-9` and hyphens, no leading/trailing hyphen, `RESERVED_SLUGS` including
+every existing route plus the owner's list, slug immutable after creation),
+then groups 9, 10, 11, 12, 14 in that order (Phase A priority list). Commit 10
+(the conditional Postgres exclusion constraint) is **skipped by explicit
+owner instruction** — not a failed precondition, a choice to defer it — and
+moves to the Phase B list alongside CI/lint.
 
-Groups 3, 4 and 6 are done this session (commit 11; see the status table and
-"Additional items by group" for what was built and why). Commit 8 (mobile
-layout) is also done — see the out-of-hours plan doc for detail.
+Groups 3, 4, 6 and 7 are done this session (commit 11; see the status table
+and "Additional items by group" for what was built and why). Commit 8
+(mobile layout) is also done — see the out-of-hours plan doc for detail.
 
-Full suite green as of group 6: api 294 tests × 3 TZs (the already-documented
-`concurrency.test.ts` flake recurred three more times this session, every
-time right after a new test file was added, every time gone on immediate
-rerun — see LATER), web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint at the
-same 48-problem web baseline (api: 0 errors, 6 pre-existing warnings), build
-succeeds.
+Full suite green as of group 7: api 328 tests × 3 TZs (the already-documented
+`concurrency.test.ts` flake recurred a fifth time this session, again right
+after a new test file was added, again gone on immediate rerun — see LATER),
+web 54 tests × 3 TZs, e2e 19/19, tsc clean, lint at the same 48-problem web
+baseline (api: 0 errors, 6 pre-existing warnings), build succeeds.
 
 *(Keep this line updated after every commit or checkpoint.)*
 
@@ -185,7 +184,7 @@ before continuing.
 | 4 Customer upsert | **done** | commit 11 continued: `findOrCreateCustomer` in `booking.service.ts` — the public path no longer overwrites an existing customer's name/email (only creates when new); the owner/staff path keeps the old upsert-with-update behaviour (deliberate, matches the wizard's autofill UI) |
 | 5 Serialization errors | **done early** (verify when reached) | `d6b9441` retry + concurrency tests; hardened by `742acb6` (re-reads inside tx, narrow policy), `d08f231` (hard time cap; exhaustion is now **503 `BOOKING_BUSY` + Retry-After**, not 409) |
 | 6 Rate limiting / JSON errors | **done** | commit 11 continued: `publicReadLimiter` (100/15min: shop info, slots) + `publicWriteLimiter` (20/15min: book, cancel) in `api/src/middleware/rateLimiter.ts`, wired in `public.routes.ts`; `refreshLimiter` replaces `authLimiter` on `/auth/refresh` (60/15min, skipped entirely with no refresh cookie) fixing the shared-IP lockout finding below; `ErrorHandler` now respects a plain error's `status`/`statusCode` in the 4xx range (never 5xx, to avoid leaking internals), which also turns a malformed JSON body from a 500 into a clean 400 |
-| 7 Validation | not started | — |
+| 7 Validation | **done** | commit 11 continued, 3 commits: (1) name ≤100 / notes ≤1000 / phone format (`isPlausiblePhone`, lenient by design) / staffId type / email length on the public and owner booking bodies and customer PATCH, shared via new `validators/common.ts`, plus `PATCH /user/me`'s previously-unvalidated `name`; (2) every query/body "token" (verify-email, verify-email-change, reset-password, cancel) now checked `isString()`, not just `notEmpty()` — an array-shaped token used to reach Prisma and come back as a 500, now a clean 400; (3) the 5 routes with no validation chain at all now have one (shopId/memberId), plus their first HTTP-level test coverage. A repo-wide gap the audit found (every path-param id validated `.notEmpty()` only, never checked against the cuid shape Prisma generates) is **not** fixed — logged in LATER, not currently exploitable |
 | 8 Slugs | not started | — (note: `updateShop` already ignores `slug`; must become a 400 before deploy) |
 | 9 Ops/env | not started | — |
 | 10 GDPR | not started | — |
@@ -450,11 +449,24 @@ npm run e2e                                                     # from repo root
   input is now capped at the window (commit 6); the public page already was.
   Remaining: nothing user-visible. (Closed.)
 
+- **The `notEmpty()`-only path-param id gap (group 7 audit finding)**: every
+  `:shopId`/`:bookingId`/`:memberId`/`:serviceId`/`:customerId`/`:scheduleId`/
+  `:inviteId`/`:userShopId` param, across every validator file, is checked
+  with `.notEmpty()` only — never checked against the cuid shape Prisma
+  actually generates (`@default(cuid())` on every model). Not currently
+  exploitable: every one of these lookups is additionally scoped by the
+  authenticated caller's shop/user membership, so a malformed id just 404s
+  instead of leaking anything. A shared `isCuid()`-style helper threaded
+  through all ~15 validator files would close it in one pass if it's ever
+  prioritized — logged here rather than done as part of group 7, since it
+  didn't meet the triage bar (no double booking / data leak / data loss /
+  blocked daily use).
+
 - **A fourth intermittent failure**: `concurrency.test.ts` "non-conflicting
   bookings for different providers/slots all succeed" failed once (UTC, full
   suite, while finishing out-of-hours commit 2); passed on every rerun. That test
   expects six 201s, so a failure means a valid booking was rejected (409/503),
-  not a double booking. No body captured — unclassified. **Recurred three
+  not a double booking. No body captured — unclassified. **Recurred four
   times more**, every time immediately after adding a new (unrelated) test
   file to the suite, and every time passed on the very next run: (1)
   America/New York, full `test:tz`, finishing commit 11's group 3 remainder
@@ -462,11 +474,12 @@ npm run e2e                                                     # from repo root
   full `test:tz`, right after adding `customerUpsert.test.ts` (commit 11's
   group 4); (3) UTC again, full `test:tz`, right after adding
   `errorHandler.test.ts` + `publicRateLimiter.test.ts` (commit 11's group 6 —
-  rate limiting and error handling, again nothing touching the concurrency
-  path). All three passed immediately on rerun, in isolation and as part of
-  the full suite. Still unclassified, no body captured any time. The
-  correlation with "a new test file just got added" across all four
-  occurrences may be a clue (e.g. a first-run cost — connection pool
+  rate limiting and error handling); (4) UTC again, full `test:tz`, right
+  after adding `tokenValidation.test.ts` (commit 11's group 7, part 2 — again
+  nothing touching the concurrency path). All four passed immediately on
+  rerun, in isolation and as part of the full suite. Still unclassified, no
+  body captured any time. The correlation with "a new test file just got
+  added" across all five occurrences may be a clue (e.g. a first-run cost — connection pool
   warm-up, query planner cache — under the full suite's load) rather than
   pure chance; worth a look if it recurs again, but not launch-blocking.
 - **Intermittent API test failures under full-suite load** (3 in ~20 full runs
