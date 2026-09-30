@@ -408,6 +408,10 @@ export interface OwnerSlotInfo extends SlotInfo {
   outsideHours: boolean;
   past: boolean;
   reason?: OutsideReason;
+  // An in-hours start that is not on the shop's own slot grid (only possible
+  // when the caller asked for a finer intervalMinutes): booking it is a
+  // 'custom time' exception.
+  offGrid?: boolean;
 }
 
 export type SlotsResult =
@@ -422,7 +426,7 @@ export const getAvailableSlots = async (
   context: BookingContext = 'public',
   // Authenticated owner/staff view only: also list out-of-hours times. The
   // public route never passes this.
-  options: { includeOutsideHours?: boolean } = {},
+  options: { includeOutsideHours?: boolean; intervalMinutes?: number } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
   // 1. Get the day's working hours. `date` is a calendar date in the shop's
@@ -486,15 +490,23 @@ export const getAvailableSlots = async (
     // closed day (or a provider's day off) there are no in-hours slots and the
     // grid is sized from the shop's regular hours for that weekday.
     const now = new Date();
+    // The caller may look at a finer (or coarser) grid than the shop's own,
+    // for this one booking; times off the shop grid are flagged.
+    const step = options.intervalMinutes ?? slotIntervalMinutes;
     const inHours = hours
-      ? buildSlotCandidates(
-          date,
-          zone,
-          hours,
-          service.duration,
-          slotIntervalMinutes,
-        )
+      ? buildSlotCandidates(date, zone, hours, service.duration, step)
       : [];
+    const shopGridTimes = new Set(
+      hours && step !== slotIntervalMinutes
+        ? buildSlotCandidates(
+            date,
+            zone,
+            hours,
+            service.duration,
+            slotIntervalMinutes,
+          ).map((c) => c.time)
+        : inHours.map((c) => c.time),
+    );
     const closedDayRanges = hours
       ? []
       : ((await loadShopRegularHours(prisma, shopId, date)) ?? [
@@ -506,7 +518,7 @@ export const getAvailableSlots = async (
       hours ?? [],
       closedDayRanges,
       service.duration,
-      slotIntervalMinutes,
+      step,
     );
     const all = [
       ...inHours.map((c) => ({
@@ -521,6 +533,8 @@ export const getAvailableSlots = async (
       outsideHours: c.reason !== undefined,
       past: c.start < now,
       ...(c.reason && { reason: c.reason }),
+      ...(c.reason === undefined &&
+        !shopGridTimes.has(c.time) && { offGrid: true }),
     }));
     return hours ? { status: 'ok', slots } : { status: 'closed', slots };
   }

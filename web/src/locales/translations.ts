@@ -774,6 +774,7 @@ export interface Translations {
       confirm: string;
       cancel: string;
     };
+    intervalPicker: { label: string; option: string; offGrid: string; panelTitle: string; confirmButton: string };
     outsideHours: {
       toggle: string;
       workingHours: string;
@@ -1605,6 +1606,7 @@ home: {
         confirm: 'Κράτηση παρ’ όλα αυτά',
         cancel: 'Άκυρο',
       },
+      intervalPicker: { label: 'Βήμα ώρας', option: '{n} λεπτά', offGrid: 'προσαρμοσμένη ώρα', panelTitle: 'Προσαρμοσμένη ώρα', confirmButton: 'Κράτηση σε αυτή την ώρα' },
       outsideHours: {
         toggle: 'Εμφάνιση ωρών εκτός ωραρίου',
         workingHours: 'Ώρες λειτουργίας',
@@ -2441,6 +2443,7 @@ home: {
         confirm: 'Book anyway',
         cancel: 'Cancel',
       },
+      intervalPicker: { label: 'Time step', option: '{n} min', offGrid: 'custom time', panelTitle: 'Custom time', confirmButton: 'Book this time' },
       outsideHours: {
         toggle: 'Show times outside working hours',
         workingHours: 'Working hours',

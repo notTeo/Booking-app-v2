@@ -65,6 +65,9 @@ export const getAvailableSlots = async (
       {
         includeOutsideHours:
           String(req.query['includeOutsideHours']) === 'true',
+        intervalMinutes: req.query['intervalMinutes']
+          ? Number(req.query['intervalMinutes'])
+          : undefined,
       },
     );
     successResponse(res, slots);

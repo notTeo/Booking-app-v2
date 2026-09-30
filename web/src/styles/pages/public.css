@@ -716,6 +716,19 @@
   cursor: pointer;
 }
 
+.interval-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Off the shop's own grid (a finer step was picked): dashed, and named in the aria-label. */
+.public-slot-btn--offgrid {
+  border-style: dashed;
+}
+
 .slot-section {
   margin-top: 12px;
 }

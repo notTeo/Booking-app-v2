@@ -48,6 +48,9 @@ export interface UseBookingWizardResult {
   handleSelectMember: (memberId: string | null) => void;
   handleDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   goBack: () => void;
+  /** Owner wizard only: slot step for THIS booking (null = the shop's own interval). */
+  intervalMinutes: number | null;
+  handleIntervalChange: (minutes: number | null) => void;
 }
 
 export function useBookingWizard({
@@ -70,6 +73,7 @@ export function useBookingWizard({
   const [date, setDate] = useState(initialDate ?? '');
   const [time, setTime] = useState('');
   const [slots, setSlots] = useState<SlotsResponse>(NO_SLOTS);
+  const [intervalMinutes, setIntervalMinutes] = useState<number | null>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -90,10 +94,15 @@ export function useBookingWizard({
     ? bookableMembers.filter((m) => m.staffServices.some((ss) => ss.service.id === selectedServiceId))
     : bookableMembers;
 
-  function fetchSlots(targetDate: string, memberId: string | null, serviceId: string) {
+  function fetchSlots(
+    targetDate: string,
+    memberId: string | null,
+    serviceId: string,
+    interval: number | null = intervalMinutes,
+  ) {
     const request =
       internal && shopId
-        ? getOwnerSlots(shopId, targetDate, memberId, serviceId)
+        ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined)
         : getPublicSlots(slug, targetDate, memberId, serviceId);
     request
       .then(setSlots)
@@ -128,6 +137,12 @@ export function useBookingWizard({
     setTime('');
     if (!selectedServiceId) return;
     fetchSlots(newDate, selectedMemberId, selectedServiceId);
+  }
+
+  function handleIntervalChange(minutes: number | null) {
+    setIntervalMinutes(minutes);
+    setTime('');
+    if (date && selectedServiceId) fetchSlots(date, selectedMemberId, selectedServiceId, minutes);
   }
 
   function goBack() {
@@ -167,5 +182,7 @@ export function useBookingWizard({
     handleSelectMember,
     handleDateChange,
     goBack,
+    intervalMinutes,
+    handleIntervalChange,
   };
 }

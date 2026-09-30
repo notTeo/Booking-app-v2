@@ -32,6 +32,7 @@ export function anticipatedRuleCodes(slots: SlotsResponse, time: string): Bookin
   if (slot.reason === 'CLOSED_DAY') codes.push('SHOP_CLOSED');
   else if (slot.outsideHours) codes.push('OUTSIDE_OPENING_HOURS');
   if (slot.past) codes.push('BOOKING_IN_PAST');
+  if (slot.offGrid) codes.push('OFF_SLOT_GRID');
   return codes;
 }
 

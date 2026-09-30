@@ -1,6 +1,7 @@
 import { body, param, query } from 'express-validator';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { OVERRIDABLE_RULE_CODES } from '../services/bookingRules.service';
+import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
 import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
 
 const validStatuses = Object.values(BookingStatus);
@@ -94,6 +95,15 @@ export const ownerSlotsValidation = [
     .isBoolean()
     .withMessage('includeOutsideHours must be true or false')
     .toBoolean(),
+  // Owner/staff only: look at a finer or coarser grid for this one booking.
+  query('intervalMinutes')
+    .optional()
+    .isInt()
+    .toInt()
+    .isIn(SLOT_INTERVAL_OPTIONS)
+    .withMessage(
+      `intervalMinutes must be one of ${SLOT_INTERVAL_OPTIONS.join(', ')}`,
+    ),
 ];
 
 export const ownerCreateBookingValidation = [

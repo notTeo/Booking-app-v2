@@ -114,6 +114,8 @@ export interface SlotInfo {
   outsideHours?: boolean;
   past?: boolean;
   reason?: OutsideReason;
+  /** In hours but not on the shop's own slot grid (a finer interval was requested). */
+  offGrid?: boolean;
 }
 
 export type SlotsResponse =

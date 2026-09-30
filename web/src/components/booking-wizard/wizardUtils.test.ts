@@ -70,6 +70,15 @@ describe("anticipatedRuleCodes (what the last step will ask the owner to accept)
     slots,
   });
 
+  it("a slot off the shop's own grid (finer interval) asks for OFF_SLOT_GRID", () => {
+    expect(
+      anticipatedRuleCodes(
+        ok(slot("10:15", { outsideHours: false, past: false, offGrid: true })),
+        "10:15",
+      ),
+    ).toEqual(["OFF_SLOT_GRID"]);
+  });
+
   it("an ordinary in-hours slot needs nothing", () => {
     expect(
       anticipatedRuleCodes(

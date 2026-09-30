@@ -18,6 +18,8 @@ import OwnerCustomerFormStep, { type OwnerCustomerFormValues } from './OwnerCust
 import { shiftDate, todayInZone } from '../../utils/shopTime';
 import { anticipatedRuleCodes, buildISODateTime } from './wizardUtils';
 
+const SLOT_INTERVAL_OPTIONS = [10, 15, 20, 30] as const;
+
 export default function OwnerBookingWizard({
   shopId,
   slug,
@@ -160,6 +162,9 @@ export default function OwnerBookingWizard({
           // Owners may log past bookings; the advance window is never overridable.
           maxDate={shiftDate(todayInZone(wizard.shop.timezone), wizard.shop.maxAdvanceDays)}
           mode="internal"
+          interval={wizard.intervalMinutes ?? wizard.shop.slotIntervalMinutes}
+          intervalOptions={SLOT_INTERVAL_OPTIONS}
+          onIntervalChange={wizard.handleIntervalChange}
           closedLinkTo={
             wizard.selectedMemberId
               ? `/shops/${slug}/team/${wizard.selectedMemberId}`

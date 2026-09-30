@@ -72,10 +72,11 @@ export const getOwnerSlots = (
   date: string,
   staffId: string | null,
   serviceId: string,
+  intervalMinutes?: number,
 ) =>
   client
     .get(`${base(shopId)}/slots`, {
-      params: { date, staffId, serviceId, includeOutsideHours: true },
+      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes },
     })
     .then((r) => r.data.data as SlotsResponse);
 

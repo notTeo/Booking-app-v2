@@ -26,6 +26,9 @@ export default function DateTimeStep({
   mode,
   closedLinkTo,
   defaultShowOutside,
+  interval,
+  intervalOptions,
+  onIntervalChange,
   onDateChange,
   onSelectTime,
   onBack,
@@ -45,6 +48,11 @@ export default function DateTimeStep({
   closedLinkTo?: string;
   /** Internal mode only — start with the out-of-hours toggle already on (e.g. the calendar's hatched area was clicked). */
   defaultShowOutside?: boolean;
+  /** Internal mode only — the slot step chosen for this booking (the shop's own interval when nothing was picked). */
+  interval?: number;
+  /** Internal mode only — steps staff can switch between; the picker is hidden when absent. */
+  intervalOptions?: readonly number[];
+  onIntervalChange?: (minutes: number) => void;
   onDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectTime: (time: string) => void;
   onBack: () => void;
@@ -79,6 +87,7 @@ export default function DateTimeStep({
   const slotLabel = (slot: SlotInfo) => {
     const parts = [slot.time];
     if (slot.outsideHours) parts.push(os.slotAria);
+    if (slot.offGrid) parts.push(t.bookings.intervalPicker.offGrid);
     if (!slot.available) parts.push(os.booked);
     if (slot.past) parts.push(os.past);
     return parts.join(', ');
@@ -91,10 +100,10 @@ export default function DateTimeStep({
   const renderSlot = (slot: SlotInfo) => (
     <button
       key={slot.time}
-      className={`public-slot-btn${time === slot.time ? ' public-slot-btn--selected' : ''}${!slot.available ? ' public-slot-btn--disabled' : ''}${slot.outsideHours ? ' public-slot-btn--outside' : ''}`}
+      className={`public-slot-btn${time === slot.time ? ' public-slot-btn--selected' : ''}${!slot.available ? ' public-slot-btn--disabled' : ''}${slot.outsideHours ? ' public-slot-btn--outside' : ''}${slot.offGrid ? ' public-slot-btn--offgrid' : ''}`}
       onClick={() => pickSlot(slot)}
       disabled={internal && !slot.available}
-      aria-label={internal && (slot.outsideHours || !slot.available || slot.past) ? slotLabel(slot) : undefined}
+      aria-label={internal && (slot.outsideHours || slot.offGrid || !slot.available || slot.past) ? slotLabel(slot) : undefined}
     >
       {slot.outsideHours && <span aria-hidden="true">☾ </span>}
       {slot.time}
@@ -148,6 +157,23 @@ export default function DateTimeStep({
           max={maxDate}
         />
       </div>
+
+      {internal && date !== '' && intervalOptions && interval !== undefined && onIntervalChange && (
+        <div className="interval-picker" role="group" aria-label={t.bookings.intervalPicker.label}>
+          <span className="public-field-label">{t.bookings.intervalPicker.label}</span>
+          {intervalOptions.map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={interval === m}
+              className={`public-slot-btn${interval === m ? ' public-slot-btn--selected' : ''}`}
+              onClick={() => interval !== m && onIntervalChange(m)}
+            >
+              {t.bookings.intervalPicker.option.replace('{n}', String(m))}
+            </button>
+          ))}
+        </div>
+      )}
 
       {internal && date !== '' && (hasOutsideSlots || isClosed) && (
         <label className="ooh-toggle">

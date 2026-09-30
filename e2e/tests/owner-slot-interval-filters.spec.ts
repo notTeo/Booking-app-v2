@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
 import { query } from '../support/db';
-import { addDays, athensDate } from '../support/dates';
+import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
 /**
  * Per-shop slot interval (Shop settings) and the calendar filter bar.
@@ -64,4 +64,49 @@ test('a 15-minute interval offers :15 starts, and the calendar filter bar hides 
   await expect(block).toBeVisible();
   await page.locator('#cal-filter-staff').selectOption({ label: 'E2E Owner' });
   await expect(block).toBeVisible();
+});
+
+test('the "Time step" buttons in the staff wizard offer 10-minute starts for one booking, saved as a custom time', async ({
+  page,
+  context,
+}) => {
+  await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
+  const date = addDays(athensDate(), 5);
+  // the first test in this file left the shop on 15 minutes until afterAll
+  await query('update "Shop" set "slotIntervalMinutes" = 30 where id = $1', ['s1']);
+
+  await page.goto('/login');
+  await page.locator('#email').fill(E2E.owner.email);
+  await page.locator('#password').fill(E2E.owner.password);
+  await page.locator('button[type=submit]').click();
+  await page.waitForURL('**/dashboard');
+
+  await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
+  await page.locator('.public-service-card--selectable').first().click();
+  await page.locator('.public-team-card--selectable').first().click();
+  await page.locator('#booking-date').fill(date);
+
+  // default: the shop's 30-minute grid, no :10 start
+  await expect(page.locator('.public-slot-btn', { hasText: /^10:30$/ })).toBeVisible();
+  await expect(page.locator('.public-slot-btn', { hasText: /^10:10$/ })).toHaveCount(0);
+
+  await page.getByRole('button', { name: '10 min', exact: true }).click();
+  await page.getByRole('button', { name: /^10:10/ }).click();
+  await page.getByRole('button', { name: /continue/i }).click();
+
+  await page.locator('#b-name').fill('Ten Minute');
+  await page.locator('#b-phone').fill('6922222222');
+  await page.waitForTimeout(600);
+  await expect(page.locator('.ooh-panel')).toContainText(/custom time/i);
+  await page.getByRole('button', { name: 'Book this time' }).click();
+  await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
+
+  const rows = await query<{ startTime: Date; overriddenRules: string[] }>(
+    'select "startTime", "overriddenRules" from "Booking" order by "createdAt" desc limit 1',
+  );
+  expect(rows[0].startTime.toISOString()).toBe(athensWallClockToUtc(date, '10:10').toISOString());
+  expect(rows[0].overriddenRules).toEqual(['OFF_SLOT_GRID']);
+
+  // the shop's own setting was not touched
+  expect((await query('select "slotIntervalMinutes" as n from "Shop" where id = $1', ['s1']))[0].n).toBe(30);
 });

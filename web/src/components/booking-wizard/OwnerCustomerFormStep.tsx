@@ -41,6 +41,10 @@ export default function OwnerCustomerFormStep({
 }) {
   const { t } = useLang();
 
+  // A time that is only off the shop's slot grid is a "custom time", not an
+  // out-of-hours one, so the panel and button say that instead.
+  const onlyOffGrid = outsideRules.length > 0 && outsideRules.every((c) => c === 'OFF_SLOT_GRID');
+
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -192,7 +196,7 @@ export default function OwnerCustomerFormStep({
           <div className="ooh-panel" role="note">
             <p className="ooh-panel-title">
               <span aria-hidden="true">☾ </span>
-              {t.bookings.outsideHours.panelTitle}
+              {onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
             </p>
             <p>{outsideRules.map((c) => t.bookings.override[c]).join(' ')}</p>
             <p>{t.bookings.outsideHours.panelBody}</p>
@@ -215,7 +219,9 @@ export default function OwnerCustomerFormStep({
           {submitting
             ? t.bookings.creating
             : outsideRules.length > 0
-              ? t.bookings.outsideHours.confirmButton
+              ? onlyOffGrid
+                ? t.bookings.intervalPicker.confirmButton
+                : t.bookings.outsideHours.confirmButton
               : t.bookings.createBooking}
         </button>
       </div>

@@ -184,3 +184,51 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
     expect(res.body.message).not.toBe('Booking not found');
   });
 });
+
+describe('owner slots: a one-off intervalMinutes for this booking', () => {
+  const slotsAt = async (t: Tenant, interval: number) => {
+    const res = await ownerSlots(
+      t,
+      `staffId=${t.staff.id}&includeOutsideHours=true&intervalMinutes=${interval}`,
+    );
+    return res.body.data.slots as {
+      time: string;
+      offGrid?: boolean;
+      outsideHours: boolean;
+    }[];
+  };
+
+  it('a finer grid lists the extra starts and flags the ones off the shop grid', async () => {
+    const t = await internalOnlyShop(); // shop interval 30, hours 09:00-13:00
+    const inHours = (await slotsAt(t, 15)).filter((s) => !s.outsideHours);
+    expect(inHours.map((s) => s.time).slice(0, 4)).toEqual([
+      '09:00',
+      '09:15',
+      '09:30',
+      '09:45',
+    ]);
+    const flags = Object.fromEntries(inHours.map((s) => [s.time, !!s.offGrid]));
+    expect(flags['09:00']).toBe(false);
+    expect(flags['09:15']).toBe(true);
+    expect(flags['09:30']).toBe(false);
+  });
+
+  it('the shop interval itself flags nothing, and the shop setting is unchanged', async () => {
+    const t = await internalOnlyShop();
+    const inHours = (await slotsAt(t, 30)).filter((s) => !s.outsideHours);
+    expect(inHours.some((s) => s.offGrid)).toBe(false);
+    const shop = await prisma.shop.findUniqueOrThrow({
+      where: { id: t.shop.id },
+    });
+    expect(shop.slotIntervalMinutes).toBe(30);
+  });
+
+  it('rejects an interval that is not one of the allowed options', async () => {
+    const t = await internalOnlyShop();
+    const res = await ownerSlots(
+      t,
+      `staffId=${t.staff.id}&includeOutsideHours=true&intervalMinutes=25`,
+    );
+    expect(res.status).toBe(400);
+  });
+});
