@@ -37,6 +37,24 @@ describe('checkSlug', () => {
     }
   });
 
+  it('reserves the brand, future site sections, generic words and impersonation targets', () => {
+    for (const s of [
+      'bebooked',
+      'be-booked',
+      'security',
+      'demo',
+      'new',
+      'test',
+      'smtp',
+      'google',
+      'stripe',
+    ]) {
+      expect(checkSlug(s)).toBe('reserved');
+    }
+    // Hairology is a real tenant, so it must stay claimable.
+    expect(checkSlug('hairology')).toBeNull();
+  });
+
   it('reserves every static route in web/src/App.tsx', () => {
     const app = readFileSync(
       join(__dirname, '../../../web/src/App.tsx'),
