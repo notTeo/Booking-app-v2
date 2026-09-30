@@ -111,19 +111,29 @@
   color: var(--text-muted);
 }
 
-/* ---- Card actions ---- */
+/* ---- Card actions — footer bar: Edit + Staff left, Delete pushed right ---- */
 .service-card-actions {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  padding: 0.65rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--text) 2%, var(--bg-card));
+}
+
+.service-card-actions .service-delete-btn,
+.service-card-actions .service-confirm-delete {
+  margin-left: auto;
 }
 
 .service-action-btn {
   width: auto !important;
   font-size: 0.82rem;
-  padding: 0.3rem 0.7rem;
+  padding: 0.4rem 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .service-icon-btn {

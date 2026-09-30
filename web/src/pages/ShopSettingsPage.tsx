@@ -10,7 +10,6 @@ import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore,
-  faGear,
   faLink,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
@@ -184,12 +183,22 @@ export default function ShopSettingsPage() {
       </div>
 
       <form onSubmit={handleSave}>
-        {/* Shop Details — general info + contact & location */}
+        {/* Shop Details + Configuration — one card, one Save */}
         <div className="settings-section shop-settings-section">
-          <p className="settings-section-title">
-            <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
-            {t.shopSettings.shopDetails}
-          </p>
+          <div className="settings-section-header">
+            <div>
+              <p className="settings-section-title">
+                <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
+                {t.shopSettings.shopDetails}
+              </p>
+              <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
+            </div>
+            <button className="btn btn-primary" type="submit" disabled={saveLoading}>
+              {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
+            </button>
+          </div>
+          {saveError && <div className="alert alert-error">{saveError}</div>}
+          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
           <div className="form-group">
             <label htmlFor="detail-name">{t.shops.name}</label>
             <input id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -267,14 +276,6 @@ export default function ShopSettingsPage() {
             </select>
             <small className="form-hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
-        </div>
-
-        {/* Configuration */}
-        <div className="settings-section shop-settings-section">
-          <p className="settings-section-title">
-            <FontAwesomeIcon icon={faGear} className="settings-section-icon" />
-            {t.shopSettings.configuration}
-          </p>
           <div className="shop-active-row">
             <div className="shop-active-label">
               <label htmlFor="detail-active" className="shop-active-name">{t.shopSettings.activeLabel}</label>
@@ -282,11 +283,6 @@ export default function ShopSettingsPage() {
             </div>
             <Switch id="detail-active" checked={isActive} onChange={setIsActive} label={t.shopSettings.activeLabel} />
           </div>
-          {saveError && <div className="alert alert-error">{saveError}</div>}
-          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
-          <button className="btn btn-primary" type="submit" disabled={saveLoading}>
-            {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
-          </button>
         </div>
       </form>
 

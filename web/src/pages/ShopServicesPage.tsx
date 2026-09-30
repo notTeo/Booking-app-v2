@@ -16,7 +16,7 @@ import { getMembers, type TeamMember } from '../api/team.api';
 import Switch from '../components/Switch';
 import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
 
 // ── helpers ────────────────────────────────────────────────
@@ -364,64 +364,61 @@ export default function ShopServicesPage() {
                       </div>
                     </div>
 
-                    {isOwner && (
-                      <div className="service-card-actions">
-                        <button
-                          className="btn btn-ghost service-action-btn service-icon-btn"
-                          onClick={() => {
-                            closeStaffPanel();
-                            setEditingId(service.id);
-                            setEditForm(serviceToForm(service));
-                            setEditError('');
-                          }}
-                          aria-label={t.services.edit}
-                          title={t.services.edit}
-                        >
-                          <FontAwesomeIcon icon={faPenToSquare} />
-                        </button>
-
-                        <button
-                          className={`btn btn-ghost service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
-                          onClick={() => {
-                            if (staffServiceId === service.id) {
-                              closeStaffPanel();
-                            } else {
-                              openStaffPanel(service.id);
-                            }
-                          }}
-                        >
-                          {t.services.staff}
-                        </button>
-
-                        {confirmDeleteId === service.id ? (
-                          <div className="service-confirm-delete">
-                            <button
-                              className="btn btn-danger service-action-btn"
-                              onClick={() => handleDelete(service.id)}
-                              disabled={deleting}
-                            >
-                              {deleting ? t.services.deleting : t.services.confirmDelete}
-                            </button>
-                            <button
-                              className="btn btn-ghost service-action-btn"
-                              onClick={() => setConfirmDeleteId(null)}
-                            >
-                              {t.services.cancel}
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            className="btn btn-ghost service-action-btn service-delete-btn service-icon-btn"
-                            onClick={() => setConfirmDeleteId(service.id)}
-                            aria-label={t.services.delete}
-                            title={t.services.delete}
-                          >
-                            <FontAwesomeIcon icon={faTrashCan} />
-                          </button>
-                        )}
-                      </div>
-                    )}
                   </div>
+
+                  {isOwner && (
+                    <div className="service-card-actions">
+                      <button
+                        className="btn btn-ghost service-action-btn"
+                        onClick={() => {
+                          closeStaffPanel();
+                          setEditingId(service.id);
+                          setEditForm(serviceToForm(service));
+                          setEditError('');
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faPenToSquare} /> {t.services.edit}
+                      </button>
+
+                      <button
+                        className={`btn btn-ghost service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
+                        onClick={() => {
+                          if (staffServiceId === service.id) {
+                            closeStaffPanel();
+                          } else {
+                            openStaffPanel(service.id);
+                          }
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
+                      </button>
+
+                      {confirmDeleteId === service.id ? (
+                        <div className="service-confirm-delete">
+                          <button
+                            className="btn btn-danger service-action-btn"
+                            onClick={() => handleDelete(service.id)}
+                            disabled={deleting}
+                          >
+                            {deleting ? t.services.deleting : t.services.confirmDelete}
+                          </button>
+                          <button
+                            className="btn btn-ghost service-action-btn"
+                            onClick={() => setConfirmDeleteId(null)}
+                          >
+                            {t.services.cancel}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className="btn btn-ghost service-action-btn service-delete-btn"
+                          onClick={() => setConfirmDeleteId(service.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Staff panel */}
                   {staffServiceId === service.id && (

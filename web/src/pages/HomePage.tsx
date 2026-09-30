@@ -141,7 +141,8 @@ function HeroHeadline({ text }: { text: string }) {
   if (after === undefined) return <>{text}</>;
   return (
     <>
-      {before}
+      {before.trimEnd()}
+      <br />
       <span className="hero-brand">
         <span className="hero-brand-be-slot">
           <span className="hero-brand-be">Be</span>

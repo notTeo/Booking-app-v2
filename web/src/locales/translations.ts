@@ -620,6 +620,7 @@ export interface Translations {
     activeLabel: string;
     activeDesc: string;
     saveChanges: string;
+    saveHint: string;
     saving: string;
     backToShop: string;
     created: string;
@@ -1439,6 +1440,7 @@ home: {
       activeLabel: 'Ενεργό',
       activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
       saveChanges: 'Αποθήκευση Αλλαγών',
+      saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
       saving: 'Αποθήκευση...',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
@@ -2276,6 +2278,7 @@ home: {
       activeLabel: 'Active',
       activeDesc: "When inactive, your shop won't accept new bookings.",
       saveChanges: 'Save Changes',
+      saveHint: 'Shop details and settings below are saved together.',
       saving: 'Saving...',
       backToShop: '← Back to Shop',
       created: 'Created',

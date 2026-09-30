@@ -402,6 +402,7 @@
    back and turns orange while "Booked" bobs. Ends in the final state, so
    reduced motion simply shows that. */
 .hero-brand {
+  white-space: nowrap; /* keep "Be Booked" together on its own line */
   font-family: var(--font-logo);
   font-weight: 400;
   letter-spacing: 0;
