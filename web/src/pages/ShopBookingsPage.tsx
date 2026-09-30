@@ -15,7 +15,15 @@ import {
 import { getMembers, type TeamMember } from '../api/team.api';
 import { getDaySchedule, type DaySchedule } from '../api/workingHours.api';
 import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
-import { blockGeometry, computeVisibleRange, offSegments, overrideTags, type OverrideTag } from './calendarModel';
+import {
+  blockGeometry,
+  computeVisibleRange,
+  filterBookings,
+  hasActiveFilters,
+  offSegments,
+  overrideTags,
+  type OverrideTag,
+} from './calendarModel';
 import '../styles/pages/bookings.css';
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -56,6 +64,7 @@ export default function ShopBookingsPage() {
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
   const isOwner = shop?.role === 'owner';
+  const slotStep = shop?.slotIntervalMinutes ?? 30;
 
   const [bookings, setBookings]               = useState<Booking[]>([]);
   const [members, setMembers]                 = useState<TeamMember[]>([]);
@@ -72,6 +81,13 @@ export default function ShopBookingsPage() {
   const [updatingId, setUpdatingId]           = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting]               = useState(false);
+
+  // Filter bar. Status/service hide blocks, staff hides columns. The service is
+  // stored with its name so it stays selectable after moving to a day where no
+  // booking has that service.
+  const [statusFilter, setStatusFilter]       = useState<Set<BookingStatus>>(new Set());
+  const [staffFilter, setStaffFilter]         = useState<string | null>(null);
+  const [serviceFilter, setServiceFilter]     = useState<{ id: string; name: string } | null>(null);
 
   // Latest-request-wins: a slow response for a day the user has already left
   // (or the duplicate effect run in StrictMode) must never replace the bookings
@@ -167,12 +183,23 @@ export default function ShopBookingsPage() {
   const memberIds = new Set(members.map(m => m.id));
   const hasOtherBookings = bookings.some(b => !memberIds.has(b.staffId));
 
-  const columns = [
+  const allColumns = [
     ...members.map(m => ({ id: m.id, label: m.name, isOther: false })),
     ...(hasOtherBookings ? [{ id: OTHER_COLUMN_ID, label: t.bookings.calendar.otherColumn, isOther: true }] : []),
   ];
+  const columns = staffFilter ? allColumns.filter(c => c.id === staffFilter) : allColumns;
 
-  const bookingsByStaff = bookings.reduce<Record<string, Booking[]>>((acc, b) => {
+  const filters = { statuses: statusFilter, staffId: staffFilter, serviceId: serviceFilter?.id ?? null };
+  const filtersActive = hasActiveFilters(filters);
+  // Only blocks are filtered: the visible hour range and the "outside range"
+  // banner below still use every booking, so the grid does not jump around.
+  const shownBookings = filterBookings(bookings, filters);
+
+  const serviceOptions = new Map<string, string>();
+  for (const b of bookings) serviceOptions.set(b.serviceId, b.service.name);
+  if (serviceFilter && !serviceOptions.has(serviceFilter.id)) serviceOptions.set(serviceFilter.id, serviceFilter.name);
+
+  const bookingsByStaff = shownBookings.reduce<Record<string, Booking[]>>((acc, b) => {
     const key = memberIds.has(b.staffId) ? b.staffId : OTHER_COLUMN_ID;
     acc[key] = [...(acc[key] ?? []), b];
     return acc;
@@ -212,7 +239,16 @@ export default function ShopBookingsPage() {
     ]),
   );
 
+  const shownCount = columns.reduce((n, c) => n + (bookingsByStaff[c.id]?.length ?? 0), 0);
+
   const columnIds = columns.map(c => c.id).join(',');
+
+  // A filter can hide the booking whose detail panel is open — close it.
+  useEffect(() => {
+    if (!selectedBooking) return;
+    const visible = columns.some(c => (bookingsByStaff[c.id] ?? []).some(b => b.id === selectedBooking.id));
+    if (!visible) setSelectedBooking(null);
+  }, [statusFilter, staffFilter, serviceFilter]);
 
   // Phone layout: highlight whichever provider's column the scroll-snap has
   // brought into view, so its chip lights up (the scroll-snapping itself is
@@ -289,6 +325,77 @@ export default function ShopBookingsPage() {
             <FontAwesomeIcon icon={faChevronRight} />
           </button>
         </div>
+      </div>
+
+      {/* ── Filter bar ── */}
+      <div className="cal-filters">
+        <div className="cal-filters-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
+          {ALL_STATUSES.map(s => {
+            const active = statusFilter.has(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={active}
+                className={`cal-status-btn cal-status-btn--${s.toLowerCase()}${active ? ' cal-status-btn--active' : ''}`}
+                onClick={() =>
+                  setStatusFilter(prev => {
+                    const next = new Set(prev);
+                    if (next.has(s)) next.delete(s); else next.add(s);
+                    return next;
+                  })
+                }
+              >
+                {t.bookings.filters.status[s]}
+              </button>
+            );
+          })}
+        </div>
+        <label htmlFor="cal-filter-staff" className="visually-hidden">{t.bookings.filters.staffLabel}</label>
+        <select
+          id="cal-filter-staff"
+          className="cal-filter-select"
+          value={staffFilter ?? ''}
+          onChange={e => setStaffFilter(e.target.value || null)}
+        >
+          <option value="">{t.bookings.filters.allStaff}</option>
+          {allColumns.map(c => (
+            <option key={c.id} value={c.id}>{c.label}</option>
+          ))}
+        </select>
+        <label htmlFor="cal-filter-service" className="visually-hidden">{t.bookings.filters.serviceLabel}</label>
+        <select
+          id="cal-filter-service"
+          className="cal-filter-select"
+          value={serviceFilter?.id ?? ''}
+          onChange={e => {
+            const id = e.target.value;
+            setServiceFilter(id ? { id, name: serviceOptions.get(id) ?? '' } : null);
+          }}
+        >
+          <option value="">{t.bookings.filters.allServices}</option>
+          {[...serviceOptions].map(([id, name]) => (
+            <option key={id} value={id}>{name}</option>
+          ))}
+        </select>
+        {filtersActive && (
+          <>
+            <span className="cal-filters-count">
+              {t.bookings.filters.showing.replace('{shown}', String(shownCount)).replace('{total}', String(bookings.length))}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost cal-filters-clear"
+              onClick={() => {
+                setStatusFilter(new Set());
+                setStaffFilter(null);
+                setServiceFilter(null);
+              }}
+            >
+              {t.bookings.filters.clear}
+            </button>
+          </>
+        )}
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -469,7 +576,7 @@ export default function ShopBookingsPage() {
                         const rect = e.currentTarget.getBoundingClientRect();
                         const y = e.clientY - rect.top;
                         const rawMinutes = range.start + y / PX_PER_MIN;
-                        const rounded = Math.max(range.start, Math.round(rawMinutes / 30) * 30);
+                        const rounded = Math.max(range.start, Math.round(rawMinutes / slotStep) * slotStep);
                         const showOutside = offs.some(s => rounded >= s.from && rounded < s.to);
                         openCreateSlot(col.id, toHHMM(rounded), showOutside);
                       } : undefined}

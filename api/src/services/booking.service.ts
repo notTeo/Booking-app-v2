@@ -275,6 +275,7 @@ export const createBooking = async (
       shopId: shop.id,
       timezone: shop.timezone,
       maxAdvanceDays: shop.maxAdvanceDays,
+      slotIntervalMinutes: shop.slotIntervalMinutes,
       scheduleStaffId: data.staffId ? staff.id : null,
       startTime,
       endTime,
@@ -343,13 +344,18 @@ export const createBookingForShop = async (
     // skipped.
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
-      select: { timezone: true, maxAdvanceDays: true },
+      select: {
+        timezone: true,
+        maxAdvanceDays: true,
+        slotIntervalMinutes: true,
+      },
     });
     const overriddenRules = await assertBookingRules({
       db: tx,
       shopId,
       timezone: shop.timezone,
       maxAdvanceDays: shop.maxAdvanceDays,
+      slotIntervalMinutes: shop.slotIntervalMinutes,
       scheduleStaffId: data.staffId ? staff.id : null,
       startTime,
       endTime,
@@ -375,13 +381,17 @@ export const createBookingForShop = async (
 };
 
 // The shop's IANA timezone — every wall-clock <-> UTC conversion uses it.
-const getShopTimezone = async (shopId: string) => {
+const getShopTimezone = async (shopId: string) =>
+  (await getShopTimeSettings(shopId)).timezone;
+
+// Timezone plus the slot grid step, for callers that build slot grids.
+const getShopTimeSettings = async (shopId: string) => {
   const shop = await prisma.shop.findUnique({
     where: { id: shopId },
-    select: { timezone: true },
+    select: { timezone: true, slotIntervalMinutes: true },
   });
   if (!shop) throw new AppError(404, 'Shop not found');
-  return shop.timezone;
+  return shop;
 };
 
 // ── Slots ───────────────────────────────────────
@@ -449,7 +459,8 @@ export const getAvailableSlots = async (
   if (!service)
     return withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
 
-  const zone = await getShopTimezone(shopId);
+  const { timezone: zone, slotIntervalMinutes } =
+    await getShopTimeSettings(shopId);
 
   // 3. Bookings that overlap the shop-local day for this staff member —
   // excluding statuses that don't actually hold the slot (matches the
@@ -476,7 +487,13 @@ export const getAvailableSlots = async (
     // grid is sized from the shop's regular hours for that weekday.
     const now = new Date();
     const inHours = hours
-      ? buildSlotCandidates(date, zone, hours, service.duration)
+      ? buildSlotCandidates(
+          date,
+          zone,
+          hours,
+          service.duration,
+          slotIntervalMinutes,
+        )
       : [];
     const closedDayRanges = hours
       ? []
@@ -489,6 +506,7 @@ export const getAvailableSlots = async (
       hours ?? [],
       closedDayRanges,
       service.duration,
+      slotIntervalMinutes,
     );
     const all = [
       ...inHours.map((c) => ({
@@ -516,6 +534,7 @@ export const getAvailableSlots = async (
     zone,
     hours!,
     service.duration,
+    slotIntervalMinutes,
   ).map((c) => ({ time: c.time, available: isFree(c) }));
 
   return { status: 'ok', slots };
@@ -706,13 +725,18 @@ export const updateBooking = async (
     // describe the booking's CURRENT time, so a reschedule replaces them.
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
-      select: { timezone: true, maxAdvanceDays: true },
+      select: {
+        timezone: true,
+        maxAdvanceDays: true,
+        slotIntervalMinutes: true,
+      },
     });
     const overriddenRules = await assertBookingRules({
       db: tx,
       shopId,
       timezone: shop.timezone,
       maxAdvanceDays: shop.maxAdvanceDays,
+      slotIntervalMinutes: shop.slotIntervalMinutes,
       scheduleStaffId: finalStaffId,
       startTime: finalStartTime,
       endTime: finalEndTime,

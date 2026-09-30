@@ -11,6 +11,7 @@ export interface Shop {
   formattedAddress?: string;
   timezone: string;
   maxAdvanceDays: number;
+  slotIntervalMinutes: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +26,7 @@ export interface CreateShopDto {
   formattedAddress?: string;
   timezone?: string;
   maxAdvanceDays?: number;
+  slotIntervalMinutes?: number;
 }
 export interface UpdateShopDto extends Partial<CreateShopDto> {
   isActive?: boolean;

@@ -1,5 +1,6 @@
 import { body, param } from 'express-validator';
 import { checkSlug, SLUG_MESSAGES } from './slug';
+import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
 
 export const createShopValidation = [
   body('name').notEmpty().withMessage('Name is required').trim(),
@@ -35,6 +36,14 @@ export const createShopValidation = [
     .isInt({ min: 1, max: 730 })
     .withMessage('maxAdvanceDays must be a whole number between 1 and 730')
     .toInt(),
+  body('slotIntervalMinutes')
+    .optional()
+    .isInt()
+    .toInt()
+    .isIn(SLOT_INTERVAL_OPTIONS)
+    .withMessage(
+      `slotIntervalMinutes must be one of ${SLOT_INTERVAL_OPTIONS.join(', ')}`,
+    ),
 ];
 
 export const updateShopValidation = [
@@ -68,6 +77,14 @@ export const updateShopValidation = [
     .isInt({ min: 1, max: 730 })
     .withMessage('maxAdvanceDays must be a whole number between 1 and 730')
     .toInt(),
+  body('slotIntervalMinutes')
+    .optional()
+    .isInt()
+    .toInt()
+    .isIn(SLOT_INTERVAL_OPTIONS)
+    .withMessage(
+      `slotIntervalMinutes must be one of ${SLOT_INTERVAL_OPTIONS.join(', ')}`,
+    ),
   body('isActive')
     .optional()
     .isBoolean()

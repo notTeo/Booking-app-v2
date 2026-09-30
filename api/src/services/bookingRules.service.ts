@@ -90,6 +90,7 @@ interface RuleParams {
   shopId: string;
   timezone: string;
   maxAdvanceDays: number;
+  slotIntervalMinutes: number;
   // null = shop-wide schedule (customer expressed no staff preference)
   scheduleStaffId: string | null;
   startTime: Date;
@@ -133,9 +134,13 @@ export const findBookingViolations = async (
   }
 
   const durationMinutes = (endTime.getTime() - startTime.getTime()) / 60_000;
-  const onGrid = buildSlotCandidates(date, zone, hours, durationMinutes).some(
-    (c) => c.start.getTime() === startTime.getTime(),
-  );
+  const onGrid = buildSlotCandidates(
+    date,
+    zone,
+    hours,
+    durationMinutes,
+    params.slotIntervalMinutes,
+  ).some((c) => c.start.getTime() === startTime.getTime());
   if (onGrid) return violations;
 
   const insideHours = hours.some(

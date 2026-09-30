@@ -95,6 +95,21 @@ describe('buildSlotCandidates', () => {
     expect(c.map((x) => x.time)).toEqual(['09:15', '09:45', '10:15']);
   });
 
+  it.each([
+    [10, ['09:00', '09:10', '09:20', '09:30', '09:40', '09:50']],
+    [15, ['09:00', '09:15', '09:30', '09:45']],
+    [20, ['09:00', '09:20', '09:40']],
+  ])('uses the shop step of %i minutes', (step, times) => {
+    const c = buildSlotCandidates(
+      '2027-02-01',
+      ATHENS,
+      [{ startTime: '09:00', endTime: '10:00' }],
+      10,
+      step,
+    );
+    expect(c.map((x) => x.time)).toEqual(times);
+  });
+
   it('never returns a slot ending after closing, measured in real time', () => {
     const c = buildSlotCandidates(
       '2027-03-28',

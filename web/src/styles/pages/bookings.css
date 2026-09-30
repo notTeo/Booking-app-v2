@@ -26,6 +26,40 @@
   margin: 0;
 }
 
+/* ── Filter bar (status chips reuse .cal-status-btn) ─────────────────────── */
+
+.cal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.cal-filters-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cal-filter-select {
+  width: auto;
+  min-width: 10rem;
+  max-width: 100%;
+  padding: 0.4rem 2rem 0.4rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.cal-filters-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cal-filters-clear {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+}
+
 /* ── Date picker ─────────────────────────────────────────────────────────── */
 
 .bookings-date-picker {

@@ -52,6 +52,7 @@ export default function ShopSettingsPage() {
   const [address, setAddress] = useState('');
   const [timezone, setTimezone] = useState('');
   const [maxAdvanceDays, setMaxAdvanceDays] = useState('60');
+  const [slotInterval, setSlotInterval] = useState('30');
   const [isActive, setIsActive] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
@@ -77,6 +78,7 @@ export default function ShopSettingsPage() {
           setAddress(found.formattedAddress ?? '');
           setTimezone(found.timezone);
           setMaxAdvanceDays(String(found.maxAdvanceDays));
+          setSlotInterval(String(found.slotIntervalMinutes));
           setIsActive(found.isActive);
         }
       })
@@ -99,6 +101,7 @@ export default function ShopSettingsPage() {
         formattedAddress: address,
         timezone,
         maxAdvanceDays: Number(maxAdvanceDays),
+        slotIntervalMinutes: Number(slotInterval),
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
@@ -248,6 +251,21 @@ export default function ShopSettingsPage() {
               required
             />
             <small className="form-hint">{t.shopSettings.maxAdvanceHint}</small>
+          </div>
+          <div className="form-group">
+            <label htmlFor="detail-slot-interval">{t.shopSettings.slotIntervalLabel}</label>
+            <select
+              id="detail-slot-interval"
+              value={slotInterval}
+              onChange={(e) => setSlotInterval(e.target.value)}
+            >
+              {[10, 15, 20, 30].map((m) => (
+                <option key={m} value={m}>
+                  {t.shopSettings.slotIntervalOption.replace('{n}', String(m))}
+                </option>
+              ))}
+            </select>
+            <small className="form-hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
         </div>
 

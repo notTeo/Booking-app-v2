@@ -62,6 +62,27 @@ const RULE_CASES: [string, string, string][] = [
   ['off the 30-minute grid', OFF_GRID, 'OFF_SLOT_GRID'],
 ];
 
+describe('per-shop slot interval', () => {
+  it('a 15-minute shop accepts 10:15 and still rejects a truly off-grid time', async () => {
+    const t = await shop();
+    await prisma.shop.update({
+      where: { id: t.shop.id },
+      data: { slotIntervalMinutes: 15 },
+    });
+    expect((await pub(t, OFF_GRID)).status).toBe(201);
+    const off = await pub(t, '2026-12-08T11:10:00+02:00');
+    expect(off.status).toBe(422);
+    expect(off.body.code).toBe('OFF_SLOT_GRID');
+  });
+
+  it('the default 30-minute shop still rejects 10:15', async () => {
+    const t = await shop();
+    const res = await pub(t, OFF_GRID);
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('OFF_SLOT_GRID');
+  });
+});
+
 describe('public path: strict rules, 422 with a code', () => {
   it('accepts a valid slot, the last slot of the day, and the last allowed day', async () => {
     const t = await shop();

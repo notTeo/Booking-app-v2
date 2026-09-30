@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   blockGeometry,
   computeVisibleRange,
+  filterBookings,
+  hasActiveFilters,
+  NO_FILTERS,
   offSegments,
   overrideTags,
 } from './calendarModel';
@@ -113,5 +116,37 @@ describe('blockGeometry', () => {
   it('a booking outside the range is flagged for the banner', () => {
     expect(blockGeometry(h(6), 30, range, ppm, 28).outsideView).toBe(true);
     expect(blockGeometry(h(18, 45), 30, range, ppm, 28).outsideView).toBe(true);
+  });
+});
+
+describe('filterBookings', () => {
+  const bookings = [
+    { id: 'a', status: 'PENDING', serviceId: 's1' },
+    { id: 'b', status: 'CONFIRMED', serviceId: 's1' },
+    { id: 'c', status: 'CONFIRMED', serviceId: 's2' },
+    { id: 'd', status: 'CANCELED', serviceId: 's2' },
+  ];
+  const ids = (f: Parameters<typeof filterBookings>[1]) => filterBookings(bookings, f).map((b) => b.id);
+
+  it('shows everything with no filters', () => {
+    expect(ids(NO_FILTERS)).toEqual(['a', 'b', 'c', 'd']);
+    expect(hasActiveFilters(NO_FILTERS)).toBe(false);
+  });
+
+  it('matches any of the selected statuses', () => {
+    expect(ids({ ...NO_FILTERS, statuses: new Set(['PENDING', 'CANCELED']) })).toEqual(['a', 'd']);
+  });
+
+  it('filters by service', () => {
+    expect(ids({ ...NO_FILTERS, serviceId: 's2' })).toEqual(['c', 'd']);
+  });
+
+  it('combines status and service (both must match)', () => {
+    expect(ids({ ...NO_FILTERS, statuses: new Set(['CONFIRMED']), serviceId: 's2' })).toEqual(['c']);
+  });
+
+  it('counts any selected filter as active, including staff', () => {
+    expect(hasActiveFilters({ ...NO_FILTERS, staffId: 'x' })).toBe(true);
+    expect(hasActiveFilters({ ...NO_FILTERS, statuses: new Set(['PENDING']) })).toBe(true);
   });
 });

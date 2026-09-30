@@ -636,6 +636,9 @@ export interface Translations {
     areYouSure: string;
     maxAdvanceLabel: string;
     maxAdvanceHint: string;
+    slotIntervalLabel: string;
+    slotIntervalHint: string;
+    slotIntervalOption: string;
   };
   sharing: {
     title: string;
@@ -800,6 +803,16 @@ export interface Translations {
         BOOKING_IN_PAST: string;
         OFF_SLOT_GRID: string;
       };
+    };
+    filters: {
+      statusLabel: string;
+      staffLabel: string;
+      serviceLabel: string;
+      allStaff: string;
+      allServices: string;
+      clear: string;
+      showing: string;
+      status: Record<'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW', string>;
     };
   };
   cancelBooking: {
@@ -1441,6 +1454,9 @@ home: {
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το {name} και όλα τα δεδομένα του.',
       maxAdvanceLabel: 'Παράθυρο κρατήσεων (ημέρες)',
       maxAdvanceHint: 'Πόσες ημέρες μπροστά μπορούν οι πελάτες να κλείσουν ραντεβού.',
+    slotIntervalLabel: 'Διάστημα ραντεβού',
+    slotIntervalHint: 'Κάθε πόσα λεπτά εμφανίζεται διαθέσιμη ώρα ραντεβού (π.χ. κάθε 15 λεπτά).',
+    slotIntervalOption: 'Κάθε {n} λεπτά',
     },
     sharing: {
       title: 'Ο σύνδεσμος κράτησής σας',
@@ -1617,6 +1633,22 @@ home: {
           SHOP_CLOSED: 'Κλειστή ημέρα',
           BOOKING_IN_PAST: 'Παλαιότερη καταχώρηση',
           OFF_SLOT_GRID: 'Προσαρμοσμένη ώρα',
+        },
+      },
+      filters: {
+        statusLabel: 'Κατάσταση',
+        staffLabel: 'Προσωπικό',
+        serviceLabel: 'Υπηρεσία',
+        allStaff: 'Όλο το προσωπικό',
+        allServices: 'Όλες οι υπηρεσίες',
+        clear: 'Καθαρισμός φίλτρων',
+        showing: '{shown} από {total} ραντεβού',
+        status: {
+          PENDING: 'Εκκρεμεί',
+          CONFIRMED: 'Επιβεβαιωμένο',
+          COMPLETED: 'Ολοκληρώθηκε',
+          CANCELED: 'Ακυρώθηκε',
+          NO_SHOW: 'Δεν προσήλθε',
         },
       },
     },
@@ -2258,6 +2290,9 @@ home: {
       areYouSure: 'Are you sure? This will permanently delete {name} and all its data.',
       maxAdvanceLabel: 'Booking window (days)',
       maxAdvanceHint: 'How many days ahead customers can book an appointment.',
+    slotIntervalLabel: 'Slot interval',
+    slotIntervalHint: 'How often a bookable time appears (e.g. every 15 minutes). Existing bookings are not changed.',
+    slotIntervalOption: 'Every {n} minutes',
     },
     sharing: {
       title: 'Your booking link',
@@ -2434,6 +2469,22 @@ home: {
           SHOP_CLOSED: 'Closed day',
           BOOKING_IN_PAST: 'Past entry',
           OFF_SLOT_GRID: 'Custom time',
+        },
+      },
+      filters: {
+        statusLabel: 'Status',
+        staffLabel: 'Staff',
+        serviceLabel: 'Service',
+        allStaff: 'All staff',
+        allServices: 'All services',
+        clear: 'Clear filters',
+        showing: '{shown} of {total} bookings',
+        status: {
+          PENDING: 'Pending',
+          CONFIRMED: 'Confirmed',
+          COMPLETED: 'Completed',
+          CANCELED: 'Canceled',
+          NO_SHOW: 'No-show',
         },
       },
     },

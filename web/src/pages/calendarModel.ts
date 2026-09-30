@@ -93,3 +93,28 @@ export function blockGeometry(
     outsideView: crossesNextDay || startMin < range.start || endMin > range.end,
   };
 }
+
+/** What the calendar's filter bar has selected. */
+export interface BookingFilters {
+  /** Empty = every status. */
+  statuses: ReadonlySet<string>;
+  /** null = every staff member (a column filter, applied by the page). */
+  staffId: string | null;
+  /** null = every service. */
+  serviceId: string | null;
+}
+
+export const NO_FILTERS: BookingFilters = { statuses: new Set(), staffId: null, serviceId: null };
+
+export const hasActiveFilters = (f: BookingFilters) =>
+  f.statuses.size > 0 || f.staffId !== null || f.serviceId !== null;
+
+/** Status and service filters. Staff is a column filter, so it is not applied here. */
+export function filterBookings<T extends { status: string; serviceId: string }>(
+  bookings: T[],
+  f: BookingFilters,
+): T[] {
+  return bookings.filter(
+    (b) => (f.statuses.size === 0 || f.statuses.has(b.status)) && (f.serviceId === null || b.serviceId === f.serviceId),
+  );
+}

@@ -1,6 +1,8 @@
 import { wallClockToUtc, wallClockToUtcLenient } from './shopTime';
 
+// Default grid step; a shop can choose another (see SLOT_INTERVAL_OPTIONS).
 export const SLOT_STEP_MINUTES = 30;
+export const SLOT_INTERVAL_OPTIONS = [10, 15, 20, 30] as const;
 
 export interface SlotCandidate {
   time: string; // "HH:mm" wall-clock label in the shop timezone
@@ -22,7 +24,8 @@ const toHHMM = (mins: number) =>
  * Bookable start times for one calendar day, given its opening ranges
  * (wall-clock "HH:mm" in `zone`) and the service duration.
  *
- * - The grid is anchored at each range's opening time, every 30 minutes.
+ * - The grid is anchored at each range's opening time, every `stepMinutes`
+ *   (the shop's slot interval, 30 by default).
  * - A start that falls in a DST gap (nonexistent wall-clock time) is skipped.
  * - Each wall-clock label appears at most once; if a label is ambiguous
  *   (DST fall-back) it maps to its earlier instant.
@@ -34,6 +37,7 @@ export const buildSlotCandidates = (
   zone: string,
   ranges: { startTime: string; endTime: string }[],
   durationMinutes: number,
+  stepMinutes: number = SLOT_STEP_MINUTES,
 ): SlotCandidate[] => {
   const seen = new Set<string>();
   const out: SlotCandidate[] = [];
@@ -43,7 +47,7 @@ export const buildSlotCandidates = (
     const close = toMins(range.endTime);
     const closeInstant = wallClockToUtcLenient(date, toHHMM(close), zone);
 
-    for (let m = open; m < close; m += SLOT_STEP_MINUTES) {
+    for (let m = open; m < close; m += stepMinutes) {
       const time = toHHMM(m);
       if (seen.has(time)) continue;
       const start = wallClockToUtc(date, time, zone);
@@ -82,7 +86,8 @@ export interface OutsideCandidate extends SlotCandidate {
 
 /**
  * Start times a manual booking can pick OUTSIDE working hours, on a
- * 15-minute midnight-anchored grid (not the opening-anchored 30-minute grid).
+ * 15-minute midnight-anchored grid (or the shop's interval if that is finer,
+ * e.g. 10 minutes), not the opening-anchored in-hours grid.
  *
  * - `ranges` = the day's opening ranges, or empty for a closed day / a
  *   provider's day off. Then `closedDayRanges` (the shop's regular hours for
@@ -92,7 +97,7 @@ export interface OutsideCandidate extends SlotCandidate {
  *   after the last closing (start times, both ends inclusive), clamped to the
  *   calendar day. Breaks between ranges are listed in full.
  * - A start that is already an in-hours grid slot is not repeated. A start
- *   whose whole booking fits inside one opening range but is off the 30-minute
+ *   whose whole booking fits inside one opening range but is off the in-hours
  *   grid is not "outside hours" and is not listed (reachable via "Other
  *   time…"). A start inside a range that would run past that range's closing
  *   IS outside hours.
@@ -105,7 +110,9 @@ export const buildOutsideHoursCandidates = (
   ranges: { startTime: string; endTime: string }[],
   closedDayRanges: { startTime: string; endTime: string }[],
   durationMinutes: number,
+  stepMinutes: number = SLOT_STEP_MINUTES,
 ): OutsideCandidate[] => {
+  const outsideStep = Math.min(OUTSIDE_STEP_MINUTES, stepMinutes);
   const closedDay = ranges.length === 0;
   const basis = closedDay ? closedDayRanges : ranges;
   const opens = basis.map((r) => toMins(r.startTime));
@@ -115,20 +122,21 @@ export const buildOutsideHoursCandidates = (
 
   const lo = closedDay ? firstOpen : firstOpen - OUTSIDE_CAP_BEFORE_MINUTES;
   const hi = closedDay
-    ? lastClose - OUTSIDE_STEP_MINUTES
+    ? lastClose - outsideStep
     : lastClose + OUTSIDE_CAP_AFTER_MINUTES;
-  const from = Math.max(
-    0,
-    Math.ceil(lo / OUTSIDE_STEP_MINUTES) * OUTSIDE_STEP_MINUTES,
-  );
-  const to = Math.min(24 * 60 - OUTSIDE_STEP_MINUTES, hi);
+  const from = Math.max(0, Math.ceil(lo / outsideStep) * outsideStep);
+  const to = Math.min(24 * 60 - outsideStep, hi);
 
   const inHoursLabels = new Set(
     closedDay
       ? []
-      : buildSlotCandidates(date, zone, ranges, durationMinutes).map(
-          (c) => c.time,
-        ),
+      : buildSlotCandidates(
+          date,
+          zone,
+          ranges,
+          durationMinutes,
+          stepMinutes,
+        ).map((c) => c.time),
   );
   const lastRange = closedDay
     ? null
@@ -138,7 +146,7 @@ export const buildOutsideHoursCandidates = (
 
   const seen = new Set<string>();
   const out: OutsideCandidate[] = [];
-  for (let m = from; m <= to; m += OUTSIDE_STEP_MINUTES) {
+  for (let m = from; m <= to; m += outsideStep) {
     const time = toHHMM(m);
     if (seen.has(time) || inHoursLabels.has(time)) continue;
     const start = wallClockToUtc(date, time, zone);
@@ -154,7 +162,7 @@ export const buildOutsideHoursCandidates = (
           start >= wallClockToUtcLenient(date, r.startTime, zone) &&
           end <= wallClockToUtcLenient(date, r.endTime, zone),
       );
-      if (fits) continue; // in hours, just off the 30-minute grid
+      if (fits) continue; // in hours, just off the in-hours grid
       const inside = ranges.find(
         (r) => m >= toMins(r.startTime) && m < toMins(r.endTime),
       );

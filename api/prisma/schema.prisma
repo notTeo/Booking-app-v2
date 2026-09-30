@@ -35,12 +35,14 @@ model Shop {
 
   formattedAddress String?
 
-  timezone       String   @default("Europe/Athens")
+  timezone            String   @default("Europe/Athens")
   // How many calendar days ahead customers may book (shop-local date).
-  maxAdvanceDays Int      @default(60)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  maxAdvanceDays      Int      @default(60)
+  // Minutes between bookable start times (10, 15, 20 or 30).
+  slotIntervalMinutes Int      @default(30)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
 
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
@@ -162,18 +164,18 @@ model StaffService {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String?
-  isVerified   Boolean  @default(false)
-  isPro        Boolean  @default(false)
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String?
+  isVerified      Boolean   @default(false)
+  isPro           Boolean   @default(false)
   // Version of the terms accepted at registration (null = account predates
   // versioned acceptance), and when.
   termsVersion    String?
   termsAcceptedAt DateTime? @db.Timestamptz(3)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
 
   refreshTokens          RefreshToken[]
   emailVerificationToken EmailVerificationToken?
@@ -263,15 +265,15 @@ model PasswordResetToken {
 }
 
 model PendingRegistration {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  token        String   @unique
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  token           String    @unique
   termsVersion    String?
   termsAcceptedAt DateTime? @db.Timestamptz(3)
-  expiresAt    DateTime @db.Timestamptz(3)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt       DateTime  @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
 }
 
 model PendingEmailChange {
