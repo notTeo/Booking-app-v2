@@ -265,7 +265,7 @@
   margin-bottom: 0.25rem;
 }
 
-.settings-section-header .btn {
+.settings-section .settings-section-header .btn {
   width: auto; /* .btn is width:100% by default — keep Save compact in the header */
   flex-shrink: 0;
   padding: 0.6rem 1.25rem;

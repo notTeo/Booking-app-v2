@@ -673,7 +673,7 @@
 .public-slot-btn {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 2);
+  border-radius: var(--radius);
   background: var(--bg-input);
   color: var(--text);
   cursor: pointer;
@@ -708,13 +708,20 @@
 }
 
 /* ── Out-of-hours slots (owner/staff booking form) ─────────────────────── */
-/* Never colour alone: dashed border + moon icon + a text heading per section. */
+/* Never colour alone: dashed border + clock icon + a text heading per section. */
 .ooh-toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-top: 12px;
   font-size: 0.875rem;
+}
+
+.ooh-toggle .switch {
+  flex-shrink: 0;
+}
+
+.ooh-toggle label {
   cursor: pointer;
 }
 

@@ -225,12 +225,13 @@
 
 /* ---- Day row ---- */
 .working-hours-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  /* Row 1: day label (left) + toggle (right). Row 2: time slots + Add. */
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
 }
 
 .working-hours-row:last-child {
@@ -240,9 +241,7 @@
 .working-hours-day-label {
   font-size: 0.9rem;
   font-weight: 700;
-  min-width: 100px;
-  padding-top: 0.45rem;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 /* ---- Toggle switch ---- */
@@ -250,8 +249,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  flex-shrink: 0;
-  padding-top: 0.35rem;
+  justify-self: end;
 }
 
 .working-hours-status {
@@ -275,7 +273,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  flex: 1;
+  grid-column: 1 / -1;
   min-width: 0;
 }
 
@@ -287,9 +285,9 @@
 }
 
 .working-hours-slot input[type='time'] {
-  flex: 1 1 0;
+  flex: 1 1 110px; /* wide enough for "12:00 PM" + the clock icon */
   width: auto;
-  max-width: 130px;
+  max-width: 150px;
   padding: 0.45rem 0.75rem;
   font-size: 0.9rem;
 }
@@ -366,24 +364,33 @@
 }
 
 .wh-window-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem 1rem;
-  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
 .wh-window-head h3 {
+  /* same look as the schedule headers (.wh-date-range: "From 29 Sep 2026 …") */
+  font-family: var(--font);
   font-size: 0.95rem;
   font-weight: 700;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.35rem;
 }
 
-.wh-window-head .btn {
+/* Input on the left, Save on the right, on one line. */
+.wh-window-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wh-window-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.wh-window-row .btn {
   width: auto;
-  padding: 0.55rem 1.25rem;
   flex-shrink: 0;
+  padding: 0.7rem 1.25rem;
 }
 
 /* ---- Rule note + open-ended notice ---- */

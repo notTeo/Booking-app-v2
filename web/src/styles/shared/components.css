@@ -439,16 +439,16 @@ textarea:focus-visible {
 .copy-link-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  padding: 0.7rem 0.9rem;
+  gap: 0.5rem;
+  flex-wrap: nowrap; /* link + Copy + open stay on one line, at any width */
+  padding: 0.5rem 0.7rem;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
 .copy-link-value {
-  flex: 1;
+  flex: 1 1 0; /* shrink (with an ellipsis) instead of pushing the buttons onto a new line */
   min-width: 0;
   font-family: var(--font-mono, monospace);
   font-size: 0.85rem;
@@ -458,18 +458,19 @@ textarea:focus-visible {
   text-overflow: ellipsis;
 }
 
-.copy-link-btn.btn {
+.copy-link-row .copy-link-btn.btn {
+  /* 3 classes: must beat `.shop-settings-section .btn { width: 100% }` on phones */
   width: auto;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   flex-shrink: 0;
 }
 
-.copy-link-btn--icon.btn {
-  padding: 0.45rem 0.65rem;
+.copy-link-row .copy-link-btn--icon.btn {
+  padding: 0.35rem 0.55rem;
 }
 
 .copy-link-row--compact {

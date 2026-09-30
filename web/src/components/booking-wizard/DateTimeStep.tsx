@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import type { Service, ShopMember, SlotInfo, SlotsResponse } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Switch from '../Switch';
 import { groupSlotSections, type SlotSectionKey } from './wizardUtils';
 
 const toMins = (hhmm: string) => {
@@ -105,7 +108,7 @@ export default function DateTimeStep({
       disabled={internal && !slot.available}
       aria-label={internal && (slot.outsideHours || slot.offGrid || !slot.available || slot.past) ? slotLabel(slot) : undefined}
     >
-      {slot.outsideHours && <span aria-hidden="true">☾ </span>}
+      {slot.outsideHours && <><FontAwesomeIcon icon={faClock} /> </>}
       {slot.time}
       {internal && !slot.available && <span className="slot-tag"> {os.booked}</span>}
       {internal && slot.available && slot.past && <span className="slot-tag"> {os.past}</span>}
@@ -176,15 +179,16 @@ export default function DateTimeStep({
       )}
 
       {internal && date !== '' && (hasOutsideSlots || isClosed) && (
-        <label className="ooh-toggle">
-          <input
-            type="checkbox"
+        <div className="ooh-toggle">
+          <Switch
+            id="ooh-toggle"
             checked={showOutside}
-            onChange={(e) => {
-              setShowOutside(e.target.checked);
+            label={os.toggle}
+            onChange={(checked) => {
+              setShowOutside(checked);
               // A chosen time that only exists in the out-of-hours list (or was
               // typed in) goes away with it, rather than staying selected unseen.
-              if (!e.target.checked) {
+              if (!checked) {
                 const chosen = allSlots.find((x) => x.time === time);
                 if (time !== '' && (!chosen || chosen.outsideHours)) {
                   setCustomTime('');
@@ -193,8 +197,10 @@ export default function DateTimeStep({
               }
             }}
           />
-          <span aria-hidden="true">☾</span> {os.toggle}
-        </label>
+          <label htmlFor="ooh-toggle">
+            <FontAwesomeIcon icon={faClock} /> {os.toggle}
+          </label>
+        </div>
       )}
 
       {isClosed && (
@@ -216,7 +222,7 @@ export default function DateTimeStep({
         sections.map((g) => {
           const heading = (
             <>
-              {g.key !== 'working' && <span aria-hidden="true">☾ </span>}
+              {g.key !== 'working' && <><FontAwesomeIcon icon={faClock} /> </>}
               {sectionTitle(g.key)}
             </>
           );

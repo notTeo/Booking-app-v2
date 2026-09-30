@@ -34,30 +34,30 @@ export default function BookingWindowCard({ shop, isOwner }: { shop: Shop; isOwn
   return (
     <form className="wh-window-card" onSubmit={handleSave}>
       <div className="wh-window-head">
-        <div>
-          <h3>{t.workingHours.bookingWindowTitle}</h3>
-          <span className="shop-field-hint">{t.workingHours.bookingWindowNote}</span>
-        </div>
-        {isOwner && (
-          <button className="btn btn-primary" type="submit" disabled={saving}>
-            {saving ? t.shopSettings.saving : t.shopSettings.saveChanges}
-          </button>
-        )}
+        <h3>{t.workingHours.bookingWindowTitle}</h3>
+        <span className="shop-field-hint">{t.workingHours.bookingWindowNote}</span>
       </div>
       <div className="form-group">
         <label htmlFor="wh-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
-        <input
-          id="wh-max-advance"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={730}
-          step={1}
-          value={days}
-          onChange={(e) => setDays(e.target.value)}
-          disabled={!isOwner}
-          required
-        />
+        <div className="wh-window-row">
+          <input
+            id="wh-max-advance"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={730}
+            step={1}
+            value={days}
+            onChange={(e) => setDays(e.target.value)}
+            disabled={!isOwner}
+            required
+          />
+          {isOwner && (
+            <button className="btn btn-primary" type="submit" disabled={saving}>
+              {saving ? t.shopSettings.saving : t.shopSettings.saveChanges}
+            </button>
+          )}
+        </div>
         <small className="form-hint">{t.shopSettings.maxAdvanceHint}</small>
       </div>
       {error && <div className="alert alert-error">{error}</div>}

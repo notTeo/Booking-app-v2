@@ -42,7 +42,7 @@ async function openWizard(
   }
 }
 
-const toggle = (page: Page) => page.locator('.ooh-toggle input');
+const toggle = (page: Page) => page.locator('.ooh-toggle [role="switch"]');
 
 async function lastBooking() {
   const rows = await query<{ startTime: Date; overriddenRules: string[]; createdById: string | null }>(
@@ -81,7 +81,7 @@ test('the out-of-hours grid is hidden until asked for, and is never colour alone
   // an out-of-hours slot says so in words (aria-label), with an icon and a dashed border
   const slot = page.getByRole('button', { name: '20:30, outside working hours' });
   await expect(slot).toBeVisible();
-  await expect(slot).toContainText('☾');
+  await expect(slot.locator('svg')).toBeVisible();
   expect(await slot.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('dashed');
   // an in-hours slot has neither
   const inHours = page.locator('.public-slot-btn', { hasText: /^10:00$/ });

@@ -1,4 +1,6 @@
 import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
@@ -195,7 +197,7 @@ export default function OwnerCustomerFormStep({
         {outsideRules.length > 0 && (
           <div className="ooh-panel" role="note">
             <p className="ooh-panel-title">
-              <span aria-hidden="true">☾ </span>
+              <><FontAwesomeIcon icon={faClock} /> </>
               {onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
             </p>
             <p>{outsideRules.map((c) => t.bookings.override[c]).join(' ')}</p>

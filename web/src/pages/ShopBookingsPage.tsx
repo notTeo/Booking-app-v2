@@ -2,7 +2,7 @@ import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '..
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -527,7 +527,7 @@ export default function ShopBookingsPage() {
                 >
                   {col.label}
                   {overrideCountByCol[col.id] > 0 && (
-                    <span className="cal-chip-badge">☾ {overrideCountByCol[col.id]}</span>
+                    <span className="cal-chip-badge"><FontAwesomeIcon icon={faClock} /> {overrideCountByCol[col.id]}</span>
                   )}
                 </button>
               ))}
@@ -623,7 +623,7 @@ export default function ShopBookingsPage() {
                             }}
                           >
                             <div className="cal-block-time">
-                              {tags.length > 0 && <span aria-hidden="true">☾ </span>}
+                              {tags.length > 0 && <><FontAwesomeIcon icon={faClock} /> </>}
                               {formatTimeInZone(b.startTime, zone)}
                             </div>
                             <div className="cal-block-name">
