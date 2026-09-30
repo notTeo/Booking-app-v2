@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faClock, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { createBooking } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { SITE_NAME } from '../config/seo';
 import { useBookingWizard } from '../hooks/useBookingWizard';
 import WizardStepsIndicator from '../components/booking-wizard/WizardStepsIndicator';
 import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
@@ -26,8 +28,23 @@ export default function PublicPage() {
 }
 
 function PublicBookingPage({ slug }: { slug: string }) {
-  const { t } = useLang();
+  const { t, language } = useLang();
   const wizard = useBookingWizard({ slug });
+
+  usePageMeta(
+    wizard.shop
+      ? {
+          title: `${wizard.shop.name} | ${SITE_NAME}`,
+          description:
+            wizard.shop.description?.trim() ||
+            (language === 'el'
+              ? `Κλείσε ραντεβού online στο ${wizard.shop.name}.`
+              : `Book an appointment online at ${wizard.shop.name}.`),
+          index: true,
+          path: `/${slug}`,
+        }
+      : null,
+  );
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
   const [name, setName] = useState('');

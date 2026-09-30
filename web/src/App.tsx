@@ -1,3 +1,4 @@
+import { useRouteMeta } from './hooks/usePageMeta';
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useParams } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './context/AuthContext';
@@ -49,12 +50,18 @@ function LegacyPublicRedirect() {
   return <Navigate to={`${publicShopPath(slug ?? '')}${search}`} replace />;
 }
 
+function RouteMeta() {
+  useRouteMeta();
+  return null;
+}
+
 export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <RouteMeta />
           <AuthProvider>
             <ShopContextProvider>
               <Routes>

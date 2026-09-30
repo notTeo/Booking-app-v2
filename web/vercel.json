@@ -1,5 +1,15 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(dashboard|shops|settings|invites|invite|cancel|login|forgot-password|reset-password|verify-email|verify-email-change)/:rest*",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/(dashboard|shops|settings|invites|invite|cancel|login|forgot-password|reset-password|verify-email|verify-email-change)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
   ]
 }

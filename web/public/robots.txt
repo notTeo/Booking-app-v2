@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /shops
+Disallow: /settings
+Disallow: /invites
+Disallow: /invite
+Disallow: /cancel
+Disallow: /verify-email
+Disallow: /verify-email-change
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /login
+Disallow: /p/
+
+Sitemap: https://bebooked.gr/sitemap.xml
