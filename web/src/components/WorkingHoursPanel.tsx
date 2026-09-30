@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
@@ -11,6 +11,8 @@ import {
   type UpsertDaysDto,
 } from '../api/workingHours.api';
 import { handleActivateKeyDown } from '../utils/a11y';
+import { apiErrorMessage } from '../utils/apiError';
+import { findOverlap, scheduleStatus } from '../utils/scheduleOverlap';
 import Switch from './Switch';
 import '../styles/pages/working-hours.css';
 
@@ -26,6 +28,8 @@ export interface WorkingHoursApi {
 export interface WorkingHoursPanelProps {
   api: WorkingHoursApi;
   isOwner: boolean;
+  /** Shop-wide content rendered above the schedules (e.g. the booking window). */
+  beforeSchedules?: ReactNode;
 }
 
 const DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -85,7 +89,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
   };
 }
 
-export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
+export default function WorkingHoursPanel({ api, isOwner, beforeSchedules }: WorkingHoursPanelProps) {
   const { t } = useLang();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -100,6 +104,14 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
   const [createEnd, setCreateEnd] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+
+  const conflictText = (c: Schedule) =>
+    c.endDate
+      ? t.workingHours.overlapWith.replace(
+          '{range}',
+          `${formatDate(c.startDate)} – ${formatDate(c.endDate)}`,
+        )
+      : t.workingHours.overlapOpenEnded.replace('{date}', formatDate(c.startDate));
 
   // ---- Validation ----
   const validateSlots = (hours: HourRange[]): string | null => {
@@ -211,6 +223,21 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       return;
     }
 
+    // Editing an active schedule's dates must not overlap another active one
+    // (the API enforces this too; checking here gives the message instantly).
+    const current = schedules.find((s) => s.id === scheduleId);
+    const datesChanged =
+      !!current &&
+      (state.startDate !== current.startDate.slice(0, 10) ||
+        state.endDate !== (current.endDate ? current.endDate.slice(0, 10) : ''));
+    if (current?.isActive && datesChanged) {
+      const conflict = findOverlap(schedules, state.startDate, state.endDate, scheduleId);
+      if (conflict) {
+        updateEdit(scheduleId, { error: conflictText(conflict), success: '' });
+        return;
+      }
+    }
+
     updateEdit(scheduleId, { saving: true, error: '', success: '' });
     try {
       await api.updateSchedule(scheduleId, {
@@ -229,20 +256,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       }
       updateEdit(scheduleId, { saving: false, success: t.workingHours.successSave });
     } catch (err: unknown) {
-      const apiMsg =
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'error' in err.response.data &&
-        typeof (err.response.data as { error: unknown }).error === 'string'
-          ? (err.response.data as { error: string }).error
-          : null;
-      updateEdit(scheduleId, { saving: false, error: apiMsg ?? t.workingHours.errorSave });
+      updateEdit(scheduleId, { saving: false, error: apiErrorMessage(err, t.workingHours.errorSave) });
     }
   };
 
@@ -253,20 +267,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       setSchedules((prev) => prev.map((s) => (s.id === schedule.id ? updated : s)));
       updateEdit(schedule.id, { saving: false, success: '' });
     } catch (err: unknown) {
-      const apiMsg =
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'error' in err.response.data &&
-        typeof (err.response.data as { error: unknown }).error === 'string'
-          ? (err.response.data as { error: string }).error
-          : null;
-      updateEdit(schedule.id, { saving: false, error: apiMsg ?? t.workingHours.errorSave });
+      updateEdit(schedule.id, { saving: false, error: apiErrorMessage(err, t.workingHours.errorSave) });
     }
   };
 
@@ -305,24 +306,16 @@ const created = await api.createSchedule(dto);
       setCreateStart('');
       setCreateEnd('');
     } catch (err: unknown) {
-      const apiMsg =
-        err &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data &&
-        typeof err.response.data === 'object' &&
-        'error' in err.response.data &&
-        typeof (err.response.data as { error: unknown }).error === 'string'
-          ? (err.response.data as { error: string }).error
-          : null;
-      setCreateError(apiMsg ?? t.workingHours.errorCreate);
+      setCreateError(apiErrorMessage(err, t.workingHours.errorCreate));
     } finally {
       setCreating(false);
     }
   };
+
+  // ---- Derived: overlap warning for the create form + open-ended notice ----
+  const createConflict =
+    showCreate && createStart ? findOverlap(schedules, createStart, createEnd) : undefined;
+  const openEnded = schedules.find((s) => s.isActive && !s.endDate);
 
   // ---- Render ----
   if (loading) {
@@ -354,6 +347,28 @@ const created = await api.createSchedule(dto);
 
       {pageError && <div className="alert alert-error">{pageError}</div>}
 
+      {beforeSchedules}
+
+      <p className="wh-rule-note">{t.workingHours.ruleNote}</p>
+
+      {isOwner && openEnded && (
+        <div className="alert wh-open-ended-notice">
+          <span>
+            {t.workingHours.openEndedNotice.replace(
+              '{range}',
+              `${t.workingHours.from} ${formatDate(openEnded.startDate)} — ${t.workingHours.ongoing}`,
+            )}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => setExpandedId(openEnded.id)}
+          >
+            {t.workingHours.setEndDate}
+          </button>
+        </div>
+      )}
+
       {/* Create form */}
       {showCreate && (
         <div className="wh-create-form">
@@ -376,12 +391,15 @@ const created = await api.createSchedule(dto);
               />
             </div>
           </div>
+          {createConflict && (
+            <div className="alert alert-error">{conflictText(createConflict)}</div>
+          )}
           {createError && <div className="alert alert-error">{createError}</div>}
           <div className="wh-create-actions">
             <button
               className="btn btn-primary"
               onClick={handleCreate}
-              disabled={creating || !createStart}
+              disabled={creating || !createStart || !!createConflict}
             >
               {creating ? t.workingHours.creating : t.workingHours.createSchedule}
             </button>
@@ -423,6 +441,15 @@ const created = await api.createSchedule(dto);
               onKeyDown={handleActivateKeyDown(() => setExpandedId(isExpanded ? null : schedule.id))}
             >
               <div className="wh-date-range">
+                <span className={`wh-status wh-status--${scheduleStatus(schedule)}`}>
+                  {
+                    {
+                      current: t.workingHours.statusCurrent,
+                      upcoming: t.workingHours.statusUpcoming,
+                      ended: t.workingHours.statusEnded,
+                    }[scheduleStatus(schedule)]
+                  }
+                </span>
                 {t.workingHours.from} {formatDate(schedule.startDate)}
                 {schedule.endDate ? (
                   <>
@@ -461,6 +488,55 @@ const created = await api.createSchedule(dto);
             {/* Body */}
             {isExpanded && (
               <div className="wh-schedule-body">
+                {/* Actions — Save + Delete, at the top of the schedule */}
+                {isOwner && (
+                  <div className="wh-schedule-actions">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleSaveSchedule(schedule.id)}
+                      disabled={state.saving || hasErrors}
+                    >
+                      {state.saving ? t.workingHours.saving : t.workingHours.saveDays}
+                    </button>
+
+                    <div>
+                      {!state.confirmDelete ? (
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
+                          disabled={state.deleting}
+                        >
+                          {state.deleting
+                            ? t.workingHours.deleting
+                            : t.workingHours.deleteSchedule}
+                        </button>
+                      ) : (
+                        <div className="wh-delete-confirm">
+                          <span className="wh-delete-confirm-text">
+                            {t.workingHours.confirmDelete}
+                          </span>
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleDelete(schedule.id)}
+                            disabled={state.deleting}
+                          >
+                            {state.deleting
+                              ? t.workingHours.deleting
+                              : t.workingHours.deleteSchedule}
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
+                          >
+                            {t.workingHours.cancel}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )}
+
                 {state.error && (
                   <div className="alert alert-error wh-schedule-alert">{state.error}</div>
                 )}
@@ -565,54 +641,6 @@ const created = await api.createSchedule(dto);
                     );
                   })}
                 </div>
-
-                {/* Footer */}
-                {isOwner && (
-                  <div className="wh-schedule-footer">
-                    <div>
-                      {!state.confirmDelete ? (
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
-                          disabled={state.deleting}
-                        >
-                          {state.deleting
-                            ? t.workingHours.deleting
-                            : t.workingHours.deleteSchedule}
-                        </button>
-                      ) : (
-                        <div className="wh-delete-confirm">
-                          <span className="wh-delete-confirm-text">
-                            {t.workingHours.confirmDelete}
-                          </span>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleDelete(schedule.id)}
-                            disabled={state.deleting}
-                          >
-                            {state.deleting
-                              ? t.workingHours.deleting
-                              : t.workingHours.deleteSchedule}
-                          </button>
-                          <button
-                            className="btn btn-ghost"
-                            onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
-                          >
-                            {t.workingHours.cancel}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => handleSaveSchedule(schedule.id)}
-                      disabled={state.saving || hasErrors}
-                    >
-                      {state.saving ? t.workingHours.saving : t.workingHours.saveDays}
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>

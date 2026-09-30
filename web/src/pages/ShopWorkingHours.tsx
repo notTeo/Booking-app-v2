@@ -1,5 +1,6 @@
 import { useShop } from '../context/ShopContext';
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
+import BookingWindowCard from '../components/BookingWindowCard';
 import * as whApi from '../api/workingHours.api';
 
 export default function ShopWorkingHours() {
@@ -25,5 +26,12 @@ export default function ShopWorkingHours() {
     upsertDays: (scheduleId, dto) => whApi.upsertDays(shop.id, scheduleId, dto),
   };
 
-  return <WorkingHoursPanel api={api} isOwner={shop.role === 'owner'} />;
+  const isOwner = shop.role === 'owner';
+  return (
+    <WorkingHoursPanel
+      api={api}
+      isOwner={isOwner}
+      beforeSchedules={<BookingWindowCard shop={shop} isOwner={isOwner} />}
+    />
+  );
 }

@@ -9,6 +9,7 @@
     "start": "node dist/app.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "audit:schedule-overlaps": "ts-node --transpile-only scripts/audit-schedule-overlaps.ts",
     "tenant:create": "ts-node --transpile-only scripts/create-tenant.ts",
     "seed:hairology": "ts-node --transpile-only scripts/seed-hairology.ts",
     "seed:dev-visual-check": "ts-node --transpile-only scripts/dev-seed-visual-check.ts",

@@ -55,9 +55,30 @@
   flex-wrap: wrap;
 }
 
+/* iOS Safari sizes date/time inputs to their intrinsic width and overflows the
+   card — force them to fit their container. */
+.wh-create-fields input[type='date'],
+.working-hours-slot input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wh-create-fields input[type='date'] {
+  width: 100%;
+}
+
+@media (max-width: 520px) {
+  .wh-create-fields .form-group {
+    flex-basis: 100%;
+  }
+}
+
 .wh-create-fields .form-group {
   flex: 1;
-  min-width: 160px;
+  min-width: 0;
   margin-bottom: 0;
 }
 
@@ -152,19 +173,19 @@
   border-top: 1px solid var(--border);
 }
 
-/* ---- Schedule footer (save + delete) ---- */
-.wh-schedule-footer {
+/* ---- Schedule actions (save + delete) — top of the schedule body ---- */
+.wh-schedule-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.5rem;
   padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
-.wh-schedule-footer .btn {
+.wh-schedule-actions .btn {
   width: auto;
+  padding: 0.55rem 1.25rem;
 }
 
 .wh-delete-confirm {
@@ -255,18 +276,20 @@
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+  min-width: 0;
 }
 
 .working-hours-slot {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* start – end – ✕ always on one line */
 }
 
 .working-hours-slot input[type='time'] {
-  width: 130px;
-  flex-shrink: 0;
+  flex: 1 1 0;
+  width: auto;
+  max-width: 130px;
   padding: 0.45rem 0.75rem;
   font-size: 0.9rem;
 }
@@ -289,6 +312,7 @@
   border-radius: var(--radius);
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .working-hours-remove:hover {
@@ -331,4 +355,86 @@
 .wh-dates-section {
   border-bottom: 1px solid var(--border);
   margin-bottom: 1rem;
+}
+/* ---- Booking window card ---- */
+.wh-window-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.wh-window-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.wh-window-head h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.wh-window-head .btn {
+  width: auto;
+  padding: 0.55rem 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ---- Rule note + open-ended notice ---- */
+.wh-rule-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
+.wh-open-ended-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+}
+
+.wh-open-ended-notice .btn {
+  width: auto;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+/* ---- Current / Upcoming / Ended tag ---- */
+.wh-date-range .wh-status {
+  display: block;
+  width: fit-content;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.wh-date-range .wh-status--current {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.wh-date-range .wh-status--upcoming {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.wh-date-range .wh-status--ended {
+  background: var(--bg-input);
+  color: var(--text-muted);
 }

@@ -589,6 +589,18 @@ export interface Translations {
     slotDuplicate: string;
     slotOverlap: string;
     removeSlot: string;
+    ruleNote: string;
+    statusCurrent: string;
+    statusUpcoming: string;
+    statusEnded: string;
+    overlapWith: string;
+    overlapOpenEnded: string;
+    openEndedNotice: string;
+    setEndDate: string;
+    bookingWindowTitle: string;
+    bookingWindowNote: string;
+    bookingWindowSaved: string;
+    bookingWindowError: string;
     days: {
       MON: string;
       TUE: string;
@@ -1391,7 +1403,7 @@ home: {
       newSchedule: 'Νέο Πρόγραμμα',
       createSchedule: 'Δημιουργία',
       creating: 'Δημιουργία...',
-      deleteSchedule: 'Διαγραφή Προγράμματος',
+      deleteSchedule: 'Διαγραφή',
       deleting: 'Διαγραφή...',
       confirmDelete: 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;',
       cancel: 'Ακύρωση',
@@ -1400,7 +1412,7 @@ home: {
       ongoing: 'Χωρίς λήξη',
       from: 'Από',
       to: 'έως',
-      saveDays: 'Αποθήκευση Ημερών',
+      saveDays: 'Αποθήκευση',
       saveDates: 'Αποθήκευση Ημερομηνιών',
       noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα.',
       errorDelete: 'Αποτυχία διαγραφής προγράμματος.',
@@ -1409,6 +1421,18 @@ home: {
       slotDuplicate: 'Διπλό χρονικό πλαίσιο.',
       slotOverlap: 'Τα χρονικά πλαίσια δεν μπορούν να αλληλεπικαλύπτονται.',
       removeSlot: 'Αφαίρεση χρονικού πλαισίου',
+      ruleNote: "Σε κάθε ημερομηνία ισχύει ένα μόνο πρόγραμμα. Τα ενεργά προγράμματα δεν μπορούν να επικαλύπτονται. Ημέρες χωρίς ενεργό πρόγραμμα θεωρούνται κλειστές.",
+      statusCurrent: "Τρέχον",
+      statusUpcoming: "Επερχόμενο",
+      statusEnded: "Έληξε",
+      overlapWith: "Οι ημερομηνίες επικαλύπτονται με το ενεργό πρόγραμμα {range}. Άλλαξε τις ημερομηνίες ή απενεργοποίησε πρώτα εκείνο το πρόγραμμα.",
+      overlapOpenEnded: "Το ενεργό πρόγραμμα που ξεκινά {date} δεν έχει ημερομηνία λήξης. Βάλε του λήξη (ή απενεργοποίησέ το) πριν προσθέσεις άλλο.",
+      openEndedNotice: "Το πρόγραμμα «{range}» δεν έχει ημερομηνία λήξης, οπότε δεν μπορεί να προστεθεί άλλο ενεργό πρόγραμμα. Βάλε του πρώτα ημερομηνία λήξης.",
+      setEndDate: "Ορισμός λήξης",
+      bookingWindowTitle: "Παράθυρο κρατήσεων",
+      bookingWindowNote: "Ισχύει για όλα τα προγράμματα και για όλο το κατάστημα. Οι πελάτες δεν μπορούν να κλείσουν πέρα από αυτό το όριο, ακόμη κι αν υπάρχει πρόγραμμα.",
+      bookingWindowSaved: "Το παράθυρο κρατήσεων αποθηκεύτηκε.",
+      bookingWindowError: "Αποτυχία αποθήκευσης παραθύρου κρατήσεων.",
       days: {
         MON: 'Δευτέρα',
         TUE: 'Τρίτη',
@@ -2229,7 +2253,7 @@ home: {
       newSchedule: 'New Schedule',
       createSchedule: 'Create',
       creating: 'Creating...',
-      deleteSchedule: 'Delete Schedule',
+      deleteSchedule: 'Delete',
       deleting: 'Deleting...',
       confirmDelete: 'Are you sure you want to delete this schedule?',
       cancel: 'Cancel',
@@ -2238,7 +2262,7 @@ home: {
       ongoing: 'Ongoing',
       from: 'From',
       to: 'to',
-      saveDays: 'Save Days',
+      saveDays: 'Save',
       saveDates: 'Save Dates',
       noSchedules: 'No schedules yet.',
       errorDelete: 'Failed to delete schedule.',
@@ -2247,6 +2271,18 @@ home: {
       slotDuplicate: 'Duplicate time slot.',
       slotOverlap: 'Time slots cannot overlap.',
       removeSlot: 'Remove time slot',
+      ruleNote: "Only one schedule applies on any date. Active schedules can't overlap. Dates with no active schedule are closed.",
+      statusCurrent: "Current",
+      statusUpcoming: "Upcoming",
+      statusEnded: "Ended",
+      overlapWith: "These dates overlap the active schedule {range}. Change the dates, or turn that schedule off first.",
+      overlapOpenEnded: "The active schedule starting {date} has no end date. Set an end date on it (or turn it off) before adding another.",
+      openEndedNotice: "The schedule \"{range}\" has no end date, so no other active schedule can be added. Set an end date on it first.",
+      setEndDate: "Set end date",
+      bookingWindowTitle: "Booking window",
+      bookingWindowNote: "Applies to all schedules and to the whole shop. Customers can't book beyond this limit, even if a schedule exists.",
+      bookingWindowSaved: "Booking window saved.",
+      bookingWindowError: "Failed to save the booking window.",
       days: {
         MON: 'Monday',
         TUE: 'Tuesday',

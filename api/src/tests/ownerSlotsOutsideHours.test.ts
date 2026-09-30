@@ -49,6 +49,7 @@ async function addSchedule(
   opts: {
     staffId: string | null;
     startDate?: string;
+    endDate?: string;
     ranges: Partial<Record<(typeof DAYS)[number], [string, string][]>>;
   },
 ) {
@@ -57,6 +58,9 @@ async function addSchedule(
       shopId: t.shop.id,
       staffId: opts.staffId,
       startDate: new Date(`${opts.startDate ?? '2026-01-01'}T00:00:00.000Z`),
+      ...(opts.endDate && {
+        endDate: new Date(`${opts.endDate}T00:00:00.000Z`),
+      }),
       days: {
         create: DAYS.map((day) => {
           const r = opts.ranges[day];
@@ -261,11 +265,13 @@ describe('includeOutsideHours=true on a closed day / a provider day off', () => 
     await addSchedule(t, {
       staffId: null,
       startDate: '2026-01-01',
+      endDate: '2027-06-01', // active schedules can't overlap (DB constraint)
       ranges: { SUN: [['10:00', '14:00']] },
     });
     await addSchedule(t, {
       staffId: null,
       startDate: '2027-06-01', // starts after the requested date
+      endDate: '2028-01-01',
       ranges: { SUN: [['11:00', '15:00']] },
     });
     await addSchedule(t, {

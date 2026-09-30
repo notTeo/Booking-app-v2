@@ -65,8 +65,9 @@ export const updateScheduleValidation = [
     .optional()
     .isISO8601()
     .withMessage('startDate must be a valid date'),
+  // null clears the end date (schedule becomes open-ended)
   body('endDate')
-    .optional()
+    .optional({ values: 'null' })
     .isISO8601()
     .withMessage('endDate must be a valid date'),
   body('isActive')
