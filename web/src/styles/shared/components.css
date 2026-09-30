@@ -383,7 +383,17 @@ textarea:focus-visible {
    plain copy — matches the script logo used on the marketing home page. */
 .brand-wordmark {
   font-family: var(--font-logo);
-  font-weight: 900;
+  font-weight: 400;
+}
+
+/* The orange "Be" of the logo (see components/Wordmark.tsx). */
+.wordmark-be {
+  color: var(--warning);
+}
+
+/* Logo inside running text: same colour as the surrounding text. */
+.brand-wordmark--muted .wordmark-be {
+  color: inherit;
 }
 
 /* --- Password requirements checklist ---

@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useLang } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import '../styles/pages/legal.css';
+import Wordmark from '../components/Wordmark';
+import BrandText from '../components/BrandText';
 
 export default function PrivacyPage() {
   const { t } = useLang();
@@ -16,18 +18,18 @@ export default function PrivacyPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark">BeBooked</span></Link>
-        <h1 className="legal-title">{t.privacy.title}</h1>
-        <p className="legal-updated">{t.privacy.lastUpdated}</p>
-        <p className="legal-body">{t.privacy.intro}</p>
+        <Link to="/" className="legal-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <h1 className="legal-title"><BrandText text={t.privacy.title} /></h1>
+        <p className="legal-updated"><BrandText text={t.privacy.lastUpdated} muted /></p>
+        <p className="legal-body"><BrandText text={t.privacy.intro} muted /></p>
         {sections.map(([heading, body]) => (
           <div key={heading}>
-            <h2 className="legal-section-heading">{heading}</h2>
-            <p className="legal-body">{body}</p>
+            <h2 className="legal-section-heading"><BrandText text={heading} /></h2>
+            <p className="legal-body"><BrandText text={body} muted /></p>
           </div>
         ))}
         <p className="legal-contact">
-          {t.privacy.contact} <a href="mailto:nikostheodosis05@gmail.com">nikostheodosis05@gmail.com</a>
+          <BrandText text={t.privacy.contact} muted /> <a href="mailto:nikostheodosis05@gmail.com">nikostheodosis05@gmail.com</a>
         </p>
       </div>
       <Footer />

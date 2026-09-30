@@ -1703,8 +1703,8 @@ home: {
       upgradeToCreate: 'Upgrade to Pro to create a shop',
     },
     home: {
-    headline: 'Run your shop.',
-    headlineAccent: 'Fill your chair.',
+    headline: "It's okay to {brand}.",
+    headlineAccent: 'Just manage it.',
     cta: 'Start Free',
     signIn: 'Sign In',
     heroBadge: 'Booking platform for barbershops & salons',

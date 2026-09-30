@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/home.css';
+import Wordmark from './Wordmark';
 
 export default function Footer() {
   const { t } = useLang();
@@ -10,7 +11,7 @@ export default function Footer() {
       <div className="home-container">
         <div className="home-footer-inner">
           <div className="home-footer-brand">
-            <h3 className="home-footer-wordmark">BeBooked</h3>
+            <h3 className="home-footer-wordmark"><Wordmark /></h3>
             <p className="home-footer-brand-desc">
               {t.footer.brandDesc}
             </p>
@@ -49,7 +50,7 @@ export default function Footer() {
         </div>
 
         <div className="home-footer-bottom">
-          <span className="home-footer-copy">© {new Date().getFullYear()} BeBooked. {t.footer.copyright}</span>
+          <span className="home-footer-copy">© {new Date().getFullYear()} <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span>. {t.footer.copyright}</span>
         </div>
       </div>
     </footer>

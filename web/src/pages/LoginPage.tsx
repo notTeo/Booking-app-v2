@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Wordmark from '../components/Wordmark';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -30,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BeBooked</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

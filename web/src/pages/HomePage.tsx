@@ -37,6 +37,8 @@ import { handleActivateKeyDown } from '../utils/a11y';
 import type { DayOfWeek, HourRange } from '../api/workingHours.api';
 import '../styles/pages/home.css';
 import '../styles/pages/sidebar.css';
+import Wordmark from '../components/Wordmark';
+import BrandText from '../components/BrandText';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
@@ -132,6 +134,24 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** How far (in px) the preview card overlaps up into the bottom of the giant pill. */
 const PREVIEW_OVERLAP = 380;
+
+/** "{brand}" in the headline becomes "Be Booked" with the Be slide-in (home.css). */
+function HeroHeadline({ text }: { text: string }) {
+  const [before, after] = text.split('{brand}');
+  if (after === undefined) return <>{text}</>;
+  return (
+    <>
+      {before}
+      <span className="hero-brand">
+        <span className="hero-brand-be-slot">
+          <span className="hero-brand-be">Be</span>
+        </span>{' '}
+        <span className="hero-brand-booked">Booked</span>
+      </span>
+      {after}
+    </>
+  );
+}
 
 export default function HomePage() {
   const { t, language, toggleLanguage } = useLang();
@@ -325,7 +345,7 @@ export default function HomePage() {
 
           <div className="home-nav-left">
             <Link to="/" className="home-nav-logo-link" aria-label="BeBooked home">
-              <span className="home-logo-text">BeBooked</span>
+              <span className="home-logo-text"><Wordmark /></span>
             </Link>
 
             <div className="home-nav-links">
@@ -383,7 +403,7 @@ export default function HomePage() {
             <span>{t.home.heroBadge}</span>
           </div>
           <h1 className="home-headline">
-            {t.home.headline}
+            <HeroHeadline text={t.home.headline} />
             <span className="home-headline-accent">{t.home.headlineAccent}</span>
           </h1>
           <div className="home-hero-ctas">
@@ -458,14 +478,14 @@ export default function HomePage() {
                 >
                   <PreviewMenuIcon />
                 </button>
-                <span className="app-mobile-brand">BeBooked</span>
+                <span className="app-mobile-brand"><Wordmark /></span>
               </header>
 
               {/* Clickable, non-functional mockup of the real app sidebar — same
                   classes/CSS as components/Sidebar.tsx, for visual accuracy. */}
               <div className={`home-preview-sidebar${previewMenuOpen ? ' is-open' : ''}`}>
                 <div className="sidebar-header">
-                  <h4 className="sidebar-link-label">BeBooked</h4>
+                  <h4 className="sidebar-link-label"><Wordmark /></h4>
                   <button
                     className="sidebar-back-link"
                     aria-label="Close menu"
@@ -522,7 +542,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3>{previewPages[previewPage].title}</h3>
-                    <p>{previewPages[previewPage].subtitle}</p>
+                    <p><BrandText text={previewPages[previewPage].subtitle} muted /></p>
                   </div>
                 </div>
                 {previewPage === 'overview' ? (
@@ -1211,7 +1231,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from">BeBooked</span>
+                    <span className="home-feature-email-from brand-wordmark"><Wordmark /></span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeAgo}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsIncomingSubject}</div>
@@ -1222,7 +1242,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from">BeBooked</span>
+                    <span className="home-feature-email-from brand-wordmark"><Wordmark /></span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeNow}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsConfirmedSubject}</div>

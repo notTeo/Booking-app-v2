@@ -12,9 +12,9 @@
 
 .navbar-brand {
   color: var(--text);
+  font-family: var(--font-logo);
   font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 400;
 }
 
 .navbar-brand:hover {

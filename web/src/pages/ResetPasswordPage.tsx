@@ -4,6 +4,7 @@ import { resetPassword } from '../api/auth.api';
 import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/reset-password.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Wordmark from '../components/Wordmark';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -43,7 +44,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BeBooked</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Reset Password</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

@@ -5,6 +5,7 @@ import { useLang } from '../context/LanguageContext';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import '../styles/pages/sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Wordmark from './Wordmark';
 import {
   faTableCells,
   faStore,
@@ -69,7 +70,7 @@ function GlobalNav({ isOpen, onClose, width, startResize }: NavProps) {
           desktop. On mobile this spacer reappears (see sidebar.css) to hold
           the logo clear of the fixed close-X overlaid on top of it. */}
       <span className="sidebar-header-spacer" aria-hidden="true" />
-      <h4 className="sidebar-link-label">BeBooked</h4>
+      <h4 className="sidebar-link-label"><Wordmark /></h4>
     </div>
 
       <span className="sidebar-section-label">{t.sidebar.app}</span>
@@ -133,7 +134,7 @@ function ShopNav({ isOpen, onClose, width, startResize, slug }: ShopNavProps) {
       {/* Mobile-only spacer, holds the logo clear of the fixed close-X
           (mirrors GlobalNav's header — see sidebar.css). */}
       <span className="sidebar-header-spacer" aria-hidden="true" />
-      <h4 className="sidebar-link-label">BeBooked</h4>
+      <h4 className="sidebar-link-label"><Wordmark /></h4>
       <NavLink to="/shops" className="sidebar-back-link" aria-label={t.sidebar.backToShops} title={t.sidebar.backToShops} onClick={onClose}>
         <FontAwesomeIcon icon={faChevronLeft} />
       </NavLink>

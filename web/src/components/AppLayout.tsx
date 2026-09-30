@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import Wordmark from './Wordmark';
 
 function IconMenu() {
   return (
@@ -28,7 +29,7 @@ export default function AppLayout() {
         >
           <IconMenu />
         </button>
-        <span className="app-mobile-brand">BeBooked</span>
+        <span className="app-mobile-brand"><Wordmark /></span>
       </header>
 
       {/* Backdrop — mobile only, only when drawer is open */}

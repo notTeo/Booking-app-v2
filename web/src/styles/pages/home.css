@@ -397,6 +397,68 @@
   color: var(--accent);
 }
 
+/* "Be Booked" inside the hero headline: plays once on load. "Be" starts hidden
+   under "Booked" (clipped at its slot's right edge), slides out left, snaps
+   back and turns orange while "Booked" bobs. Ends in the final state, so
+   reduced motion simply shows that. */
+.hero-brand {
+  font-family: var(--font-logo);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.hero-brand-be-slot {
+  display: inline-block;
+  clip-path: inset(-0.3em 0 -0.3em -1em);
+}
+
+.hero-brand-be,
+.hero-brand-booked {
+  display: inline-block;
+}
+
+.hero-brand-be {
+  color: var(--warning);
+  animation: hero-be-slide 660ms 350ms both;
+}
+
+.hero-brand-booked {
+  animation: hero-booked-bob 100ms 860ms both;
+}
+
+@keyframes hero-be-slide {
+  0% {
+    transform: translateX(calc(100% + 0.3em));
+    color: inherit;
+    animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  60.6% {
+    transform: translateX(-0.2em);
+    color: inherit;
+    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  }
+  77.3% {
+    transform: translateX(0);
+    color: inherit;
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: translateX(0);
+    color: var(--warning);
+  }
+}
+
+@keyframes hero-booked-bob {
+  50% { transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-brand-be,
+  .hero-brand-booked {
+    animation: none;
+  }
+}
+
 /* "BeBooked" logo mark — sits at the left of the nav pill. */
 .home-nav-logo-link {
   display: inline-flex;
@@ -410,7 +472,7 @@
 
 .home-logo-text {
   font-family: var(--font-logo);
-  font-weight: 900;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -619,10 +681,19 @@
   flex: 1;
   min-width: 0;
   padding: clamp(1rem, 2.9cqw, 2rem) clamp(1.1rem, 3.3cqw, 2.25rem) clamp(1.2rem, 3.6cqw, 2.5rem);
-  /* Some mock screens (working hours' 7 days, the full settings form) can be
-     taller than the card's fixed 16:9 aspect ratio — scroll within the card
-     instead of silently clipping under .home-preview-card's overflow:hidden. */
-  overflow-y: auto;
+  /* The demo is a picture, not an app: taller mock screens are cropped by the
+     card instead of scrolling inside it. */
+  overflow: hidden;
+}
+
+/* The bookings calendar fills the rest of the card, down to the padding. */
+.home-preview-main:has(> .home-preview-cal-grid) {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-preview-main:has(> .home-preview-cal-grid) > .home-preview-greeting {
+  flex-shrink: 0;
 }
 
 .home-preview-greeting {
@@ -1489,6 +1560,10 @@
 /* ─── Bookings calendar preview — mirrors ShopBookingsPage.tsx / bookings.css,
    scaled way down (a handful of blocks, not a full day). ──────────────────── */
 .home-preview-cal-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: clamp(8px, 1.3cqw, 14px);
   overflow: hidden;
@@ -1513,7 +1588,8 @@
 .home-preview-cal-body {
   display: grid;
   grid-template-columns: clamp(36px, 5.5cqw, 60px) repeat(3, 1fr);
-  height: clamp(180px, 26cqw, 320px);
+  flex: 1;
+  min-height: clamp(180px, 26cqw, 320px);
 }
 
 .home-preview-cal-gutter {
@@ -2214,7 +2290,7 @@
   min-width: 110px;
 }
 
-.home-footer-wordmark { font-family: var(--font-logo); font-size: 2rem; color: var(--accent); margin: 0 0 1rem; font-weight: 900; }
+.home-footer-wordmark { font-family: var(--font-logo); font-size: 2rem; color: var(--accent); margin: 0 0 1rem; font-weight: 400; }
 .home-footer-brand-desc { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0 0 2rem; max-width: 280px; }
 
 .home-footer-socials { display: flex; gap: 0.75rem; }
@@ -2316,7 +2392,7 @@
 
   /* Extra top padding clears the absolutely-positioned mobile header
      (.app-mobile-header), which no longer takes up flow space to sit above it. */
-  .home-preview-main      { padding: 4rem 1.25rem 1.75rem; overflow-y: auto; }
+  .home-preview-main      { padding: 4rem 1.25rem 1.75rem; overflow: hidden; }
   .home-preview-services-grid { grid-template-columns: 1fr; gap: 1rem; }
   .home-preview-service-card  { padding: 1.25rem; }
   .home-preview-invite-fields { grid-template-columns: 1fr; }

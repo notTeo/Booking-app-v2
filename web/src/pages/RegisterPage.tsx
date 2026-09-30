@@ -7,6 +7,7 @@ import { authStore } from '../store/authStore';
 import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/register.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Wordmark from '../components/Wordmark';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
@@ -73,7 +74,7 @@ export default function RegisterPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BeBooked</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Register</h1>
 
         {inviteToken && (

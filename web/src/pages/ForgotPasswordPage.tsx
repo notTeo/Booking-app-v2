@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api/auth.api';
 import '../styles/pages/forgot-password.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Wordmark from '../components/Wordmark';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="page">
       <div className="card">
-        <Link to="/" className="card-back">← <span className="brand-wordmark">BeBooked</span></Link>
+        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Forgot Password</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

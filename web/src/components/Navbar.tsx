@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/navbar.css';
 import Toggles from './Toggles';
+import Wordmark from './Wordmark';
 
 
 export default function Navbar() {
@@ -22,7 +23,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand" onClick={closeMenu}>BeBooked</Link>
+      <Link to="/" className="navbar-brand" onClick={closeMenu}><Wordmark /></Link>
 
       {/* Desktop nav links */}
       <div className="navbar-links">
