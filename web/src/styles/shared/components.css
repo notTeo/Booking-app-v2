@@ -110,7 +110,7 @@ textarea:focus-visible {
 /* --- Buttons --- */
 .btn {
   border: none;
-  border-radius: var(--radius);
+  border-radius: calc(var(--radius) * 2);
   cursor: pointer;
   font-family: var(--font);
   font-size: 1rem;

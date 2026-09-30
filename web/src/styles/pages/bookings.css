@@ -192,7 +192,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-radius: 999px;
+  border-radius: calc(var(--radius) * 2);
   padding: 0.25rem 0.75rem;
   cursor: pointer;
   font-family: var(--font);

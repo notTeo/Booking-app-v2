@@ -1232,7 +1232,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from brand-wordmark"><Wordmark /></span>
+                    <span className="home-feature-email-from brand-wordmark brand-wordmark--muted"><Wordmark /></span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeAgo}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsIncomingSubject}</div>
@@ -1243,7 +1243,7 @@ export default function HomePage() {
                     <span className="home-feature-email-icon">
                       <FontAwesomeIcon icon={faEnvelope} />
                     </span>
-                    <span className="home-feature-email-from brand-wordmark"><Wordmark /></span>
+                    <span className="home-feature-email-from brand-wordmark brand-wordmark--muted"><Wordmark /></span>
                     <span className="home-feature-email-time">{t.home.featureAlertsTimeNow}</span>
                   </div>
                   <div className="home-feature-email-subject">{t.home.featureAlertsConfirmedSubject}</div>

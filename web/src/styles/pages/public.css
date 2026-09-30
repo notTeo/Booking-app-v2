@@ -673,7 +673,7 @@
 .public-slot-btn {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: calc(var(--radius) * 2);
   background: var(--bg-input);
   color: var(--text);
   cursor: pointer;
