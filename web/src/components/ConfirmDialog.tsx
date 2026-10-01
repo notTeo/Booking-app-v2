@@ -109,8 +109,10 @@ export default function ConfirmDialog({
           </span>
           <h2 id={`${id}-title`} className="modal__title">{title}</h2>
         </div>
-        <p id={`${id}-message`} className="modal__body">{message}</p>
-        {children}
+        <div className="modal__body">
+          <p id={`${id}-message`}>{message}</p>
+          {children}
+        </div>
         <div className="modal__footer">
           <button type="button" className="btn btn--ghost" ref={cancelRef} onClick={onCancel} disabled={busy}>
             {cancelLabel}
