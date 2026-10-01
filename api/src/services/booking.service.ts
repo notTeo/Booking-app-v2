@@ -717,16 +717,7 @@ export const getAvailableSlots = async (
 
 export const listBookings = async (
   shopId: string,
-  filters: {
-    date?: string;
-    status?: BookingStatus;
-    staffId?: string;
-    // Inclusive shop-local date range, ignored when `date` is given.
-    from?: string;
-    to?: string;
-    limit?: number;
-    order?: 'asc' | 'desc';
-  },
+  filters: { date?: string; status?: BookingStatus; staffId?: string },
   canViewCustomer = true,
 ) => {
   const where: Record<string, unknown> = { shopId };
@@ -739,12 +730,6 @@ export const listBookings = async (
       await getShopTimezone(shopId),
     );
     where['startTime'] = { gte: start, lt: end };
-  } else if (filters.from || filters.to) {
-    const zone = await getShopTimezone(shopId);
-    where['startTime'] = {
-      ...(filters.from && { gte: dayBoundsUtc(filters.from, zone).start }),
-      ...(filters.to && { lt: dayBoundsUtc(filters.to, zone).end }),
-    };
   }
 
   if (filters.status) where['status'] = filters.status;
@@ -753,8 +738,7 @@ export const listBookings = async (
   const bookings = await prisma.booking.findMany({
     where,
     include: { customer: true, service: true },
-    orderBy: { startTime: filters.order ?? 'asc' },
-    ...(filters.limit && { take: filters.limit }),
+    orderBy: { startTime: 'asc' },
   });
 
   return bookings.map((b) => ({

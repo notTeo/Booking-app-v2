@@ -1,5 +1,5 @@
 import { useLang } from '../../context/LanguageContext';
-import { RecentBookingsSkeleton } from './RecentBookings';
+import { UpcomingBookingsSkeleton } from './UpcomingBookings';
 
 /** Same layout as the loaded dashboard: stat cards, chart, table, breakdown. */
 export default function OverviewSkeleton() {
@@ -22,9 +22,9 @@ export default function OverviewSkeleton() {
           <span className="skeleton skeleton--block" />
           <span className="skeleton skeleton--text" />
         </div>
-        <div className="overview-grid__recent">
+        <div className="overview-grid__upcoming">
           <span className="skeleton skeleton--title" />
-          <RecentBookingsSkeleton />
+          <UpcomingBookingsSkeleton />
         </div>
         <div className="card overview-grid__breakdown">
           <span className="skeleton skeleton--title" />

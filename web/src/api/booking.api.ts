@@ -42,10 +42,6 @@ export interface ListBookingsParams {
   date?: string;         // YYYY-MM-DD
   status?: BookingStatus;
   staffId?: string;
-  from?: string;         // YYYY-MM-DD, inclusive (ignored when `date` is set)
-  to?: string;           // YYYY-MM-DD, inclusive
-  limit?: number;        // 1-50
-  order?: 'asc' | 'desc'; // by start time; default asc
 }
 
 export interface BookingWithStaff extends Booking {

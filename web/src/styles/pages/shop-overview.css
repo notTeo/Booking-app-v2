@@ -1,13 +1,13 @@
 /* Layout only — every visual comes from components.css. */
 .overview-page { display: flex; flex-direction: column; gap: var(--space-6); max-width: 72rem; }
 .overview-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
-.overview-grid { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); grid-template-areas: "chart" "recent" "breakdown"; }
+.overview-grid { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); grid-template-areas: "chart" "upcoming" "breakdown"; }
 .overview-grid__chart { grid-area: chart; min-width: 0; display: flex; }
 .overview-grid__chart > .card { flex: 1; min-width: 0; }
-.overview-grid__recent { grid-area: recent; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.overview-grid__upcoming { grid-area: upcoming; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .overview-grid__breakdown { grid-area: breakdown; min-width: 0; align-items: center; }
 @media (min-width: 960px) {
-  .overview-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "chart breakdown" "recent recent"; gap: var(--space-6); }
+  .overview-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "chart breakdown" "upcoming upcoming"; gap: var(--space-6); }
 }
-.overview-recent__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.overview-upcoming__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
 .overview-total { color: var(--text-muted); font-size: var(--fs-sm); }

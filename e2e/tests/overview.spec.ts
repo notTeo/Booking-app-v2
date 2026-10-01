@@ -6,8 +6,8 @@ import { addDays, athensDate } from '../support/dates';
 /**
  * Shop overview: Week (this Mon-Sun), Month (this calendar month) and 3 months
  * (this month plus the previous two, in Monday-start weeks) drive the stat
- * cards, the bar chart and the recent bookings. Future days are included and
- * drawn as "scheduled".
+ * cards, the bar chart and the donut. Future days are included and drawn as
+ * "scheduled". "Upcoming bookings" (the next 5 from now) ignores the switch.
  *
  * Bookings are seeded relative to the Athens "today". Which of them fall in
  * which period depends on the day the suite runs, so the expectations come
@@ -20,6 +20,7 @@ const seedOffsets: { offset: number; hour: number; status: Status }[] = [
   { offset: 0, hour: 10, status: 'CONFIRMED' },
   { offset: 0, hour: 12, status: 'PENDING' },
   { offset: 1, hour: 10, status: 'COMPLETED' },
+  { offset: 2, hour: 10, status: 'CANCELED' }, // a future canceled booking must not be "upcoming"
   { offset: 3, hour: 10, status: 'PENDING' },
   { offset: 9, hour: 10, status: 'CONFIRMED' },
   { offset: 45, hour: 10, status: 'CONFIRMED' },
@@ -71,6 +72,34 @@ const bucketStarts = (range: Range) => {
   return starts;
 };
 
+/** The next 5 bookings from now, canceled excluded, soonest first. */
+const upcomingSeeds = () => {
+  const now = Date.now();
+  return dated
+    .map((b) => ({ ...b, at: Date.parse(`${b.date}T${String(b.hour).padStart(2, '0')}:00:00Z`) }))
+    .filter((b) => b.at >= now && b.status !== 'CANCELED' && b.status !== 'NO_SHOW')
+    .sort((a, b) => a.at - b.at)
+    .slice(0, 5);
+};
+
+/** "Thu 1 Oct, 13:00" in Athens, built from Intl parts rather than the app's formatter. */
+const whenLabel = (at: number) => {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Athens',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(new Date(at))
+      .map((p) => [p.type, p.value]),
+  );
+  return `${parts.weekday} ${parts.day} ${parts.month}, ${parts.hour}:${parts.minute}`;
+};
+
 const inPeriod = (range: Range) => {
   const { from, to } = period(range);
   return dated.filter((b) => b.date >= from && b.date <= to);
@@ -116,7 +145,8 @@ async function openOverview(page: Page) {
 const tab = (page: Page, range: Range) => page.getByRole('tab', { name: TABS[range], exact: true });
 const stat = (page: Page, label: string) => page.locator('.stat', { hasText: label }).locator('.stat__value');
 const bars = (page: Page) => page.locator('.bar-chart__col');
-const recentRows = (page: Page) => page.locator('.data-table tbody tr');
+const upcomingRows = (page: Page) => page.locator('.data-table tbody tr');
+const upcomingWhen = (page: Page) => page.locator('.data-table td[data-label="When"]');
 
 async function expectPeriod(page: Page, range: Range) {
   await expect(bars(page)).toHaveCount(bucketStarts(range).length);
@@ -124,7 +154,6 @@ async function expectPeriod(page: Page, range: Range) {
   await expect(stat(page, 'Pending')).toHaveText(String(count(range, 'PENDING')));
   await expect(stat(page, 'Completed')).toHaveText(String(count(range, 'COMPLETED')));
   await expect(stat(page, 'Canceled / no-show')).toHaveText(String(count(range, 'CANCELED', 'NO_SHOW')));
-  await expect(recentRows(page)).toHaveCount(Math.min(5, inPeriod(range).length));
 
   // Today's bar/week is highlighted; later ones are drawn as scheduled and say so.
   await expect(page.locator('.bar-chart__col--current')).toHaveCount(1);
@@ -138,7 +167,7 @@ async function expectPeriod(page: Page, range: Range) {
   }
 }
 
-test('switching the range updates cards, chart and recent bookings', async ({ page }) => {
+test('switching the range updates the cards, the chart and the scheduled bars', async ({ page }) => {
   await openOverview(page);
 
   // Week is the default.
@@ -147,7 +176,6 @@ test('switching the range updates cards, chart and recent bookings', async ({ pa
   await expect(bars(page)).toHaveCount(7);
   // Today's own bar carries today's count in its accessible name.
   await expect(page.locator('.bar-chart__col--current')).toHaveAttribute('aria-label', /: 2 bookings$/);
-  await expect(page.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `/shops/${E2E.shop.slug}/bookings`);
 
   await tab(page, 'month').click();
   await expectPeriod(page, 'month');
@@ -158,6 +186,23 @@ test('switching the range updates cards, chart and recent bookings', async ({ pa
 
   await tab(page, 'week').click();
   await expectPeriod(page, 'week');
+});
+
+test('upcoming bookings are the next 5 from now, whatever the period', async ({ page }) => {
+  await openOverview(page);
+  const expected = upcomingSeeds().map((b) => whenLabel(b.at));
+  expect(expected.length).toBeGreaterThan(0);
+  await expect(page.getByRole('heading', { name: 'Upcoming bookings' })).toBeVisible();
+  await expect(upcomingWhen(page)).toHaveText(expected);
+  await expect(upcomingRows(page).getByText(/Canceled|No-show/)).toHaveCount(0);
+
+  // Switching the period leaves the list alone.
+  for (const range of ['month', 'quarter', 'week'] as const) {
+    await tab(page, range).click();
+    await expect(bars(page)).toHaveCount(bucketStarts(range).length);
+    await expect(upcomingWhen(page)).toHaveText(expected);
+  }
+  await expect(page.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `/shops/${E2E.shop.slug}/bookings`);
 });
 
 test('the status breakdown legend states every status with count and percent', async ({ page }) => {
@@ -210,12 +255,23 @@ test('bookings exist, but none in the period: a plain message and no button', as
   await expect(stat(page, 'Bookings')).toHaveText('0');
   await expect(page.getByRole('button', { name: 'Copy booking link' })).toHaveCount(0);
   await expect(bars(page)).toHaveCount(0);
+  // The far-future booking is still the next upcoming one.
+  await expect(upcomingRows(page)).toHaveCount(1);
 
   await tab(page, 'month').click();
   await expect(page.getByText('No bookings this month')).toBeVisible();
   await tab(page, 'quarter').click();
   await expect(page.getByText('No bookings in the last 3 months')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Copy booking link' })).toHaveCount(0);
+});
+
+test('bookings exist but none upcoming: "No upcoming bookings" with a link to all', async ({ page }) => {
+  await query('delete from "Booking"');
+  await insertBooking('ov-past', addDays(today, -10), 10, 'COMPLETED');
+  await openOverview(page);
+  await expect(page.getByText('No upcoming bookings')).toBeVisible();
+  await expect(upcomingRows(page)).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `/shops/${E2E.shop.slug}/bookings`);
 });
 
 test('a shop with no bookings ever shows the empty state with the booking link', async ({ page }) => {
@@ -228,4 +284,6 @@ test('a shop with no bookings ever shows the empty state with the booking link',
   await tab(page, 'quarter').click();
   await expect(page.getByRole('button', { name: 'Copy booking link' })).toBeVisible();
   await expect(bars(page)).toHaveCount(0);
+  // Nothing to list, so no empty "upcoming" table next to the call to action.
+  await expect(page.getByRole('heading', { name: 'Upcoming bookings' })).toHaveCount(0);
 });

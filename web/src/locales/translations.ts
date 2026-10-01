@@ -733,9 +733,10 @@ export interface Translations {
       bookingMany: string;
       scheduled: string;
     };
-    recent: {
+    upcoming: {
       title: string;
       viewAll: string;
+      empty: string;
       customerCol: string;
       serviceCol: string;
       whenCol: string;
@@ -1613,9 +1614,10 @@ home: {
         bookingMany: 'ραντεβού',
         scheduled: 'προγραμματισμένα',
       },
-      recent: {
-        title: 'Πρόσφατα ραντεβού',
+      upcoming: {
+        title: 'Επερχόμενα ραντεβού',
         viewAll: 'Προβολή όλων',
+        empty: 'Δεν υπάρχουν επερχόμενα ραντεβού',
         customerCol: 'Πελάτης',
         serviceCol: 'Υπηρεσία',
         whenCol: 'Πότε',
@@ -2512,9 +2514,10 @@ home: {
         bookingMany: 'bookings',
         scheduled: 'scheduled',
       },
-      recent: {
-        title: 'Recent bookings',
+      upcoming: {
+        title: 'Upcoming bookings',
         viewAll: 'View all',
+        empty: 'No upcoming bookings',
         customerCol: 'Customer',
         serviceCol: 'Service',
         whenCol: 'When',

@@ -1,26 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../../context/LanguageContext';
-import type { Booking } from '../../api/booking.api';
+import type { BookingWithStaff } from '../../api/booking.api';
 import StatusBadge from '../StatusBadge';
 import Alert from '../Alert';
 import { formatWhen } from '../../utils/overviewFormat';
 
 interface Props {
-  bookings: Booking[] | undefined;
+  bookings: BookingWithStaff[] | undefined;
   isError: boolean;
   onRetry: () => void;
   zone: string;
   viewAllTo: string;
 }
 
-export default function RecentBookings({ bookings, isError, onRetry, zone, viewAllTo }: Props) {
+export default function UpcomingBookings({ bookings, isError, onRetry, zone, viewAllTo }: Props) {
   const { t, language } = useLang();
-  const r = t.overview.recent;
+  const r = t.overview.upcoming;
 
   return (
-    <section className="overview-grid__recent" aria-labelledby="overview-recent-title">
-      <div className="overview-recent__head">
-        <h2 className="card__title" id="overview-recent-title">{r.title}</h2>
+    <section className="overview-grid__upcoming" aria-labelledby="overview-upcoming-title">
+      <div className="overview-upcoming__head">
+        <h2 className="card__title" id="overview-upcoming-title">{r.title}</h2>
         <Link to={viewAllTo}>{r.viewAll}</Link>
       </div>
 
@@ -33,10 +33,15 @@ export default function RecentBookings({ bookings, isError, onRetry, zone, viewA
           {t.overview.error.text}
         </Alert>
       ) : bookings === undefined ? (
-        <RecentBookingsSkeleton />
+        <UpcomingBookingsSkeleton />
       ) : (
         <div className="table-wrap">
           <div className="table-surface">
+            {bookings.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{r.empty}</p>
+              </div>
+            ) : (
             <table className="data-table">
               <thead>
                 <tr>
@@ -59,6 +64,7 @@ export default function RecentBookings({ bookings, isError, onRetry, zone, viewA
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         </div>
       )}
@@ -66,7 +72,7 @@ export default function RecentBookings({ bookings, isError, onRetry, zone, viewA
   );
 }
 
-export function RecentBookingsSkeleton() {
+export function UpcomingBookingsSkeleton() {
   return (
     <div className="card" aria-hidden="true">
       {Array.from({ length: 5 }, (_, i) => (

@@ -4,7 +4,7 @@ import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { getOverview, type OverviewRange } from '../api/overview.api';
-import { listBookings } from '../api/booking.api';
+import { getBookingStats } from '../api/booking.api';
 import { publicShopUrl } from '../utils/publicLink';
 import { firstName, greetingPeriod } from '../utils/overviewFormat';
 import Alert from '../components/Alert';
@@ -12,13 +12,12 @@ import RangeTabs from '../components/overview/RangeTabs';
 import { PANEL_ID, tabId } from '../utils/overviewRanges';
 import StatCards from '../components/overview/StatCards';
 import BookingsChart from '../components/overview/BookingsChart';
-import RecentBookings from '../components/overview/RecentBookings';
+import UpcomingBookings from '../components/overview/UpcomingBookings';
 import StatusDonut from '../components/overview/StatusDonut';
 import OverviewSkeleton from '../components/overview/OverviewSkeleton';
 import OverviewEmpty, { PeriodEmpty } from '../components/overview/OverviewEmpty';
 import '../styles/pages/shop-overview.css';
 
-const RECENT_LIMIT = 5;
 // One quick retry, then show the error; the default (3 retries with backoff) leaves the skeleton up for ~7s.
 const RETRY = 1;
 
@@ -37,13 +36,23 @@ export default function ShopOverviewPage() {
   const overview = overviewQuery.data;
   const periodIsEmpty = !!overview && overview.totals.all + overview.totals.canceled === 0;
 
-  // Recent bookings follow the window the API actually used.
-  const recentQuery = useQuery({
-    queryKey: ['overview-recent', shop?.id, overview?.from, overview?.to],
-    queryFn: () => listBookings(shop!.id, { from: overview!.from, to: overview!.to, limit: RECENT_LIMIT, order: 'desc' }),
-    enabled: !!shop && !!overview && !periodIsEmpty,
+  // The next 5 bookings from now (canceled excluded). Deliberately independent
+  // of the selected period, so it is not refetched when the switch changes.
+  const upcomingQuery = useQuery({
+    queryKey: ['overview-upcoming', shop?.id],
+    queryFn: () => getBookingStats(shop!.id).then((stats) => stats.upcoming),
+    enabled: !!shop,
     retry: RETRY,
   });
+  const upcoming = (
+    <UpcomingBookings
+      bookings={upcomingQuery.data}
+      isError={upcomingQuery.isError}
+      onRetry={() => upcomingQuery.refetch()}
+      zone={shop?.timezone ?? 'UTC'}
+      viewAllTo={`/shops/${shop?.slug}/bookings`}
+    />
+  );
 
   if (isLoading) return <div className="state-view">{t.overview.loading}</div>;
   if (!shop) return <div className="state-view">{t.overview.noShop}</div>;
@@ -82,7 +91,10 @@ export default function ShopOverviewPage() {
             <StatCards totals={overview.totals} />
             {periodIsEmpty ? (
               overview.hasAnyBookings ? (
-                <PeriodEmpty range={overview.range} />
+                <>
+                  <PeriodEmpty range={overview.range} />
+                  {upcoming}
+                </>
               ) : (
                 <OverviewEmpty link={publicShopUrl(shop.slug)} />
               )
@@ -91,13 +103,7 @@ export default function ShopOverviewPage() {
                 <div className="overview-grid__chart">
                   <BookingsChart overview={overview} />
                 </div>
-                <RecentBookings
-                  bookings={recentQuery.data}
-                  isError={recentQuery.isError}
-                  onRetry={() => recentQuery.refetch()}
-                  zone={shop.timezone}
-                  viewAllTo={`/shops/${shop.slug}/bookings`}
-                />
+                {upcoming}
                 <StatusDonut totals={overview.totals} />
               </div>
             )}
