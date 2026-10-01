@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarXmark, faClock } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import type { Service, ShopMember, SlotInfo, SlotsResponse } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
@@ -103,12 +103,14 @@ export default function DateTimeStep({
   const renderSlot = (slot: SlotInfo) => (
     <button
       key={slot.time}
-      className={`public-slot-btn${time === slot.time ? ' public-slot-btn--selected' : ''}${!slot.available ? ' public-slot-btn--disabled' : ''}${slot.outsideHours ? ' public-slot-btn--outside' : ''}${slot.offGrid ? ' public-slot-btn--offgrid' : ''}`}
+      type="button"
+      className={`slot${slot.outsideHours || slot.offGrid ? ' slot--dashed' : ''}`}
+      aria-pressed={time === slot.time}
       onClick={() => pickSlot(slot)}
       disabled={internal && !slot.available}
       aria-label={internal && (slot.outsideHours || slot.offGrid || !slot.available || slot.past) ? slotLabel(slot) : undefined}
     >
-      {slot.outsideHours && <><FontAwesomeIcon icon={faClock} /> </>}
+      {slot.outsideHours && <><FontAwesomeIcon icon={faClock} aria-hidden="true" /> </>}
       {slot.time}
       {internal && !slot.available && <span className="slot-tag"> {os.booked}</span>}
       {internal && slot.available && slot.past && <span className="slot-tag"> {os.past}</span>}
@@ -164,17 +166,19 @@ export default function DateTimeStep({
       {internal && date !== '' && intervalOptions && interval !== undefined && onIntervalChange && (
         <div className="interval-picker" role="group" aria-label={t.bookings.intervalPicker.label}>
           <span className="field__label">{t.bookings.intervalPicker.label}</span>
+          <div className="slots">
           {intervalOptions.map((m) => (
             <button
               key={m}
               type="button"
               aria-pressed={interval === m}
-              className={`public-slot-btn${interval === m ? ' public-slot-btn--selected' : ''}`}
+              className="slot"
               onClick={() => interval !== m && onIntervalChange(m)}
             >
               {t.bookings.intervalPicker.option.replace('{n}', String(m))}
             </button>
           ))}
+          </div>
         </div>
       )}
 
@@ -204,10 +208,11 @@ export default function DateTimeStep({
       )}
 
       {isClosed && (
-        <div className="public-closed-message">
-          <p>{mode === 'internal' ? t.public.closedOrNoSchedule : t.public.closedThisDay}</p>
+        <div className="empty empty--sm" role="status">
+          <span className="empty__icon"><FontAwesomeIcon icon={faCalendarXmark} aria-hidden="true" /></span>
+          <p className="empty__text">{mode === 'internal' ? t.public.closedOrNoSchedule : t.public.closedThisDay}</p>
           {mode === 'internal' && closedLinkTo && (
-            <p className="public-closed-hint">
+            <p className="empty__text">
               <Link to={closedLinkTo}>{t.public.manageWorkingHours}</Link>
             </p>
           )}
@@ -215,7 +220,7 @@ export default function DateTimeStep({
       )}
 
       {!internal && !isClosed && (
-        <div className="public-slots-grid">{visibleSlots.map(renderSlot)}</div>
+        <div className="slots">{visibleSlots.map(renderSlot)}</div>
       )}
 
       {internal &&
@@ -230,21 +235,21 @@ export default function DateTimeStep({
           // hours never do — it's the one section that's always relevant.
           if (g.key === 'working') {
             return (
-              <section key={g.key} className="slot-section">
-                {showOutside && <h4 className="slot-section-title">{heading}</h4>}
-                <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
+              <section key={g.key} className="slot-group">
+                {showOutside && <h4 className="slot-group__label">{heading}</h4>}
+                <div className="slots">{g.slots.map(renderSlot)}</div>
               </section>
             );
           }
           return (
-            <details key={g.key} className="slot-section slot-section--collapsible" open>
+            <details key={g.key} className="slot-group slot-group--collapsible" open>
               <summary>
                 {/* <h4> (not <summary> itself) so this keeps its heading role for assistive tech and tests. */}
-                <h4 className="slot-section-title">
-                  {heading} <span className="slot-section-count">({g.slots.length})</span>
+                <h4 className="slot-group__label">
+                  {heading} <span className="slot-group__count">({g.slots.length})</span>
                 </h4>
               </summary>
-              <div className="public-slots-grid">{g.slots.map(renderSlot)}</div>
+              <div className="slots">{g.slots.map(renderSlot)}</div>
             </details>
           );
         })}
@@ -263,7 +268,7 @@ export default function DateTimeStep({
               onSelectTime(e.target.value);
             }}
           />
-          <p className="public-closed-hint">{os.otherTimeHint}</p>
+          <p className="field__hint">{os.otherTimeHint}</p>
         </div>
       )}
 
