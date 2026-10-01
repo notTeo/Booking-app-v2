@@ -15,6 +15,7 @@ import {
 } from '../utils/jwt';
 import { randomUUID } from 'crypto';
 import { TERMS_VERSION } from '../config/terms';
+import { USER_SELECT, toUserDto, type UserDto } from '../utils/userDto';
 import {
   sendEmailChangeVerification,
   sendPasswordResetEmail,
@@ -91,13 +92,7 @@ export const registerUserWithInvite = async (
   const accessToken = signAccessToken('placeholder'); // replaced in transaction
   let finalAccessToken = accessToken;
   let finalRefreshToken = '';
-  let createdUser: {
-    id: string;
-    name: string;
-    email: string;
-    isVerified: boolean;
-    createdAt: Date;
-  };
+  let createdUser: UserDto;
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
@@ -109,13 +104,7 @@ export const registerUserWithInvite = async (
         termsVersion: TERMS_VERSION,
         termsAcceptedAt: new Date(),
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        isVerified: true,
-        createdAt: true,
-      },
+      select: USER_SELECT,
     });
 
     // Link the new login to the placeholder team member this invite grants
@@ -143,7 +132,7 @@ export const registerUserWithInvite = async (
 
     finalAccessToken = signAccessToken(user.id);
     finalRefreshToken = newRefreshToken;
-    createdUser = user;
+    createdUser = toUserDto(user);
   });
 
   logger.info(
@@ -200,15 +189,7 @@ export const loginUser = async ({
   logger.info(`User logged in: ${user.id}`);
 
   return {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      isVerified: user.isVerified,
-      createdAt: user.createdAt,
-      // Same shape as GET /user/me; the settings page needs it right after login.
-      hasPassword: true,
-    },
+    user: toUserDto(user),
     accessToken,
     refreshToken,
     rememberMe,
@@ -296,19 +277,13 @@ export const verifyEmail = async (token: string) => {
       termsVersion: pending.termsVersion,
       termsAcceptedAt: pending.termsAcceptedAt,
     },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      isVerified: true,
-      createdAt: true,
-    },
+    select: USER_SELECT,
   });
 
   await prisma.pendingRegistration.delete({ where: { token } });
 
   logger.info(`Email verified and user created: ${user.id}`);
-  return user;
+  return toUserDto(user);
 };
 
 export const forgotPassword = async (email: string) => {
@@ -354,21 +329,13 @@ export const revokeAllSessions = async (
   logger.info(`All sessions revoked for userId: ${userId}`);
 };
 
-type UpdatedUser = {
-  id: string;
-  name: string | null;
-  email: string;
-  isVerified: boolean;
-  createdAt: Date;
-};
-
 export const updateUser = async (
   userId: string,
   data: { email?: string; password?: string; name?: string },
 ): Promise<
-  | { user: UpdatedUser }
+  | { user: UserDto }
   | { message: string }
-  | { user: UpdatedUser; message: string }
+  | { user: UserDto; message: string }
 > => {
   // Name and password apply immediately, in one update; email goes through a
   // pending verification instead, so it's handled separately below.
@@ -419,30 +386,20 @@ export const updateUser = async (
     if (message) return { message };
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        isVerified: true,
-        createdAt: true,
-      },
+      select: USER_SELECT,
     });
-    return { user };
+    return { user: toUserDto(user) };
   }
 
   const user = await prisma.user.update({
     where: { id: userId },
     data: immediateChanges,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      isVerified: true,
-      createdAt: true,
-    },
+    select: USER_SELECT,
   });
 
-  return message ? { user, message } : { user };
+  return message
+    ? { user: toUserDto(user), message }
+    : { user: toUserDto(user) };
 };
 
 export const verifyEmailChange = async (token: string) => {
@@ -462,13 +419,13 @@ export const verifyEmailChange = async (token: string) => {
   const user = await prisma.user.update({
     where: { id: pending.userId },
     data: { email: pending.newEmail, isVerified: true },
-    select: { id: true, email: true, isVerified: true, createdAt: true },
+    select: USER_SELECT,
   });
 
   await prisma.pendingEmailChange.delete({ where: { token } });
 
   logger.info(`Email changed for userId: ${pending.userId}`);
-  return user;
+  return toUserDto(user);
 };
 
 export const deleteUser = async (userId: string, password?: string) => {
@@ -476,9 +433,11 @@ export const deleteUser = async (userId: string, password?: string) => {
   if (!user) throw new AppError(404, 'User not found');
 
   if (user.passwordHash) {
-    if (!password) throw new AppError(401, 'Invalid password');
+    // 403, not 401: the session is fine, the confirmation was wrong. A 401
+    // would make the client's interceptor refresh the token and retry.
+    if (!password) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
     const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) throw new AppError(401, 'Invalid password');
+    if (!valid) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
   }
 
   // Delete related records first to avoid FK constraint violations

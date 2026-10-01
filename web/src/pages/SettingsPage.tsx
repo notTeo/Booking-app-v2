@@ -16,7 +16,7 @@ import {
   faSun,
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
-import { apiErrorMessage } from '../utils/apiError';
+import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -140,8 +140,8 @@ export default function SettingsPage() {
       await logout();
       navigate('/');
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } } | null)?.response?.status;
-      setDeleteError(status === 401 ? t.settings.wrongPassword : apiErrorMessage(err, 'Failed to delete account.'));
+      const wrongPassword = apiErrorField(err, 'code') === 'INVALID_PASSWORD';
+      setDeleteError(wrongPassword ? t.settings.wrongPassword : apiErrorMessage(err, 'Failed to delete account.'));
       setDeletePassword('');
       setDeleteLoading(false);
     }
