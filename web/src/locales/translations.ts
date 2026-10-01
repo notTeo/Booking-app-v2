@@ -661,6 +661,7 @@ export interface Translations {
     staff: string;
     dateTime: string;
     yourDetails: string;
+    stepOf: string;
     noServices: string;
     noStaff: string;
     noPreference: string;
@@ -1493,6 +1494,7 @@ home: {
       staff: 'Προσωπικό',
       dateTime: 'Ημερομηνία & Ώρα',
       yourDetails: 'Τα Στοιχεία σας',
+      stepOf: 'Βήμα {n} από {total}',
       noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
       noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
       noPreference: 'Χωρίς προτίμηση',
@@ -2343,6 +2345,7 @@ home: {
       staff: 'Staff',
       dateTime: 'Date & Time',
       yourDetails: 'Your Details',
+      stepOf: 'Step {n} of {total}',
       noServices: 'No services available.',
       noStaff: 'No staff available for this service.',
       noPreference: 'No preference',

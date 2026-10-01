@@ -24,43 +24,46 @@ export default function StaffSelectStep({
         </p>
       )}
 
-      {members.length === 0 ? (
-        <p>{t.public.noStaff}</p>
-      ) : (
-        <div className="public-team-grid">
-          {members.map((m) => (
-            <button
-              key={m.id}
-              className="public-team-card public-team-card--selectable"
-              onClick={() => onSelect(m.id)}
-            >
-              <div className="public-team-avatar">
-                {m.name?.charAt(0)?.toUpperCase() ?? '?'}
-              </div>
-              <div className="public-team-info">
-                <h3>{m.name}</h3>
-                {m.staffServices.length > 0 && (
-                  <div className="public-team-services">
-                    {m.staffServices.map((ss) => (
-                      <span key={ss.service.id} className="public-team-service-tag">
-                        {ss.service.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+      {members.length === 0 && <p>{t.public.noStaff}</p>}
 
-      <button className="public-team-card public-team-card--selectable" onClick={() => onSelect(null)}>
-        <div className="public-team-avatar"><FontAwesomeIcon icon={faUsers} /></div>
-        <div className="public-team-info">
-          <h3>{t.public.noPreference}</h3>
-          <p className="public-team-any-subtitle">{t.public.anyStaff}</p>
-        </div>
-      </button>
+      <div className="public-options" role="radiogroup" aria-label={t.public.staff}>
+        {members.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked="false"
+            className="staff-card"
+            onClick={() => onSelect(m.id)}
+          >
+            <span className="avatar avatar--lg" aria-hidden="true">
+              {m.name?.charAt(0)?.toUpperCase() ?? '?'}
+            </span>
+            <span className="staff-card__main">
+              <span className="staff-card__name">{m.name}</span>
+              {m.staffServices.length > 0 && (
+                <span className="staff-card__role">
+                  {m.staffServices.map((ss) => ss.service.name).join(', ')}
+                </span>
+              )}
+            </span>
+          </button>
+        ))}
+
+        <button
+          type="button"
+          role="radio"
+          aria-checked="false"
+          className="staff-card"
+          onClick={() => onSelect(null)}
+        >
+          <span className="avatar avatar--lg" aria-hidden="true"><FontAwesomeIcon icon={faUsers} /></span>
+          <span className="staff-card__main">
+            <span className="staff-card__name">{t.public.noPreference}</span>
+            <span className="staff-card__role">{t.public.anyStaff}</span>
+          </span>
+        </button>
+      </div>
 
       <button className="btn btn--secondary wizard-btn" onClick={onBack}>{t.public.back}</button>
     </div>

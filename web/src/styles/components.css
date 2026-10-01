@@ -585,6 +585,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .slot:focus-visible, .slot.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .slot[aria-pressed="true"], .slot[aria-checked="true"] { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
 .slot:disabled, .slot[aria-disabled="true"] { color: var(--text-muted); background: var(--surface-sunken); border-color: var(--border); text-decoration: line-through; cursor: not-allowed; }
+/* Off-hours or off-grid time (owner booking): dashed, and named in the aria-label. */
+.slot--dashed { border-style: dashed; }
 
 /* ---------- 21. Steps indicator ---------- */
 .steps-wrap { container: steps / inline-size; }
