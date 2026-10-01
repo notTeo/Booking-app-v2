@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 import type { Service } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
 import { formatDuration, formatPrice } from './wizardUtils';
@@ -36,7 +36,6 @@ export default function ServiceSelectStep({
                 </span>
               </span>
               <span className="service-card__price">{formatPrice(s.price)}</span>
-              <span className="option-check" aria-hidden="true"><FontAwesomeIcon icon={faCheck} /></span>
             </button>
           ))}
         </div>

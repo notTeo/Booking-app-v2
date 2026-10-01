@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
 
@@ -15,9 +15,6 @@ export default function StaffSelectStep({
   onBack: () => void;
 }) {
   const { t } = useLang();
-  const check = (
-    <span className="option-check" aria-hidden="true"><FontAwesomeIcon icon={faCheck} /></span>
-  );
 
   return (
     <div className="public-wizard-panel">
@@ -50,7 +47,6 @@ export default function StaffSelectStep({
                 </span>
               )}
             </span>
-            {check}
           </button>
         ))}
 
@@ -66,7 +62,6 @@ export default function StaffSelectStep({
             <span className="staff-card__name">{t.public.noPreference}</span>
             <span className="staff-card__role">{t.public.anyStaff}</span>
           </span>
-          {check}
         </button>
       </div>
 
