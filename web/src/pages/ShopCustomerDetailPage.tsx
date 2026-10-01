@@ -223,34 +223,38 @@ export default function ShopCustomerDetailPage() {
       {/* Recent bookings */}
       <div className="card">
         <h2 className="card__title">{t.customers.recentBookings}</h2>
-        {customer.bookings.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.noBookings}</p>
-        ) : (
-          <div className="data-table-card" style={{ border: 'none', borderRadius: 0 }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>{t.customers.serviceCol}</th>
-                  <th>{t.customers.dateTimeCol}</th>
-                  <th>{t.customers.statusCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customer.bookings.map((b) => (
-                  <tr key={b.id} className="data-table-row">
-                    <td>{b.service.name}</td>
-                    <td className="team-date">
-                      {formatDateTimeInZone(b.startTime, shop!.timezone)}
-                    </td>
-                    <td>
-                      <StatusBadge status={b.status} />
-                    </td>
+        <div className="table-wrap">
+          <div className="table-surface">
+            {customer.bookings.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.customers.noBookings}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
+                <thead>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customer.bookings.map((b) => (
+                    <tr key={b.id} role="row">
+                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
+                      <td role="cell" data-label={t.customers.dateTimeCol}>
+                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
+                      </td>
+                      <td role="cell" data-label={t.customers.statusCol}>
+                        <StatusBadge status={b.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

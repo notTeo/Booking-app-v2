@@ -70,7 +70,7 @@ export default function InvitesPage() {
   const renderReceivedActions = (invite: ShopInvite) => (
     <div className="invite-actions">
       <button
-        className="btn btn--block"
+        className="btn btn--sm"
         disabled={actionLoading === invite.id}
         onClick={() => handleAccept(invite.id)}
       >
@@ -79,18 +79,18 @@ export default function InvitesPage() {
       {confirmDecline === invite.id ? (
         <>
           <button
-            className="btn btn--danger btn--block"
+            className="btn btn--sm btn--danger"
             disabled={actionLoading === invite.id}
             onClick={() => handleDecline(invite.id)}
           >
             {actionLoading === invite.id ? t.invites.declining : t.invites.decline}
           </button>
-          <button className="btn btn--secondary btn--block" onClick={() => setConfirmDecline(null)}>
+          <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(null)}>
             Cancel
           </button>
         </>
       ) : (
-        <button className="btn btn--secondary btn--block" onClick={() => setConfirmDecline(invite.id)}>
+        <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(invite.id)}>
           {t.invites.decline}
         </button>
       )}
@@ -138,152 +138,95 @@ export default function InvitesPage() {
       </div>
 
       {activeTab === 'received' && (
-        received.length === 0 ? (
-          <p className="invites-empty">{t.invites.noReceived}</p>
-        ) : (
-          <>
-            {/* Desktop / tablet: table (hidden below 640px) */}
-            <div className="data-table-card table-view">
-              <table className="data-table">
+        <div className="table-wrap">
+          <div className="table-surface">
+            {received.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.invites.noReceived}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
                 <thead>
-                  <tr>
-                    <th>{t.invites.shopLabel}</th>
-                    <th>{t.invites.roleLabel}</th>
-                    <th>{t.invites.invitedBy}</th>
-                    <th>{t.invites.expiresAt}</th>
-                    <th></th>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.invites.shopLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.roleLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.invitedBy}</th>
+                    <th scope="col" role="columnheader">{t.invites.expiresAt}</th>
+                    <th scope="col" role="columnheader"><span className="visually-hidden">{t.team.actions}</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {received.map((invite) => (
-                    <tr key={invite.id} className="data-table-row">
-                      <td>{invite.shop?.name ?? invite.shopId}</td>
-                      <td>
+                    <tr key={invite.id} role="row">
+                      <td role="cell" data-label={t.invites.shopLabel} className="data-table__title">
+                        {invite.shop?.name ?? invite.shopId}
+                      </td>
+                      <td role="cell" data-label={t.invites.roleLabel}>
                         <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                           {t.invites.roles[invite.role]}
                         </span>
                       </td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        {invite.createdBy?.email ?? '—'}
-                      </td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      <td role="cell" data-label={t.invites.invitedBy}>{invite.createdBy?.email ?? '—'}</td>
+                      <td role="cell" data-label={t.invites.expiresAt}>
                         {new Date(invite.expiresAt).toLocaleDateString()}
                       </td>
-                      <td>{renderReceivedActions(invite)}</td>
+                      <td role="cell" data-label="" className="data-table__actions">
+                        {renderReceivedActions(invite)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Mobile: stacked cards (hidden at 640px and above) */}
-            <div className="row-cards card-view">
-              {received.map((invite) => (
-                <div key={invite.id} className="card row-card">
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.shopLabel}</span>
-                    <span className="row-card__value">{invite.shop?.name ?? invite.shopId}</span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.roleLabel}</span>
-                    <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
-                      {t.invites.roles[invite.role]}
-                    </span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.invitedBy}</span>
-                    <span className="row-card__value">{invite.createdBy?.email ?? '—'}</span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.expiresAt}</span>
-                    <span className="row-card__value">
-                      {new Date(invite.expiresAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="row-card__actions">{renderReceivedActions(invite)}</div>
-                </div>
-              ))}
-            </div>
-          </>
-        )
+            )}
+          </div>
+        </div>
       )}
 
       {activeTab === 'sent' && (
-        sent.length === 0 ? (
-          <p className="invites-empty">{t.invites.noSent}</p>
-        ) : (
-          <>
-            {/* Desktop / tablet: table (hidden below 640px) */}
-            <div className="data-table-card table-view">
-              <table className="data-table">
+        <div className="table-wrap">
+          <div className="table-surface">
+            {sent.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.invites.noSent}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
                 <thead>
-                  <tr>
-                    <th>{t.invites.shopLabel}</th>
-                    <th>{t.invites.emailLabel}</th>
-                    <th>{t.invites.roleLabel}</th>
-                    <th>Status</th>
-                    <th>{t.invites.sentAt}</th>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.invites.shopLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.emailLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.roleLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.statusLabel}</th>
+                    <th scope="col" role="columnheader">{t.invites.sentAt}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sent.map((invite) => (
-                    <tr key={invite.id} className="data-table-row">
-                      <td>{invite.shop?.name ?? invite.shopId}</td>
-                      <td>{invite.email}</td>
-                      <td>
+                    <tr key={invite.id} role="row">
+                      <td role="cell" data-label={t.invites.shopLabel} className="data-table__title">
+                        {invite.shop?.name ?? invite.shopId}
+                      </td>
+                      <td role="cell" data-label={t.invites.emailLabel}>{invite.email}</td>
+                      <td role="cell" data-label={t.invites.roleLabel}>
                         <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                           {t.invites.roles[invite.role]}
                         </span>
                       </td>
-                      <td>
+                      <td role="cell" data-label={t.invites.statusLabel}>
                         <span className={`badge ${invite.status === 'accepted' ? 'badge--success' : invite.status === 'pending' ? 'badge--warning' : 'badge--neutral'}`}>
                           {t.invites.status[invite.status]}
                         </span>
                       </td>
-                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      <td role="cell" data-label={t.invites.sentAt}>
                         {new Date(invite.createdAt).toLocaleDateString()}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Mobile: stacked cards (hidden at 640px and above) */}
-            <div className="row-cards card-view">
-              {sent.map((invite) => (
-                <div key={invite.id} className="card row-card">
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.shopLabel}</span>
-                    <span className="row-card__value">{invite.shop?.name ?? invite.shopId}</span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.emailLabel}</span>
-                    <span className="row-card__value">{invite.email}</span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.roleLabel}</span>
-                    <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
-                      {t.invites.roles[invite.role]}
-                    </span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">Status</span>
-                    <span className={`badge ${invite.status === 'accepted' ? 'badge--success' : invite.status === 'pending' ? 'badge--warning' : 'badge--neutral'}`}>
-                      {t.invites.status[invite.status]}
-                    </span>
-                  </div>
-                  <div className="row-card__field">
-                    <span className="row-card__label">{t.invites.sentAt}</span>
-                    <span className="row-card__value">
-                      {new Date(invite.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
