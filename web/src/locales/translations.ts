@@ -731,6 +731,7 @@ export interface Translations {
       countCol: string;
       bookingOne: string;
       bookingMany: string;
+      scheduled: string;
     };
     recent: {
       title: string;
@@ -742,7 +743,15 @@ export interface Translations {
     };
     breakdown: { title: string; total: string; listLabel: string };
     error: { title: string; text: string; retry: string };
-    empty: { title: string; text: string; copy: string; copied: string };
+    empty: {
+      title: string;
+      text: string;
+      copy: string;
+      copied: string;
+      week: string;
+      month: string;
+      quarter: string;
+    };
     loadingLabel: string;
   };
   customers: {
@@ -1602,6 +1611,7 @@ home: {
         countCol: 'Ραντεβού',
         bookingOne: 'ραντεβού',
         bookingMany: 'ραντεβού',
+        scheduled: 'προγραμματισμένα',
       },
       recent: {
         title: 'Πρόσφατα ραντεβού',
@@ -1626,6 +1636,9 @@ home: {
         text: 'Μοιραστείτε τη σελίδα κρατήσεων και ο πρώτος σας πελάτης θα εμφανιστεί εδώ.',
         copy: 'Αντιγραφή συνδέσμου κράτησης',
         copied: 'Ο σύνδεσμος αντιγράφηκε',
+        week: 'Δεν υπάρχουν ραντεβού αυτή την εβδομάδα',
+        month: 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα',
+        quarter: 'Δεν υπάρχουν ραντεβού τους τελευταίους 3 μήνες',
       },
       loadingLabel: 'Φόρτωση επισκόπησης',
     },
@@ -2497,6 +2510,7 @@ home: {
         countCol: 'Bookings',
         bookingOne: 'booking',
         bookingMany: 'bookings',
+        scheduled: 'scheduled',
       },
       recent: {
         title: 'Recent bookings',
@@ -2521,6 +2535,9 @@ home: {
         text: 'Share your booking page and your first customer will show up here.',
         copy: 'Copy booking link',
         copied: 'Link copied',
+        week: 'No bookings this week',
+        month: 'No bookings this month',
+        quarter: 'No bookings in the last 3 months',
       },
       loadingLabel: 'Loading overview',
     },

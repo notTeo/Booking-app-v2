@@ -632,18 +632,24 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   .tabs--fill-mobile .tab { flex: 1; justify-content: center; padding-inline: var(--space-2); }
 }
 
+.card > .bar-chart { flex: 1; }
 .bar-chart { --bar-fg: color-mix(in srgb, var(--accent) 70%, var(--surface)); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-.bar-chart__plot { display: flex; align-items: stretch; gap: var(--space-1); height: 10rem; padding-top: var(--space-6); border-bottom: 1px solid var(--border); }
+.bar-chart__plot { display: flex; align-items: stretch; gap: var(--space-1); flex: 1; min-height: 10rem; padding-top: var(--space-6); border-bottom: 1px solid var(--border); }
 .bar-chart__col { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: flex-end; padding: 0; background: none; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
 .bar-chart__bar { width: 100%; height: var(--bar-h); background: var(--bar-fg); border-radius: var(--radius-sm) var(--radius-sm) 0 0; transition: background var(--motion-fast) var(--ease-standard); }
 .bar-chart__col--current .bar-chart__bar { background: var(--accent); }
 .bar-chart__col:hover .bar-chart__bar, .bar-chart__col:focus-visible .bar-chart__bar, .bar-chart__col.is-active .bar-chart__bar { background: var(--accent-hover); }
-.bar-chart__col--empty .bar-chart__bar, .bar-chart__col--empty:hover .bar-chart__bar, .bar-chart__col--empty:focus-visible .bar-chart__bar, .bar-chart__col--empty.is-active .bar-chart__bar { height: calc(var(--space-1) / 2); background: var(--border-strong); border-radius: 0; }
+/* Scheduled (future) bars: soft fill with an accent outline, which is what meets 3:1 on the surface. */
+.bar-chart__col--scheduled .bar-chart__bar, .bar-chart__col--scheduled:hover .bar-chart__bar, .bar-chart__col--scheduled:focus-visible .bar-chart__bar, .bar-chart__col--scheduled.is-active .bar-chart__bar { background: var(--accent-soft); border: 1px solid var(--accent); border-bottom: 0; }
+.bar-chart__col--scheduled:hover .bar-chart__bar, .bar-chart__col--scheduled:focus-visible .bar-chart__bar, .bar-chart__col--scheduled.is-active .bar-chart__bar { background: color-mix(in srgb, var(--accent) 25%, var(--surface)); }
+.bar-chart__col--empty .bar-chart__bar, .bar-chart__col--empty:hover .bar-chart__bar, .bar-chart__col--empty:focus-visible .bar-chart__bar, .bar-chart__col--empty.is-active .bar-chart__bar { height: calc(var(--space-1) / 2); background: var(--border-strong); border: 0; border-radius: 0; }
 .bar-chart__value { position: absolute; left: 50%; bottom: calc(var(--bar-h) + var(--space-1)); transform: translateX(-50%); z-index: 1; padding: 0 var(--space-2); font: var(--fw-bold) var(--fs-xs) / var(--lh-xs) var(--font-body); font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); opacity: 0; pointer-events: none; transition: opacity var(--motion-fast) var(--ease-standard); }
 .bar-chart__col:hover .bar-chart__value, .bar-chart__col:focus-visible .bar-chart__value, .bar-chart__col.is-active .bar-chart__value { opacity: 1; }
 .bar-chart__axis { display: flex; gap: var(--space-1); }
 .bar-chart__tick { position: relative; flex: 1 1 0; min-width: 0; height: var(--lh-xs); font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-muted); text-align: center; }
 .bar-chart__tick > span { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+.bar-chart__key { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-muted); }
+.bar-chart__swatch { width: var(--space-3); height: var(--space-3); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius-sm); }
 .bar-chart__tick--current { color: var(--text); font-weight: var(--fw-semibold); }
 
 .donut { position: relative; flex: none; display: grid; place-items: center; width: 10rem; aspect-ratio: 1; border-radius: var(--radius-full); background: conic-gradient(var(--donut-stops)); }

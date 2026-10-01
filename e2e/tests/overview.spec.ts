@@ -4,26 +4,90 @@ import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
 
 /**
- * Shop overview: the Week / Month / 3 months switch drives the stat cards, the
- * bar chart and the recent bookings. Bookings are seeded relative to the Athens
- * "today" so the expectations hold on any day the suite runs.
+ * Shop overview: Week (this Mon-Sun), Month (this calendar month) and 3 months
+ * (this month plus the previous two, in Monday-start weeks) drive the stat
+ * cards, the bar chart and the recent bookings. Future days are included and
+ * drawn as "scheduled".
  *
- *   today     CONFIRMED + PENDING
- *   today-2   COMPLETED
- *   today-3   CANCELED
- *   today-20  NO_SHOW + CONFIRMED          (month and 3 months only)
- *   today-60  CONFIRMED                    (3 months only)
+ * Bookings are seeded relative to the Athens "today". Which of them fall in
+ * which period depends on the day the suite runs, so the expectations come
+ * from a small calendar oracle below (plain Date maths, not the app's code).
  */
 const today = athensDate();
-const seed = [
-  { id: 'ov-1', date: today, time: '12:00', status: 'CONFIRMED' },
-  { id: 'ov-2', date: today, time: '13:00', status: 'PENDING' },
-  { id: 'ov-3', date: addDays(today, -2), time: '12:00', status: 'COMPLETED' },
-  { id: 'ov-4', date: addDays(today, -3), time: '12:00', status: 'CANCELED' },
-  { id: 'ov-5', date: addDays(today, -20), time: '12:00', status: 'NO_SHOW' },
-  { id: 'ov-6', date: addDays(today, -20), time: '13:00', status: 'CONFIRMED' },
-  { id: 'ov-7', date: addDays(today, -60), time: '12:00', status: 'CONFIRMED' },
+
+type Status = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW';
+const seedOffsets: { offset: number; hour: number; status: Status }[] = [
+  { offset: 0, hour: 10, status: 'CONFIRMED' },
+  { offset: 0, hour: 12, status: 'PENDING' },
+  { offset: 1, hour: 10, status: 'COMPLETED' },
+  { offset: 3, hour: 10, status: 'PENDING' },
+  { offset: 9, hour: 10, status: 'CONFIRMED' },
+  { offset: 45, hour: 10, status: 'CONFIRMED' },
+  { offset: -2, hour: 10, status: 'COMPLETED' },
+  { offset: -3, hour: 10, status: 'CANCELED' },
+  { offset: -20, hour: 10, status: 'NO_SHOW' },
+  { offset: -20, hour: 12, status: 'CONFIRMED' },
+  { offset: -40, hour: 10, status: 'CONFIRMED' },
+  { offset: -70, hour: 10, status: 'COMPLETED' },
+  { offset: 400, hour: 10, status: 'CONFIRMED' },
 ];
+const dated = seedOffsets.map((b) => ({ ...b, date: addDays(today, b.offset) }));
+
+// ── calendar oracle ─────────────────────────────────────────────────────────
+const utc = (d: string) => {
+  const [y, m, day] = d.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, day));
+};
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const mondayOf = (d: string) => addDays(d, -((utc(d).getUTCDay() + 6) % 7));
+const firstOfMonth = (d: string, monthsBack = 0) => {
+  const x = utc(d);
+  return iso(new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth() - monthsBack, 1)));
+};
+const lastOfMonth = (d: string) => {
+  const x = utc(d);
+  return iso(new Date(Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 0)));
+};
+
+type Range = 'week' | 'month' | 'quarter';
+const TABS: Record<Range, string> = { week: 'Week', month: 'Month', quarter: '3 months' };
+
+const period = (range: Range) =>
+  range === 'week'
+    ? { from: mondayOf(today), to: addDays(mondayOf(today), 6) }
+    : range === 'month'
+      ? { from: firstOfMonth(today), to: lastOfMonth(today) }
+      : { from: firstOfMonth(today, 2), to: lastOfMonth(today) };
+
+/** Start dates of the bars the chart should draw. */
+const bucketStarts = (range: Range) => {
+  const { from, to } = period(range);
+  const starts: string[] = [];
+  if (range === 'quarter') {
+    for (let m = mondayOf(from); m <= to; m = addDays(m, 7)) starts.push(m < from ? from : m);
+  } else {
+    for (let d = from; d <= to; d = addDays(d, 1)) starts.push(d);
+  }
+  return starts;
+};
+
+const inPeriod = (range: Range) => {
+  const { from, to } = period(range);
+  return dated.filter((b) => b.date >= from && b.date <= to);
+};
+const count = (range: Range, ...statuses: Status[]) =>
+  inPeriod(range).filter((b) => statuses.includes(b.status)).length;
+
+// ── data ────────────────────────────────────────────────────────────────────
+async function insertBooking(id: string, date: string, hour: number, status: Status) {
+  // Mid-day UTC is mid-day in Athens too, so the local date matches `date`.
+  const start = `${date}T${String(hour).padStart(2, '0')}:00:00Z`;
+  await query(
+    `insert into "Booking"(id,"shopId","customerId","serviceId","staffId","startTime","endTime",status,"cancelToken","updatedAt")
+     values ($1,'s1','ov-cust','sv1','us1',$2::timestamptz,$2::timestamptz + interval '30 minutes',$3::"BookingStatus",$1,now())`,
+    [id, start, status],
+  );
+}
 
 test.beforeAll(async () => {
   await query('delete from "Booking"');
@@ -31,15 +95,7 @@ test.beforeAll(async () => {
     `insert into "Customer"(id,"shopId",name,phone,"updatedAt")
      values ('ov-cust','s1','Overview Customer','6900000001',now()) on conflict (id) do nothing`,
   );
-  for (const b of seed) {
-    // 12:00Z / 13:00Z are mid-afternoon in Athens, so the local date matches `date`.
-    const start = `${b.date}T${b.time}:00Z`;
-    await query(
-      `insert into "Booking"(id,"shopId","customerId","serviceId","staffId","startTime","endTime",status,"cancelToken","updatedAt")
-       values ($1,'s1','ov-cust','sv1','us1',$2::timestamptz,$2::timestamptz + interval '30 minutes',$3::"BookingStatus",$1,now())`,
-      [b.id, start, b.status],
-    );
-  }
+  for (const [i, b] of dated.entries()) await insertBooking(`ov-${i}`, b.date, b.hour, b.status);
 });
 
 test.afterAll(async () => {
@@ -57,52 +113,63 @@ async function openOverview(page: Page) {
   await expect(page.getByRole('heading', { level: 1 })).toContainText(/Good (morning|afternoon|evening), E2E/);
 }
 
-const stat = (page: Page, label: string) =>
-  page.locator('.stat', { hasText: label }).locator('.stat__value');
+const tab = (page: Page, range: Range) => page.getByRole('tab', { name: TABS[range], exact: true });
+const stat = (page: Page, label: string) => page.locator('.stat', { hasText: label }).locator('.stat__value');
 const bars = (page: Page) => page.locator('.bar-chart__col');
 const recentRows = (page: Page) => page.locator('.data-table tbody tr');
+
+async function expectPeriod(page: Page, range: Range) {
+  await expect(bars(page)).toHaveCount(bucketStarts(range).length);
+  await expect(stat(page, 'Bookings')).toHaveText(String(count(range, 'PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW')));
+  await expect(stat(page, 'Pending')).toHaveText(String(count(range, 'PENDING')));
+  await expect(stat(page, 'Completed')).toHaveText(String(count(range, 'COMPLETED')));
+  await expect(stat(page, 'Canceled / no-show')).toHaveText(String(count(range, 'CANCELED', 'NO_SHOW')));
+  await expect(recentRows(page)).toHaveCount(Math.min(5, inPeriod(range).length));
+
+  // Today's bar/week is highlighted; later ones are drawn as scheduled and say so.
+  await expect(page.locator('.bar-chart__col--current')).toHaveCount(1);
+  const scheduledBars = bucketStarts(range).filter((s) => s > today).length;
+  await expect(page.locator('.bar-chart__col--scheduled')).toHaveCount(scheduledBars);
+  for (const label of await page.locator('.bar-chart__col--scheduled').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))) {
+    expect(label).toMatch(/, scheduled$/);
+  }
+  for (const label of await page.locator('.bar-chart__col:not(.bar-chart__col--scheduled)').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))) {
+    expect(label).not.toMatch(/scheduled/);
+  }
+}
 
 test('switching the range updates cards, chart and recent bookings', async ({ page }) => {
   await openOverview(page);
 
   // Week is the default.
-  await expect(page.getByRole('tab', { name: 'Week', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(tab(page, 'week')).toHaveAttribute('aria-selected', 'true');
+  await expectPeriod(page, 'week');
   await expect(bars(page)).toHaveCount(7);
-  await expect(stat(page, 'Bookings')).toHaveText('3');
-  await expect(stat(page, 'Pending')).toHaveText('1');
-  await expect(stat(page, 'Completed')).toHaveText('1');
-  await expect(stat(page, 'Canceled / no-show')).toHaveText('1');
-  // The current day is highlighted and carries its count in its accessible name.
-  const current = page.locator('.bar-chart__col--current');
-  await expect(current).toHaveCount(1);
-  await expect(current).toHaveAttribute('aria-label', /: 2 bookings$/);
-  await expect(recentRows(page)).toHaveCount(4);
+  // Today's own bar carries today's count in its accessible name.
+  await expect(page.locator('.bar-chart__col--current')).toHaveAttribute('aria-label', /: 2 bookings$/);
   await expect(page.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `/shops/${E2E.shop.slug}/bookings`);
 
-  // Month: 30 daily bars, the no-show and the older confirmed booking join in.
-  await page.getByRole('tab', { name: 'Month', exact: true }).click();
-  await expect(bars(page)).toHaveCount(30);
-  await expect(stat(page, 'Bookings')).toHaveText('5');
-  await expect(stat(page, 'Canceled / no-show')).toHaveText('2');
-  await expect(recentRows(page)).toHaveCount(5); // limit 5 of 6
+  await tab(page, 'month').click();
+  await expectPeriod(page, 'month');
+  await expect(page.locator('.bar-chart__col--current')).toHaveAttribute('aria-label', /: 2 bookings$/);
 
-  // 3 months: 13 weekly bars.
-  await page.getByRole('tab', { name: '3 months', exact: true }).click();
-  await expect(bars(page)).toHaveCount(13);
-  await expect(stat(page, 'Bookings')).toHaveText('6');
+  await tab(page, 'quarter').click();
+  await expectPeriod(page, 'quarter');
 
-  // Back to Week.
-  await page.getByRole('tab', { name: 'Week', exact: true }).click();
-  await expect(bars(page)).toHaveCount(7);
-  await expect(stat(page, 'Bookings')).toHaveText('3');
+  await tab(page, 'week').click();
+  await expectPeriod(page, 'week');
 });
 
 test('the status breakdown legend states every status with count and percent', async ({ page }) => {
   await openOverview(page);
   const legend = page.getByRole('list', { name: 'Bookings by status' });
   await expect(legend.getByRole('listitem')).toHaveCount(5);
-  await expect(legend.getByRole('listitem').filter({ hasText: 'Confirmed' })).toContainText('1');
-  await expect(legend.getByRole('listitem').filter({ hasText: 'Pending' })).toContainText('25%');
+  const pending = count('week', 'PENDING');
+  const total = inPeriod('week').length;
+  const row = legend.getByRole('listitem').filter({ hasText: 'Pending' });
+  await expect(row.locator('.legend__count')).toHaveText(String(pending));
+  await expect(row.locator('.legend__pct')).toHaveText(`${Math.round((pending / total) * 100)}%`);
+  await expect(page.locator('.donut__value')).toHaveText(String(total));
 });
 
 test('bars are keyboard-focusable and reveal their count; a table backs the chart', async ({ page }) => {
@@ -115,34 +182,50 @@ test('bars are keyboard-focusable and reveal their count; a table backs the char
 
 test('the tabs follow the arrow keys', async ({ page }) => {
   await openOverview(page);
-  await page.getByRole('tab', { name: 'Week', exact: true }).focus();
+  await tab(page, 'week').focus();
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByRole('tab', { name: 'Month', exact: true })).toHaveAttribute('aria-selected', 'true');
-  await expect(bars(page)).toHaveCount(30);
+  await expect(tab(page, 'month')).toHaveAttribute('aria-selected', 'true');
+  await expect(bars(page)).toHaveCount(bucketStarts('month').length);
 });
 
 test('no horizontal scroll at 360px in any range', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await openOverview(page);
-  for (const name of ['Week', 'Month', '3 months']) {
-    await page.getByRole('tab', { name, exact: true }).click();
-    await expect(page.locator('.bar-chart')).toBeVisible();
+  for (const range of ['week', 'month', 'quarter'] as const) {
+    await tab(page, range).click();
+    await expect(bars(page)).toHaveCount(bucketStarts(range).length);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
-    expect(overflow, `${name}: horizontal overflow`).toBeLessThanOrEqual(0);
+    expect(overflow, `${range}: horizontal overflow`).toBeLessThanOrEqual(0);
   }
 });
 
-test('with no bookings in the period, the empty state offers the booking link', async ({ page }) => {
+test('bookings exist, but none in the period: a plain message and no button', async ({ page }) => {
   await query('delete from "Booking"');
-  try {
-    await openOverview(page);
-    await expect(stat(page, 'Bookings')).toHaveText('0');
-    await expect(page.getByText('No bookings in this period')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Copy booking link' })).toBeVisible();
-    await expect(bars(page)).toHaveCount(0);
-  } finally {
-    // restore for any test after this one in the file
-  }
+  await insertBooking('ov-far', addDays(today, 400), 10, 'CONFIRMED');
+  await openOverview(page);
+
+  await expect(page.getByText('No bookings this week')).toBeVisible();
+  await expect(stat(page, 'Bookings')).toHaveText('0');
+  await expect(page.getByRole('button', { name: 'Copy booking link' })).toHaveCount(0);
+  await expect(bars(page)).toHaveCount(0);
+
+  await tab(page, 'month').click();
+  await expect(page.getByText('No bookings this month')).toBeVisible();
+  await tab(page, 'quarter').click();
+  await expect(page.getByText('No bookings in the last 3 months')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copy booking link' })).toHaveCount(0);
+});
+
+test('a shop with no bookings ever shows the empty state with the booking link', async ({ page }) => {
+  await query('delete from "Booking"');
+  await openOverview(page);
+  await expect(stat(page, 'Bookings')).toHaveText('0');
+  await expect(page.getByText('No bookings in this period')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copy booking link' })).toBeVisible();
+  // The same, whichever period is selected.
+  await tab(page, 'quarter').click();
+  await expect(page.getByRole('button', { name: 'Copy booking link' })).toBeVisible();
+  await expect(bars(page)).toHaveCount(0);
 });

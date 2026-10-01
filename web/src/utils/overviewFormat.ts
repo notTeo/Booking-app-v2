@@ -32,15 +32,18 @@ export const axisLabel = (b: OverviewBucket, range: OverviewRange, language: Lan
   return d.toFormat('d LLL');
 };
 
-/** Every Nth bar (counting back from the latest) gets a tick so labels fit at 360px. */
+/** Every Nth bar (from the first) gets a tick so labels fit at 360px. */
 const AXIS_STEP: Record<OverviewRange, number> = { week: 1, month: 5, quarter: 3 };
 
-export const showsAxisLabel = (index: number, total: number, range: OverviewRange): boolean =>
-  (total - 1 - index) % AXIS_STEP[range] === 0;
+export const showsAxisLabel = (index: number, range: OverviewRange): boolean =>
+  index % AXIS_STEP[range] === 0;
 
 /** The bucket that contains today (shop-local). */
 export const isCurrentBucket = (b: OverviewBucket, today: string): boolean =>
   b.start <= today && today <= b.end;
+
+/** A bucket that starts after today: nothing in it has happened yet. */
+export const isScheduledBucket = (b: OverviewBucket, today: string): boolean => b.start > today;
 
 /** "Thu 1 Oct, 10:30" in the shop's timezone. */
 export const formatWhen = (iso: string, zone: string, language: Language): string =>
