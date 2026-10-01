@@ -334,6 +334,8 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
+    wrongPassword: string;
+    deleteAccountMessage: string;
     deleteAccountConfirmButton: string;
     deleteAccountTitle: string;
     title: string;
@@ -354,7 +356,6 @@ export interface Translations {
     confirmPasswordLabel: string;
     confirmPasswordPlaceholder: string;
     cancel: string;
-    areYouSure: string;
     pwMin: string;
     pwUpper: string;
     pwNumber: string;
@@ -1166,6 +1167,8 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
+      wrongPassword: 'Λάθος κωδικός.',
+      deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
       deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
       title: 'Ρυθμίσεις',
@@ -1186,7 +1189,6 @@ home: {
       confirmPasswordLabel: 'Επιβεβαίωση κωδικού',
       confirmPasswordPlaceholder: 'Εισάγετε τον κωδικό σας για επιβεβαίωση',
       cancel: 'Ακύρωση',
-      areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       pwMin: 'Τουλάχιστον 8 χαρακτήρες',
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
@@ -2016,6 +2018,8 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
+      wrongPassword: 'Incorrect password.',
+      deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
       deleteAccountConfirmButton: 'Delete account',
       deleteAccountTitle: 'Delete your account?',
       title: 'Settings',
@@ -2036,7 +2040,6 @@ home: {
       confirmPasswordLabel: 'Confirm your password',
       confirmPasswordPlaceholder: 'Enter your password to confirm',
       cancel: 'Cancel',
-      areYouSure: 'Are you sure? This will permanently delete your account and all associated data. This action cannot be undone.',
       pwMin: 'At least 8 characters',
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',

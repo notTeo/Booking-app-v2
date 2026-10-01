@@ -202,10 +202,11 @@ describe('POST /auth/login', () => {
   });
 
   it('returns access token and sets refresh token cookie', async () => {
-    const { accessToken, cookieHeader, status } = await loginUser();
+    const { accessToken, cookieHeader, status, body } = await loginUser();
 
     expect(status).toBe(200);
     expect(accessToken).toBeDefined();
+    expect(body.data.user.hasPassword).toBe(true);
     expect(cookieHeader).toContain('refreshToken=');
     expect(cookieHeader).toContain('HttpOnly');
   });

@@ -128,15 +128,21 @@ export default function SettingsPage() {
     }
   };
 
+  // Only an explicit `false` means an account without a password; a missing
+  // flag must not skip the check.
+  const needsPassword = user?.hasPassword !== false;
+
   const handleDeleteAccount = async () => {
     setDeleteError('');
     setDeleteLoading(true);
     try {
-      await deleteMe(user?.hasPassword ? deletePassword : undefined);
+      await deleteMe(needsPassword ? deletePassword : undefined);
       await logout();
       navigate('/');
     } catch (err: unknown) {
-      setDeleteError(apiErrorMessage(err, 'Failed to delete account.'));
+      const status = (err as { response?: { status?: number } } | null)?.response?.status;
+      setDeleteError(status === 401 ? t.settings.wrongPassword : apiErrorMessage(err, 'Failed to delete account.'));
+      setDeletePassword('');
       setDeleteLoading(false);
     }
   };
@@ -333,15 +339,15 @@ export default function SettingsPage() {
         <ConfirmDialog
           tone="danger"
           title={t.settings.deleteAccountTitle}
-          message={t.settings.areYouSure}
+          message={t.settings.deleteAccountMessage}
           confirmLabel={t.settings.deleteAccountConfirmButton}
           cancelLabel={t.settings.cancel}
           busy={deleteLoading}
-          confirmDisabled={!!user?.hasPassword && !deletePassword}
+          confirmDisabled={needsPassword && !deletePassword}
           onConfirm={handleDeleteAccount}
           onCancel={closeDeleteConfirm}
         >
-          {user?.hasPassword && (
+          {needsPassword && (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -353,6 +359,7 @@ export default function SettingsPage() {
                 <input className="input"
                   id="delete-password"
                   type="password"
+                  autoComplete="current-password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   placeholder={t.settings.confirmPasswordPlaceholder}
