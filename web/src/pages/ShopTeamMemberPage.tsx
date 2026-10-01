@@ -379,7 +379,7 @@ export default function ShopTeamMemberPage() {
             {memberError && <Alert variant="danger">{memberError}</Alert>}
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
             {confirmRoleChange && (
-              <Alert variant="danger">
+              <Alert variant="warning">
                 {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
               </Alert>
             )}

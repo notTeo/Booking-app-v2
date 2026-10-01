@@ -214,7 +214,7 @@ export default function ShopInvitesPage() {
           </div>
 
           {confirmOwner && (
-            <Alert variant="danger">{t.invites.confirmOwnerInvite}</Alert>
+            <Alert variant="warning">{t.invites.confirmOwnerInvite}</Alert>
           )}
 
           <div className="invites-form-row">
