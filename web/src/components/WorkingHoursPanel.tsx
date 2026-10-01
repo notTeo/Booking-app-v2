@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
@@ -29,7 +29,6 @@ export interface WorkingHoursPanelProps {
   api: WorkingHoursApi;
   isOwner: boolean;
   /** Shop-wide content rendered above the schedules (e.g. the booking window). */
-  beforeSchedules?: ReactNode;
 }
 
 const DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -89,7 +88,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
   };
 }
 
-export default function WorkingHoursPanel({ api, isOwner, beforeSchedules }: WorkingHoursPanelProps) {
+export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
   const { t } = useLang();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -347,7 +346,6 @@ const created = await api.createSchedule(dto);
 
       {pageError && <div className="alert alert-error">{pageError}</div>}
 
-      {beforeSchedules}
 
       <p className="wh-rule-note">{t.workingHours.ruleNote}</p>
 

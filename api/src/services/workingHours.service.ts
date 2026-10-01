@@ -84,7 +84,7 @@ async function guardOverlap<T>(write: () => Promise<T>): Promise<T> {
 
 async function assertNoActiveOverlap(
   shopId: string,
-  staffId: string | null | undefined,
+  staffId: string,
   startDate: Date,
   endDate: Date | null,
   excludeScheduleId?: string,
@@ -92,7 +92,7 @@ async function assertNoActiveOverlap(
   const existingActive = await prisma.shopWorkingSchedule.findMany({
     where: {
       shopId,
-      staffId: staffId ?? null,
+      staffId,
       isActive: true,
       ...(excludeScheduleId ? { id: { not: excludeScheduleId } } : {}),
     },
@@ -125,15 +125,15 @@ async function assertNoActiveOverlap(
 async function requireScheduleInShop(
   scheduleId: string,
   shopId: string,
-  staffId?: string | null,
+  staffId: string,
 ) {
   const schedule = await prisma.shopWorkingSchedule.findUnique({
     where: { id: scheduleId },
   });
   if (!schedule || schedule.shopId !== shopId)
     throw new AppError(404, 'Schedule not found');
-  // When staffId is explicitly provided, verify the schedule belongs to that staff member
-  if (staffId !== undefined && schedule.staffId !== (staffId ?? null)) {
+  // The schedule must belong to that team member
+  if (schedule.staffId !== staffId) {
     throw new AppError(404, 'Schedule not found');
   }
   return schedule;
@@ -143,19 +143,17 @@ export const createSchedule = async (
   userId: string,
   shopId: string,
   dto: CreateScheduleDto,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireOwner(userId, shopId);
 
-  // If creating for a staff member, verify that member exists in the shop
-  // (staffId here is UserShop.id, not User.id — a member may not have a login yet)
-  if (staffId) {
-    const staffMembership = await prisma.userShop.findFirst({
-      where: { id: staffId, shopId },
-    });
-    if (!staffMembership)
-      throw new AppError(404, 'Staff member not found in this shop');
-  }
+  // Verify the member exists in the shop (staffId here is UserShop.id, not
+  // User.id — a member may not have a login yet)
+  const staffMembership = await prisma.userShop.findFirst({
+    where: { id: staffId, shopId },
+  });
+  if (!staffMembership)
+    throw new AppError(404, 'Staff member not found in this shop');
 
   assertValidRange(
     new Date(dto.startDate),
@@ -176,7 +174,7 @@ export const createSchedule = async (
     prisma.shopWorkingSchedule.create({
       data: {
         shopId,
-        staffId: staffId ?? null,
+        staffId,
         startDate: new Date(dto.startDate),
         endDate: dto.endDate ? new Date(dto.endDate) : null,
         isActive: newIsActive,
@@ -195,7 +193,7 @@ export const createSchedule = async (
   );
 
   logger.info(
-    `Schedule created: ${schedule.id} for shop ${shopId}${staffId ? ` staff ${staffId}` : ''} by user ${userId}`,
+    `Schedule created: ${schedule.id} for shop ${shopId} staff ${staffId} by user ${userId}`,
   );
   return schedule;
 };
@@ -203,14 +201,14 @@ export const createSchedule = async (
 export const getSchedules = async (
   userId: string,
   shopId: string,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireMembership(userId, shopId);
 
   return prisma.shopWorkingSchedule.findMany({
     where: {
       shopId,
-      staffId: staffId !== undefined ? (staffId ?? null) : null,
+      staffId,
     },
     include: WITH_DAYS,
     orderBy: { startDate: 'desc' },
@@ -221,7 +219,7 @@ export const getSchedule = async (
   userId: string,
   shopId: string,
   scheduleId: string,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireMembership(userId, shopId);
   await requireScheduleInShop(scheduleId, shopId, staffId);
@@ -237,7 +235,7 @@ export const updateSchedule = async (
   shopId: string,
   scheduleId: string,
   dto: UpdateScheduleDto,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireOwner(userId, shopId);
   const target = await requireScheduleInShop(scheduleId, shopId, staffId);
@@ -286,7 +284,7 @@ export const deleteSchedule = async (
   userId: string,
   shopId: string,
   scheduleId: string,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireOwner(userId, shopId);
   await requireScheduleInShop(scheduleId, shopId, staffId);
@@ -303,7 +301,7 @@ export const upsertDays = async (
   shopId: string,
   scheduleId: string,
   dto: UpsertDaysDto,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireOwner(userId, shopId);
   await requireScheduleInShop(scheduleId, shopId, staffId);
@@ -357,7 +355,7 @@ export const updateDay = async (
   scheduleId: string,
   day: DayOfWeek,
   dto: UpdateDayDto,
-  staffId?: string | null,
+  staffId: string,
 ) => {
   await requireOwner(userId, shopId);
   await requireScheduleInShop(scheduleId, shopId, staffId);

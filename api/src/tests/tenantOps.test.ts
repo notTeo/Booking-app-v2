@@ -142,17 +142,26 @@ describe('seedHairology', () => {
     expect(await prisma.customer.count()).toBe(0);
     expect(await prisma.booking.count()).toBe(0);
 
-    const schedule = await prisma.shopWorkingSchedule.findFirst({
-      where: { shopId: r.shop.id, staffId: null },
+    // Hours are per team member: no shop-level schedule, one per member.
+    expect(
+      await prisma.shopWorkingSchedule.count({
+        where: { shopId: r.shop.id, staffId: null },
+      }),
+    ).toBe(0);
+    const schedules = await prisma.shopWorkingSchedule.findMany({
+      where: { shopId: r.shop.id },
       include: { days: { include: { hours: true } } },
     });
-    expect(schedule!.days).toHaveLength(7);
-    const sun = schedule!.days.find((d) => d.day === 'SUN')!;
-    expect(sun.isOpen).toBe(false);
-    const mon = schedule!.days.find((d) => d.day === 'MON')!;
-    expect(mon.hours.map((h) => [h.startTime, h.endTime])).toEqual([
-      ['10:00', '20:00'],
-    ]);
+    expect(schedules).toHaveLength(2);
+    for (const schedule of schedules) {
+      expect(schedule.days).toHaveLength(7);
+      const sun = schedule.days.find((d) => d.day === 'SUN')!;
+      expect(sun.isOpen).toBe(false);
+      const mon = schedule.days.find((d) => d.day === 'MON')!;
+      expect(mon.hours.map((h) => [h.startTime, h.endTime])).toEqual([
+        ['10:00', '20:00'],
+      ]);
+    }
   });
 
   it('produces a shop the public booking page can actually serve', async () => {

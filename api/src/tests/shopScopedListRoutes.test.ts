@@ -39,13 +39,12 @@ describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () 
     expect(res.body.data).toBeInstanceOf(Array);
   });
 
-  it('GET /api/shops/:shopId/schedules', async () => {
+  it('has no shop-level schedules route: hours belong to team members', async () => {
     const t = await createTenant('ScheduleList');
     const res = await request(app)
       .get(`/api/shops/${t.shop.id}/schedules`)
       .set(authHeader(t.token));
-    expect(res.status).toBe(200);
-    expect(res.body.data).toBeInstanceOf(Array);
+    expect(res.status).toBe(404);
   });
 
   it('GET /api/shops/:shopId/team/:memberId/schedules', async () => {

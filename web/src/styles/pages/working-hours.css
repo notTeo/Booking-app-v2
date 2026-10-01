@@ -354,45 +354,6 @@
   border-bottom: 1px solid var(--border);
   margin-bottom: 1rem;
 }
-/* ---- Booking window card ---- */
-.wh-window-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-.wh-window-head {
-  margin-bottom: 1rem;
-}
-
-.wh-window-head h3 {
-  /* same look as the schedule headers (.wh-date-range: "From 29 Sep 2026 …") */
-  font-family: var(--font);
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0 0 0.35rem;
-}
-
-/* Input on the left, Save on the right, on one line. */
-.wh-window-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.wh-window-row input {
-  flex: 1;
-  min-width: 0;
-}
-
-.wh-window-row .btn {
-  width: auto;
-  flex-shrink: 0;
-  padding: 0.7rem 1.25rem;
-}
-
 /* ---- Rule note + open-ended notice ---- */
 .wh-rule-note {
   font-size: 0.85rem;

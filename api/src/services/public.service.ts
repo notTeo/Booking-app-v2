@@ -1,5 +1,59 @@
 import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
+import { todayInZone } from '../utils/shopTime';
+import type { DayOfWeek } from '../../dist/generated/prisma';
+
+const DAY_ORDER: DayOfWeek[] = [
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+  'SUN',
+];
+
+interface ScheduleForHours {
+  startDate: Date;
+  endDate: Date | null;
+  days: {
+    day: DayOfWeek;
+    isOpen: boolean;
+    hours: { startTime: string; endTime: string }[];
+  }[];
+}
+
+/**
+ * The shop's opening hours, derived from its team: for each weekday, the union
+ * of every given schedule's ranges that is in force on `today` (a YYYY-MM-DD
+ * date in the shop's timezone). Overlapping and touching ranges are merged;
+ * a weekday nobody works comes back with no ranges.
+ */
+export const deriveOpeningHours = (
+  schedules: ScheduleForHours[],
+  today: string,
+) => {
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const inForce = schedules.filter(
+    (s) => iso(s.startDate) <= today && (!s.endDate || iso(s.endDate) >= today),
+  );
+  return DAY_ORDER.map((day) => {
+    const ranges = inForce
+      .flatMap((s) => s.days)
+      .filter((d) => d.day === day && d.isOpen)
+      .flatMap((d) => d.hours)
+      .map(({ startTime, endTime }) => ({ startTime, endTime }))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    const merged: { startTime: string; endTime: string }[] = [];
+    for (const r of ranges) {
+      const last = merged[merged.length - 1];
+      if (last && r.startTime <= last.endTime) {
+        if (r.endTime > last.endTime) last.endTime = r.endTime;
+      } else merged.push({ ...r });
+    }
+    return { day, hours: merged };
+  });
+};
 
 export const getShopInfoService = async (slug: string) => {
   if (!slug) throw new AppError(404, 'Slug is required');
@@ -14,14 +68,6 @@ export const getShopInfoService = async (slug: string) => {
           description: true,
           duration: true,
           price: true,
-        },
-      },
-      shopWorkingSchedules: {
-        where: { isActive: true, staffId: null }, // shop-level schedule only
-        include: {
-          days: {
-            include: { hours: true },
-          },
         },
       },
       members: {
@@ -48,5 +94,21 @@ export const getShopInfoService = async (slug: string) => {
 
   if (!shop) throw new AppError(404, 'Shop not found');
 
-  return shop;
+  // Team members' schedules are the only source of working hours; what the
+  // public page shows is derived from the customer-bookable members.
+  const schedules = await prisma.shopWorkingSchedule.findMany({
+    where: {
+      shopId: shop.id,
+      isActive: true,
+      staffId: {
+        in: shop.members.filter((m) => m.bookableByCustomers).map((m) => m.id),
+      },
+    },
+    include: { days: { include: { hours: true } } },
+  });
+
+  return {
+    ...shop,
+    openingHours: deriveOpeningHours(schedules, todayInZone(shop.timezone)),
+  };
 };

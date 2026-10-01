@@ -597,10 +597,6 @@ export interface Translations {
     overlapOpenEnded: string;
     openEndedNotice: string;
     setEndDate: string;
-    bookingWindowTitle: string;
-    bookingWindowNote: string;
-    bookingWindowSaved: string;
-    bookingWindowError: string;
     days: {
       MON: string;
       TUE: string;
@@ -1414,7 +1410,7 @@ home: {
       to: 'έως',
       saveDays: 'Αποθήκευση',
       saveDates: 'Αποθήκευση Ημερομηνιών',
-      noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα.',
+      noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα. Χωρίς πρόγραμμα, το μέλος δεν είναι διαθέσιμο για κρατήσεις.',
       errorDelete: 'Αποτυχία διαγραφής προγράμματος.',
       errorCreate: 'Αποτυχία δημιουργίας προγράμματος.',
       slotEndBeforeStart: 'Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.',
@@ -1429,10 +1425,6 @@ home: {
       overlapOpenEnded: "Το ενεργό πρόγραμμα που ξεκινά {date} δεν έχει ημερομηνία λήξης. Βάλε του λήξη (ή απενεργοποίησέ το) πριν προσθέσεις άλλο.",
       openEndedNotice: "Το πρόγραμμα «{range}» δεν έχει ημερομηνία λήξης, οπότε δεν μπορεί να προστεθεί άλλο ενεργό πρόγραμμα. Βάλε του πρώτα ημερομηνία λήξης.",
       setEndDate: "Ορισμός λήξης",
-      bookingWindowTitle: "Παράθυρο κρατήσεων",
-      bookingWindowNote: "Ισχύει για όλα τα προγράμματα και για όλο το κατάστημα. Οι πελάτες δεν μπορούν να κλείσουν πέρα από αυτό το όριο, ακόμη κι αν υπάρχει πρόγραμμα.",
-      bookingWindowSaved: "Το παράθυρο κρατήσεων αποθηκεύτηκε.",
-      bookingWindowError: "Αποτυχία αποθήκευσης παραθύρου κρατήσεων.",
       days: {
         MON: 'Δευτέρα',
         TUE: 'Τρίτη',
@@ -2264,7 +2256,7 @@ home: {
       to: 'to',
       saveDays: 'Save',
       saveDates: 'Save Dates',
-      noSchedules: 'No schedules yet.',
+      noSchedules: 'No schedules yet. Without a schedule this team member can’t be booked.',
       errorDelete: 'Failed to delete schedule.',
       errorCreate: 'Failed to create schedule.',
       slotEndBeforeStart: 'End time must be after start time.',
@@ -2279,10 +2271,6 @@ home: {
       overlapOpenEnded: "The active schedule starting {date} has no end date. Set an end date on it (or turn it off) before adding another.",
       openEndedNotice: "The schedule \"{range}\" has no end date, so no other active schedule can be added. Set an end date on it first.",
       setEndDate: "Set end date",
-      bookingWindowTitle: "Booking window",
-      bookingWindowNote: "Applies to all schedules and to the whole shop. Customers can't book beyond this limit, even if a schedule exists.",
-      bookingWindowSaved: "Booking window saved.",
-      bookingWindowError: "Failed to save the booking window.",
       days: {
         MON: 'Monday',
         TUE: 'Tuesday',

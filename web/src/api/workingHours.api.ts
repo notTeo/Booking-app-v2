@@ -56,25 +56,7 @@ export const getDaySchedule = (shopId: string, date: string) =>
     .get(`/api/shops/${shopId}/schedules/day`, { params: { date } })
     .then((r) => r.data.data as DaySchedule);
 
-export const getSchedules = (shopId: string) =>
-  client.get(`/api/shops/${shopId}/schedules`).then((r) => r.data.data as Schedule[]);
-
-export const getSchedule = (shopId: string, scheduleId: string) =>
-  client.get(`/api/shops/${shopId}/schedules/${scheduleId}`).then((r) => r.data.data as Schedule);
-
-export const createSchedule = (shopId: string, dto: CreateScheduleDto) =>
-  client.post(`/api/shops/${shopId}/schedules`, dto).then((r) => r.data.data as Schedule);
-
-export const updateSchedule = (shopId: string, scheduleId: string, dto: UpdateScheduleDto) =>
-  client.patch(`/api/shops/${shopId}/schedules/${scheduleId}`, dto).then((r) => r.data.data as Schedule);
-
-export const deleteSchedule = (shopId: string, scheduleId: string) =>
-  client.delete(`/api/shops/${shopId}/schedules/${scheduleId}`).then((r) => r.data);
-
-export const upsertDays = (shopId: string, scheduleId: string, dto: UpsertDaysDto) =>
-  client.put(`/api/shops/${shopId}/schedules/${scheduleId}/days`, dto).then((r) => r.data.data as Schedule);
-
-// Staff schedule variants — route through /team/:memberId/schedules
+// Working hours belong to team members: everything routes through /team/:memberId/schedules
 export const getStaffSchedules = (shopId: string, memberId: string) =>
   client.get(`/api/shops/${shopId}/team/${memberId}/schedules`).then((r) => r.data.data as Schedule[]);
 

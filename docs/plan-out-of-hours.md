@@ -5,6 +5,17 @@ truth if work continues in a new session. Branch: `prod-readiness`.
 
 ## 0. Approved decisions (these override anything below that differs)
 
+> **Amended 2026-10-01 — shop-wide hours are gone.** Team members' own schedules
+> are the only source of working hours. Wherever this plan says "shop-wide
+> hours/schedule" (`staffId null`), read: *the team's regular hours*
+> (`loadTeamRegularHours`: for each eligible member the latest-starting schedule
+> that is open that weekday, ranges pooled; else 08:00–22:00). "No staff
+> preference" no longer uses a shop schedule: a slot is offered if at least one
+> eligible member works then and is free, and the booking is assigned to the free
+> member working then with the fewest booked minutes that day (random on a tie). The
+> public page's hours are derived from the customer-bookable members
+> (`openingHours` in `GET /public/:slug`).
+
 1. **Overridable rule codes:** `OUTSIDE_OPENING_HOURS`, `SHOP_CLOSED`,
    `BOOKING_IN_PAST`, `OFF_SLOT_GRID`. `BOOKING_BEYOND_ADVANCE_WINDOW` is
    **not** overridable (raise the shop's `maxAdvanceDays` instead).

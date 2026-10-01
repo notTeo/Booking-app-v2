@@ -7,7 +7,12 @@ import {
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
-import { DATE_ONLY_RE, dayBoundsUtc, todayInZone } from '../utils/shopTime';
+import {
+  DATE_ONLY_RE,
+  dateInZone,
+  dayBoundsUtc,
+  todayInZone,
+} from '../utils/shopTime';
 import {
   buildOutsideHoursCandidates,
   buildSlotCandidates,
@@ -16,8 +21,11 @@ import {
 } from '../utils/slots';
 import {
   assertBookingRules,
+  findBookingViolations,
+  isOverridable,
   loadDayHours,
-  loadShopRegularHours,
+  loadTeamRegularHours,
+  type DayHours,
 } from './bookingRules.service';
 import { lockProvider, serializableTransaction } from '../utils/serializable';
 
@@ -93,35 +101,43 @@ export const canViewCustomerDetails = async (
 
 export type BookingContext = 'public' | 'internal';
 
-// Looks up the staff member a booking (or slots request) should use, enforcing
-// that they're active and bookable in the given context. Covers both paths:
-// an explicit staffId (previously never validated at all) and the "no
-// preference" fallback (previously validated only against service assignment).
+const bookableFieldFor = (context: BookingContext) =>
+  context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
+
+// Looks up the explicitly requested staff member, enforcing that they're
+// active and bookable in the given context.
 const resolveBookableStaff = async (
   db: Prisma.TransactionClient,
   shopId: string,
-  staffId: string | null | undefined,
+  staffId: string,
+  context: BookingContext,
+): Promise<UserShop | null> =>
+  db.userShop.findFirst({
+    where: {
+      id: staffId,
+      shopId,
+      active: true,
+      [bookableFieldFor(context)]: true,
+    },
+  });
+
+// Every active team member who can take this service in the given context —
+// the pool "any staff" draws from.
+const listEligibleStaff = (
+  db: Prisma.TransactionClient | typeof prisma,
+  shopId: string,
   serviceId: string,
   context: BookingContext,
-): Promise<UserShop | null> => {
-  const bookableField =
-    context === 'internal' ? 'bookableInternally' : 'bookableByCustomers';
-
-  if (staffId) {
-    return db.userShop.findFirst({
-      where: { id: staffId, shopId, active: true, [bookableField]: true },
-    });
-  }
-
-  return db.userShop.findFirst({
+): Promise<UserShop[]> =>
+  db.userShop.findMany({
     where: {
       shopId,
       active: true,
-      [bookableField]: true,
+      [bookableFieldFor(context)]: true,
       staffServices: { some: { serviceId } },
     },
+    orderBy: { createdAt: 'asc' },
   });
-};
 
 const staffUnavailable = (requestedStaffId: string | null | undefined) =>
   new AppError(
@@ -130,6 +146,94 @@ const staffUnavailable = (requestedStaffId: string | null | undefined) =>
       ? 'Selected staff member is not available for booking'
       : 'No staff available for this service',
   );
+
+/**
+ * "Any staff": picks who gets a booking when the customer expressed no
+ * preference. Only members who are free at that time and whose own working
+ * hours allow it are candidates; among them the one with the fewest booked
+ * minutes that day wins, a random one on a tie. When nobody is fully clean but some
+ * members are free and the caller accepted the violations (owner/staff
+ * override), those are candidates instead.
+ *
+ * If no candidate qualifies the first free member (else the first member) is
+ * returned so the caller's own rule/overlap checks produce the proper error.
+ */
+const pickAnyStaff = async (
+  tx: Prisma.TransactionClient,
+  p: {
+    shopId: string;
+    serviceId: string;
+    context: BookingContext;
+    timezone: string;
+    maxAdvanceDays: number;
+    slotIntervalMinutes: number;
+    startTime: Date;
+    endTime: Date;
+    overrideRules?: readonly string[];
+  },
+): Promise<UserShop> => {
+  const team = await listEligibleStaff(tx, p.shopId, p.serviceId, p.context);
+  if (team.length === 0) throw staffUnavailable(null);
+
+  const accepted = new Set(p.overrideRules ?? []);
+  const clean: UserShop[] = [];
+  const overridable: UserShop[] = [];
+  const free: UserShop[] = [];
+  for (const member of team) {
+    const conflict = await tx.booking.findFirst({
+      where: overlapWhere(member.id, p.startTime, p.endTime),
+      select: { id: true },
+    });
+    if (conflict) continue;
+    free.push(member);
+    const violations = await findBookingViolations({
+      db: tx,
+      shopId: p.shopId,
+      timezone: p.timezone,
+      maxAdvanceDays: p.maxAdvanceDays,
+      slotIntervalMinutes: p.slotIntervalMinutes,
+      scheduleStaffId: member.id,
+      startTime: p.startTime,
+      endTime: p.endTime,
+    });
+    if (violations.length === 0) clean.push(member);
+    else if (
+      violations.every((v) => isOverridable(v.code) && accepted.has(v.code))
+    )
+      overridable.push(member);
+  }
+
+  const pool = clean.length > 0 ? clean : overridable;
+  if (pool.length === 0) return free[0] ?? team[0];
+  if (pool.length === 1) return pool[0];
+
+  const { start, end } = dayBoundsUtc(
+    dateInZone(p.startTime, p.timezone),
+    p.timezone,
+  );
+  // Load = minutes booked that day, so one long appointment weighs more than
+  // several short ones.
+  const dayBookings = await tx.booking.findMany({
+    where: {
+      shopId: p.shopId,
+      staffId: { in: pool.map((m) => m.id) },
+      status: { notIn: SLOT_FREEING_STATUSES },
+      startTime: { gte: start, lt: end },
+    },
+    select: { staffId: true, startTime: true, endTime: true },
+  });
+  const load = new Map<string, number>();
+  for (const b of dayBookings) {
+    load.set(
+      b.staffId,
+      (load.get(b.staffId) ?? 0) +
+        (b.endTime.getTime() - b.startTime.getTime()) / 60_000,
+    );
+  }
+  const lightest = Math.min(...pool.map((m) => load.get(m.id) ?? 0));
+  const leastLoaded = pool.filter((m) => (load.get(m.id) ?? 0) === lightest);
+  return leastLoaded[Math.floor(Math.random() * leastLoaded.length)];
+};
 
 const BOOKING_INCLUDE = {
   customer: true,
@@ -258,25 +362,31 @@ export const createBooking = async (
 
     const endTime = new Date(startTime.getTime() + service.duration * 60_000);
 
-    const staff = await resolveBookableStaff(
-      tx,
-      shop.id,
-      data.staffId,
-      data.serviceId,
-      'public',
-    );
+    // The requested staff member, or — with no preference — whichever free
+    // team member working then has the fewest bookings that day.
+    const staff = data.staffId
+      ? await resolveBookableStaff(tx, shop.id, data.staffId, 'public')
+      : await pickAnyStaff(tx, {
+          shopId: shop.id,
+          serviceId: data.serviceId,
+          context: 'public',
+          timezone: shop.timezone,
+          maxAdvanceDays: shop.maxAdvanceDays,
+          slotIntervalMinutes: shop.slotIntervalMinutes,
+          startTime,
+          endTime,
+        });
     if (!staff) throw staffUnavailable(data.staffId);
 
     // Strict on the public path — there is no override. The schedule checked is
-    // the one the slots endpoint used: the requested staff member's own, or the
-    // shop-wide one when the customer had no preference.
+    // the assigned team member's own, the same one the slots endpoint used.
     await assertBookingRules({
       db: tx,
       shopId: shop.id,
       timezone: shop.timezone,
       maxAdvanceDays: shop.maxAdvanceDays,
       slotIntervalMinutes: shop.slotIntervalMinutes,
-      scheduleStaffId: data.staffId ? staff.id : null,
+      scheduleStaffId: staff.id,
       startTime,
       endTime,
     });
@@ -330,18 +440,6 @@ export const createBookingForShop = async (
 
     const endTime = new Date(startTime.getTime() + service.duration * 60_000);
 
-    const staff = await resolveBookableStaff(
-      tx,
-      shopId,
-      data.staffId,
-      data.serviceId,
-      'internal',
-    );
-    if (!staff) throw staffUnavailable(data.staffId);
-
-    // Same rules as the public path; a violation is only allowed if its code
-    // is in overrideRules. The overlap check in claimSlotAndCreate is never
-    // skipped.
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
       select: {
@@ -350,13 +448,34 @@ export const createBookingForShop = async (
         slotIntervalMinutes: true,
       },
     });
+
+    // The requested staff member, or — with no preference — whichever free
+    // team member working then has the fewest bookings that day.
+    const staff = data.staffId
+      ? await resolveBookableStaff(tx, shopId, data.staffId, 'internal')
+      : await pickAnyStaff(tx, {
+          shopId,
+          serviceId: data.serviceId,
+          context: 'internal',
+          timezone: shop.timezone,
+          maxAdvanceDays: shop.maxAdvanceDays,
+          slotIntervalMinutes: shop.slotIntervalMinutes,
+          startTime,
+          endTime,
+          overrideRules: data.overrideRules,
+        });
+    if (!staff) throw staffUnavailable(data.staffId);
+
+    // Same rules as the public path; a violation is only allowed if its code
+    // is in overrideRules. The overlap check in claimSlotAndCreate is never
+    // skipped.
     const overriddenRules = await assertBookingRules({
       db: tx,
       shopId,
       timezone: shop.timezone,
       maxAdvanceDays: shop.maxAdvanceDays,
       slotIntervalMinutes: shop.slotIntervalMinutes,
-      scheduleStaffId: data.staffId ? staff.id : null,
+      scheduleStaffId: staff.id,
       startTime,
       endTime,
       overrideRules: data.overrideRules,
@@ -418,6 +537,12 @@ export type SlotsResult =
   | { status: 'closed'; slots?: OwnerSlotInfo[] }
   | { status: 'ok'; slots: SlotInfo[] | OwnerSlotInfo[] };
 
+// Picks, for one start time, the most useful view of it across team members:
+// a free in-hours slot beats a free out-of-hours one, which beats a booked
+// in-hours one, which beats the rest.
+const slotRank = (s: OwnerSlotInfo) =>
+  (s.available ? 2 : 0) + (s.outsideHours ? 0 : 1);
+
 export const getAvailableSlots = async (
   shopId: string,
   date: string,
@@ -429,129 +554,163 @@ export const getAvailableSlots = async (
   options: { includeOutsideHours?: boolean; intervalMinutes?: number } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
-  // 1. Get the day's working hours. `date` is a calendar date in the shop's
-  // timezone; its weekday does not depend on any timezone.
+  // `date` is a calendar date in the shop's timezone; its weekday does not
+  // depend on any timezone.
   if (!DATE_ONLY_RE.test(date))
     throw new AppError(400, 'date must be YYYY-MM-DD');
 
-  // Booking-conflict checks always need a concrete, bookable staff member.
-  // resolveBookableStaff validates an explicitly-passed staffId (active +
-  // bookable in this context) and, when none was requested (public flow,
-  // shop-wide hours), falls back to any eligible staff assigned to the
-  // service. Schedule lookup below, on the other hand, is keyed on the
-  // staffId that was actually passed in, with no such fallback: a staff
-  // member with no schedule of their own is "closed", not silently given
-  // the shop-wide hours.
-  const staff = await resolveBookableStaff(
-    prisma,
-    shopId,
-    staffId,
-    serviceId,
-    context,
-  );
-  if (!staff)
-    return withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
-  const resolvedStaffId = staff.id;
+  const closed = (): SlotsResult =>
+    withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
 
-  const hours = await loadDayHours(prisma, shopId, staffId, date);
-  if (!hours && !withOutside) return { status: 'closed' };
+  // Whose hours and bookings decide availability: the requested staff member
+  // (validated: active + bookable in this context), or — with no preference —
+  // every eligible team member. A member with no schedule of their own is not
+  // working; there are no shop-wide hours to fall back on.
+  const eligible = await listEligibleStaff(prisma, shopId, serviceId, context);
+  let team: UserShop[];
+  if (staffId) {
+    const member = await resolveBookableStaff(prisma, shopId, staffId, context);
+    team = member ? [member] : [];
+  } else {
+    team = eligible;
+  }
+  if (team.length === 0) return closed();
 
-  // 2. Get service duration
   const service = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
   });
-  if (!service)
-    return withOutside ? { status: 'closed', slots: [] } : { status: 'closed' };
+  if (!service) return closed();
 
   const { timezone: zone, slotIntervalMinutes } =
     await getShopTimeSettings(shopId);
-
-  // 3. Bookings that overlap the shop-local day for this staff member —
-  // excluding statuses that don't actually hold the slot (matches the
-  // create-time conflict check's exclusion set), so a canceled/no-show
-  // booking doesn't keep blocking its old time from being offered again.
   const { start: dayStart, end: dayEnd } = dayBoundsUtc(date, zone);
-  const existingBookings = await prisma.booking.findMany({
-    where: {
-      shopId,
-      staffId: resolvedStaffId,
-      status: { notIn: SLOT_FREEING_STATUSES },
-      startTime: { lt: dayEnd },
-      endTime: { gt: dayStart },
-    },
-    select: { startTime: true, endTime: true },
-  });
+  // The caller may look at a finer (or coarser) grid than the shop's own, for
+  // this one booking; times off the shop grid are flagged.
+  const step = options.intervalMinutes ?? slotIntervalMinutes;
+  const now = new Date();
 
-  const isFree = (c: { start: Date; end: Date }) =>
-    !existingBookings.some((b) => b.startTime < c.end && b.endTime > c.start);
+  const memberHours = await Promise.all(
+    team.map(async (m) => ({
+      member: m,
+      hours: await loadDayHours(prisma, shopId, m.id, date),
+    })),
+  );
+  const anyHours = memberHours.some((m) => m.hours);
+  if (!anyHours && !withOutside) return { status: 'closed' };
 
-  if (withOutside) {
-    // Owner/staff view: the usual in-hours grid plus the out-of-hours grid. On a
-    // closed day (or a provider's day off) there are no in-hours slots and the
-    // grid is sized from the shop's regular hours for that weekday.
-    const now = new Date();
-    // The caller may look at a finer (or coarser) grid than the shop's own,
-    // for this one booking; times off the shop grid are flagged.
-    const step = options.intervalMinutes ?? slotIntervalMinutes;
-    const inHours = hours
-      ? buildSlotCandidates(date, zone, hours, service.duration, step)
+  // On a closed day (or a provider's day off) there is no opening to size the
+  // out-of-hours grid from: use the team's regular hours for that weekday.
+  const closedDayRanges: DayHours[] =
+    withOutside && memberHours.some((m) => !m.hours)
+      ? ((await loadTeamRegularHours(prisma, shopId, date, [
+          ...new Set([...eligible, ...team].map((m) => m.id)),
+        ])) ?? [DEFAULT_CLOSED_DAY_HOURS])
       : [];
-    const shopGridTimes = new Set(
-      hours && step !== slotIntervalMinutes
-        ? buildSlotCandidates(
-            date,
-            zone,
-            hours,
-            service.duration,
-            slotIntervalMinutes,
-          ).map((c) => c.time)
-        : inHours.map((c) => c.time),
-    );
-    const closedDayRanges = hours
-      ? []
-      : ((await loadShopRegularHours(prisma, shopId, date)) ?? [
-          DEFAULT_CLOSED_DAY_HOURS,
-        ]);
-    const outsideCandidates = buildOutsideHoursCandidates(
-      date,
-      zone,
-      hours ?? [],
-      closedDayRanges,
-      service.duration,
-      step,
-    );
-    const all = [
-      ...inHours.map((c) => ({
-        ...c,
-        reason: undefined as OutsideReason | undefined,
-      })),
-      ...outsideCandidates,
-    ].sort((a, b) => a.start.getTime() - b.start.getTime());
-    const slots: OwnerSlotInfo[] = all.map((c) => ({
-      time: c.time,
-      available: isFree(c),
-      outsideHours: c.reason !== undefined,
-      past: c.start < now,
-      ...(c.reason && { reason: c.reason }),
-      ...(c.reason === undefined &&
-        !shopGridTimes.has(c.time) && { offGrid: true }),
-    }));
-    return hours ? { status: 'ok', slots } : { status: 'closed', slots };
+
+  const perMember = await Promise.all(
+    memberHours.map(async ({ member, hours }) => {
+      // Bookings that overlap the shop-local day for this staff member —
+      // excluding statuses that don't actually hold the slot (matches the
+      // create-time conflict check's exclusion set), so a canceled/no-show
+      // booking doesn't keep blocking its old time from being offered again.
+      const existingBookings = await prisma.booking.findMany({
+        where: {
+          shopId,
+          staffId: member.id,
+          status: { notIn: SLOT_FREEING_STATUSES },
+          startTime: { lt: dayEnd },
+          endTime: { gt: dayStart },
+        },
+        select: { startTime: true, endTime: true },
+      });
+      const isFree = (c: { start: Date; end: Date }) =>
+        !existingBookings.some(
+          (b) => b.startTime < c.end && b.endTime > c.start,
+        );
+
+      if (!withOutside) {
+        const slots: OwnerSlotInfo[] = hours
+          ? buildSlotCandidates(
+              date,
+              zone,
+              hours,
+              service.duration,
+              slotIntervalMinutes,
+            ).map((c) => ({
+              time: c.time,
+              available: isFree(c),
+              outsideHours: false,
+              past: false,
+            }))
+          : [];
+        return slots;
+      }
+
+      // Owner/staff view: the usual in-hours grid plus the out-of-hours grid.
+      const inHours = hours
+        ? buildSlotCandidates(date, zone, hours, service.duration, step)
+        : [];
+      const shopGridTimes = new Set(
+        hours && step !== slotIntervalMinutes
+          ? buildSlotCandidates(
+              date,
+              zone,
+              hours,
+              service.duration,
+              slotIntervalMinutes,
+            ).map((c) => c.time)
+          : inHours.map((c) => c.time),
+      );
+      const outsideCandidates = buildOutsideHoursCandidates(
+        date,
+        zone,
+        hours ?? [],
+        closedDayRanges,
+        service.duration,
+        step,
+      );
+      const all = [
+        ...inHours.map((c) => ({
+          ...c,
+          reason: undefined as OutsideReason | undefined,
+        })),
+        ...outsideCandidates,
+      ].sort((a, b) => a.start.getTime() - b.start.getTime());
+      return all.map(
+        (c): OwnerSlotInfo => ({
+          time: c.time,
+          available: isFree(c),
+          outsideHours: c.reason !== undefined,
+          past: c.start < now,
+          ...(c.reason && { reason: c.reason }),
+          ...(c.reason === undefined &&
+            !shopGridTimes.has(c.time) && { offGrid: true }),
+        }),
+      );
+    }),
+  );
+
+  // Combine the team's views of each start time (a single member passes
+  // through unchanged). Every theoretical slot is listed, flagged with whether
+  // it's actually free — callers decide whether to filter these down
+  // (public/customer view) or show booked ones disabled (internal view).
+  const byTime = new Map<string, OwnerSlotInfo>();
+  for (const slots of perMember) {
+    for (const slot of slots) {
+      const current = byTime.get(slot.time);
+      if (!current || slotRank(slot) > slotRank(current))
+        byTime.set(slot.time, slot);
+    }
   }
+  const merged = [...byTime.values()].sort((a, b) =>
+    a.time.localeCompare(b.time),
+  );
 
-  // 4. Every theoretical slot in the open window (wall-clock in the shop's
-  // timezone), flagged with whether it's actually free — callers decide
-  // whether to filter these down (public/customer view) or show booked ones
-  // disabled (internal view).
-  const slots: SlotInfo[] = buildSlotCandidates(
-    date,
-    zone,
-    hours!,
-    service.duration,
-    slotIntervalMinutes,
-  ).map((c) => ({ time: c.time, available: isFree(c) }));
-
-  return { status: 'ok', slots };
+  if (withOutside) return { status: anyHours ? 'ok' : 'closed', slots: merged };
+  return {
+    status: 'ok',
+    slots: merged.map(({ time, available }) => ({ time, available })),
+  };
 };
 
 // ── Owner / Staff ────────────────────────────────────────────────────────────

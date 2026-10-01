@@ -13,31 +13,37 @@ import {
   type Tenant,
 } from './helpers';
 
-// Rule under test: for one shop (and separately for each staff member) no two
-// ACTIVE schedules may share a date — whichever path changes a schedule.
+// Rule under test: for each team member no two ACTIVE schedules may share a
+// date — whichever path changes a schedule. Team members' schedules are the
+// only working hours; the owner (t.staff) is the default member here.
 
 const conflict = { statusCode: 409 };
 
 async function pair(label: string) {
   const t = await createTenant(label);
-  const a = await createSchedule(t.user.id, t.shop.id, {
-    startDate: '2027-02-01',
-    endDate: '2027-04-30',
-  });
+  const a = await createSchedule(
+    t.user.id,
+    t.shop.id,
+    {
+      startDate: '2027-02-01',
+      endDate: '2027-04-30',
+    },
+    t.staff.id,
+  );
   return { t, a };
 }
 
 const make = (
   t: Tenant,
   dto: Parameters<typeof createSchedule>[2],
-  staffId?: string,
+  staffId: string = t.staff.id,
 ) => createSchedule(t.user.id, t.shop.id, dto, staffId);
 
 const edit = (
   t: Tenant,
   id: string,
   dto: Parameters<typeof updateSchedule>[3],
-  staffId?: string,
+  staffId: string = t.staff.id,
 ) => updateSchedule(t.user.id, t.shop.id, id, dto, staffId);
 
 describe('create', () => {
@@ -234,13 +240,6 @@ describe('turning schedules on and off', () => {
 });
 
 describe('scopes', () => {
-  it('a staff schedule may overlap the shop-wide one', async () => {
-    const { t } = await pair('scope-shop-staff');
-    await expect(
-      make(t, { startDate: '2027-03-01', endDate: '2027-03-31' }, t.staff.id),
-    ).resolves.toBeTruthy();
-  });
-
   it("a staff member's own schedules may not overlap each other", async () => {
     const t = await createTenant('scope-staff-own');
     await make(
@@ -319,7 +318,7 @@ describe('days routes cannot change overlap state', () => {
   it('PUT days keeps dates and active flag untouched', async () => {
     const { t, a } = await pair('http-days');
     const res = await request(app)
-      .put(`/api/shops/${t.shop.id}/schedules/${a.id}/days`)
+      .put(`/api/shops/${t.shop.id}/team/${t.staff.id}/schedules/${a.id}/days`)
       .set(authHeader(t.token))
       .send({
         days: [
@@ -342,7 +341,7 @@ describe('days routes cannot change overlap state', () => {
 
 describe('HTTP routes (validators + error body)', () => {
   const url = (t: Tenant, id = '') =>
-    `/api/shops/${t.shop.id}/schedules${id ? `/${id}` : ''}`;
+    `/api/shops/${t.shop.id}/team/${t.staff.id}/schedules${id ? `/${id}` : ''}`;
 
   it('PATCH accepts endDate: null to clear the end date', async () => {
     const t = await createTenant('http-null');

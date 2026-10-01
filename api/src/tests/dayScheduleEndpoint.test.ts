@@ -86,16 +86,15 @@ describe('GET /api/shops/:shopId/schedules/day', () => {
     ]);
   });
 
-  it('a provider with no schedule, or a day off, is null (closed) — never given the shop-wide hours', async () => {
+  it('a provider with no schedule, or a day off, is null (closed)', async () => {
     const t = await createTenant('Day');
     const noSchedule = await createStaffMember(t, 'NoSched');
     const dayOff = await createStaffMember(t, 'DayOff');
-    await addWeeklySchedule(t, { staffId: null }); // shop-wide exists
     await schedule(t, dayOff.staff.id, { MON: [['09:00', '17:00']] }); // not Tuesday
     const res = await dayReq(t, TUE);
     expect(res.body.data[noSchedule.staff.id]).toBeNull();
     expect(res.body.data[dayOff.staff.id]).toBeNull();
-    expect(res.body.data[t.staff.id]).toBeNull(); // owner has no own schedule
+    expect(res.body.data[t.staff.id]).toBeNull(); // owner has no schedule either
   });
 
   it('a closed weekday is null', async () => {
@@ -173,14 +172,4 @@ describe('GET /api/shops/:shopId/schedules/day', () => {
       expect((await dayReq(t, bad)).status).toBe(400);
     },
   );
-
-  it('is not mistaken for a schedule id', async () => {
-    const t = await createTenant('Day');
-    const s = await addWeeklySchedule(t, { staffId: null });
-    const byId = await request(app)
-      .get(`/api/shops/${t.shop.id}/schedules/${s.id}`)
-      .set(authHeader(t.token));
-    expect(byId.status).toBe(200);
-    expect(byId.body.data.id).toBe(s.id);
-  });
 });

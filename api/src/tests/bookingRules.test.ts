@@ -131,9 +131,9 @@ describe('public path: strict rules, 422 with a code', () => {
     expect(res.body.code).toBe('BOOKING_BEYOND_ADVANCE_WINDOW');
   });
 
-  it('no staff preference validates against the shop-wide schedule (like slots)', async () => {
+  it("no staff preference validates against the assigned member's own schedule (like slots)", async () => {
     const t = await createTenant('Any');
-    await addWeeklySchedule(t, { staffId: null });
+    await addWeeklySchedule(t); // the owner works 09:00-13:00
     const res = await request(app).post(`/public/${t.shop.slug}/book`).send({
       name: 'C',
       phone: '6911111111',
@@ -141,10 +141,19 @@ describe('public path: strict rules, 422 with a code', () => {
       startTime: OK,
     });
     expect(res.status).toBe(201);
-    // ...but an explicit staff member with no schedule of their own is closed.
-    const explicit = await pub(t, OK);
-    expect(explicit.status).toBe(422);
-    expect(explicit.body.code).toBe('SHOP_CLOSED');
+    expect(res.body.data.staffId ?? res.body.data.staff?.id).toBe(t.staff.id);
+  });
+
+  it('no staff preference with nobody working is closed', async () => {
+    const t = await createTenant('Any');
+    const res = await request(app).post(`/public/${t.shop.slug}/book`).send({
+      name: 'C',
+      phone: '6911111112',
+      serviceId: t.service.id,
+      startTime: OK,
+    });
+    expect(res.status).toBe(422);
+    expect(res.body.code).toBe('SHOP_CLOSED');
   });
 
   it('ignores override and overrideRules from the public', async () => {
