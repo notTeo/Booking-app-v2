@@ -49,9 +49,9 @@
 
 /* ---- Shop card ---- */
 .shop-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -155,8 +155,8 @@
 }
 
 .shop-status-badge.inactive {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-  color: var(--error);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
 }
 
 .shop-role-badge {
@@ -164,7 +164,7 @@
   font-weight: 600;
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   color: var(--text-muted);
   text-transform: capitalize;
@@ -280,7 +280,7 @@
 /* ---- Danger card ---- */
 .shop-danger-card {
   max-width: 600px;
-  border-color: color-mix(in srgb, var(--error) 35%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 
 .shop-danger-title {
@@ -288,7 +288,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--error);
+  color: var(--danger);
   margin: 0 0 0.5rem;
 }
 
@@ -310,8 +310,8 @@
   min-height: 80px;
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   color: var(--text);
   font-size: 0.9rem;
   font-family: inherit;

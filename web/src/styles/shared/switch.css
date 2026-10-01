@@ -17,7 +17,7 @@
 }
 
 .switch--off {
-  background-color: var(--error);
+  background-color: var(--danger);
 }
 
 .switch:disabled {

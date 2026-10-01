@@ -55,9 +55,9 @@
 /* ─── Invite Form Card ─── */
 
 .invites-form-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   padding: 1.25rem 1.5rem;
 }
 
@@ -91,9 +91,9 @@
 
 .invites-form-row input,
 .invites-form-row select {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 0.6);
+  border-radius: calc(var(--radius-md) * 0.6);
   color: var(--text);
   font-size: 0.9rem;
   padding: 0.55rem 0.75rem;
@@ -112,7 +112,7 @@
 }
 
 .invites-form-feedback--error {
-  color: var(--error);
+  color: var(--danger);
 }
 
 .invites-form-feedback--success {
@@ -145,7 +145,7 @@
 }
 
 .invite-status-expired {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   color: var(--text-muted);
 }
@@ -153,7 +153,7 @@
 /* ─── Role Badge ─── */
 
 .invite-role-badge {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border-radius: 999px;
   color: var(--text-muted);
   font-size: 0.72rem;
@@ -195,9 +195,9 @@
 }
 
 .accept-invite-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   max-width: 480px;
   padding: 2.5rem 2rem;
   text-align: center;
@@ -230,7 +230,7 @@
 .accept-invite-warning {
   background: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
-  border-radius: calc(var(--radius) * 0.6);
+  border-radius: calc(var(--radius-md) * 0.6);
   color: var(--warning);
   font-size: 0.85rem;
   margin-top: 1rem;

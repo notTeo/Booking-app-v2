@@ -33,9 +33,9 @@
 
 /* ---- Create form ---- */
 .wh-create-form {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
   display: flex;
@@ -93,9 +93,9 @@
 
 /* ---- Per-schedule card ---- */
 .wh-schedule-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 1.25rem;
 }
@@ -146,7 +146,7 @@
 }
 
 .wh-active-badge.inactive {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   color: var(--text-muted);
 }
@@ -197,14 +197,14 @@
 
 .wh-delete-confirm-text {
   font-size: 0.85rem;
-  color: var(--error);
+  color: var(--danger);
   font-weight: 600;
 }
 
 /* ---- Slot error ---- */
 .wh-slot-error {
   font-size: 0.78rem;
-  color: var(--error);
+  color: var(--danger);
   margin-top: 0.1rem;
 }
 
@@ -216,9 +216,9 @@
 
 /* ---- Day card ---- */
 .working-hours-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 1.5rem;
 }
@@ -307,21 +307,21 @@
   line-height: 1;
   padding: 0.65rem;
   margin: -0.45rem -0.25rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;
   line-height: 1;
 }
 
 .working-hours-remove:hover {
-  color: var(--error);
-  background: color-mix(in srgb, var(--error) 10%, transparent);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 .working-hours-add-slot {
   background: none;
   border: 1px dashed var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   color: var(--accent);
   cursor: pointer;
   font-size: 0.82rem;
@@ -403,6 +403,6 @@
 }
 
 .wh-date-range .wh-status--ended {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   color: var(--text-muted);
 }

@@ -28,9 +28,9 @@
    stylesheets end up in the same global bundle. */
 
 .shop-overview-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -42,7 +42,7 @@
   gap: 1rem;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
 }
 
 /* Avatar */
@@ -50,7 +50,7 @@
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   background: var(--accent);
   color: #fff;
   font-size: 1.1rem;
@@ -116,8 +116,8 @@
 }
 
 .badge--inactive {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-  color: var(--error);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
 }
 
 /* ─── Body ───────────────────────────────────────────────────────── */
