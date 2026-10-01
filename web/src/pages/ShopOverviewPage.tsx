@@ -20,6 +20,8 @@ import OverviewEmpty from '../components/overview/OverviewEmpty';
 import '../styles/pages/shop-overview.css';
 
 const RECENT_LIMIT = 5;
+// One quick retry, then show the error; the default (3 retries with backoff) leaves the skeleton up for ~7s.
+const RETRY = 1;
 
 export default function ShopOverviewPage() {
   const { shop, isLoading } = useShop();
@@ -31,6 +33,7 @@ export default function ShopOverviewPage() {
     queryKey: ['overview', shop?.id, range],
     queryFn: () => getOverview(shop!.id, range),
     enabled: !!shop,
+    retry: RETRY,
   });
   const overview = overviewQuery.data;
   const isEmpty = !!overview && overview.totals.all + overview.totals.canceled === 0;
@@ -40,6 +43,7 @@ export default function ShopOverviewPage() {
     queryKey: ['overview-recent', shop?.id, overview?.from, overview?.to],
     queryFn: () => listBookings(shop!.id, { from: overview!.from, to: overview!.to, limit: RECENT_LIMIT, order: 'desc' }),
     enabled: !!shop && !!overview && !isEmpty,
+    retry: RETRY,
   });
 
   if (isLoading) return <div className="state-view">{t.overview.loading}</div>;
