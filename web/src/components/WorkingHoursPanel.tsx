@@ -211,6 +211,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
   // ---- Save schedule (date range + days, one action) ----
   const handleSaveSchedule = async (scheduleId: string) => {
     const state = editStates[scheduleId];
+    if (state.saving) return;
 
     const allErrors: Partial<Record<DayOfWeek, string>> = {};
     for (const day of DAY_ORDER) {
@@ -291,7 +292,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
 
   // ---- Create schedule ----
   const handleCreate = async () => {
-    if (!createStart) return;
+    if (!createStart || creating) return;
     setCreating(true);
     setCreateError('');
     try {
@@ -399,11 +400,12 @@ const created = await api.createSchedule(dto);
           {createError && <Alert variant="danger">{createError}</Alert>}
           <div className="wh-create-actions">
             <button
-              className="btn"
+              className={`btn${creating ? ' is-loading' : ''}`}
               onClick={handleCreate}
-              disabled={creating || !createStart || !!createConflict}
+              aria-busy={creating}
+              disabled={!createStart || !!createConflict}
             >
-              {creating ? t.workingHours.creating : t.workingHours.createSchedule}
+              {t.workingHours.createSchedule}
             </button>
             <button
               className="btn btn--secondary"
@@ -494,22 +496,21 @@ const created = await api.createSchedule(dto);
                 {isOwner && (
                   <div className="wh-schedule-actions">
                     <button
-                      className="btn"
+                      className={`btn${state.saving ? ' is-loading' : ''}`}
                       onClick={() => handleSaveSchedule(schedule.id)}
-                      disabled={state.saving || hasErrors}
+                      aria-busy={state.saving}
+                      disabled={hasErrors}
                     >
-                      {state.saving ? t.workingHours.saving : t.workingHours.saveDays}
+                      {t.workingHours.saveDays}
                     </button>
 
                     <div>
                       <button
-                        className="btn btn--danger"
+                        className={`btn btn--danger${state.deleting ? ' is-loading' : ''}`}
                         onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
-                        disabled={state.deleting}
+                        aria-busy={state.deleting}
                       >
-                        {state.deleting
-                          ? t.workingHours.deleting
-                          : t.workingHours.deleteSchedule}
+                        {t.workingHours.deleteSchedule}
                       </button>
                       {state.confirmDelete && (
                         <ConfirmDialog

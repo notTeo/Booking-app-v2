@@ -74,7 +74,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const selectedMember = shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
 
   async function handleSubmit() {
-    if (!slug || !wizard.selectedServiceId) return;
+    if (!slug || !wizard.selectedServiceId || submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     setBusyNotice(null);
@@ -284,11 +284,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     {t.public.back}
                   </button>
                   <button
-                    className="btn wizard-btn"
+                    className={`btn wizard-btn${submitting ? ' is-loading' : ''}`}
                     onClick={handleSubmit}
-                    disabled={submitting || name.trim() === '' || phone.trim() === ''}
+                    aria-busy={submitting}
+                    disabled={name.trim() === '' || phone.trim() === ''}
                   >
-                    {submitting ? t.public.booking : t.public.confirmBooking}
+                    {t.public.confirmBooking}
                   </button>
                 </div>
               </div>

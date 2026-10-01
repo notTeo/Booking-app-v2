@@ -62,7 +62,7 @@ export default function ShopInvitesPage() {
   };
 
   const submitCreate = async () => {
-    if (!shop) return;
+    if (!shop || sending) return;
     setSending(true);
     setSendFeedback(null);
     try {
@@ -97,7 +97,7 @@ export default function ShopInvitesPage() {
   const pendingMembers = members.filter((m) => !m.userId);
 
   const handleResend = async (memberId: string) => {
-    if (!shop) return;
+    if (!shop || actionPendingId === memberId) return;
     setActionPendingId(memberId);
     setActionError('');
     try {
@@ -217,8 +217,8 @@ export default function ShopInvitesPage() {
           </div>
 
           <div className="invites-form-row">
-            <button type="submit" className="btn btn--block" disabled={sending}>
-              {sending ? t.invites.sending : t.invites.addMember}
+            <button type="submit" className={`btn btn--block${sending ? ' is-loading' : ''}`} aria-busy={sending}>
+              {t.invites.addMember}
             </button>
           </div>
           {sendFeedback && (
@@ -250,7 +250,9 @@ export default function ShopInvitesPage() {
                 </tr>
               </thead>
               <tbody>
-                {pendingMembers.map((m) => (
+                {pendingMembers.map((m) => {
+                  const resending = actionPendingId === m.id && confirmCancel !== m.id;
+                  return (
                   <tr key={m.id} role="row">
                     <td role="cell" data-label={t.invites.nameLabel} className="data-table__title">{m.name}</td>
                     <td role="cell" data-label={t.invites.emailLabel}>{m.email ?? '—'}</td>
@@ -267,11 +269,11 @@ export default function ShopInvitesPage() {
                     <td role="cell" data-label="" className="data-table__actions">
                       <div className="invite-actions">
                         <button
-                          className="btn btn--sm btn--secondary"
+                          className={`btn btn--sm btn--secondary${resending ? ' is-loading' : ''}`}
                           onClick={() => handleResend(m.id)}
-                          disabled={actionPendingId === m.id}
+                          aria-busy={resending}
                         >
-                          {actionPendingId === m.id ? t.invites.sending : m.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
+                          {m.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
                         </button>
                         {m.hasPendingInvite && (
                           <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(m.id)}>
@@ -281,7 +283,8 @@ export default function ShopInvitesPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}

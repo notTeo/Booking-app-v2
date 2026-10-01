@@ -40,6 +40,7 @@ export default function InvitesPage() {
   }, []);
 
   const handleAccept = async (inviteId: string) => {
+    if (actionLoading === inviteId) return;
     setActionLoading(inviteId);
     setActionError('');
     try {
@@ -72,11 +73,11 @@ export default function InvitesPage() {
   const renderReceivedActions = (invite: ShopInvite) => (
     <div className="invite-actions">
       <button
-        className="btn btn--sm"
-        disabled={actionLoading === invite.id}
+        className={`btn btn--sm${actionLoading === invite.id && confirmDecline !== invite.id ? ' is-loading' : ''}`}
+        aria-busy={actionLoading === invite.id && confirmDecline !== invite.id}
         onClick={() => handleAccept(invite.id)}
       >
-        {actionLoading === invite.id ? t.invites.accepting : t.invites.accept}
+        {t.invites.accept}
       </button>
       <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(invite.id)}>
         {t.invites.decline}

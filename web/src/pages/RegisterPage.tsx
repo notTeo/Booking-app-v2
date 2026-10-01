@@ -36,6 +36,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError('');
     setSuccess('');
     setIsLoading(true);
@@ -61,6 +62,7 @@ export default function RegisterPage() {
   };
 
   const handleResend = async () => {
+    if (resendStatus === 'loading') return;
     setResendStatus('loading');
     try {
       await resendVerification(registeredEmail);
@@ -157,18 +159,18 @@ export default function RegisterPage() {
                 <Alert variant="danger">Failed to resend. Please try again.</Alert>
               )}
               <button
-                className="btn btn--secondary btn--block"
+                className={`btn btn--secondary btn--block${resendStatus === 'loading' ? ' is-loading' : ''}`}
                 type="button"
                 onClick={handleResend}
-                disabled={resendStatus === 'loading'}
+                aria-busy={resendStatus === 'loading'}
               >
-                {resendStatus === 'loading' ? 'Sending...' : 'Resend Email'}
+                Resend Email
               </button>
             </>
           )}
           {!success && (
-            <button className="btn btn--block" type="submit" disabled={isLoading || !acceptTerms}>
-              {isLoading ? 'Registering...' : 'Register'}
+            <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading} disabled={!acceptTerms}>
+              Register
             </button>
           )}
         </form>

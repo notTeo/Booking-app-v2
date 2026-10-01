@@ -115,7 +115,13 @@ export default function ConfirmDialog({
           <button type="button" className="btn btn--secondary" ref={cancelRef} onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </button>
-          <button type="button" className={`btn${btnCls}`} onClick={onConfirm} disabled={busy || confirmDisabled}>
+          <button
+            type="button"
+            className={`btn${btnCls}${busy ? ' is-loading' : ''}`}
+            onClick={busy ? undefined : onConfirm}
+            aria-busy={busy}
+            disabled={confirmDisabled}
+          >
             {confirmLabel}
           </button>
         </div>

@@ -48,6 +48,7 @@ export default function VerifyEmailPage() {
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (resendStatus === 'loading') return;
     setResendError('');
     setResendStatus('loading');
     try {
@@ -99,8 +100,8 @@ export default function VerifyEmailPage() {
                 {resendStatus === 'error' && (
                   <Alert variant="danger">{resendError}</Alert>
                 )}
-                <button className="btn btn--block" type="submit" disabled={resendStatus === 'loading'}>
-                  {resendStatus === 'loading' ? 'Sending...' : 'Resend Verification Email'}
+                <button className={`btn btn--block${resendStatus === 'loading' ? ' is-loading' : ''}`} type="submit" aria-busy={resendStatus === 'loading'}>
+                  Resend Verification Email
                 </button>
               </form>
             )}

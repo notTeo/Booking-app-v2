@@ -127,7 +127,7 @@ export default function ShopTeamMemberPage() {
   };
 
   const saveMemberChange = async () => {
-    if (!shop || !memberId || !member) return;
+    if (!shop || !memberId || !member || savingMember) return;
     setSavingMember(true);
     setMemberError('');
     setMemberSuccess('');
@@ -184,7 +184,7 @@ export default function ShopTeamMemberPage() {
   };
 
   const handleSendInvite = async () => {
-    if (!shop || !memberId) return;
+    if (!shop || !memberId || invitePending) return;
     setInvitePending(true);
     setInviteError('');
     setInviteSuccess('');
@@ -383,11 +383,12 @@ export default function ShopTeamMemberPage() {
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
             <div className="team-invite-actions">
               <button
-                className="btn"
+                className={`btn${savingMember ? ' is-loading' : ''}`}
                 onClick={handleSaveMember}
-                disabled={savingMember || !isMemberDirty}
+                aria-busy={savingMember}
+                disabled={!isMemberDirty}
               >
-                {savingMember ? t.team.saving : t.team.saveRole}
+                {t.team.saveRole}
               </button>
             </div>
 
@@ -405,12 +406,13 @@ export default function ShopTeamMemberPage() {
                 {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
                 <div className="team-invite-actions">
                   <button
-                    className="btn"
+                    className={`btn${invitePending ? ' is-loading' : ''}`}
                     onClick={handleSendInvite}
-                    disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
+                    aria-busy={invitePending}
+                    disabled={!member.email || editEmail !== (member.email ?? '')}
                     title={!member.email ? t.team.addEmailFirst : undefined}
                   >
-                    {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
+                    {member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
                   </button>
                   {member.hasPendingInvite && (
                     <button className="btn btn--secondary" onClick={handleCancelInvite} disabled={invitePending}>

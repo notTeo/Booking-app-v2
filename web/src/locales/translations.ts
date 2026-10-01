@@ -71,7 +71,6 @@ export interface Translations {
     dangerDesc: string;
     areYouSure: string;
     confirmDelete: string;
-    deleting: string;
     cancel: string;
     backToShops: string;
     notFound: string;
@@ -345,7 +344,6 @@ export interface Translations {
     emailSection: string;
     emailLabel: string;
     saveEmail: string;
-    saving: string;
     passwordSection: string;
     newPasswordLabel: string;
     newPasswordOptionalLabel: string;
@@ -355,7 +353,6 @@ export interface Translations {
     deleteAccount: string;
     confirmPasswordLabel: string;
     confirmPasswordPlaceholder: string;
-    deleting: string;
     cancel: string;
     areYouSure: string;
     pwMin: string;
@@ -379,7 +376,6 @@ export interface Translations {
     mostRecent: string;
     sessionStarted: string;
     sessionExpires: string;
-    revoking: string;
     revokeAll: string;
     memberSince: string;
     verified: string;
@@ -413,7 +409,6 @@ export interface Translations {
     actions: string;
     roles: { owner: string; staff: string };
     remove: string;
-    removing: string;
     cancel: string;
     noMembers: string;
     notFound: string;
@@ -422,7 +417,6 @@ export interface Translations {
     backToTeam: string;
     editRole: string;
     saveRole: string;
-    saving: string;
     roleUpdated: string;
     errorUpdateRole: string;
     availability: string;
@@ -481,13 +475,10 @@ export interface Translations {
     noReceived: string;
     noSent: string;
     sendInvite: string;
-    sending: string;
     emailLabel: string;
     roleLabel: string;
     accept: string;
-    accepting: string;
     decline: string;
-    declining: string;
     revoke: string;
     revoking: string;
     status: { pending: string; accepted: string; expired: string };
@@ -548,11 +539,9 @@ export interface Translations {
     price: string;
     isActive: string;
     save: string;
-    saving: string;
     cancel: string;
     edit: string;
     delete: string;
-    deleting: string;
     active: string;
     inactive: string;
     noServices: string;
@@ -576,7 +565,6 @@ export interface Translations {
     deleteScheduleTitle: string;
     title: string;
     save: string;
-    saving: string;
     successSave: string;
     errorLoad: string;
     errorSave: string;
@@ -585,9 +573,7 @@ export interface Translations {
     addSlot: string;
     newSchedule: string;
     createSchedule: string;
-    creating: string;
     deleteSchedule: string;
-    deleting: string;
     cancel: string;
     startDate: string;
     endDate: string;
@@ -645,7 +631,6 @@ export interface Translations {
     activeDesc: string;
     saveChanges: string;
     saveHint: string;
-    saving: string;
     backToShop: string;
     created: string;
     updatedPrefix: string;
@@ -699,7 +684,6 @@ export interface Translations {
     notesLabel: string;
     notesOptional: string;
     notesPlaceholder: string;
-    booking: string;
     confirmBooking: string;
     bookingConfirmed: string;
     bookingConfirmedMsg: string;
@@ -753,7 +737,6 @@ export interface Translations {
     emailOptional: string;
     notesLabel: string;
     notesOptional: string;
-    saving: string;
     save: string;
     totalVisitsLabel: string;
     totalSpentLabel: string;
@@ -762,10 +745,8 @@ export interface Translations {
     privacyHeading: string;
     privacyBody: string;
     exportData: string;
-    exporting: string;
     exportError: string;
     deleteCustomer: string;
-    deleting: string;
     deleteConfirm: string;
     deleteError: string;
     serviceCol: string;
@@ -792,7 +773,6 @@ export interface Translations {
     phoneSearchHint: string;
     newCustomerHint: string;
     createBooking: string;
-    creating: string;
     createSuccess: string;
     createError: string;
     /** The server is momentarily out of retry budget (503) — never shown as an error. */
@@ -923,7 +903,6 @@ export const translations: Record<Language, Translations> = {
       dangerDesc: 'Οριστική διαγραφή καταστήματος και όλων των δεδομένων του. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το κατάστημα.',
       confirmDelete: 'Επιβεβαίωση Διαγραφής',
-      deleting: 'Διαγραφή...',
       cancel: 'Ακύρωση',
       backToShops: '← Τα Καταστήματά μου',
       notFound: 'Το κατάστημα δεν βρέθηκε.',
@@ -1197,7 +1176,6 @@ home: {
       emailSection: 'Διεύθυνση Email',
       emailLabel: 'Email',
       saveEmail: 'Αποθήκευση Email',
-      saving: 'Αποθήκευση...',
       passwordSection: 'Αλλαγή Κωδικού',
       newPasswordLabel: 'Νέος Κωδικός',
       newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
@@ -1207,7 +1185,6 @@ home: {
       deleteAccount: 'Διαγραφή Λογαριασμού',
       confirmPasswordLabel: 'Επιβεβαίωση κωδικού',
       confirmPasswordPlaceholder: 'Εισάγετε τον κωδικό σας για επιβεβαίωση',
-      deleting: 'Διαγραφή...',
       cancel: 'Ακύρωση',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       pwMin: 'Τουλάχιστον 8 χαρακτήρες',
@@ -1231,7 +1208,6 @@ home: {
       mostRecent: 'πιο πρόσφατη:',
       sessionStarted: 'Συνεδρία ξεκίνησε',
       sessionExpires: 'Λήγει',
-      revoking: 'Ανάκληση...',
       revokeAll: 'Ανάκληση Όλων των Συνεδριών',
       memberSince: 'Μέλος από',
       verified: '✓ Επαληθευμένο',
@@ -1265,7 +1241,6 @@ home: {
       actions: 'Ενέργειες',
       roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
       remove: 'Αφαίρεση',
-      removing: 'Αφαίρεση...',
       cancel: 'Ακύρωση',
       noMembers: 'Δεν υπάρχουν μέλη ακόμα.',
       notFound: 'Το μέλος δεν βρέθηκε.',
@@ -1274,7 +1249,6 @@ home: {
       backToTeam: '← Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
-      saving: 'Αποθήκευση...',
       roleUpdated: 'Ο ρόλος ενημερώθηκε επιτυχώς.',
       errorUpdateRole: 'Αποτυχία ενημέρωσης ρόλου.',
       availability: 'Πρόγραμμα Διαθεσιμότητας',
@@ -1333,13 +1307,10 @@ home: {
       noReceived: 'Δεν έχετε εκκρεμείς προσκλήσεις.',
       noSent: 'Δεν έχετε στείλει προσκλήσεις ακόμα.',
       sendInvite: 'Αποστολή Πρόσκλησης',
-      sending: 'Αποστολή...',
       emailLabel: 'Email',
       roleLabel: 'Ρόλος',
       accept: 'Αποδοχή',
-      accepting: 'Αποδοχή...',
       decline: 'Απόρριψη',
-      declining: 'Απόρριψη...',
       revoke: 'Ανάκληση',
       revoking: 'Ανάκληση...',
       status: { pending: 'Εκκρεμής', accepted: 'Αποδεκτή', expired: 'Ληγμένη' },
@@ -1400,11 +1371,9 @@ home: {
       price: 'Τιμή',
       isActive: 'Ενεργή',
       save: 'Αποθήκευση',
-      saving: 'Αποθήκευση...',
       cancel: 'Ακύρωση',
       edit: 'Επεξεργασία',
       delete: 'Διαγραφή',
-      deleting: 'Διαγραφή...',
       active: 'Ενεργή',
       inactive: 'Ανενεργή',
       noServices: 'Δεν υπάρχουν υπηρεσίες ακόμα.',
@@ -1428,7 +1397,6 @@ home: {
       deleteScheduleTitle: 'Διαγραφή αυτού του προγράμματος;',
       title: 'Ώρες Λειτουργίας',
       save: 'Αποθήκευση Αλλαγών',
-      saving: 'Αποθήκευση...',
       successSave: 'Οι ώρες λειτουργίας αποθηκεύτηκαν.',
       errorLoad: 'Αποτυχία φόρτωσης ωρών λειτουργίας.',
       errorSave: 'Αποτυχία αποθήκευσης αλλαγών.',
@@ -1437,9 +1405,7 @@ home: {
       addSlot: '+ Προσθήκη',
       newSchedule: 'Νέο Πρόγραμμα',
       createSchedule: 'Δημιουργία',
-      creating: 'Δημιουργία...',
       deleteSchedule: 'Διαγραφή',
-      deleting: 'Διαγραφή...',
       cancel: 'Ακύρωση',
       startDate: 'Ημερομηνία έναρξης',
       endDate: 'Ημερομηνία λήξης (προαιρετική)',
@@ -1497,7 +1463,6 @@ home: {
       activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
-      saving: 'Αποθήκευση...',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
       updatedPrefix: '· Ενημερώθηκε',
@@ -1551,7 +1516,6 @@ home: {
       notesLabel: 'Σημειώσεις',
       notesOptional: '(προαιρετικό)',
       notesPlaceholder: 'Ειδικές απαιτήσεις...',
-      booking: 'Κράτηση...',
       confirmBooking: 'Επιβεβαίωση Κράτησης',
       bookingConfirmed: 'Κράτηση Επιβεβαιώθηκε!',
       bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
@@ -1612,7 +1576,6 @@ home: {
       emailOptional: 'Προαιρετικό',
       notesLabel: 'Σημειώσεις',
       notesOptional: 'Προαιρετικό',
-      saving: 'Αποθήκευση…',
       save: 'Αποθήκευση',
       totalVisitsLabel: 'Συνολικές επισκέψεις',
       totalSpentLabel: 'Συνολική δαπάνη',
@@ -1621,10 +1584,8 @@ home: {
       privacyHeading: 'Προσωπικά δεδομένα',
       privacyBody: 'Εξαγωγή όλων των δεδομένων που διατηρούνται για αυτόν τον πελάτη (JSON), ή οριστική διαγραφή του πελάτη και όλων των ραντεβού του.',
       exportData: 'Εξαγωγή δεδομένων',
-      exporting: 'Εξαγωγή...',
       exportError: 'Αποτυχία εξαγωγής δεδομένων.',
       deleteCustomer: 'Διαγραφή πελάτη',
-      deleting: 'Διαγραφή...',
       deleteConfirm: 'Οριστική διαγραφή αυτού του πελάτη και ΟΛΩΝ των ραντεβού του; Η ενέργεια δεν αναιρείται.',
       deleteError: 'Αποτυχία διαγραφής πελάτη.',
       serviceCol: 'Υπηρεσία',
@@ -1651,7 +1612,6 @@ home: {
       phoneSearchHint: 'Πληκτρολογήστε για αναζήτηση πελάτη…',
       newCustomerHint: 'Νέος πελάτης',
       createBooking: 'Δημιουργία Ραντεβού',
-      creating: 'Δημιουργία…',
       createSuccess: 'Το ραντεβού δημιουργήθηκε!',
       createError: 'Αποτυχία δημιουργίας ραντεβού.',
       bookingBusy: 'Το σύστημα κρατήσεων είναι απασχολημένο — δοκιμάστε ξανά σε λίγο.',
@@ -1793,7 +1753,6 @@ home: {
       dangerDesc: 'Permanently delete this shop and all its data. This action cannot be undone.',
       areYouSure: 'Are you sure? This will permanently delete the shop.',
       confirmDelete: 'Confirm Delete',
-      deleting: 'Deleting...',
       cancel: 'Cancel',
       backToShops: '← My Shops',
       notFound: 'Shop not found.',
@@ -2067,7 +2026,6 @@ home: {
       emailSection: 'Email Address',
       emailLabel: 'Email',
       saveEmail: 'Save Email',
-      saving: 'Saving...',
       passwordSection: 'Change Password',
       newPasswordLabel: 'New Password',
       newPasswordOptionalLabel: 'New Password (optional)',
@@ -2077,7 +2035,6 @@ home: {
       deleteAccount: 'Delete Account',
       confirmPasswordLabel: 'Confirm your password',
       confirmPasswordPlaceholder: 'Enter your password to confirm',
-      deleting: 'Deleting...',
       cancel: 'Cancel',
       areYouSure: 'Are you sure? This will permanently delete your account and all associated data. This action cannot be undone.',
       pwMin: 'At least 8 characters',
@@ -2101,7 +2058,6 @@ home: {
       mostRecent: 'most recent:',
       sessionStarted: 'Session started',
       sessionExpires: 'Expires',
-      revoking: 'Revoking...',
       revokeAll: 'Revoke All Sessions',
       memberSince: 'Member since',
       verified: '✓ Verified',
@@ -2135,7 +2091,6 @@ home: {
       actions: 'Actions',
       roles: { owner: 'Owner', staff: 'Staff' },
       remove: 'Remove',
-      removing: 'Removing...',
       cancel: 'Cancel',
       noMembers: 'No team members yet.',
       notFound: 'Member not found.',
@@ -2144,7 +2099,6 @@ home: {
       backToTeam: '← Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',
-      saving: 'Saving...',
       roleUpdated: 'Role updated successfully.',
       errorUpdateRole: 'Failed to update role.',
       availability: 'Availability Schedule',
@@ -2203,13 +2157,10 @@ home: {
       noReceived: 'You have no pending invites.',
       noSent: "You haven't sent any invites yet.",
       sendInvite: 'Send Invite',
-      sending: 'Sending...',
       emailLabel: 'Email',
       roleLabel: 'Role',
       accept: 'Accept',
-      accepting: 'Accepting...',
       decline: 'Decline',
-      declining: 'Declining...',
       revoke: 'Revoke',
       revoking: 'Revoking...',
       status: { pending: 'Pending', accepted: 'Accepted', expired: 'Expired' },
@@ -2270,11 +2221,9 @@ home: {
       price: 'Price',
       isActive: 'Active',
       save: 'Save',
-      saving: 'Saving...',
       cancel: 'Cancel',
       edit: 'Edit',
       delete: 'Delete',
-      deleting: 'Deleting...',
       active: 'Active',
       inactive: 'Inactive',
       noServices: 'No services yet.',
@@ -2298,7 +2247,6 @@ home: {
       deleteScheduleTitle: 'Delete this schedule?',
       title: 'Working Hours',
       save: 'Save Changes',
-      saving: 'Saving...',
       successSave: 'Working hours saved.',
       errorLoad: 'Failed to load working hours.',
       errorSave: 'Failed to save changes.',
@@ -2307,9 +2255,7 @@ home: {
       addSlot: '+ Add',
       newSchedule: 'New Schedule',
       createSchedule: 'Create',
-      creating: 'Creating...',
       deleteSchedule: 'Delete',
-      deleting: 'Deleting...',
       cancel: 'Cancel',
       startDate: 'Start date',
       endDate: 'End date (optional)',
@@ -2367,7 +2313,6 @@ home: {
       activeDesc: "When inactive, your shop won't accept new bookings.",
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
-      saving: 'Saving...',
       backToShop: '← Back to Shop',
       created: 'Created',
       updatedPrefix: '· Updated',
@@ -2421,7 +2366,6 @@ home: {
       notesLabel: 'Notes',
       notesOptional: '(optional)',
       notesPlaceholder: 'Any special requests...',
-      booking: 'Booking…',
       confirmBooking: 'Confirm Booking',
       bookingConfirmed: 'Booking Confirmed!',
       bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
@@ -2482,7 +2426,6 @@ home: {
       emailOptional: 'Optional',
       notesLabel: 'Notes',
       notesOptional: 'Optional',
-      saving: 'Saving…',
       save: 'Save',
       totalVisitsLabel: 'Total visits',
       totalSpentLabel: 'Total spent',
@@ -2491,10 +2434,8 @@ home: {
       privacyHeading: 'Personal data',
       privacyBody: 'Export everything held about this customer (JSON), or permanently delete the customer and all their bookings.',
       exportData: 'Export data',
-      exporting: 'Exporting...',
       exportError: 'Failed to export data.',
       deleteCustomer: 'Delete customer',
-      deleting: 'Deleting...',
       deleteConfirm: 'Permanently delete this customer and ALL their bookings? This cannot be undone.',
       deleteError: 'Failed to delete customer.',
       serviceCol: 'Service',
@@ -2521,7 +2462,6 @@ home: {
       phoneSearchHint: 'Type to search customer…',
       newCustomerHint: 'New customer',
       createBooking: 'Create Booking',
-      creating: 'Creating…',
       createSuccess: 'Booking created!',
       createError: 'Failed to create booking.',
       bookingBusy: 'The booking system is busy — please try again in a moment.',

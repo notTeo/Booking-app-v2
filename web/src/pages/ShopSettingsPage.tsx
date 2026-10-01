@@ -89,7 +89,7 @@ export default function ShopSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shop) return;
+    if (!shop || saveLoading) return;
     setSaveError('');
     setSaveSuccess('');
     setSaveLoading(true);
@@ -195,8 +195,8 @@ export default function ShopSettingsPage() {
               </p>
               <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
             </div>
-            <button className="btn btn--sm" type="submit" disabled={saveLoading}>
-              {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
+            <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
+              {t.shopSettings.saveChanges}
             </button>
           </div>
           {saveError && <Alert variant="danger">{saveError}</Alert>}

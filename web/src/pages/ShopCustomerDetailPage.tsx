@@ -48,7 +48,7 @@ export default function ShopCustomerDetailPage() {
   }, [shop?.id, customerId]);
 
   const handleSave = async () => {
-    if (!shop || !customerId) return;
+    if (!shop || !customerId || saving) return;
     setSaving(true);
     setSaveError('');
     setSaveSuccess('');
@@ -69,7 +69,7 @@ export default function ShopCustomerDetailPage() {
   };
 
   const handleExport = async () => {
-    if (!shop || !customerId) return;
+    if (!shop || !customerId || privacyBusy !== null) return;
     setPrivacyBusy('export');
     setPrivacyError('');
     try {
@@ -197,11 +197,12 @@ export default function ShopCustomerDetailPage() {
           {saveError && <Alert variant="danger">{saveError}</Alert>}
           {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
           <button
-            className="btn"
+            className={`btn${saving ? ' is-loading' : ''}`}
             onClick={handleSave}
-            disabled={saving || !isDirty}
+            aria-busy={saving}
+            disabled={!isDirty}
           >
-            {saving ? t.customers.saving : t.customers.save}
+            {t.customers.save}
           </button>
         </div>
       )}
@@ -213,11 +214,21 @@ export default function ShopCustomerDetailPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
           {privacyError && <Alert variant="danger">{privacyError}</Alert>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
-              {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
+            <button
+              className={`btn btn--secondary${privacyBusy === 'export' ? ' is-loading' : ''}`}
+              onClick={handleExport}
+              aria-busy={privacyBusy === 'export'}
+              disabled={privacyBusy === 'delete'}
+            >
+              {t.customers.exportData}
             </button>
-            <button className="btn btn--danger" onClick={() => setConfirmDelete(true)} disabled={privacyBusy !== null}>
-              {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
+            <button
+              className={`btn btn--danger${privacyBusy === 'delete' ? ' is-loading' : ''}`}
+              onClick={() => setConfirmDelete(true)}
+              aria-busy={privacyBusy === 'delete'}
+              disabled={privacyBusy === 'export'}
+            >
+              {t.customers.deleteCustomer}
             </button>
           </div>
         </div>

@@ -136,7 +136,7 @@ export default function ShopServicesPage() {
   // create
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shop) return;
+    if (!shop || creating) return;
     setCreating(true);
     setCreateError('');
     try {
@@ -154,7 +154,7 @@ export default function ShopServicesPage() {
   // update
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shop || !editingId) return;
+    if (!shop || !editingId || saving) return;
     setSaving(true);
     setEditError('');
     try {
@@ -280,8 +280,8 @@ export default function ShopServicesPage() {
         />
       </div>
       <div className="service-form-actions">
-        <button className="btn" type="submit" disabled={submitting}>
-          {submitting ? t.services.saving : submitLabel}
+        <button className={`btn${submitting ? ' is-loading' : ''}`} type="submit" aria-busy={submitting}>
+          {submitLabel}
         </button>
         <button className="btn btn--secondary" type="button" onClick={onCancel}>
           {t.services.cancel}

@@ -73,7 +73,7 @@ export default function OwnerBookingWizard({
     values: OwnerCustomerFormValues,
     acceptedRules?: BookingRuleCode[],
   ) {
-    if (!wizard.selectedServiceId) return;
+    if (!wizard.selectedServiceId || submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     setBusyNotice(null);

@@ -99,6 +99,7 @@ export default function OwnerCustomerFormStep({
   }
 
   function handleSubmit() {
+    if (submitting) return;
     onSubmit({ name, phone, email: email || undefined, notes: notes || undefined });
   }
 
@@ -212,17 +213,16 @@ export default function OwnerCustomerFormStep({
           {t.public.back}
         </button>
         <button
-          className="btn wizard-btn"
+          className={`btn wizard-btn${submitting ? ' is-loading' : ''}`}
           onClick={handleSubmit}
-          disabled={submitting || name.trim() === '' || phone.trim() === ''}
+          aria-busy={submitting}
+          disabled={name.trim() === '' || phone.trim() === ''}
         >
-          {submitting
-            ? t.bookings.creating
-            : outsideRules.length > 0
-              ? onlyOffGrid
-                ? t.bookings.intervalPicker.confirmButton
-                : t.bookings.outsideHours.confirmButton
-              : t.bookings.createBooking}
+          {outsideRules.length > 0
+            ? onlyOffGrid
+              ? t.bookings.intervalPicker.confirmButton
+              : t.bookings.outsideHours.confirmButton
+            : t.bookings.createBooking}
         </button>
       </div>
     </div>

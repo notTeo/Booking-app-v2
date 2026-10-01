@@ -80,6 +80,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (profileLoading) return;
     setProfileError('');
     setProfileSuccess('');
     const payload: { name?: string; email?: string; password?: string } = {};
@@ -112,6 +113,7 @@ export default function SettingsPage() {
   };
 
   const handleRevokeAll = async () => {
+    if (revokeLoading) return;
     setRevokeError('');
     setRevokeSuccess('');
     setRevokeLoading(true);
@@ -222,11 +224,12 @@ export default function SettingsPage() {
           {profileError && <Alert variant="danger">{profileError}</Alert>}
           {profileSuccess && <Alert variant="success">{profileSuccess}</Alert>}
           <button
-            className="btn btn--sm"
+            className={`btn btn--sm${profileLoading ? ' is-loading' : ''}`}
             type="submit"
-            disabled={profileLoading || !isProfileDirty || !passwordValid}
+            aria-busy={profileLoading}
+            disabled={!isProfileDirty || !passwordValid}
           >
-            {profileLoading ? t.settings.saving : t.settings.saveProfile}
+            {t.settings.saveProfile}
           </button>
         </form>
       </div>
@@ -297,12 +300,13 @@ export default function SettingsPage() {
         {revokeError && <Alert variant="danger">{revokeError}</Alert>}
         {revokeSuccess && <Alert variant="success">{revokeSuccess}</Alert>}
         <button
-          className="btn btn--secondary btn--sm"
+          className={`btn btn--secondary btn--sm${revokeLoading ? ' is-loading' : ''}`}
           type="button"
           onClick={handleRevokeAll}
-          disabled={revokeLoading || sessions.length === 0}
+          aria-busy={revokeLoading}
+          disabled={sessions.length === 0}
         >
-          {revokeLoading ? t.settings.revoking : t.settings.revokeAll}
+          {t.settings.revokeAll}
         </button>
       </div>
 
