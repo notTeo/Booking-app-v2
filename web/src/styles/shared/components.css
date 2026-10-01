@@ -31,28 +31,11 @@
   padding: 1.5rem;
 }
 
-/* --- Card --- */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 2rem 1.5rem;
-  width: 100%;
-  max-width: 420px;
-}
-
-.card h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-}
-
 /* --- Form footer links --- */
 .form-links {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 1.25rem;
   text-align: center;
   font-size: 0.9rem;
   color: var(--text-muted);
@@ -164,34 +147,13 @@
 }
 
 .row-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.row-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
+  gap: var(--space-2);
+  padding: var(--space-4);
 }
 
 .row-card:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-/* Non-navigating card (row has its own action buttons instead) */
-.row-card--static {
-  cursor: default;
-}
-
-.row-card--static:hover {
-  border-color: var(--border);
 }
 
 .row-card__field {
@@ -242,6 +204,11 @@
   border: none;
   background: none;
   cursor: pointer;
+}
+
+.card > .card-back {
+  margin-bottom: 0;
+  align-self: flex-start;
 }
 
 .card-back:hover {
@@ -344,26 +311,3 @@
   font-size: 0.8rem;
 }
 
-/* ── Confirm dialog ───────────────────────────────────────────────────────── */
-.confirm-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.45);
-}
-.confirm-dialog {
-  width: 100%;
-  max-width: 420px;
-  padding: 24px;
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text, inherit);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-}
-.confirm-title { margin: 0 0 8px; font-size: 1.15rem; }
-.confirm-message { margin: 0 0 20px; line-height: 1.5; }
-.confirm-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }

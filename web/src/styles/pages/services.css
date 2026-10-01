@@ -36,13 +36,6 @@
 }
 
 /* ---- Service card ---- */
-.service-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
 .service-card-main {
   display: flex;
   align-items: flex-start;
@@ -110,32 +103,6 @@
 }
 
 /* ---- "Add" card — dashed border, sits at the end of the list ---- */
-.service-card--add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 1.1rem 1.25rem;
-  background: transparent;
-  border-style: dashed;
-  color: var(--accent);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.service-card--add:hover {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-
-.service-card--add-icon {
-  font-size: 1rem;
-}
-
 .service-action-active {
   border-color: var(--accent) !important;
   color: var(--accent) !important;
@@ -212,8 +179,7 @@
 
 /* ---- Create / Edit form ---- */
 .service-form.card {
-  max-width: unset;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .service-form-grid {

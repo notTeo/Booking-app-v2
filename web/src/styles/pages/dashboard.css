@@ -119,22 +119,7 @@
 
 /* ── Detail card ────────────────────────────────────────────────────────────── */
 .dash-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.6rem 1.75rem 2.25rem;
-  margin-bottom: 1.25rem;
-}
-
-.dash-card-title {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 0 0 1.4rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-5);
 }
 
 /* ── Field list ─────────────────────────────────────────────────────────────── */
@@ -240,22 +225,10 @@
 }
 
 .dash-action-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.2rem ;
-  margin-bottom: 1.4rem;
-  text-decoration: none;
-  display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
-  transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s;
-}
-
-.dash-action-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
-  transform: translateY(-1px);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .dash-action-icon {
@@ -326,10 +299,6 @@
     grid-template-columns: 1fr;
   }
 
-  .dash-card {
-    padding: 1.25rem 1.1rem;
-  }
-
   /* Let user-id break naturally on tiny screens */
   .dash-field-value {
     white-space: normal;
@@ -337,10 +306,6 @@
   }
 
   .dash-stat-card {
-    padding: 1rem 1.1rem;
-  }
-
-  .dash-action-card {
     padding: 1rem 1.1rem;
   }
 }

@@ -46,22 +46,7 @@
 
 /* ---- Shop card ---- */
 .shop-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.shop-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
-  text-decoration: none;
+  gap: var(--space-2);
 }
 
 .shop-card-top {
@@ -105,52 +90,10 @@
 }
 
 /* ---- "Add" card — dashed border, sits alongside real shop cards ---- */
-.shop-card--add {
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  gap: 0.6rem;
-  min-height: 96px;
-  background: transparent;
-  border-style: dashed;
-  color: var(--accent);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-align: left;
-  cursor: pointer;
-}
-
-.shop-card--add:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  box-shadow: none;
-}
-
-.shop-card--add:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.shop-card--add-icon {
-  font-size: 1.1rem;
-}
-
 /* ---- Upgrade card ---- */
 .shops-upgrade-card {
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  max-width: 26.25rem;
 }
-
-.shops-upgrade-card h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.shops-upgrade-card .btn { align-self: flex-start; }
 
 /* ---- Detail page ---- */
 .shop-detail-back {
@@ -179,9 +122,7 @@
   color: var(--text-muted);
 }
 
-/* ---- Form card ---- */
-/* h1 size/weight/margin comes from the shared .card h1 rule (components.css)
-   — same 1.6rem/800 as every other page title. */
+/* ---- Form card (layout only; surface and heading come from .card / .t-heading) ---- */
 .shop-form-card {
   max-width: 600px;
   margin-bottom: 1.5rem;
@@ -234,22 +175,6 @@
 /* ---- Danger card ---- */
 .shop-danger-card {
   max-width: 600px;
-  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
-}
-
-.shop-danger-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--danger);
-  margin: 0 0 0.5rem;
-}
-
-.shop-danger-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0 0 1rem;
 }
 
 /* ---- Settings page sections ---- */
@@ -265,7 +190,6 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 0;
-  margin-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 

@@ -27,13 +27,6 @@
    unrelated .shop-card list-item class defined in shops.css — both
    stylesheets end up in the same global bundle. */
 
-.shop-overview-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
 /* ─── Header ─────────────────────────────────────────────────────── */
 
 .shop-overview-card__header {

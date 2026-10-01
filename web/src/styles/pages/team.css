@@ -56,14 +56,7 @@
   gap: 1.5rem;
 }
 
-.team-member-card.card {
-  max-width: unset;
-}
-
 .team-member-card h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
   word-break: break-all;
 }
 
@@ -72,7 +65,6 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
 }
 
 
@@ -83,16 +75,6 @@
 }
 
 /* ---- Role edit card ---- */
-.team-role-card {
-  max-width: unset !important;
-}
-
-.team-role-card h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-}
-
 
 /* ---- Availability section ---- */
 .team-member-schedules {

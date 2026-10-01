@@ -54,19 +54,6 @@
 
 /* ─── Invite Form Card ─── */
 
-.invites-form-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1.5rem;
-}
-
-.invites-form-card h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
 .invites-form-row {
   display: flex;
   gap: 0.75rem;
@@ -124,25 +111,13 @@
 }
 
 .accept-invite-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  max-width: 480px;
-  padding: 2.5rem 2rem;
+  max-width: 30rem;
   text-align: center;
-  width: 100%;
-}
-
-.accept-invite-card h1 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
 }
 
 .accept-invite-meta {
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin-bottom: 1.75rem;
   line-height: 1.6;
 }
 
@@ -162,7 +137,6 @@
   border-radius: calc(var(--radius-md) * 0.6);
   color: var(--warning);
   font-size: 0.85rem;
-  margin-top: 1rem;
   padding: 0.75rem 1rem;
   text-align: left;
 }
