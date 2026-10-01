@@ -14,6 +14,10 @@ export type Overview = {
   range: OverviewRange;
   from: string;
   to: string;
+  /** The shop-local calendar date the period was computed for. */
+  today: string;
+  /** Whether the shop has any booking at all, in any period or status. */
+  hasAnyBookings: boolean;
   totals: {
     all: number;
     pending: number;
@@ -25,39 +29,54 @@ export type Overview = {
   buckets: OverviewBucket[];
 };
 
-const WEEKS_IN_QUARTER = 13;
-
 // Monday of the week containing `date` (calendar maths, timezone-free).
 const mondayOf = (date: string): string =>
   addDays(date, 1 - DateTime.fromISO(date, { zone: 'utc' }).weekday);
 
 /**
- * The window and bucket layout for a range, as shop-local calendar dates.
- * Week/month: rolling daily buckets ending today. Quarter: 13 Monday-start
- * weekly buckets ending with the current week.
+ * The calendar period and bucket layout for a range, as shop-local dates.
+ * - week: the current Monday-Sunday week, 7 daily buckets.
+ * - month: the current calendar month, one daily bucket per day.
+ * - quarter: the current month plus the next two, in Monday-start weekly
+ *   buckets. The first and last weeks are clipped to the period, so every
+ *   bucket (and the totals) covers exactly [from, to].
+ * Each bucket's `key` is the value the SQL date_trunc produces for it.
  */
 export const overviewWindow = (range: OverviewRange, today: string) => {
-  if (range === 'quarter') {
-    const lastMonday = mondayOf(today);
-    const firstMonday = addDays(lastMonday, -7 * (WEEKS_IN_QUARTER - 1));
-    const buckets = Array.from({ length: WEEKS_IN_QUARTER }, (_, i) => {
-      const start = addDays(firstMonday, 7 * i);
-      return { start, end: addDays(start, 6) };
+  const day = DateTime.fromISO(today, { zone: 'utc' });
+
+  if (range === 'week') {
+    const from = mondayOf(today);
+    const buckets = Array.from({ length: 7 }, (_, i) => {
+      const date = addDays(from, i);
+      return { key: date, start: date, end: date };
     });
-    return {
-      unit: 'week' as const,
-      from: firstMonday,
-      to: addDays(lastMonday, 6),
-      buckets,
-    };
+    return { unit: 'day' as const, from, to: addDays(from, 6), buckets };
   }
-  const days = range === 'week' ? 7 : 30;
-  const from = addDays(today, -(days - 1));
-  const buckets = Array.from({ length: days }, (_, i) => {
-    const day = addDays(from, i);
-    return { start: day, end: day };
-  });
-  return { unit: 'day' as const, from, to: today, buckets };
+
+  const from = day.startOf('month').toISODate()!;
+  const to = (range === 'month' ? day : day.plus({ months: 2 }))
+    .endOf('month')
+    .toISODate()!;
+
+  if (range === 'month') {
+    const buckets: { key: string; start: string; end: string }[] = [];
+    for (let date = from; date <= to; date = addDays(date, 1)) {
+      buckets.push({ key: date, start: date, end: date });
+    }
+    return { unit: 'day' as const, from, to, buckets };
+  }
+
+  const buckets: { key: string; start: string; end: string }[] = [];
+  for (let monday = mondayOf(from); monday <= to; monday = addDays(monday, 7)) {
+    const sunday = addDays(monday, 6);
+    buckets.push({
+      key: monday,
+      start: monday < from ? from : monday,
+      end: sunday > to ? to : sunday,
+    });
+  }
+  return { unit: 'week' as const, from, to, buckets };
 };
 
 const TOTAL_KEYS: Record<BookingStatus, keyof Overview['totals']> = {
@@ -82,10 +101,8 @@ export const getOverview = async (
   if (!shop) throw new AppError(404, 'Shop not found');
   const zone = shop.timezone;
 
-  const { unit, from, to, buckets } = overviewWindow(
-    range,
-    todayInZone(zone, now),
-  );
+  const today = todayInZone(zone, now);
+  const { unit, from, to, buckets } = overviewWindow(range, today);
   const startUtc = dayBoundsUtc(from, zone).start;
   const endUtc = dayBoundsUtc(to, zone).end;
 
@@ -126,12 +143,27 @@ export const getOverview = async (
     if (row.status !== 'CANCELED') totals.all += row._count._all;
   }
 
+  // Cheap (indexed on shopId) and only needed when the period itself is empty.
+  const inPeriod = byStatus.reduce((sum, row) => sum + row._count._all, 0);
+  const hasAnyBookings =
+    inPeriod > 0 ||
+    (await prisma.booking.findFirst({
+      where: { shopId },
+      select: { id: true },
+    })) !== null;
+
   const counts = new Map(byBucket.map((r) => [r.bucket, r.count]));
   return {
     range,
     from,
     to,
+    today,
+    hasAnyBookings,
     totals,
-    buckets: buckets.map((b) => ({ ...b, count: counts.get(b.start) ?? 0 })),
+    buckets: buckets.map(({ key, start, end }) => ({
+      start,
+      end,
+      count: counts.get(key) ?? 0,
+    })),
   };
 };

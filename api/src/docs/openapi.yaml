@@ -107,7 +107,7 @@ components:
           example: success
         data:
           type: object
-          required: [range, from, to, totals, buckets]
+          required: [range, from, to, today, hasAnyBookings, totals, buckets]
           properties:
             range:
               type: string
@@ -115,16 +115,24 @@ components:
             from:
               type: string
               format: date
-              description: First day of the window, a calendar date in the shop's timezone.
+              description: First day of the period, a calendar date in the shop's timezone.
             to:
               type: string
               format: date
-              description: Last day of the window (inclusive), in the shop's timezone.
+              description: Last day of the period (inclusive), in the shop's timezone.
+            today:
+              type: string
+              format: date
+              description: The shop-local date the period was computed for. Buckets starting after it are in the future.
+            hasAnyBookings:
+              type: boolean
+              description: Whether the shop has any booking at all (any period, any status).
             totals:
               type: object
               required: [all, pending, confirmed, completed, canceled, noShow]
               description: >
-                Booking counts by status for bookings starting in the window.
+                Booking counts by status for bookings starting in the period,
+                including future ones.
                 `all` is every non-canceled booking, i.e. the sum of the bucket counts.
               properties:
                 all: { type: integer, minimum: 0 }
@@ -136,9 +144,11 @@ components:
             buckets:
               type: array
               description: >
-                Non-canceled bookings per bucket, oldest first. Always complete:
-                7 daily buckets (week), 30 daily (month) or 13 Monday-to-Sunday
-                weekly buckets (quarter). Empty buckets have count 0.
+                Non-canceled bookings per bucket, oldest first; the buckets cover
+                exactly [from, to] with no gaps. Always complete, empty buckets
+                have count 0. week: 7 daily buckets; month: one daily bucket per
+                day of the month (28-31); quarter: Monday-start weekly buckets
+                (13-14), the first and last clipped to the period.
               items:
                 type: object
                 required: [start, end, count]
@@ -750,11 +760,11 @@ paths:
       tags: [overview]
       summary: Shop overview for a period
       description: >
-        Totals by status and a bookings-per-bucket series for the selected
-        period. Day and week boundaries are computed in the shop's timezone;
-        weeks start on Monday. The window ends today (week: last 7 days,
-        month: last 30 days, quarter: the last 13 weeks including the current
-        one). Available to the shop's owner and staff.
+        Totals by status and a bookings-per-bucket series for a calendar
+        period in the shop's timezone, including future bookings. week: the
+        current Monday-Sunday week; month: the current calendar month;
+        quarter: the current month plus the next two, in weekly buckets.
+        Available to the shop's owner and staff.
       operationId: getShopOverview
       security:
         - bearerAuth: []
