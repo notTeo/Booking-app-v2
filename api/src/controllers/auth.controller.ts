@@ -61,13 +61,13 @@ export const login = async (
 ) => {
   try {
     const dto: LoginDto = req.body;
-    const { refreshToken, ...result } = await loginUser(dto);
+    const { refreshToken, rememberMe, ...result } = await loginUser(dto);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: env.jwt.refreshExpiresInSeconds * 1000,
+      ...(rememberMe && { maxAge: env.jwt.refreshExpiresInSeconds * 1000 }),
     });
 
     successResponse(res, result, 200);
@@ -88,13 +88,14 @@ export const refresh = async (
       throw new AppError(401, 'No refresh token provided');
     }
 
-    const { accessToken, newRefreshToken } = await refreshAccessToken(token);
+    const { accessToken, newRefreshToken, rememberMe } =
+      await refreshAccessToken(token);
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: env.jwt.refreshExpiresInSeconds * 1000,
+      ...(rememberMe && { maxAge: env.jwt.refreshExpiresInSeconds * 1000 }),
     });
 
     successResponse(res, { accessToken });

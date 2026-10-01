@@ -274,9 +274,9 @@ export const sendBookingConfirmationEmail = async (params: {
       <div style="margin:28px 0 16px;">
         ${btnOutline(calendarUrl, 'Save to calendar')}
         ${mapsUrl ? btnOutline(mapsUrl, 'Get directions') : ''}
+        ${btnOutline(cancelUrl, 'Cancel booking')}
       </div>
       <p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>
-      <p style="${styles.note}">Need to cancel? ${inlineLink(cancelUrl, 'Cancel this booking')}.</p>
     `,
     ),
   });

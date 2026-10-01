@@ -157,7 +157,7 @@ export const registerUserWithInvite = async (
   };
 };
 
-export const loginUser = async ({ email, password }: LoginDto) => {
+export const loginUser = async ({ email, password, rememberMe = true }: LoginDto) => {
   const user = await prisma.user.findUnique({
     where: { email },
   });
@@ -188,7 +188,8 @@ export const loginUser = async ({ email, password }: LoginDto) => {
       token: refreshToken,
       family,
       userId: user.id,
-      expiresAt: getRefreshTokenExpiry(),
+      expiresAt: getRefreshTokenExpiry(rememberMe),
+      rememberMe,
     },
   });
 
@@ -204,6 +205,7 @@ export const loginUser = async ({ email, password }: LoginDto) => {
     },
     accessToken,
     refreshToken,
+    rememberMe,
   };
 };
 
@@ -245,7 +247,8 @@ export const refreshAccessToken = async (token: string) => {
       token: newRefreshToken,
       family: stored.family,
       userId: payload.userId,
-      expiresAt: getRefreshTokenExpiry(),
+      expiresAt: getRefreshTokenExpiry(stored.rememberMe),
+      rememberMe: stored.rememberMe,
     },
   });
 
@@ -253,7 +256,7 @@ export const refreshAccessToken = async (token: string) => {
 
   logger.info(`Access token refreshed for userId: ${payload.userId}`);
 
-  return { accessToken, newRefreshToken };
+  return { accessToken, newRefreshToken, rememberMe: stored.rememberMe };
 };
 
 export const logoutUser = async (token: string) => {

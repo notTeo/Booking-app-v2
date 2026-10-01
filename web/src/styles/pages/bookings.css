@@ -220,22 +220,6 @@
 .cal-status-btn--canceled.cal-status-btn--active   { background: var(--bg-input); border-color: var(--text-muted); color: var(--text-muted); }
 .cal-status-btn--no_show.cal-status-btn--active    { background: color-mix(in srgb, var(--error) 15%, transparent); border-color: var(--error); color: var(--error); }
 
-/* ── Detail footer (delete) ──────────────────────────────────────────────── */
-
-.cal-detail-footer {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  padding-top: 0.25rem;
-  border-top: 1px solid var(--border);
-  margin-top: 0.15rem;
-}
-
-.booking-delete-btn:hover {
-  color: var(--error) !important;
-  border-color: var(--error) !important;
-}
-
 /* ── Outside-range banner (safety net: no booking is ever hidden) ──────────── */
 
 .cal-outside-banner {

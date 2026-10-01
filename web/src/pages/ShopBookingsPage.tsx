@@ -8,7 +8,6 @@ import { useLang } from '../context/LanguageContext';
 import {
   listBookings,
   updateBookingStatus,
-  deleteBooking,
   type Booking,
   type BookingStatus,
 } from '../api/booking.api';
@@ -79,8 +78,6 @@ export default function ShopBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [creatingSlot, setCreatingSlot]       = useState<CreatingSlot | null>(null);
   const [updatingId, setUpdatingId]           = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [deleting, setDeleting]               = useState(false);
 
   // Filter bar. Status/service hide blocks, staff hides columns. The service is
   // stored with its name so it stays selectable after moving to a day where no
@@ -151,31 +148,14 @@ export default function ShopBookingsPage() {
     }
   };
 
-  const handleDelete = async (bookingId: string) => {
-    if (!shop) return;
-    setDeleting(true);
-    try {
-      await deleteBooking(shop.id, bookingId);
-      setBookings(prev => prev.filter(b => b.id !== bookingId));
-      if (selectedBooking?.id === bookingId) setSelectedBooking(null);
-      setConfirmDeleteId(null);
-    } catch {
-      setConfirmDeleteId(null);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
   const openBookingDetail = (b: Booking, isSelected: boolean) => {
     setSelectedBooking(isSelected ? null : b);
-    setConfirmDeleteId(null);
     setCreatingSlot(null);
   };
 
   const openCreateSlot = (staffId: string, timeHint: string, showOutside: boolean) => {
     setCreatingSlot({ staffId, timeHint, showOutside });
     setSelectedBooking(null);
-    setConfirmDeleteId(null);
   };
 
   // ── derived ──────────────────────────────────────────────────────────────
@@ -434,7 +414,7 @@ export default function ShopBookingsPage() {
             </div>
             <button
               className="cal-detail-close"
-              onClick={() => { setSelectedBooking(null); setConfirmDeleteId(null); }}
+              onClick={() => { setSelectedBooking(null); }}
               aria-label={t.bookings.close}
             >
               <FontAwesomeIcon icon={faXmark} />
@@ -472,35 +452,6 @@ export default function ShopBookingsPage() {
               </button>
             ))}
           </div>
-
-          {isOwner && (
-            <div className="cal-detail-footer">
-              {confirmDeleteId === selectedBooking.id ? (
-                <>
-                  <button
-                    className="btn btn-danger service-action-btn"
-                    onClick={() => handleDelete(selectedBooking.id)}
-                    disabled={deleting}
-                  >
-                    {deleting ? t.bookings.deleting : t.bookings.confirmDelete}
-                  </button>
-                  <button
-                    className="btn btn-ghost service-action-btn"
-                    onClick={() => setConfirmDeleteId(null)}
-                  >
-                    {t.bookings.cancel}
-                  </button>
-                </>
-              ) : (
-                <button
-                  className="btn btn-ghost service-action-btn booking-delete-btn"
-                  onClick={() => setConfirmDeleteId(selectedBooking.id)}
-                >
-                  {t.bookings.delete}
-                </button>
-              )}
-            </div>
-          )}
         </div>
       )}
 

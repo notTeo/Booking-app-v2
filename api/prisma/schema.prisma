@@ -242,6 +242,7 @@ model RefreshToken {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime @db.Timestamptz(3)
+  rememberMe Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 

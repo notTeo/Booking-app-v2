@@ -834,6 +834,11 @@ export interface Translations {
     yourText: string;
     appointmentAt: string;
     hasCancelled: string;
+    confirmTitle: string;
+    confirmText: string;
+    confirmButton: string;
+    keepButton: string;
+    kept: string;
   };
 }
 
@@ -1680,6 +1685,11 @@ home: {
       yourText: 'Το',
       appointmentAt: 'ραντεβού σας στο',
       hasCancelled: 'ακυρώθηκε.',
+      confirmTitle: 'Ακύρωση ραντεβού;',
+      confirmText: 'Θέλετε σίγουρα να ακυρώσετε το ραντεβού σας; Αυτή η ενέργεια δεν αναιρείται.',
+      confirmButton: 'Ναι, ακύρωση',
+      keepButton: 'Διατήρηση ραντεβού',
+      kept: 'Το ραντεβού σας διατηρήθηκε. Μπορείτε να κλείσετε αυτή τη σελίδα.',
     },
   },
 
@@ -2525,6 +2535,11 @@ home: {
       yourText: 'Your',
       appointmentAt: 'appointment at',
       hasCancelled: 'has been cancelled.',
+      confirmTitle: 'Cancel your booking?',
+      confirmText: 'Are you sure you want to cancel your appointment? This cannot be undone.',
+      confirmButton: 'Yes, cancel booking',
+      keepButton: 'Keep booking',
+      kept: 'Your booking is kept. You can close this page.',
     },
   },
 };

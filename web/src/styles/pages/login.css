@@ -1,1 +1,16 @@
 /* Login page styles */
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: auto;
+  margin: 0;
+}

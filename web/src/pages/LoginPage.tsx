@@ -11,6 +11,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate('/dashboard');
     } catch (err: unknown) {
       setError(apiErrorMessage(err, 'Login failed'));
@@ -54,6 +55,15 @@ export default function LoginPage() {
               required
             />
           </div>
+          <label className="remember-me" htmlFor="rememberMe">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            Remember me
+          </label>
           {error && <div className="alert alert-error">{error}</div>}
           <button className="btn btn-primary" type="submit" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}

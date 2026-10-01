@@ -11,8 +11,8 @@ export const register = (
     .post('/auth/register', { name, email, password, acceptTerms, ...(inviteToken ? { inviteToken } : {}) })
     .then((res) => res.data);
 
-export const login = (email: string, password: string) =>
-  client.post('/auth/login', { email, password }).then((res) => res.data);
+export const login = (email: string, password: string, rememberMe: boolean) =>
+  client.post('/auth/login', { email, password, rememberMe }).then((res) => res.data);
 
 export const logout = () =>
   client.post('/auth/logout').then((res) => res.data);
