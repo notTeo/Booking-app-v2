@@ -915,7 +915,7 @@ export default function HomePage() {
                           </button>
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(1)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--ghost" onClick={() => setWizardStep(1)}>{t.public.back}</button>
                         </div>
                       </div>
                     )}
@@ -956,7 +956,7 @@ export default function HomePage() {
                           })}
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(2)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--ghost" onClick={() => setWizardStep(2)}>{t.public.back}</button>
                           {wizardDate && wizardTime && (
                             <button type="button" className="btn" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
                           )}
@@ -1023,7 +1023,7 @@ export default function HomePage() {
                             />
                           </div>
                           <div className="home-preview-wizard-actions">
-                            <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(3)}>{t.public.back}</button>
+                            <button type="button" className="btn btn--ghost" onClick={() => setWizardStep(3)}>{t.public.back}</button>
                             <button
                               type="button"
                               className="btn"

@@ -277,7 +277,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
                 <div className="public-wizard-actions">
                   <button
-                    className="btn btn--secondary wizard-btn"
+                    className="btn btn--ghost wizard-btn"
                     onClick={handleBackFromForm}
                     disabled={submitting}
                   >

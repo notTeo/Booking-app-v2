@@ -283,7 +283,7 @@ export default function ShopServicesPage() {
         <button className={`btn${submitting ? ' is-loading' : ''}`} type="submit" aria-busy={submitting}>
           {submitLabel}
         </button>
-        <button className="btn btn--secondary" type="button" onClick={onCancel}>
+        <button className="btn btn--ghost" type="button" onClick={onCancel}>
           {t.services.cancel}
         </button>
       </div>

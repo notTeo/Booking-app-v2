@@ -112,7 +112,7 @@ export default function ConfirmDialog({
         <p id={`${id}-message`} className="modal__body">{message}</p>
         {children}
         <div className="modal__footer">
-          <button type="button" className="btn btn--secondary" ref={cancelRef} onClick={onCancel} disabled={busy}>
+          <button type="button" className="btn btn--ghost" ref={cancelRef} onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </button>
           <button

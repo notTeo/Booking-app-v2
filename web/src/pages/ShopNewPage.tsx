@@ -154,7 +154,7 @@ export default function ShopNewPage() {
               Create Shop
             </button>
             <button
-              className="btn btn--secondary"
+              className="btn btn--ghost"
               type="button"
               onClick={() => navigate('/shops')}
             >

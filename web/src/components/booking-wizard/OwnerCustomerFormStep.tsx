@@ -209,7 +209,7 @@ export default function OwnerCustomerFormStep({
       </div>
 
       <div className="public-wizard-actions">
-        <button className="btn btn--secondary wizard-btn" onClick={onBack} disabled={submitting}>
+        <button className="btn btn--ghost wizard-btn" onClick={onBack} disabled={submitting}>
           {t.public.back}
         </button>
         <button

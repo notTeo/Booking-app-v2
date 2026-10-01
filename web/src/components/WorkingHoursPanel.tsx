@@ -408,7 +408,7 @@ const created = await api.createSchedule(dto);
               {t.workingHours.createSchedule}
             </button>
             <button
-              className="btn btn--secondary"
+              className="btn btn--ghost"
               onClick={() => {
                 setShowCreate(false);
                 setCreateError('');

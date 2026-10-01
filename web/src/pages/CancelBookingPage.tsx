@@ -73,7 +73,7 @@ export default function CancelBookingPage() {
             <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
               {t.cancelBooking.confirmButton}
             </button>
-            <button type="button" className="btn btn--secondary btn--block" onClick={() => setKept(true)}>
+            <button type="button" className="btn btn--ghost btn--block" onClick={() => setKept(true)}>
               {t.cancelBooking.keepButton}
             </button>
           </div>
