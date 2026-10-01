@@ -1,6 +1,7 @@
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
+import { requireShopAccess } from '../utils/shopAccess';
 import {
   generateRandomToken,
   getInviteTokenExpiry,
@@ -49,20 +50,10 @@ const shapeMember = <T extends { invites: { id: string }[] }>(member: T) => {
   return { ...rest, hasPendingInvite: invites.length > 0 };
 };
 
-async function requireMembership(userId: string, shopId: string) {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-  return membership;
-}
-
-async function requireOwner(userId: string, shopId: string) {
-  const membership = await requireMembership(userId, shopId);
-  if (membership.role !== 'owner')
-    throw new AppError(403, 'Only the shop owner can manage team members');
-  return membership;
-}
+const OWNER_ONLY = {
+  role: 'owner',
+  ownerMessage: 'Only the shop owner can manage team members',
+} as const;
 
 // memberId is UserShop.id — a member may not have a login (User) yet
 async function requireMemberInShop(memberId: string, shopId: string) {
@@ -75,7 +66,7 @@ async function requireMemberInShop(memberId: string, shopId: string) {
 }
 
 export const getMembers = async (userId: string, shopId: string) => {
-  await requireMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
   const members = await prisma.userShop.findMany({
     where: { shopId },
     select: MEMBER_SELECT,
@@ -89,7 +80,7 @@ export const getMember = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
   return shapeMember(await requireMemberInShop(memberId, shopId));
 };
 
@@ -98,7 +89,7 @@ export const createTeamMember = async (
   shopId: string,
   dto: CreateTeamMemberDto,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   const email = dto.email ? dto.email.toLowerCase() : null;
 
@@ -143,7 +134,7 @@ export const updateMemberRole = async (
   memberId: string,
   dto: UpdateMemberRoleDto,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
 
   // Prevent demoting the only owner
@@ -227,7 +218,7 @@ export const removeMember = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
 
   // Prevent removing the last owner
@@ -257,10 +248,16 @@ export const sendLoginInvite = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
 
   if (member.userId) throw new AppError(400, 'This member already has a login');
+  if (!member.active)
+    throw new AppError(
+      400,
+      'Activate this member before sending an invite.',
+      'MEMBER_INACTIVE',
+    );
   if (!member.email)
     throw new AppError(
       400,
@@ -330,7 +327,7 @@ export const cancelLoginInvite = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   await requireMemberInShop(memberId, shopId);
 
   await prisma.shopInvite.deleteMany({

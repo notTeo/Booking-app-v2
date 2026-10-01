@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -8,6 +8,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -42,16 +44,14 @@ const payload = (t: Tenant, startTime: string, extra: object = {}) => ({
   ...extra,
 });
 const owner = (t: Tenant, startTime: string, extra: object = {}) =>
-  request(app)
+  api
     .post(`/api/shops/${t.shop.id}/bookings`)
     .set(authHeader(t.token))
     .send(payload(t, startTime, extra));
 const pub = (t: Tenant, startTime: string, extra: object = {}) =>
-  request(app)
-    .post(`/public/${t.shop.slug}/book`)
-    .send(payload(t, startTime, extra));
+  api.post(`/public/${t.shop.slug}/book`).send(payload(t, startTime, extra));
 const patch = (t: Tenant, id: string, data: object) =>
-  request(app)
+  api
     .patch(`/api/shops/${t.shop.id}/bookings/${id}`)
     .set(authHeader(t.token))
     .send(data);

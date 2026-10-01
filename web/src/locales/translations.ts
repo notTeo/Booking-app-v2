@@ -38,13 +38,15 @@ export interface Translations {
   };
   dashboard: {
     title: string;
-    subtitle: string;
-    errorLoad: string;
-    noShops: string;
-    todayCount: string;
-    upcomingCount: string;
-    upcomingAcrossShops: string;
-    noUpcoming: string;
+    shops: {
+      title: string;
+      bookings: string;
+      today: string;
+      pending: string;
+      noPending: string;
+    };
+    empty: { title: string; text: string };
+    neverBooked: { title: string; text: string };
   };
   shops: {
     title: string;
@@ -442,6 +444,7 @@ export interface Translations {
     cancelInvite: string;
     inviteSent: string;
     errorSendInvite: string;
+    errorInviteInactive: string;
     errorCancelInvite: string;
     canViewCustomerDetails: string;
     canViewCustomerDetailsDesc: string;
@@ -528,6 +531,11 @@ export interface Translations {
     optional: string;
   };
   services: {
+    errorHasBookings: string;
+    errorHasBookingsInactive: string;
+    deactivateTitle: string;
+    deactivate: string;
+    errorDeactivate: string;
     deleteConfirmButton: string;
     deleteMessage: string;
     deleteTitle: string;
@@ -713,6 +721,48 @@ export interface Translations {
     noBookingsToday: string;
     upcomingBookings: string;
     noUpcoming: string;
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
+    rangeLabel: string;
+    range: { week: string; month: string; quarter: string };
+    stats: {
+      bookings: string;
+      pending: string;
+      completed: string;
+      canceledNoShow: string;
+    };
+    chart: {
+      title: string;
+      tableCaption: string;
+      periodCol: string;
+      countCol: string;
+      bookingOne: string;
+      bookingMany: string;
+      scheduled: string;
+    };
+    upcoming: {
+      title: string;
+      viewAll: string;
+      empty: string;
+      customerCol: string;
+      serviceCol: string;
+      shopCol: string;
+      whenCol: string;
+      statusCol: string;
+    };
+    breakdown: { title: string; total: string; listLabel: string };
+    error: { title: string; text: string; retry: string };
+    empty: {
+      title: string;
+      text: string;
+      copy: string;
+      copied: string;
+      week: string;
+      month: string;
+      quarter: string;
+    };
+    loadingLabel: string;
   };
   customers: {
     cancel: string;
@@ -871,13 +921,21 @@ export const translations: Record<Language, Translations> = {
     },
     dashboard: {
       title: 'Επισκόπηση',
-      subtitle: 'Τα ραντεβού και οι καταστήματά σου, με μια ματιά.',
-      errorLoad: 'Αποτυχία φόρτωσης δεδομένων.',
-      noShops: 'Δεν έχεις ακόμα κανένα κατάστημα.',
-      todayCount: 'Σήμερα: {count}',
-      upcomingCount: 'Επόμενα: {count}',
-      upcomingAcrossShops: 'Επόμενα Ραντεβού',
-      noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
+      shops: {
+        title: 'Τα καταστήματά σου',
+        bookings: 'Ραντεβού',
+        today: 'Σήμερα',
+        pending: '{count} σε αναμονή',
+        noPending: 'Κανένα σε αναμονή',
+      },
+      empty: {
+        title: 'Δεν έχεις ακόμα κανένα κατάστημα',
+        text: 'Δημιούργησε το πρώτο σου κατάστημα και τα ραντεβού σου θα εμφανίζονται εδώ.',
+      },
+      neverBooked: {
+        title: 'Δεν υπάρχουν ακόμα ραντεβού',
+        text: 'Μοιράσου τη σελίδα κρατήσεων ενός καταστήματος και ο πρώτος σου πελάτης θα εμφανιστεί εδώ.',
+      },
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -1275,6 +1333,7 @@ home: {
       cancelInvite: 'Ακύρωση Πρόσκλησης',
       inviteSent: 'Η πρόσκληση σύνδεσης εστάλη.',
       errorSendInvite: 'Αποτυχία αποστολής πρόσκλησης.',
+      errorInviteInactive: 'Ενεργοποιήστε αυτό το μέλος πριν στείλετε πρόσκληση.',
       errorCancelInvite: 'Αποτυχία ακύρωσης πρόσκλησης.',
       canViewCustomerDetails: 'Προβολή στοιχείων πελατών',
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, το μέλος βλέπει μόνο τη λέξη «Πελάτης», χωρίς όνομα, τηλέφωνο ή email.',
@@ -1361,6 +1420,11 @@ home: {
       optional: 'προαιρετικό',
     },
     services: {
+      errorHasBookings: 'Αυτή η υπηρεσία έχει κρατήσεις. Απενεργοποιήστε την ώστε να μην μπορούν οι πελάτες να την κλείσουν.',
+      errorHasBookingsInactive: 'Αυτή η υπηρεσία έχει κρατήσεις και δεν μπορεί να διαγραφεί. Είναι ήδη ανενεργή, άρα οι πελάτες δεν μπορούν να την κλείσουν.',
+      deactivateTitle: 'Απενεργοποίηση «{name}»;',
+      deactivate: 'Απενεργοποίηση',
+      errorDeactivate: 'Αποτυχία απενεργοποίησης υπηρεσίας.',
       deleteConfirmButton: 'Διαγραφή υπηρεσίας',
       deleteMessage: 'Η υπηρεσία θα διαγραφεί οριστικά. Η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteTitle: 'Διαγραφή «{name}»;',
@@ -1553,6 +1617,56 @@ home: {
       noBookingsToday: 'Δεν υπάρχουν ραντεβού σήμερα.',
       upcomingBookings: 'Προσεχή Ραντεβού',
       noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
+      greetingMorning: 'Καλημέρα, {name}',
+      greetingAfternoon: 'Καλό απόγευμα, {name}',
+      greetingEvening: 'Καλησπέρα, {name}',
+      rangeLabel: 'Χρονική περίοδος',
+      range: { week: 'Εβδομάδα', month: 'Μήνας', quarter: '3 μήνες' },
+      stats: {
+        bookings: 'Ραντεβού',
+        pending: 'Σε αναμονή',
+        completed: 'Ολοκληρωμένα',
+        canceledNoShow: 'Ακυρωμένα / Δεν προσήλθαν',
+      },
+      chart: {
+        title: 'Ραντεβού ανά περίοδο',
+        tableCaption: 'Ραντεβού ανά περίοδο (χωρίς ακυρωμένα)',
+        periodCol: 'Περίοδος',
+        countCol: 'Ραντεβού',
+        bookingOne: 'ραντεβού',
+        bookingMany: 'ραντεβού',
+        scheduled: 'προγραμματισμένα',
+      },
+      upcoming: {
+        title: 'Επερχόμενα ραντεβού',
+        viewAll: 'Προβολή όλων',
+        empty: 'Δεν υπάρχουν επερχόμενα ραντεβού',
+        customerCol: 'Πελάτης',
+        serviceCol: 'Υπηρεσία',
+        shopCol: 'Κατάστημα',
+        whenCol: 'Πότε',
+        statusCol: 'Κατάσταση',
+      },
+      breakdown: {
+        title: 'Κατανομή καταστάσεων',
+        total: 'Σύνολο',
+        listLabel: 'Ραντεβού ανά κατάσταση',
+      },
+      error: {
+        title: 'Δεν μπορέσαμε να φορτώσουμε την επισκόπηση',
+        text: 'Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.',
+        retry: 'Δοκιμάστε ξανά',
+      },
+      empty: {
+        title: 'Δεν υπάρχουν ραντεβού σε αυτή την περίοδο',
+        text: 'Μοιραστείτε τη σελίδα κρατήσεων και ο πρώτος σας πελάτης θα εμφανιστεί εδώ.',
+        copy: 'Αντιγραφή συνδέσμου κράτησης',
+        copied: 'Ο σύνδεσμος αντιγράφηκε',
+        week: 'Δεν υπάρχουν ραντεβού αυτή την εβδομάδα',
+        month: 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα',
+        quarter: 'Δεν υπάρχουν ραντεβού τους τελευταίους 3 μήνες',
+      },
+      loadingLabel: 'Φόρτωση επισκόπησης',
     },
     customers: {
       cancel: 'Ακύρωση',
@@ -1722,13 +1836,21 @@ home: {
     },
     dashboard: {
       title: 'Overview',
-      subtitle: 'Your bookings and shops, at a glance.',
-      errorLoad: 'Failed to load your data.',
-      noShops: "You don't have any shops yet.",
-      todayCount: 'Today: {count}',
-      upcomingCount: 'Upcoming: {count}',
-      upcomingAcrossShops: 'Upcoming Bookings',
-      noUpcoming: 'No upcoming bookings.',
+      shops: {
+        title: 'Your shops',
+        bookings: 'Bookings',
+        today: 'Today',
+        pending: '{count} pending',
+        noPending: 'None pending',
+      },
+      empty: {
+        title: "You don't have any shops yet",
+        text: 'Create your first shop and your bookings will show up here.',
+      },
+      neverBooked: {
+        title: 'No bookings yet',
+        text: "Share a shop's booking page and your first customer will appear here.",
+      },
     },
     shops: {
       title: 'My Shops',
@@ -2126,6 +2248,7 @@ home: {
       cancelInvite: 'Cancel Invite',
       inviteSent: 'Login invite sent.',
       errorSendInvite: 'Failed to send invite.',
+      errorInviteInactive: 'Activate this member before sending an invite.',
       errorCancelInvite: 'Failed to cancel invite.',
       canViewCustomerDetails: 'View customer details',
       canViewCustomerDetailsDesc: "When off, this member sees just the word \"Customer\" — no name, phone, or email.",
@@ -2212,6 +2335,11 @@ home: {
       optional: 'optional',
     },
     services: {
+      errorHasBookings: "This service has bookings. Deactivate it instead so customers can't book it.",
+      errorHasBookingsInactive: "This service has bookings so it can't be deleted. It's already inactive, so customers can't book it.",
+      deactivateTitle: 'Deactivate {name}?',
+      deactivate: 'Deactivate',
+      errorDeactivate: 'Failed to deactivate service.',
       deleteConfirmButton: 'Delete service',
       deleteMessage: 'This service will be permanently deleted. This can\'t be undone.',
       deleteTitle: 'Delete {name}?',
@@ -2404,6 +2532,56 @@ home: {
       noBookingsToday: 'No bookings today.',
       upcomingBookings: 'Upcoming Bookings',
       noUpcoming: 'No upcoming bookings.',
+      greetingMorning: 'Good morning, {name}',
+      greetingAfternoon: 'Good afternoon, {name}',
+      greetingEvening: 'Good evening, {name}',
+      rangeLabel: 'Time period',
+      range: { week: 'Week', month: 'Month', quarter: '3 months' },
+      stats: {
+        bookings: 'Bookings',
+        pending: 'Pending',
+        completed: 'Completed',
+        canceledNoShow: 'Canceled / no-show',
+      },
+      chart: {
+        title: 'Bookings over time',
+        tableCaption: 'Bookings per period (canceled excluded)',
+        periodCol: 'Period',
+        countCol: 'Bookings',
+        bookingOne: 'booking',
+        bookingMany: 'bookings',
+        scheduled: 'scheduled',
+      },
+      upcoming: {
+        title: 'Upcoming bookings',
+        viewAll: 'View all',
+        empty: 'No upcoming bookings',
+        customerCol: 'Customer',
+        serviceCol: 'Service',
+        shopCol: 'Shop',
+        whenCol: 'When',
+        statusCol: 'Status',
+      },
+      breakdown: {
+        title: 'Status breakdown',
+        total: 'Total',
+        listLabel: 'Bookings by status',
+      },
+      error: {
+        title: "We couldn't load your overview",
+        text: 'Check your connection and try again.',
+        retry: 'Try again',
+      },
+      empty: {
+        title: 'No bookings in this period',
+        text: 'Share your booking page and your first customer will show up here.',
+        copy: 'Copy booking link',
+        copied: 'Link copied',
+        week: 'No bookings this week',
+        month: 'No bookings this month',
+        quarter: 'No bookings in the last 3 months',
+      },
+      loadingLabel: 'Loading overview',
     },
     customers: {
       cancel: 'Cancel',

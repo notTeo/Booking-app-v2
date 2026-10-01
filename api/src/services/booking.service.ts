@@ -7,6 +7,7 @@ import {
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { redactCustomer } from '../utils/customerVisibility';
+import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 import {
   DATE_ONLY_RE,
   dateInZone,
@@ -73,29 +74,6 @@ const overlapWhere = (
 
 const freesSlot = (status: BookingStatus) =>
   SLOT_FREEING_STATUSES.includes(status);
-
-// Throws 404 (not 403, so shop existence isn't revealed) unless the caller
-// belongs to the shop.
-export const requireMembership = async (userId: string, shopId: string) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-  return membership;
-};
-
-// Whether the calling member can see customer contact info — owners always
-// can; staff only when their own membership flag allows it.
-export const canViewCustomerDetails = async (
-  userId: string,
-  shopId: string,
-) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-  return membership.role === 'owner' || membership.canViewCustomerDetails;
-};
 
 // ── Staff resolution ─────────────────────────────────────────────────────────
 
@@ -356,7 +334,7 @@ export const createBooking = async (
     if (!shop) throw new AppError(404, 'Shop not found');
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId: shop.id },
+      where: { id: data.serviceId, shopId: shop.id, isActive: true },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
@@ -427,14 +405,11 @@ export const createBookingForShop = async (
   const cancelToken = randomUUID();
 
   return serializableTransaction(async (tx) => {
-    // Verify caller is a member of the shop
-    const membership = await tx.userShop.findUnique({
-      where: { userId_shopId: { userId, shopId } },
-    });
-    if (!membership) throw new AppError(404, 'Shop not found');
+    // Verify caller is an active member of the shop
+    await requireShopAccess(userId, shopId, { db: tx });
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId },
+      where: { id: data.serviceId, shopId, isActive: true },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
@@ -551,7 +526,13 @@ export const getAvailableSlots = async (
   context: BookingContext = 'public',
   // Authenticated owner/staff view only: also list out-of-hours times. The
   // public route never passes this.
-  options: { includeOutsideHours?: boolean; intervalMinutes?: number } = {},
+  options: {
+    includeOutsideHours?: boolean;
+    intervalMinutes?: number;
+    // Rescheduling an existing booking: its own service stays usable even if
+    // the service has since been deactivated (only new bookings are blocked).
+    forBookingId?: string;
+  } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
   // `date` is a calendar date in the shop's timezone; its weekday does not
@@ -577,7 +558,16 @@ export const getAvailableSlots = async (
   if (team.length === 0) return closed();
 
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, shopId },
+    where: {
+      id: serviceId,
+      shopId,
+      OR: [
+        { isActive: true },
+        ...(options.forBookingId
+          ? [{ bookings: { some: { id: options.forBookingId, shopId } } }]
+          : []),
+      ],
+    },
   });
   if (!service) return closed();
 
@@ -716,10 +706,13 @@ export const getAvailableSlots = async (
 // ── Owner / Staff ────────────────────────────────────────────────────────────
 
 export const listBookings = async (
+  userId: string,
   shopId: string,
   filters: { date?: string; status?: BookingStatus; staffId?: string },
-  canViewCustomer = true,
 ) => {
+  const canViewCustomer = canViewCustomerDetails(
+    await requireShopAccess(userId, shopId),
+  );
   const where: Record<string, unknown> = { shopId };
 
   if (filters.date) {
@@ -747,10 +740,10 @@ export const listBookings = async (
   }));
 };
 
-export const getBookingStats = async (
-  shopId: string,
-  canViewCustomer = true,
-) => {
+export const getBookingStats = async (userId: string, shopId: string) => {
+  const canViewCustomer = canViewCustomerDetails(
+    await requireShopAccess(userId, shopId),
+  );
   const now = new Date();
   const zone = await getShopTimezone(shopId);
   const { start: startOfToday, end: endOfToday } = dayBoundsUtc(
@@ -816,10 +809,13 @@ const loadBooking = async (
 };
 
 export const getBooking = async (
+  userId: string,
   shopId: string,
   bookingId: string,
-  canViewCustomer = true,
 ) => {
+  const canViewCustomer = canViewCustomerDetails(
+    await requireShopAccess(userId, shopId),
+  );
   const booking = await loadBooking(prisma, shopId, bookingId);
   return {
     ...booking,
@@ -828,6 +824,7 @@ export const getBooking = async (
 };
 
 export const updateBooking = async (
+  userId: string,
   shopId: string,
   bookingId: string,
   data: {
@@ -839,32 +836,45 @@ export const updateBooking = async (
     // overlap check.
     overrideRules?: string[];
   },
-  canViewCustomer = true,
 ) =>
   // Everything is read inside the (retried) transaction — see the note on the
   // create functions.
   serializableTransaction(async (tx) => {
+    const canViewCustomer = canViewCustomerDetails(
+      await requireShopAccess(userId, shopId, { db: tx }),
+    );
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
     // Any service/staff being referenced must belong to this shop.
-    let newService: { duration: number } | null = null;
+    let newService: { duration: number; isActive: boolean } | null = null;
     if (data.serviceId) {
       newService = await tx.service.findFirst({
         where: { id: data.serviceId, shopId },
       });
       if (!newService) throw new AppError(404, 'Service not found');
+      // Keeping the booking's current service is always fine; moving it TO a
+      // deactivated one is not.
+      if (data.serviceId !== existing.serviceId && !newService.isActive)
+        throw new AppError(404, 'Service not found');
     }
+    const staffChanged =
+      data.staffId !== undefined && data.staffId !== existing.staffId;
     if (data.staffId) {
+      // Moving a booking to a different staff member requires them to be
+      // active; resending the unchanged staffId (whose member may have been
+      // deactivated since) only has to belong to the shop.
       const newStaff = await tx.userShop.findFirst({
-        where: { id: data.staffId, shopId },
+        where: {
+          id: data.staffId,
+          shopId,
+          ...(staffChanged && { active: true }),
+        },
       });
       if (!newStaff) throw new AppError(404, 'Staff member not found');
     }
 
     const serviceChanged =
       !!data.serviceId && data.serviceId !== existing.serviceId;
-    const staffChanged =
-      data.staffId !== undefined && data.staffId !== existing.staffId;
     // Anything that moves the booking in time — a new start, a new staff
     // member, or a new service (which changes how long it runs) — is a
     // scheduling change: end time is recomputed and the overlap check re-runs.
@@ -949,12 +959,15 @@ export const updateBooking = async (
   });
 
 export const updateBookingStatus = async (
+  userId: string,
   shopId: string,
   bookingId: string,
   status: BookingStatus,
-  canViewCustomer = true,
 ) =>
   serializableTransaction(async (tx) => {
+    const canViewCustomer = canViewCustomerDetails(
+      await requireShopAccess(userId, shopId, { db: tx }),
+    );
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
     // Moving a booking from a slot-freeing status (CANCELED/NO_SHOW) back to

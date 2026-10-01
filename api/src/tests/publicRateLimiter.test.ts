@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import request from 'supertest';
+import { serve } from './testRequest';
 
 // Mirrors rateLimiterSwitch.test.ts's pattern: a tiny isolated app wiring the
 // real exported limiter (never the full app.ts, which always disables
@@ -21,13 +21,17 @@ async function limitedApp(
   const app = express();
   app.use(cookieParser());
   app.get('/x', mod[limiterName], (_req, res) => res.json({ ok: true }));
-  return app;
+  return serve(app);
 }
 
-const burst = async (app: express.Express, n: number, withCookie = false) => {
+const burst = async (
+  api: Awaited<ReturnType<typeof serve>>,
+  n: number,
+  withCookie = false,
+) => {
   const codes: number[] = [];
   for (let i = 0; i < n; i++) {
-    const req = request(app).get('/x');
+    const req = api.get('/x');
     if (withCookie) req.set('Cookie', 'refreshToken=abc');
     codes.push((await req).status);
   }
@@ -77,24 +81,24 @@ describe('public rate limiters (group 6)', () => {
 
 describe("refreshLimiter (group 6: no longer shares /auth/login's strict budget)", () => {
   it('skips entirely with no refresh cookie — an anonymous visitor never counts against it', async () => {
-    const app = await limitedApp('refreshLimiter');
-    const codes = await burst(app, 80, false);
+    const api = await limitedApp('refreshLimiter');
+    const codes = await burst(api, 80, false);
     expect(codes.every((c) => c === 200)).toBe(true);
   });
 
   it('still limits (generously) when a refresh cookie is present', async () => {
-    const app = await limitedApp('refreshLimiter');
-    const codes = await burst(app, 62, true);
+    const api = await limitedApp('refreshLimiter');
+    const codes = await burst(api, 62, true);
     expect(codes.slice(0, 60).every((c) => c === 200)).toBe(true);
     expect(codes.slice(60)).toEqual([429, 429]);
   });
 
   it('a cookie-bearing requester does not benefit from cookie-less requests sharing the budget', async () => {
-    const app = await limitedApp('refreshLimiter');
+    const api = await limitedApp('refreshLimiter');
     // These never count...
-    await burst(app, 200, false);
+    await burst(api, 200, false);
     // ...so the cookie-bearing budget starts fresh, unaffected by the above.
-    const codes = await burst(app, 62, true);
+    const codes = await burst(api, 62, true);
     expect(codes.slice(0, 60).every((c) => c === 200)).toBe(true);
     expect(codes.slice(60)).toEqual([429, 429]);
   });

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import express from 'express';
-import request from 'supertest';
+import { serve } from './testRequest';
 
 // The e2e suite drives a real browser through many logins/page loads from one
 // IP, which the auth limiter (10 / 15 min) would block. RATE_LIMIT_DISABLED
@@ -15,13 +15,12 @@ async function limitedApp(env: Record<string, string | undefined>) {
   const { authLimiter } = await import('../middleware/rateLimiter');
   const app = express();
   app.post('/x', authLimiter, (_req, res) => res.json({ ok: true }));
-  return app;
+  return serve(app);
 }
 
-const burst = async (app: express.Express, n = 12) => {
+const burst = async (api: Awaited<ReturnType<typeof serve>>, n = 12) => {
   const codes: number[] = [];
-  for (let i = 0; i < n; i++)
-    codes.push((await request(app).post('/x')).status);
+  for (let i = 0; i < n; i++) codes.push((await api.post('/x')).status);
   return codes;
 };
 

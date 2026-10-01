@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -8,6 +8,8 @@ import {
   createTenant,
   ALL_OVERRIDABLE_RULES,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -18,7 +20,7 @@ vi.mock('../services/email.service');
 describe('bookings are never longer than 24 hours', () => {
   it('service duration above 1440 minutes is rejected on create (400)', async () => {
     const t = await createTenant('Len');
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${t.shop.id}/services`)
       .set(authHeader(t.token))
       .send({ name: 'Forever', duration: 1441, price: 0 });
@@ -27,7 +29,7 @@ describe('bookings are never longer than 24 hours', () => {
 
   it('service duration above 1440 minutes is rejected on update (400)', async () => {
     const t = await createTenant('Len');
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/services/${t.service.id}`)
       .set(authHeader(t.token))
       .send({ duration: 5000 });
@@ -36,7 +38,7 @@ describe('bookings are never longer than 24 hours', () => {
 
   it('1440 minutes is still allowed', async () => {
     const t = await createTenant('Len');
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${t.shop.id}/services`)
       .set(authHeader(t.token))
       .send({ name: 'Day', duration: 1440, price: 0 });
@@ -50,7 +52,7 @@ describe('bookings are never longer than 24 hours', () => {
       where: { id: t.service.id },
       data: { duration: 2000 },
     });
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${t.shop.id}/bookings`)
       .set(authHeader(t.token))
       .send({
@@ -75,7 +77,7 @@ describe('bookings are never longer than 24 hours', () => {
       data: { userShopId: t.staff.id, serviceId: day.id },
     });
     const book = (serviceId: string, startTime: string, phone: string) =>
-      request(app)
+      api
         .post(`/api/shops/${t.shop.id}/bookings`)
         .set(authHeader(t.token))
         .send({

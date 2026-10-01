@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+
+const api = await serve(app);
 
 // Mock email sending so tests don't hit Resend
 vi.mock('../services/email.service', () => ({
@@ -21,7 +23,7 @@ async function createVerifiedUser(email: string, isPro: boolean) {
 }
 
 async function loginUser(email: string) {
-  const res = await request(app)
+  const res = await api
     .post('/auth/login')
     .send({ email, password: TEST_PASSWORD });
   return res.body.data?.accessToken as string;
@@ -32,7 +34,7 @@ describe('POST /api/shops', () => {
     await createVerifiedUser('pro@example.com', true);
     const token = await loginUser('pro@example.com');
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Test Shop', slug: 'test-shop' });
@@ -46,13 +48,13 @@ describe('POST /api/shops', () => {
     await createVerifiedUser('pro2@example.com', true);
     const token = await loginUser('pro2@example.com');
 
-    const first = await request(app)
+    const first = await api
       .post('/api/shops')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Shop One', slug: 'shop-one' });
     expect(first.status).toBe(201);
 
-    const second = await request(app)
+    const second = await api
       .post('/api/shops')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Shop Two', slug: 'shop-two' });
@@ -71,7 +73,7 @@ describe('POST /api/shops', () => {
     await createVerifiedUser('slug@example.com', true);
     const token = await loginUser('slug@example.com');
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Test Shop', slug });
@@ -84,7 +86,7 @@ describe('POST /api/shops', () => {
     await createVerifiedUser('free@example.com', false);
     const token = await loginUser('free@example.com');
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Test Shop', slug: 'free-user-shop' });
@@ -94,7 +96,7 @@ describe('POST /api/shops', () => {
   });
 
   it('returns 401 without a token', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .send({ name: 'Test Shop', slug: 'test-shop' });
 

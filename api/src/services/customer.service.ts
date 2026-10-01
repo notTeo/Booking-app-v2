@@ -3,14 +3,7 @@ import { prisma } from '../utils/prisma';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { redactCustomer } from '../utils/customerVisibility';
 import { logger } from '../utils/logger';
-
-async function requireMembership(userId: string, shopId: string) {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-  return membership;
-}
+import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
@@ -21,11 +14,6 @@ async function requireCustomerInShop(customerId: string, shopId: string) {
   return customer;
 }
 
-const canView = (membership: {
-  role: string;
-  canViewCustomerDetails: boolean;
-}) => membership.role === 'owner' || membership.canViewCustomerDetails;
-
 export const listCustomers = async (
   userId: string,
   shopId: string,
@@ -33,7 +21,7 @@ export const listCustomers = async (
   page = 1,
   limit = 20,
 ) => {
-  const membership = await requireMembership(userId, shopId);
+  const membership = await requireShopAccess(userId, shopId);
 
   const where = {
     shopId,
@@ -56,7 +44,9 @@ export const listCustomers = async (
   ]);
 
   return {
-    items: items.map((c) => redactCustomer(c, canView(membership))),
+    items: items.map((c) =>
+      redactCustomer(c, canViewCustomerDetails(membership)),
+    ),
     total,
     page,
     limit,
@@ -68,7 +58,7 @@ export const getCustomer = async (
   shopId: string,
   customerId: string,
 ) => {
-  const membership = await requireMembership(userId, shopId);
+  const membership = await requireShopAccess(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
   const [customer, allBookings] = await Promise.all([
@@ -96,7 +86,7 @@ export const getCustomer = async (
 
   if (!customer) return customer;
   return {
-    ...redactCustomer(customer, canView(membership)),
+    ...redactCustomer(customer, canViewCustomerDetails(membership)),
     totalVisits,
     totalSpent,
   };
@@ -113,11 +103,11 @@ export const updateCustomer = async (
     notes?: string | null;
   },
 ) => {
-  const membership = await requireMembership(userId, shopId);
+  const membership = await requireShopAccess(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
   if (
-    !canView(membership) &&
+    !canViewCustomerDetails(membership) &&
     (data.name !== undefined ||
       data.phone !== undefined ||
       data.email !== undefined)
@@ -141,12 +131,10 @@ export const updateCustomer = async (
 
 // GDPR access/erasure requests are handled by the shop (the data controller),
 // so only the owner may run them — not staff, even with canViewCustomerDetails.
-async function requireOwner(userId: string, shopId: string) {
-  const membership = await requireMembership(userId, shopId);
-  if (membership.role !== 'owner') {
-    throw new AppError(403, 'Only the shop owner can do this');
-  }
-}
+const OWNER_ONLY = {
+  role: 'owner',
+  ownerMessage: 'Only the shop owner can do this',
+} as const;
 
 // Everything we hold about one customer, for a data-access request.
 export const exportCustomer = async (
@@ -154,7 +142,7 @@ export const exportCustomer = async (
   shopId: string,
   customerId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   const customer = await requireCustomerInShop(customerId, shopId);
 
   const bookings = await prisma.booking.findMany({
@@ -198,7 +186,7 @@ export const deleteCustomer = async (
   shopId: string,
   customerId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   await requireCustomerInShop(customerId, shopId);
 
   const { count } = await prisma.booking.deleteMany({

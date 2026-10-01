@@ -19,11 +19,30 @@ import teamRouter from './team.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
 import customerRouter from './customer.routes';
+import {
+  myOverviewValidation,
+  overviewValidation,
+} from '../validators/overview.validator';
+import {
+  getMyOverview,
+  getMyUpcoming,
+  getOverview,
+} from '../controllers/overview.controller';
 
 const router = Router();
 
 router.post('/', authenticate, createShopValidation, validate, createShop);
 router.get('/', authenticate, getMyShops);
+// Across all of the user's shops. Must be registered before '/:id', which
+// would otherwise capture "overview" and "upcoming" as shop ids.
+router.get(
+  '/overview',
+  authenticate,
+  myOverviewValidation,
+  validate,
+  getMyOverview,
+);
+router.get('/upcoming', authenticate, getMyUpcoming);
 router.get('/:id', authenticate, shopIdParamValidation, validate, getShop);
 router.patch('/:id', authenticate, updateShopValidation, validate, updateShop);
 router.delete(
@@ -42,6 +61,13 @@ router.get(
   dayScheduleValidation,
   validate,
   getDaySchedule,
+);
+router.get(
+  '/:shopId/overview',
+  authenticate,
+  overviewValidation,
+  validate,
+  getOverview,
 );
 router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/services', serviceRouter);

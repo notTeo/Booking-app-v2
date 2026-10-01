@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   authHeader,
@@ -8,6 +8,8 @@ import {
   createStaffMember,
   createTenant,
 } from './helpers';
+
+const api = await serve(app);
 
 const url = (t: { shop: { id: string } }, customerId: string, suffix = '') =>
   `/api/shops/${t.shop.id}/customers/${customerId}${suffix}`;
@@ -26,7 +28,7 @@ describe('GET /api/shops/:shopId/customers/:customerId/export', () => {
   it('returns everything held about the customer as a JSON download', async () => {
     const { t, customerId, bookingId } = await setup();
 
-    const res = await request(app)
+    const res = await api
       .get(url(t, customerId, '/export'))
       .set(authHeader(t.token));
 
@@ -55,7 +57,7 @@ describe('GET /api/shops/:shopId/customers/:customerId/export', () => {
     const { t, customerId } = await setup();
     const staff = await createStaffMember(t);
 
-    const res = await request(app)
+    const res = await api
       .get(url(t, customerId, '/export'))
       .set(authHeader(staff.token));
 
@@ -66,12 +68,12 @@ describe('GET /api/shops/:shopId/customers/:customerId/export', () => {
     const { t, customerId } = await setup();
     const other = await createTenant('Other');
 
-    const wrongShop = await request(app)
+    const wrongShop = await api
       .get(`/api/shops/${other.shop.id}/customers/${customerId}/export`)
       .set(authHeader(other.token));
     expect(wrongShop.status).toBe(404);
 
-    const nonMember = await request(app)
+    const nonMember = await api
       .get(url(t, customerId, '/export'))
       .set(authHeader(other.token));
     expect(nonMember.status).toBe(404);
@@ -79,7 +81,7 @@ describe('GET /api/shops/:shopId/customers/:customerId/export', () => {
 
   it('requires authentication', async () => {
     const { t, customerId } = await setup();
-    const res = await request(app).get(url(t, customerId, '/export'));
+    const res = await api.get(url(t, customerId, '/export'));
     expect(res.status).toBe(401);
   });
 });
@@ -89,9 +91,7 @@ describe('DELETE /api/shops/:shopId/customers/:customerId', () => {
     const { t, customerId } = await setup();
     const keep = await createBookingRow(t, '2027-07-02T09:00:00.000Z');
 
-    const res = await request(app)
-      .delete(url(t, customerId))
-      .set(authHeader(t.token));
+    const res = await api.delete(url(t, customerId)).set(authHeader(t.token));
 
     expect(res.status).toBe(204);
     expect(
@@ -108,7 +108,7 @@ describe('DELETE /api/shops/:shopId/customers/:customerId', () => {
     const { t, customerId } = await setup();
     const staff = await createStaffMember(t);
 
-    const res = await request(app)
+    const res = await api
       .delete(url(t, customerId))
       .set(authHeader(staff.token));
 
@@ -122,7 +122,7 @@ describe('DELETE /api/shops/:shopId/customers/:customerId', () => {
     const { customerId } = await setup();
     const other = await createTenant('Other');
 
-    const res = await request(app)
+    const res = await api
       .delete(`/api/shops/${other.shop.id}/customers/${customerId}`)
       .set(authHeader(other.token));
 
@@ -134,10 +134,8 @@ describe('DELETE /api/shops/:shopId/customers/:customerId', () => {
 
   it('404s when already deleted', async () => {
     const { t, customerId } = await setup();
-    await request(app).delete(url(t, customerId)).set(authHeader(t.token));
-    const again = await request(app)
-      .delete(url(t, customerId))
-      .set(authHeader(t.token));
+    await api.delete(url(t, customerId)).set(authHeader(t.token));
+    const again = await api.delete(url(t, customerId)).set(authHeader(t.token));
     expect(again.status).toBe(404);
   });
 });

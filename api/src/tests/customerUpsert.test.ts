@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -8,6 +8,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service', () => ({
   sendBookingConfirmationEmail: vi.fn().mockResolvedValue(undefined),
@@ -33,7 +35,7 @@ const pub = (
   startTime: string,
   email?: string,
 ) =>
-  request(app).post(`/public/${t.shop.slug}/book`).send({
+  api.post(`/public/${t.shop.slug}/book`).send({
     name,
     phone,
     email,
@@ -49,17 +51,14 @@ const owner = (
   startTime: string,
   email?: string,
 ) =>
-  request(app)
-    .post(`/api/shops/${t.shop.id}/bookings`)
-    .set(authHeader(t.token))
-    .send({
-      name,
-      phone,
-      email,
-      serviceId: t.service.id,
-      staffId: t.staff.id,
-      startTime,
-    });
+  api.post(`/api/shops/${t.shop.id}/bookings`).set(authHeader(t.token)).send({
+    name,
+    phone,
+    email,
+    serviceId: t.service.id,
+    staffId: t.staff.id,
+    startTime,
+  });
 
 describe('customer upsert on booking creation', () => {
   it('public: a new phone number creates a new customer with the given details', async () => {

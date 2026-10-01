@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service', () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
@@ -20,33 +22,29 @@ vi.mock('../services/email.service', () => ({
 // clean 400. isString() catches it before any of that runs.
 describe('token validation (group 7): a malformed token is a 400, not a 500', () => {
   it('GET /auth/verify-email: missing token', async () => {
-    const res = await request(app).get('/auth/verify-email');
+    const res = await api.get('/auth/verify-email');
     expect(res.status).toBe(400);
   });
 
   it('GET /auth/verify-email: array-shaped token (repeated query key)', async () => {
-    const res = await request(app).get('/auth/verify-email?token=a&token=b');
+    const res = await api.get('/auth/verify-email?token=a&token=b');
     expect(res.status).toBe(400);
   });
 
   it('GET /auth/verify-email-change: array-shaped token', async () => {
-    const res = await request(app).get(
-      '/auth/verify-email-change?token=a&token=b',
-    );
+    const res = await api.get('/auth/verify-email-change?token=a&token=b');
     expect(res.status).toBe(400);
   });
 
   it('POST /auth/reset-password: array-shaped token in the body', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/reset-password')
       .send({ token: ['a', 'b'], password: 'Sup3r!Secret' });
     expect(res.status).toBe(400);
   });
 
   it('POST /public/cancel: array-shaped token in the body', async () => {
-    const res = await request(app)
-      .post('/public/cancel')
-      .send({ token: ['a', 'b'] });
+    const res = await api.post('/public/cancel').send({ token: ['a', 'b'] });
     expect(res.status).toBe(400);
   });
 
@@ -60,7 +58,7 @@ describe('token validation (group 7): a malformed token is a 400, not a 500', ()
         expiresAt: new Date(Date.now() + 60_000),
       },
     });
-    const res = await request(app).get('/auth/verify-email?token=a-real-token');
+    const res = await api.get('/auth/verify-email?token=a-real-token');
     expect(res.status).toBe(200);
   });
 });
