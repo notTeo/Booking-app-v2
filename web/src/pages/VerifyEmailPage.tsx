@@ -82,10 +82,11 @@ export default function VerifyEmailPage() {
 
             {isExpired && (
               <form onSubmit={handleResend} className="verify-resend-form">
-                <p className="verify-resend-label">Enter your email to get a new link:</p>
+                <p id="verify-resend-label" className="verify-resend-label">Enter your email to get a new link:</p>
                 <div className="field">
                   <input className="input"
                     type="email"
+                    aria-labelledby="verify-resend-label"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
                     placeholder="you@example.com"

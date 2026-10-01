@@ -227,13 +227,14 @@ export default function ShopServicesPage() {
     submitLabel: string,
     formError: string,
     onCancel: () => void,
+    idPrefix: string,
   ) => (
     <form className="card service-form" onSubmit={onSubmit}>
       {formError && <Alert variant="danger">{formError}</Alert>}
       <div className="service-form-grid">
         <div className="field">
-          <label className="field__label">{t.services.name}</label>
-          <input className="input"
+          <label className="field__label" htmlFor={`${idPrefix}-name`}>{t.services.name}</label>
+          <input id={`${idPrefix}-name`} className="input"
             value={form.name}
             onChange={(e) => onChange('name', e.target.value)}
             required
@@ -241,8 +242,8 @@ export default function ShopServicesPage() {
           />
         </div>
         <div className="field">
-          <label className="field__label">{t.services.duration} (min)</label>
-          <input className="input"
+          <label className="field__label" htmlFor={`${idPrefix}-duration`}>{t.services.duration} (min)</label>
+          <input id={`${idPrefix}-duration`} className="input"
             type="number"
             min="1"
             value={form.duration}
@@ -252,8 +253,8 @@ export default function ShopServicesPage() {
           />
         </div>
         <div className="field">
-          <label className="field__label">{t.services.price} (€)</label>
-          <input className="input"
+          <label className="field__label" htmlFor={`${idPrefix}-price`}>{t.services.price} (€)</label>
+          <input id={`${idPrefix}-price`} className="input"
             type="number"
             min="0"
             step="0.01"
@@ -271,8 +272,8 @@ export default function ShopServicesPage() {
         </div>
       </div>
       <div className="field">
-        <label className="field__label">{t.services.description}</label>
-        <textarea className="textarea"
+        <label className="field__label" htmlFor={`${idPrefix}-description`}>{t.services.description}</label>
+        <textarea id={`${idPrefix}-description`} className="textarea"
           value={form.description}
           onChange={(e) => onChange('description', e.target.value)}
           placeholder={t.services.description}
@@ -322,6 +323,7 @@ export default function ShopServicesPage() {
           t.services.create,
           createError,
           () => { setShowCreate(false); setCreateError(''); },
+          'service-create',
         )}
 
       {/* Empty state */}
@@ -343,6 +345,7 @@ export default function ShopServicesPage() {
                   t.services.save,
                   editError,
                   () => { setEditingId(null); setEditError(''); },
+                  `service-edit-${service.id}`,
                 )
               ) : (
                 <>
@@ -449,6 +452,7 @@ export default function ShopServicesPage() {
                                   value={selectedUserShopId}
                                   onChange={(e) => setSelectedUserShopId(e.target.value)}
                                   className="select select--sm"
+                                  aria-label={t.services.selectStaff}
                                 >
                                   <option value="">{t.services.selectStaff}</option>
                                   {available.map((m) => (

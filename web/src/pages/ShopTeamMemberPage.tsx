@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -26,6 +26,7 @@ import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ShopTeamMemberPage() {
+  const uid = useId();
   const { slug, memberId } = useParams<{ slug: string; memberId: string }>();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
@@ -307,8 +308,8 @@ export default function ShopTeamMemberPage() {
         {isOwner ? (
           <>
             <div className="field">
-              <label className="field__label">{t.team.emailLabel}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-email`}>{t.team.emailLabel}</label>
+              <input id={`${uid}-email`} className="input"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -318,8 +319,8 @@ export default function ShopTeamMemberPage() {
             </div>
 
             <div className="field">
-              <label className="field__label">{t.team.role}</label>
-              <div className="select-wrap"><select className="select"
+              <label className="field__label" htmlFor={`${uid}-role`}>{t.team.role}</label>
+              <div className="select-wrap"><select id={`${uid}-role`} className="select"
                 value={editRole}
                 onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
               >
@@ -476,6 +477,7 @@ export default function ShopTeamMemberPage() {
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
                     className="select select--sm"
+                    aria-label={t.team.selectService}
                   >
                     <option value="">{t.team.selectService}</option>
                     {available.map((s) => (

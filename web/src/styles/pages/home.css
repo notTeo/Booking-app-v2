@@ -836,7 +836,6 @@
 .home-preview-booking-row--clickable:hover,
 .home-preview-booking-row--clickable:focus-visible {
   background: color-mix(in srgb, var(--accent) 7%, transparent);
-  outline: none;
 }
 
 .home-preview-booking-icon {
@@ -925,7 +924,6 @@
 .home-preview-input {
   width: 100%;
   font-family: var(--font-body);
-  outline: none;
   appearance: none;
   background: var(--surface);
   border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);

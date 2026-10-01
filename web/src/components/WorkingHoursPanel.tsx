@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
@@ -91,6 +91,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
 }
 
 export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
+  const uid = useId();
   const { t } = useLang();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -378,16 +379,16 @@ const created = await api.createSchedule(dto);
           <h3>{t.workingHours.newSchedule}</h3>
           <div className="wh-create-fields">
             <div className="field">
-              <label className="field__label">{t.workingHours.startDate}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-create-start`}>{t.workingHours.startDate}</label>
+              <input id={`${uid}-create-start`} className="input"
                 type="date"
                 value={createStart}
                 onChange={(e) => setCreateStart(e.target.value)}
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.workingHours.endDate}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-create-end`}>{t.workingHours.endDate}</label>
+              <input id={`${uid}-create-end`} className="input"
                 type="date"
                 value={createEnd}
                 onChange={(e) => setCreateEnd(e.target.value)}
@@ -539,16 +540,16 @@ const created = await api.createSchedule(dto);
                   <div className="wh-dates-section">
                     <div className="wh-create-fields">
                       <div className="field">
-                        <label className="field__label">{t.workingHours.startDate}</label>
-                        <input className="input"
+                        <label className="field__label" htmlFor={`${uid}-${schedule.id}-start`}>{t.workingHours.startDate}</label>
+                        <input id={`${uid}-${schedule.id}-start`} className="input"
                           type="date"
                           value={state.startDate}
                           onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
                         />
                       </div>
                       <div className="field">
-                        <label className="field__label">{t.workingHours.endDate}</label>
-                        <input className="input"
+                        <label className="field__label" htmlFor={`${uid}-${schedule.id}-end`}>{t.workingHours.endDate}</label>
+                        <input id={`${uid}-${schedule.id}-end`} className="input"
                           type="date"
                           value={state.endDate}
                           onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
@@ -590,6 +591,7 @@ const created = await api.createSchedule(dto);
                               <div key={idx} className="working-hours-slot">
                                 <input className="input"
                                   type="time"
+                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.from}`}
                                   value={slot.startTime}
                                   onChange={(e) =>
                                     updateHour(schedule.id, day, idx, 'startTime', e.target.value)
@@ -599,6 +601,7 @@ const created = await api.createSchedule(dto);
                                 <span className="working-hours-sep">–</span>
                                 <input className="input"
                                   type="time"
+                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.to}`}
                                   value={slot.endTime}
                                   onChange={(e) =>
                                     updateHour(schedule.id, day, idx, 'endTime', e.target.value)

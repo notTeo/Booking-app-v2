@@ -1,5 +1,5 @@
 import { formatDateTimeInZone } from '../utils/shopTime';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -12,6 +12,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 export default function ShopCustomerDetailPage() {
+  const uid = useId();
   const { slug, customerId } = useParams<{ slug: string; customerId: string }>();
   const { shop, isLoading: shopLoading } = useShop();
   const navigate = useNavigate();
@@ -163,22 +164,22 @@ export default function ShopCustomerDetailPage() {
         <div className="card">
           <h2 className="card__title">{t.customers.editInfo}</h2>
           <div className="field">
-            <label className="field__label">{t.customers.nameLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-name`}>{t.customers.nameLabel}</label>
+            <input id={`${uid}-name`} className="input"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.phoneLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-phone`}>{t.customers.phoneLabel}</label>
+            <input id={`${uid}-phone`} className="input"
               value={editPhone}
               onChange={(e) => setEditPhone(e.target.value)}
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.emailLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-email`}>{t.customers.emailLabel}</label>
+            <input id={`${uid}-email`} className="input"
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
@@ -186,8 +187,8 @@ export default function ShopCustomerDetailPage() {
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.notesLabel}</label>
-            <textarea className="textarea"
+            <label className="field__label" htmlFor={`${uid}-notes`}>{t.customers.notesLabel}</label>
+            <textarea id={`${uid}-notes`} className="textarea"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               placeholder={t.customers.notesOptional}

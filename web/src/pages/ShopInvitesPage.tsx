@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -16,6 +16,7 @@ import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ShopInvitesPage() {
+  const uid = useId();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
 
@@ -159,8 +160,8 @@ export default function ShopInvitesPage() {
         <form onSubmit={handleSend}>
           <div className="invites-form-row">
             <div className="field">
-              <label className="field__label">{t.invites.nameLabel}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-name`}>{t.invites.nameLabel}</label>
+              <input id={`${uid}-name`} className="input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -170,8 +171,8 @@ export default function ShopInvitesPage() {
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-email`}>{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
+              <input id={`${uid}-email`} className="input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -181,8 +182,8 @@ export default function ShopInvitesPage() {
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.invites.roleLabel}</label>
-              <div className="select-wrap"><select className="select"
+              <label className="field__label" htmlFor={`${uid}-role`}>{t.invites.roleLabel}</label>
+              <div className="select-wrap"><select id={`${uid}-role`} className="select"
                 value={role}
                 onChange={(e) => { setRole(e.target.value as ShopRole); setConfirmOwner(false); }}
                 disabled={sending}
