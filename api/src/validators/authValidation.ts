@@ -32,7 +32,10 @@ export const loginValidation = [
     .withMessage('Valid email is required')
     .normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required'),
-  body('rememberMe').optional().isBoolean().withMessage('rememberMe must be a boolean'),
+  body('rememberMe')
+    .optional()
+    .isBoolean()
+    .withMessage('rememberMe must be a boolean'),
 ];
 
 export const forgotPasswordValidation = [

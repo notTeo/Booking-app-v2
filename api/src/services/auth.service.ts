@@ -157,7 +157,11 @@ export const registerUserWithInvite = async (
   };
 };
 
-export const loginUser = async ({ email, password, rememberMe = true }: LoginDto) => {
+export const loginUser = async ({
+  email,
+  password,
+  rememberMe = true,
+}: LoginDto) => {
   const user = await prisma.user.findUnique({
     where: { email },
   });
