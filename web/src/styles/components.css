@@ -667,3 +667,17 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .legend__item--completed { --legend-fg: var(--info); }
 .legend__item--canceled { --legend-fg: var(--text-muted); }
 .legend__item--no-show { --legend-fg: var(--danger); }
+
+/* ---------- Shop card (dashboard "Your shops") ---------- */
+.shop-cards { display: flex; flex-direction: column; gap: var(--space-3); }
+.shop-cards__grid { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) { .shop-cards__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .shop-cards__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.shop-card { height: 100%; align-items: flex-start; }
+.shop-card__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; }
+.shop-card__name { min-width: 0; overflow-wrap: anywhere; font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
+.shop-card__arrow { flex: none; color: var(--text-muted); }
+.shop-card__metrics { display: flex; gap: var(--space-8); }
+.shop-card__metric { display: flex; flex-direction: column; }
+.shop-card__value { font: var(--fw-black) var(--fs-xl) / var(--lh-xl) var(--font-display); font-variant-numeric: tabular-nums; }
+.shop-card__label { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
