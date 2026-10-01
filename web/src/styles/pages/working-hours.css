@@ -110,26 +110,6 @@
   font-size: 0.85rem;
 }
 
-.wh-active-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.wh-active-badge.active {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  color: var(--success);
-}
-
-.wh-active-badge.inactive {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
 .wh-active-switch {
   display: inline-flex;
   align-items: center;

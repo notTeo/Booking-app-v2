@@ -754,27 +754,6 @@
   flex-shrink: 0;
 }
 
-.home-preview-badge {
-  display: inline-block;
-  font-size: clamp(0.5rem, 0.95cqw, 0.68rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: clamp(0.15rem, 0.4cqw, 0.25rem) clamp(0.4rem, 1cqw, 0.6rem);
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-.home-preview-badge--role {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
-.home-preview-badge--active {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  color: var(--success);
-}
-
 .home-preview-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -926,23 +905,6 @@
   border-bottom: none;
 }
 
-.home-preview-role-badge,
-.home-preview-status-badge {
-  display: inline-block;
-  font-size: clamp(0.5rem, 0.9cqw, 0.65rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: clamp(0.12rem, 0.35cqw, 0.2rem) clamp(0.35rem, 0.9cqw, 0.55rem);
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-.home-preview-role-badge--owner { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
-.home-preview-role-badge--staff { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text-muted); }
-.home-preview-status-badge--pending { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
-.home-preview-status-badge--expired { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text-muted); }
-
 /* ─── Customers preview ──────────────────────────────────────────────────── */
 .home-preview-customers {
   display: flex;
@@ -1061,21 +1023,6 @@
   font-weight: 700;
   color: var(--text);
 }
-
-.home-preview-service-status-badge {
-  display: inline-block;
-  font-size: clamp(0.5rem, 0.9cqw, 0.65rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: clamp(0.12rem, 0.35cqw, 0.2rem) clamp(0.35rem, 0.9cqw, 0.55rem);
-  border-radius: 999px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.home-preview-service-status-badge--active { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
-.home-preview-service-status-badge--inactive { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text-muted); }
 
 .home-preview-service-desc {
   margin: clamp(0.25rem, 0.7cqw, 0.4rem) 0 0;

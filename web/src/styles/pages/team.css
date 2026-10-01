@@ -23,34 +23,6 @@
    in components.css — see ShopTeamPage/ShopCustomersPage/ShopCustomerDetailPage
    for the className usage. */
 
-/* ---- Role badges ---- */
-.team-role-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  text-transform: capitalize;
-  letter-spacing: 0.04em;
-  display: inline-block;
-}
-
-.team-role-owner {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--accent);
-}
-
-.team-role-staff {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-.team-role-inactive {
-  margin-left: 0.4rem;
-  background: color-mix(in srgb, var(--danger) 15%, transparent);
-  color: var(--danger);
-}
-
 /* ---- Date cell ---- */
 .team-date {
   color: var(--text-muted);
@@ -180,18 +152,6 @@
 .team-switch-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-.team-no-login-badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  background: var(--surface-sunken);
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 .pagination-controls {

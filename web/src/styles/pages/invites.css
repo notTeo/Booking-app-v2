@@ -96,51 +96,6 @@
 /* Table look (card/table/th/row) comes from the shared .data-table system
    in components.css — see ShopInvitesPage/InvitesPage for the className usage. */
 
-/* ─── Status Badges ─── */
-
-.invite-status-badge {
-  border-radius: 999px;
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 0.2rem 0.65rem;
-  text-transform: capitalize;
-}
-
-.invite-status-pending {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
-.invite-status-accepted {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
-  color: var(--success);
-}
-
-.invite-status-expired {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-/* ─── Role Badge ─── */
-
-.invite-role-badge {
-  background: var(--surface-sunken);
-  border-radius: 999px;
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.65rem;
-  text-transform: capitalize;
-}
-
-.invite-role-owner {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
 /* ─── Action Buttons ─── */
 
 .invite-actions {

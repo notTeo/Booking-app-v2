@@ -136,37 +136,6 @@
   font-size: 1.1rem;
 }
 
-/* ---- Status & Role badges ---- */
-.shop-status-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.shop-status-badge.active {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  color: var(--success);
-}
-
-.shop-status-badge.inactive {
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
-  color: var(--danger);
-}
-
-.shop-role-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  text-transform: capitalize;
-}
-
 /* ---- Upgrade card ---- */
 .shops-upgrade-card {
   max-width: 420px;
