@@ -9,4 +9,3 @@
 ## TODO
 
 - Later: convert saving buttons to `.is-loading` + `aria-busy`.
-- Later: convert inline confirms (service delete, team remove, shop delete, role change) to <ConfirmDialog tone='danger'>.

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -31,6 +31,8 @@ export default function ConfirmDialog({
   cancelLabel,
   tone = 'neutral',
   busy,
+  confirmDisabled,
+  children,
   onConfirm,
   onCancel,
 }: {
@@ -40,6 +42,10 @@ export default function ConfirmDialog({
   cancelLabel: string;
   tone?: Tone;
   busy?: boolean;
+  /** Extra reason to keep the confirm button inert (e.g. a required field is empty). */
+  confirmDisabled?: boolean;
+  /** Optional content between the message and the buttons (e.g. a password field). */
+  children?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -104,11 +110,12 @@ export default function ConfirmDialog({
           <h2 id={`${id}-title`} className="modal__title">{title}</h2>
         </div>
         <p id={`${id}-message`} className="modal__body">{message}</p>
+        {children}
         <div className="modal__footer">
           <button type="button" className="btn btn--secondary" ref={cancelRef} onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </button>
-          <button type="button" className={`btn${btnCls}`} onClick={onConfirm} disabled={busy}>
+          <button type="button" className={`btn${btnCls}`} onClick={onConfirm} disabled={busy || confirmDisabled}>
             {confirmLabel}
           </button>
         </div>

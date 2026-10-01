@@ -18,6 +18,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -125,8 +126,7 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDeleteAccount = async () => {
     setDeleteError('');
     setDeleteLoading(true);
     try {
@@ -137,6 +137,12 @@ export default function SettingsPage() {
       setDeleteError(apiErrorMessage(err, 'Failed to delete account.'));
       setDeleteLoading(false);
     }
+  };
+
+  const closeDeleteConfirm = () => {
+    setShowDeleteConfirm(false);
+    setDeletePassword('');
+    setDeleteError('');
   };
 
   const passwordValid =
@@ -310,70 +316,50 @@ export default function SettingsPage() {
           {t.settings.dangerDesc}
         </p>
 
-        {!showDeleteConfirm ? (
-          <button
-            className="btn btn--danger btn--sm"
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            {t.settings.deleteAccount}
-          </button>
-        ) : user?.hasPassword ? (
-          <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <div className="field">
-              <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-              <input className="input"
-                id="delete-password"
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder={t.settings.confirmPasswordPlaceholder}
-                required
-              />
-            </div>
-            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className="btn btn--danger btn--sm"
-                type="submit"
-                disabled={deleteLoading || !deletePassword}
-              >
-                {deleteLoading ? t.settings.deleting : t.settings.confirmDelete}
-              </button>
-              <button
-                className="btn btn--secondary btn--sm"
-                type="button"
-                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
-              >
-                {t.settings.cancel}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <p className="settings-danger-desc">
-              {t.settings.areYouSure}
-            </p>
-            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className="btn btn--danger btn--sm"
-                type="submit"
-                disabled={deleteLoading}
-              >
-                {deleteLoading ? t.settings.deleting : t.settings.yesDelete}
-              </button>
-              <button
-                className="btn btn--secondary btn--sm"
-                type="button"
-                onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
-              >
-                {t.settings.cancel}
-              </button>
-            </div>
-          </form>
-        )}
+        <button
+          className="btn btn--danger btn--sm"
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          {t.settings.deleteAccount}
+        </button>
       </div>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.settings.deleteAccountTitle}
+          message={t.settings.areYouSure}
+          confirmLabel={t.settings.deleteAccountConfirmButton}
+          cancelLabel={t.settings.cancel}
+          busy={deleteLoading}
+          confirmDisabled={!!user?.hasPassword && !deletePassword}
+          onConfirm={handleDeleteAccount}
+          onCancel={closeDeleteConfirm}
+        >
+          {user?.hasPassword && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (deletePassword && !deleteLoading) handleDeleteAccount();
+              }}
+            >
+              <div className="field">
+                <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
+                <input className="input"
+                  id="delete-password"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder={t.settings.confirmPasswordPlaceholder}
+                  required
+                />
+              </div>
+            </form>
+          )}
+          {deleteError && <Alert variant="danger">{deleteError}</Alert>}
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

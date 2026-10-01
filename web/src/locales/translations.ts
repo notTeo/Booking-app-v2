@@ -335,6 +335,8 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
+    deleteAccountConfirmButton: string;
+    deleteAccountTitle: string;
     title: string;
     profileSection: string;
     saveProfile: string;
@@ -353,11 +355,9 @@ export interface Translations {
     deleteAccount: string;
     confirmPasswordLabel: string;
     confirmPasswordPlaceholder: string;
-    confirmDelete: string;
     deleting: string;
     cancel: string;
     areYouSure: string;
-    yesDelete: string;
     pwMin: string;
     pwUpper: string;
     pwNumber: string;
@@ -400,6 +400,12 @@ export interface Translations {
     goHome: string;
   };
   team: {
+    demoteConfirmButton: string;
+    demoteTitle: string;
+    promoteConfirmButton: string;
+    promoteTitle: string;
+    removeConfirmButton: string;
+    removeTitle: string;
     title: string;
     email: string;
     role: string;
@@ -408,7 +414,6 @@ export interface Translations {
     roles: { owner: string; staff: string };
     remove: string;
     removing: string;
-    confirmRemove: string;
     cancel: string;
     noMembers: string;
     notFound: string;
@@ -453,7 +458,6 @@ export interface Translations {
     bookableInternally: string;
     bookableInternallyDesc: string;
     inactiveBadge: string;
-    confirmContinue: string;
     confirmPromoteOwner: string;
     confirmDemoteOwner: string;
     emailLabel: string;
@@ -463,6 +467,14 @@ export interface Translations {
     emailChangedHint: string;
   };
   invites: {
+    declineConfirmButton: string;
+    declineMessage: string;
+    declineTitle: string;
+    cancelInviteConfirmButton: string;
+    cancelInviteMessage: string;
+    cancelInviteTitle: string;
+    ownerInviteConfirmButton: string;
+    ownerInviteTitle: string;
     title: string;
     received: string;
     sent: string;
@@ -518,13 +530,15 @@ export interface Translations {
     notSentYet: string;
     resend: string;
     cancelInvite: string;
-    confirmCancel: string;
     errorResend: string;
     errorCancel: string;
     statusLabel: string;
     optional: string;
   };
   services: {
+    deleteConfirmButton: string;
+    deleteMessage: string;
+    deleteTitle: string;
     title: string;
     addService: string;
     create: string;
@@ -539,7 +553,6 @@ export interface Translations {
     edit: string;
     delete: string;
     deleting: string;
-    confirmDelete: string;
     active: string;
     inactive: string;
     noServices: string;
@@ -558,6 +571,9 @@ export interface Translations {
     errorUnassign: string;
   };
   workingHours: {
+    deleteScheduleConfirmButton: string;
+    deleteScheduleMessage: string;
+    deleteScheduleTitle: string;
     title: string;
     save: string;
     saving: string;
@@ -572,7 +588,6 @@ export interface Translations {
     creating: string;
     deleteSchedule: string;
     deleting: string;
-    confirmDelete: string;
     cancel: string;
     startDate: string;
     endDate: string;
@@ -613,6 +628,8 @@ export interface Translations {
     darkMode: string;
   };
   shopSettings: {
+    deleteShopConfirmButton: string;
+    deleteShopTitle: string;
     relativeToday: string;
     relativeYesterday: string;
     relativeDaysAgo: string;
@@ -640,7 +657,6 @@ export interface Translations {
     successUpdate: string;
     errorUpdate: string;
     errorDelete: string;
-    yesDeleteShop: string;
     areYouSure: string;
     maxAdvanceLabel: string;
     maxAdvanceHint: string;
@@ -714,6 +730,9 @@ export interface Translations {
     noUpcoming: string;
   };
   customers: {
+    cancel: string;
+    deleteConfirmButton: string;
+    deleteTitle: string;
     title: string;
     searchPlaceholder: string;
     errorLoad: string;
@@ -1168,6 +1187,8 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
+      deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
+      deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
       title: 'Ρυθμίσεις',
       profileSection: 'Προφίλ',
       saveProfile: 'Αποθήκευση Προφίλ',
@@ -1186,11 +1207,9 @@ home: {
       deleteAccount: 'Διαγραφή Λογαριασμού',
       confirmPasswordLabel: 'Επιβεβαίωση κωδικού',
       confirmPasswordPlaceholder: 'Εισάγετε τον κωδικό σας για επιβεβαίωση',
-      confirmDelete: 'Επιβεβαίωση Διαγραφής',
       deleting: 'Διαγραφή...',
       cancel: 'Ακύρωση',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
-      yesDelete: 'Ναι, Διαγραφή Λογαριασμού',
       pwMin: 'Τουλάχιστον 8 χαρακτήρες',
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
@@ -1233,6 +1252,12 @@ home: {
       goHome: 'Αρχική',
     },
     team: {
+      demoteConfirmButton: 'Αφαίρεση πρόσβασης ιδιοκτήτη',
+      demoteTitle: 'Αφαίρεση πρόσβασης ιδιοκτήτη από «{name}»;',
+      promoteConfirmButton: 'Ορισμός ιδιοκτήτη',
+      promoteTitle: 'Να γίνει ιδιοκτήτης ο/η «{name}»;',
+      removeConfirmButton: 'Αφαίρεση μέλους',
+      removeTitle: 'Αφαίρεση «{name}»;',
       title: 'Μέλη Ομάδας',
       email: 'Email',
       role: 'Ρόλος',
@@ -1241,7 +1266,6 @@ home: {
       roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
       remove: 'Αφαίρεση',
       removing: 'Αφαίρεση...',
-      confirmRemove: 'Επιβεβαίωση Αφαίρεσης',
       cancel: 'Ακύρωση',
       noMembers: 'Δεν υπάρχουν μέλη ακόμα.',
       notFound: 'Το μέλος δεν βρέθηκε.',
@@ -1286,9 +1310,8 @@ home: {
       bookableInternally: 'Διαθέσιμο για εσωτερική κράτηση',
       bookableInternallyDesc: 'Ελέγχει αν το μέλος εμφανίζεται ως επιλογή όταν δημιουργείτε ραντεβού μέσα από την εφαρμογή.',
       inactiveBadge: 'Ανενεργό',
-      confirmContinue: 'Επιβεβαίωση & Συνέχεια',
-      confirmPromoteOwner: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων, καθώς και δυνατότητα υποβιβασμού άλλων ιδιοκτητών. Πατήστε ξανά για να συνεχίσετε.',
-      confirmDemoteOwner: 'Αυτό το άτομο θα χάσει την πρόσβαση ιδιοκτήτη. Πατήστε ξανά για να συνεχίσετε.',
+      confirmPromoteOwner: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων, καθώς και δυνατότητα υποβιβασμού άλλων ιδιοκτητών.',
+      confirmDemoteOwner: 'Αυτό το άτομο θα χάσει την πρόσβαση ιδιοκτήτη.',
       emailLabel: 'Email',
       saveEmail: 'Αποθήκευση Email',
       addEmailFirst: 'Προσθέστε email πριν στείλετε πρόσκληση σύνδεσης',
@@ -1296,6 +1319,14 @@ home: {
       emailChangedHint: 'Αποθηκεύστε τις αλλαγές παραπάνω πριν στείλετε την πρόσκληση.',
     },
     invites: {
+      declineConfirmButton: 'Απόρριψη πρόσκλησης',
+      declineMessage: 'Δεν θα προστεθείτε σε αυτό το κατάστημα.',
+      declineTitle: 'Απόρριψη πρόσκλησης στο «{shop}»;',
+      cancelInviteConfirmButton: 'Ακύρωση πρόσκλησης',
+      cancelInviteMessage: 'Η εκκρεμής πρόσκληση θα ανακληθεί.',
+      cancelInviteTitle: 'Ακύρωση πρόσκλησης για «{name}»;',
+      ownerInviteConfirmButton: 'Πρόσκληση ως ιδιοκτήτη',
+      ownerInviteTitle: 'Πρόσκληση «{name}» ως ιδιοκτήτη;',
       title: 'Προσκλήσεις',
       received: 'Ληφθείσες',
       sent: 'Απεσταλμένες',
@@ -1344,20 +1375,22 @@ home: {
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, θα βλέπει μόνο τη λέξη «Πελάτης» στα ραντεβού, χωρίς όνομα, τηλέφωνο ή email. Μπορείτε να το αλλάξετε αργότερα.',
       sendEmailNow: 'Αποστολή πρόσκλησης σύνδεσης τώρα',
       sendEmailNowDesc: 'Το μέλος δημιουργείται άμεσα και μπορεί να δεχτεί ραντεβού ό,τι κι αν επιλέξετε εδώ. Αν είναι ανενεργό, μπορείτε να στείλετε την πρόσκληση αργότερα από τη σελίδα του μέλους.',
-      confirmOwnerInvite: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων. Πατήστε ξανά για να συνεχίσετε.',
+      confirmOwnerInvite: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων.',
       createdNoEmail: 'Το μέλος δημιουργήθηκε. Δεν στάλθηκε πρόσκληση σύνδεσης.',
       pendingLogins: 'Μέλη χωρίς σύνδεση',
       noPendingLogins: 'Όλα τα μέλη έχουν σύνδεση.',
       notSentYet: 'Δεν έχει σταλεί',
       resend: 'Επαναποστολή',
       cancelInvite: 'Ακύρωση Πρόσκλησης',
-      confirmCancel: 'Επιβεβαίωση Ακύρωσης',
       errorResend: 'Αποτυχία αποστολής πρόσκλησης.',
       errorCancel: 'Αποτυχία ακύρωσης πρόσκλησης.',
       statusLabel: 'Κατάσταση',
       optional: 'προαιρετικό',
     },
     services: {
+      deleteConfirmButton: 'Διαγραφή υπηρεσίας',
+      deleteMessage: 'Η υπηρεσία θα διαγραφεί οριστικά. Η ενέργεια δεν μπορεί να αναιρεθεί.',
+      deleteTitle: 'Διαγραφή «{name}»;',
       title: 'Υπηρεσίες',
       addService: 'Νέα Υπηρεσία',
       create: 'Δημιουργία',
@@ -1372,7 +1405,6 @@ home: {
       edit: 'Επεξεργασία',
       delete: 'Διαγραφή',
       deleting: 'Διαγραφή...',
-      confirmDelete: 'Επιβεβαίωση Διαγραφής',
       active: 'Ενεργή',
       inactive: 'Ανενεργή',
       noServices: 'Δεν υπάρχουν υπηρεσίες ακόμα.',
@@ -1391,6 +1423,9 @@ home: {
       errorUnassign: 'Αποτυχία αφαίρεσης προσωπικού.',
     },
     workingHours: {
+      deleteScheduleConfirmButton: 'Διαγραφή προγράμματος',
+      deleteScheduleMessage: 'Το πρόγραμμα και οι ώρες εργασίας του θα διαγραφούν οριστικά.',
+      deleteScheduleTitle: 'Διαγραφή αυτού του προγράμματος;',
       title: 'Ώρες Λειτουργίας',
       save: 'Αποθήκευση Αλλαγών',
       saving: 'Αποθήκευση...',
@@ -1405,7 +1440,6 @@ home: {
       creating: 'Δημιουργία...',
       deleteSchedule: 'Διαγραφή',
       deleting: 'Διαγραφή...',
-      confirmDelete: 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρόγραμμα;',
       cancel: 'Ακύρωση',
       startDate: 'Ημερομηνία έναρξης',
       endDate: 'Ημερομηνία λήξης (προαιρετική)',
@@ -1446,6 +1480,8 @@ home: {
       darkMode: 'Σκοτεινή λειτουργία',
     },
     shopSettings: {
+      deleteShopConfirmButton: 'Διαγραφή καταστήματος',
+      deleteShopTitle: 'Διαγραφή «{name}»;',
       relativeToday: 'σήμερα',
       relativeYesterday: 'χθες',
       relativeDaysAgo: 'μέρες πριν',
@@ -1473,7 +1509,6 @@ home: {
       successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
       errorUpdate: 'Αποτυχία ενημέρωσης καταστήματος.',
       errorDelete: 'Αποτυχία διαγραφής καταστήματος.',
-      yesDeleteShop: 'Ναι, Διαγραφή Καταστήματος',
       areYouSure: 'Είστε σίγουροι; Αυτό θα διαγράψει οριστικά το {name} και όλα τα δεδομένα του.',
       maxAdvanceLabel: 'Παράθυρο κρατήσεων (ημέρες)',
       maxAdvanceHint: 'Πόσες ημέρες μπροστά μπορούν οι πελάτες να κλείσουν ραντεβού.',
@@ -1554,6 +1589,9 @@ home: {
       noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
     },
     customers: {
+      cancel: 'Ακύρωση',
+      deleteConfirmButton: 'Διαγραφή πελάτη',
+      deleteTitle: 'Διαγραφή «{name}»;',
       title: 'Πελάτες',
       searchPlaceholder: 'Αναζήτηση με όνομα ή τηλέφωνο…',
       errorLoad: 'Αποτυχία φόρτωσης πελατών',
@@ -2019,6 +2057,8 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
+      deleteAccountConfirmButton: 'Delete account',
+      deleteAccountTitle: 'Delete your account?',
       title: 'Settings',
       profileSection: 'Profile',
       saveProfile: 'Save Profile',
@@ -2037,11 +2077,9 @@ home: {
       deleteAccount: 'Delete Account',
       confirmPasswordLabel: 'Confirm your password',
       confirmPasswordPlaceholder: 'Enter your password to confirm',
-      confirmDelete: 'Confirm Delete',
       deleting: 'Deleting...',
       cancel: 'Cancel',
       areYouSure: 'Are you sure? This will permanently delete your account and all associated data. This action cannot be undone.',
-      yesDelete: 'Yes, Delete My Account',
       pwMin: 'At least 8 characters',
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',
@@ -2084,6 +2122,12 @@ home: {
       goHome: 'Go Home',
     },
     team: {
+      demoteConfirmButton: 'Remove owner access',
+      demoteTitle: 'Remove owner access for {name}?',
+      promoteConfirmButton: 'Make owner',
+      promoteTitle: 'Make {name} an owner?',
+      removeConfirmButton: 'Remove member',
+      removeTitle: 'Remove {name}?',
       title: 'Team Members',
       email: 'Email',
       role: 'Role',
@@ -2092,7 +2136,6 @@ home: {
       roles: { owner: 'Owner', staff: 'Staff' },
       remove: 'Remove',
       removing: 'Removing...',
-      confirmRemove: 'Confirm Remove',
       cancel: 'Cancel',
       noMembers: 'No team members yet.',
       notFound: 'Member not found.',
@@ -2137,9 +2180,8 @@ home: {
       bookableInternally: 'Bookable internally',
       bookableInternallyDesc: 'Controls whether this member shows up as an option when creating a booking from inside the app.',
       inactiveBadge: 'Inactive',
-      confirmContinue: 'Confirm & Continue',
-      confirmPromoteOwner: 'This person will become an owner, with full access to team, invites, customers, and settings — including the ability to demote other owners. Click again to continue.',
-      confirmDemoteOwner: 'This person will lose owner access. Click again to continue.',
+      confirmPromoteOwner: 'This person will become an owner, with full access to team, invites, customers, and settings — including the ability to demote other owners.',
+      confirmDemoteOwner: 'This person will lose owner access.',
       emailLabel: 'Email',
       saveEmail: 'Save Email',
       addEmailFirst: 'Add an email before sending a login invite',
@@ -2147,6 +2189,14 @@ home: {
       emailChangedHint: 'Save your changes above before sending the invite.',
     },
     invites: {
+      declineConfirmButton: 'Decline invite',
+      declineMessage: 'You will not be added to this shop.',
+      declineTitle: 'Decline invite to {shop}?',
+      cancelInviteConfirmButton: 'Cancel invite',
+      cancelInviteMessage: 'The pending invite will be revoked.',
+      cancelInviteTitle: 'Cancel invite for {name}?',
+      ownerInviteConfirmButton: 'Invite as owner',
+      ownerInviteTitle: 'Invite {name} as an owner?',
       title: 'Invites',
       received: 'Received',
       sent: 'Sent',
@@ -2195,20 +2245,22 @@ home: {
       canViewCustomerDetailsDesc: "When off, they'll see just the word \"Customer\" on bookings — no name, phone, or email. You can change this later.",
       sendEmailNow: 'Send login invite now',
       sendEmailNowDesc: "The member is created right away and can be booked either way. If off, you can send the invite later from the member's page.",
-      confirmOwnerInvite: 'This person will become an owner, with full access to team, invites, customers, and settings. Click again to continue.',
+      confirmOwnerInvite: 'This person will become an owner, with full access to team, invites, customers, and settings.',
       createdNoEmail: 'Team member created. No login invite was sent.',
       pendingLogins: 'Members Without a Login',
       noPendingLogins: 'Every member has a login.',
       notSentYet: 'Not sent',
       resend: 'Resend',
       cancelInvite: 'Cancel Invite',
-      confirmCancel: 'Confirm Cancel',
       errorResend: 'Failed to send invite.',
       errorCancel: 'Failed to cancel invite.',
       statusLabel: 'Status',
       optional: 'optional',
     },
     services: {
+      deleteConfirmButton: 'Delete service',
+      deleteMessage: 'This service will be permanently deleted. This can\'t be undone.',
+      deleteTitle: 'Delete {name}?',
       title: 'Services',
       addService: 'New Service',
       create: 'Create',
@@ -2223,7 +2275,6 @@ home: {
       edit: 'Edit',
       delete: 'Delete',
       deleting: 'Deleting...',
-      confirmDelete: 'Confirm Delete',
       active: 'Active',
       inactive: 'Inactive',
       noServices: 'No services yet.',
@@ -2242,6 +2293,9 @@ home: {
       errorUnassign: 'Failed to remove staff.',
     },
     workingHours: {
+      deleteScheduleConfirmButton: 'Delete schedule',
+      deleteScheduleMessage: 'This schedule and its working hours will be permanently deleted.',
+      deleteScheduleTitle: 'Delete this schedule?',
       title: 'Working Hours',
       save: 'Save Changes',
       saving: 'Saving...',
@@ -2256,7 +2310,6 @@ home: {
       creating: 'Creating...',
       deleteSchedule: 'Delete',
       deleting: 'Deleting...',
-      confirmDelete: 'Are you sure you want to delete this schedule?',
       cancel: 'Cancel',
       startDate: 'Start date',
       endDate: 'End date (optional)',
@@ -2297,6 +2350,8 @@ home: {
       darkMode: 'Dark mode',
     },
     shopSettings: {
+      deleteShopConfirmButton: 'Delete shop',
+      deleteShopTitle: 'Delete {name}?',
       relativeToday: 'today',
       relativeYesterday: 'yesterday',
       relativeDaysAgo: 'days ago',
@@ -2324,7 +2379,6 @@ home: {
       successUpdate: 'Shop updated successfully.',
       errorUpdate: 'Failed to update shop.',
       errorDelete: 'Failed to delete shop.',
-      yesDeleteShop: 'Yes, Delete Shop',
       areYouSure: 'Are you sure? This will permanently delete {name} and all its data.',
       maxAdvanceLabel: 'Booking window (days)',
       maxAdvanceHint: 'How many days ahead customers can book an appointment.',
@@ -2405,6 +2459,9 @@ home: {
       noUpcoming: 'No upcoming bookings.',
     },
     customers: {
+      cancel: 'Cancel',
+      deleteConfirmButton: 'Delete customer',
+      deleteTitle: 'Delete {name}?',
       title: 'Customers',
       searchPlaceholder: 'Search by name or phone…',
       errorLoad: 'Failed to load customers',

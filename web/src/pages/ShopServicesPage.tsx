@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -394,30 +395,12 @@ export default function ShopServicesPage() {
                         <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
                       </button>
 
-                      {confirmDeleteId === service.id ? (
-                        <div className="service-confirm-delete">
-                          <button
-                            className="btn btn--danger btn--sm service-action-btn"
-                            onClick={() => handleDelete(service.id)}
-                            disabled={deleting}
-                          >
-                            {deleting ? t.services.deleting : t.services.confirmDelete}
-                          </button>
-                          <button
-                            className="btn btn--secondary btn--sm service-action-btn"
-                            onClick={() => setConfirmDeleteId(null)}
-                          >
-                            {t.services.cancel}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          className="btn btn--secondary btn--sm service-action-btn service-delete-btn"
-                          onClick={() => setConfirmDeleteId(service.id)}
-                        >
-                          <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
-                        </button>
-                      )}
+                      <button
+                        className="btn btn--secondary btn--sm service-action-btn service-delete-btn"
+                        onClick={() => setConfirmDeleteId(service.id)}
+                      >
+                        <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
+                      </button>
                     </div>
                   )}
 
@@ -500,6 +483,19 @@ export default function ShopServicesPage() {
             </button>
           )}
         </div>
+      )}
+
+      {confirmDeleteId && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.services.deleteTitle.replace('{name}', services.find((sv) => sv.id === confirmDeleteId)?.name ?? '')}
+          message={t.services.deleteMessage}
+          confirmLabel={t.services.deleteConfirmButton}
+          cancelLabel={t.services.cancel}
+          busy={deleting}
+          onConfirm={() => handleDelete(confirmDeleteId)}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
       )}
     </div>
   );

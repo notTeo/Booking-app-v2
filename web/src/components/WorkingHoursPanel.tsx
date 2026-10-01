@@ -16,6 +16,7 @@ import { findOverlap, scheduleStatus } from '../utils/scheduleOverlap';
 import Switch from './Switch';
 import '../styles/pages/working-hours.css';
 import Alert from './Alert';
+import ConfirmDialog from './ConfirmDialog';
 
 // API bundle — callers build this with the correct shopId / memberId baked in
 export interface WorkingHoursApi {
@@ -284,7 +285,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       });
       if (expandedId === scheduleId) setExpandedId(null);
     } catch {
-      updateEdit(scheduleId, { deleting: false, error: t.workingHours.errorDelete });
+      updateEdit(scheduleId, { deleting: false, confirmDelete: false, error: t.workingHours.errorDelete });
     }
   };
 
@@ -501,37 +502,26 @@ const created = await api.createSchedule(dto);
                     </button>
 
                     <div>
-                      {!state.confirmDelete ? (
-                        <button
-                          className="btn btn--danger"
-                          onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
-                          disabled={state.deleting}
-                        >
-                          {state.deleting
-                            ? t.workingHours.deleting
-                            : t.workingHours.deleteSchedule}
-                        </button>
-                      ) : (
-                        <div className="wh-delete-confirm">
-                          <span className="wh-delete-confirm-text">
-                            {t.workingHours.confirmDelete}
-                          </span>
-                          <button
-                            className="btn btn--danger"
-                            onClick={() => handleDelete(schedule.id)}
-                            disabled={state.deleting}
-                          >
-                            {state.deleting
-                              ? t.workingHours.deleting
-                              : t.workingHours.deleteSchedule}
-                          </button>
-                          <button
-                            className="btn btn--secondary"
-                            onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
-                          >
-                            {t.workingHours.cancel}
-                          </button>
-                        </div>
+                      <button
+                        className="btn btn--danger"
+                        onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
+                        disabled={state.deleting}
+                      >
+                        {state.deleting
+                          ? t.workingHours.deleting
+                          : t.workingHours.deleteSchedule}
+                      </button>
+                      {state.confirmDelete && (
+                        <ConfirmDialog
+                          tone="danger"
+                          title={t.workingHours.deleteScheduleTitle}
+                          message={t.workingHours.deleteScheduleMessage}
+                          confirmLabel={t.workingHours.deleteScheduleConfirmButton}
+                          cancelLabel={t.workingHours.cancel}
+                          busy={state.deleting}
+                          onConfirm={() => handleDelete(schedule.id)}
+                          onCancel={() => updateEdit(schedule.id, { confirmDelete: false })}
+                        />
                       )}
                     </div>
 

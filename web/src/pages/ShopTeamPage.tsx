@@ -6,6 +6,7 @@ import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -39,6 +40,7 @@ export default function ShopTeamPage() {
       setMembers((prev) => prev.filter((m) => m.id !== memberId));
       setConfirmRemove(null);
     } catch {
+      setConfirmRemove(null);
       setRemoveError(t.team.errorRemove);
     } finally {
       setRemoving(false);
@@ -46,32 +48,18 @@ export default function ShopTeamPage() {
   };
 
   // Shared between the table row's actions cell and the mobile card's
-  // actions row — same remove/confirm UI, just placed differently.
-  const renderActions = (member: TeamMember) =>
-    confirmRemove === member.id ? (
-      <div className="team-confirm-remove">
-        <button
-          className="btn btn--danger btn--sm"
-          onClick={() => handleRemove(member.id)}
-          disabled={removing}
-        >
-          {removing ? t.team.removing : t.team.confirmRemove}
-        </button>
-        <button className="btn btn--secondary btn--sm" onClick={() => setConfirmRemove(null)}>
-          {t.team.cancel}
-        </button>
-      </div>
-    ) : (
-      <button
-        className="btn btn--secondary btn--sm team-remove-btn"
-        onClick={() => {
-          setConfirmRemove(member.id);
-          setRemoveError('');
-        }}
-      >
-        {t.team.remove}
-      </button>
-    );
+  // actions row. The confirm dialog is rendered once, at the bottom.
+  const renderActions = (member: TeamMember) => (
+    <button
+      className="btn btn--secondary btn--sm team-remove-btn"
+      onClick={() => {
+        setConfirmRemove(member.id);
+        setRemoveError('');
+      }}
+    >
+      {t.team.remove}
+    </button>
+  );
 
   if (shopLoading || loading) {
     return (
@@ -145,6 +133,19 @@ export default function ShopTeamPage() {
         </div>
       </div>
       {removeError && <Alert variant="danger">{removeError}</Alert>}
+
+      {confirmRemove && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.team.removeTitle.replace('{name}', members.find((m) => m.id === confirmRemove)?.name ?? '')}
+          message={t.team.confirmRemovePrompt}
+          confirmLabel={t.team.removeConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={removing}
+          onConfirm={() => handleRemove(confirmRemove)}
+          onCancel={() => setConfirmRemove(null)}
+        />
+      )}
     </div>
   );
 }

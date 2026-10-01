@@ -7,6 +7,7 @@ import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type Custo
 import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -88,15 +89,17 @@ export default function ShopCustomerDetailPage() {
     }
   };
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const handleDelete = async () => {
     if (!shop || !customerId) return;
-    if (!window.confirm(t.customers.deleteConfirm)) return;
     setPrivacyBusy('delete');
     setPrivacyError('');
     try {
       await deleteCustomer(shop.id, customerId);
       navigate(`/shops/${slug}/customers`, { replace: true });
     } catch {
+      setConfirmDelete(false);
       setPrivacyError(t.customers.deleteError);
       setPrivacyBusy(null);
     }
@@ -213,7 +216,7 @@ export default function ShopCustomerDetailPage() {
             <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
               {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
             </button>
-            <button className="btn btn--danger" onClick={handleDelete} disabled={privacyBusy !== null}>
+            <button className="btn btn--danger" onClick={() => setConfirmDelete(true)} disabled={privacyBusy !== null}>
               {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
             </button>
           </div>
@@ -256,6 +259,19 @@ export default function ShopCustomerDetailPage() {
           </div>
         </div>
       </div>
+
+      {confirmDelete && customer && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.customers.deleteTitle.replace('{name}', customer.name)}
+          message={t.customers.deleteConfirm}
+          confirmLabel={t.customers.deleteConfirmButton}
+          cancelLabel={t.customers.cancel}
+          busy={privacyBusy === 'delete'}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   );
 }
