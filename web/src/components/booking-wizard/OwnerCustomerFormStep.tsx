@@ -23,6 +23,7 @@ export default function OwnerCustomerFormStep({
   onSubmit,
   onBack,
   submitting,
+  cooling = false,
   error,
   notice,
 }: {
@@ -36,6 +37,8 @@ export default function OwnerCustomerFormStep({
   onSubmit: (values: OwnerCustomerFormValues) => void;
   onBack: () => void;
   submitting: boolean;
+  /** Disabled (not spinning) while the server's Retry-After window runs. */
+  cooling?: boolean;
   error: string | null;
   /** A non-error notice (e.g. the server is momentarily busy) — never rendered in the error style. */
   notice?: string | null;
@@ -99,6 +102,7 @@ export default function OwnerCustomerFormStep({
   }
 
   function handleSubmit() {
+    if (submitting) return;
     onSubmit({ name, phone, email: email || undefined, notes: notes || undefined });
   }
 
@@ -208,21 +212,20 @@ export default function OwnerCustomerFormStep({
       </div>
 
       <div className="public-wizard-actions">
-        <button className="btn btn--secondary wizard-btn" onClick={onBack} disabled={submitting}>
+        <button className="btn btn--ghost wizard-btn" onClick={onBack} disabled={submitting}>
           {t.public.back}
         </button>
         <button
-          className="btn wizard-btn"
+          className={`btn wizard-btn${submitting && !cooling ? ' is-loading' : ''}`}
           onClick={handleSubmit}
-          disabled={submitting || name.trim() === '' || phone.trim() === ''}
+          aria-busy={submitting && !cooling}
+          disabled={cooling || name.trim() === '' || phone.trim() === ''}
         >
-          {submitting
-            ? t.bookings.creating
-            : outsideRules.length > 0
-              ? onlyOffGrid
-                ? t.bookings.intervalPicker.confirmButton
-                : t.bookings.outsideHours.confirmButton
-              : t.bookings.createBooking}
+          {outsideRules.length > 0
+            ? onlyOffGrid
+              ? t.bookings.intervalPicker.confirmButton
+              : t.bookings.outsideHours.confirmButton
+            : t.bookings.createBooking}
         </button>
       </div>
     </div>

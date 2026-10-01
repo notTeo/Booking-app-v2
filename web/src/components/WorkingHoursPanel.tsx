@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
@@ -16,6 +16,7 @@ import { findOverlap, scheduleStatus } from '../utils/scheduleOverlap';
 import Switch from './Switch';
 import '../styles/pages/working-hours.css';
 import Alert from './Alert';
+import ConfirmDialog from './ConfirmDialog';
 
 // API bundle — callers build this with the correct shopId / memberId baked in
 export interface WorkingHoursApi {
@@ -90,6 +91,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
 }
 
 export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
+  const uid = useId();
   const { t } = useLang();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -210,6 +212,7 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
   // ---- Save schedule (date range + days, one action) ----
   const handleSaveSchedule = async (scheduleId: string) => {
     const state = editStates[scheduleId];
+    if (state.saving) return;
 
     const allErrors: Partial<Record<DayOfWeek, string>> = {};
     for (const day of DAY_ORDER) {
@@ -284,13 +287,13 @@ export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelPro
       });
       if (expandedId === scheduleId) setExpandedId(null);
     } catch {
-      updateEdit(scheduleId, { deleting: false, error: t.workingHours.errorDelete });
+      updateEdit(scheduleId, { deleting: false, confirmDelete: false, error: t.workingHours.errorDelete });
     }
   };
 
   // ---- Create schedule ----
   const handleCreate = async () => {
-    if (!createStart) return;
+    if (!createStart || creating) return;
     setCreating(true);
     setCreateError('');
     try {
@@ -376,16 +379,16 @@ const created = await api.createSchedule(dto);
           <h3>{t.workingHours.newSchedule}</h3>
           <div className="wh-create-fields">
             <div className="field">
-              <label className="field__label">{t.workingHours.startDate}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-create-start`}>{t.workingHours.startDate}</label>
+              <input id={`${uid}-create-start`} className="input"
                 type="date"
                 value={createStart}
                 onChange={(e) => setCreateStart(e.target.value)}
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.workingHours.endDate}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-create-end`}>{t.workingHours.endDate}</label>
+              <input id={`${uid}-create-end`} className="input"
                 type="date"
                 value={createEnd}
                 onChange={(e) => setCreateEnd(e.target.value)}
@@ -398,14 +401,15 @@ const created = await api.createSchedule(dto);
           {createError && <Alert variant="danger">{createError}</Alert>}
           <div className="wh-create-actions">
             <button
-              className="btn"
+              className={`btn${creating ? ' is-loading' : ''}`}
               onClick={handleCreate}
-              disabled={creating || !createStart || !!createConflict}
+              aria-busy={creating}
+              disabled={!createStart || !!createConflict}
             >
-              {creating ? t.workingHours.creating : t.workingHours.createSchedule}
+              {t.workingHours.createSchedule}
             </button>
             <button
-              className="btn btn--secondary"
+              className="btn btn--ghost"
               onClick={() => {
                 setShowCreate(false);
                 setCreateError('');
@@ -493,45 +497,33 @@ const created = await api.createSchedule(dto);
                 {isOwner && (
                   <div className="wh-schedule-actions">
                     <button
-                      className="btn"
+                      className={`btn${state.saving ? ' is-loading' : ''}`}
                       onClick={() => handleSaveSchedule(schedule.id)}
-                      disabled={state.saving || hasErrors}
+                      aria-busy={state.saving}
+                      disabled={hasErrors}
                     >
-                      {state.saving ? t.workingHours.saving : t.workingHours.saveDays}
+                      {t.workingHours.saveDays}
                     </button>
 
                     <div>
-                      {!state.confirmDelete ? (
-                        <button
-                          className="btn btn--danger"
-                          onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
-                          disabled={state.deleting}
-                        >
-                          {state.deleting
-                            ? t.workingHours.deleting
-                            : t.workingHours.deleteSchedule}
-                        </button>
-                      ) : (
-                        <div className="wh-delete-confirm">
-                          <span className="wh-delete-confirm-text">
-                            {t.workingHours.confirmDelete}
-                          </span>
-                          <button
-                            className="btn btn--danger"
-                            onClick={() => handleDelete(schedule.id)}
-                            disabled={state.deleting}
-                          >
-                            {state.deleting
-                              ? t.workingHours.deleting
-                              : t.workingHours.deleteSchedule}
-                          </button>
-                          <button
-                            className="btn btn--secondary"
-                            onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
-                          >
-                            {t.workingHours.cancel}
-                          </button>
-                        </div>
+                      <button
+                        className={`btn btn--danger${state.deleting ? ' is-loading' : ''}`}
+                        onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
+                        aria-busy={state.deleting}
+                      >
+                        {t.workingHours.deleteSchedule}
+                      </button>
+                      {state.confirmDelete && (
+                        <ConfirmDialog
+                          tone="danger"
+                          title={t.workingHours.deleteScheduleTitle}
+                          message={t.workingHours.deleteScheduleMessage}
+                          confirmLabel={t.workingHours.deleteScheduleConfirmButton}
+                          cancelLabel={t.workingHours.cancel}
+                          busy={state.deleting}
+                          onConfirm={() => handleDelete(schedule.id)}
+                          onCancel={() => updateEdit(schedule.id, { confirmDelete: false })}
+                        />
                       )}
                     </div>
 
@@ -548,16 +540,16 @@ const created = await api.createSchedule(dto);
                   <div className="wh-dates-section">
                     <div className="wh-create-fields">
                       <div className="field">
-                        <label className="field__label">{t.workingHours.startDate}</label>
-                        <input className="input"
+                        <label className="field__label" htmlFor={`${uid}-${schedule.id}-start`}>{t.workingHours.startDate}</label>
+                        <input id={`${uid}-${schedule.id}-start`} className="input"
                           type="date"
                           value={state.startDate}
                           onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
                         />
                       </div>
                       <div className="field">
-                        <label className="field__label">{t.workingHours.endDate}</label>
-                        <input className="input"
+                        <label className="field__label" htmlFor={`${uid}-${schedule.id}-end`}>{t.workingHours.endDate}</label>
+                        <input id={`${uid}-${schedule.id}-end`} className="input"
                           type="date"
                           value={state.endDate}
                           onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
@@ -599,6 +591,7 @@ const created = await api.createSchedule(dto);
                               <div key={idx} className="working-hours-slot">
                                 <input className="input"
                                   type="time"
+                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.from}`}
                                   value={slot.startTime}
                                   onChange={(e) =>
                                     updateHour(schedule.id, day, idx, 'startTime', e.target.value)
@@ -608,6 +601,7 @@ const created = await api.createSchedule(dto);
                                 <span className="working-hours-sep">–</span>
                                 <input className="input"
                                   type="time"
+                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.to}`}
                                   value={slot.endTime}
                                   onChange={(e) =>
                                     updateHour(schedule.id, day, idx, 'endTime', e.target.value)

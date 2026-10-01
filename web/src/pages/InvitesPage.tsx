@@ -10,6 +10,7 @@ import {
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 type Tab = 'received' | 'sent';
 
@@ -39,6 +40,7 @@ export default function InvitesPage() {
   }, []);
 
   const handleAccept = async (inviteId: string) => {
+    if (actionLoading === inviteId) return;
     setActionLoading(inviteId);
     setActionError('');
     try {
@@ -60,6 +62,7 @@ export default function InvitesPage() {
       setReceived((prev) => prev.filter((i) => i.id !== inviteId));
       setConfirmDecline(null);
     } catch {
+      setConfirmDecline(null);
       setActionError(t.invites.errorDecline);
     } finally {
       setActionLoading(null);
@@ -70,30 +73,15 @@ export default function InvitesPage() {
   const renderReceivedActions = (invite: ShopInvite) => (
     <div className="invite-actions">
       <button
-        className="btn btn--sm"
-        disabled={actionLoading === invite.id}
+        className={`btn btn--sm${actionLoading === invite.id && confirmDecline !== invite.id ? ' is-loading' : ''}`}
+        aria-busy={actionLoading === invite.id && confirmDecline !== invite.id}
         onClick={() => handleAccept(invite.id)}
       >
-        {actionLoading === invite.id ? t.invites.accepting : t.invites.accept}
+        {t.invites.accept}
       </button>
-      {confirmDecline === invite.id ? (
-        <>
-          <button
-            className="btn btn--sm btn--danger"
-            disabled={actionLoading === invite.id}
-            onClick={() => handleDecline(invite.id)}
-          >
-            {actionLoading === invite.id ? t.invites.declining : t.invites.decline}
-          </button>
-          <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(null)}>
-            Cancel
-          </button>
-        </>
-      ) : (
-        <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(invite.id)}>
-          {t.invites.decline}
-        </button>
-      )}
+      <button className="btn btn--sm btn--secondary" onClick={() => setConfirmDecline(invite.id)}>
+        {t.invites.decline}
+      </button>
     </div>
   );
 
@@ -227,6 +215,19 @@ export default function InvitesPage() {
             )}
           </div>
         </div>
+      )}
+
+      {confirmDecline && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.invites.declineTitle.replace('{shop}', received.find((i) => i.id === confirmDecline)?.shop?.name ?? '')}
+          message={t.invites.declineMessage}
+          confirmLabel={t.invites.declineConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={actionLoading === confirmDecline}
+          onConfirm={() => handleDecline(confirmDecline)}
+          onCancel={() => setConfirmDecline(null)}
+        />
       )}
     </div>
   );

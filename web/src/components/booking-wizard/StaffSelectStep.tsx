@@ -65,7 +65,7 @@ export default function StaffSelectStep({
         </button>
       </div>
 
-      <button className="btn btn--secondary wizard-btn" onClick={onBack}>{t.public.back}</button>
+      <button className="btn btn--ghost wizard-btn" onClick={onBack}>{t.public.back}</button>
     </div>
   );
 }

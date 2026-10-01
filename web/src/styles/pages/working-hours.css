@@ -126,19 +126,6 @@
 }
 
 
-.wh-delete-confirm {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.wh-delete-confirm-text {
-  font-size: 0.85rem;
-  color: var(--danger);
-  font-weight: 600;
-}
-
 /* ---- Slot error ---- */
 .wh-slot-error {
   font-size: 0.78rem;

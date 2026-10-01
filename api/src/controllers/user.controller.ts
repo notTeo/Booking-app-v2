@@ -3,6 +3,7 @@ import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { successResponse } from '../utils/response';
 import { updateUser, deleteUser } from '../services/auth.service';
+import { USER_SELECT, toUserDto } from '../utils/userDto';
 
 export const getMe = async (
   req: Request,
@@ -12,25 +13,14 @@ export const getMe = async (
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        isVerified: true,
-        isPro: true,
-        createdAt: true,
-        passwordHash: true,
-      },
+      select: USER_SELECT,
     });
 
     if (!user) {
       throw new AppError(404, 'User not found');
     }
 
-    const { passwordHash, ...userWithoutHash } = user;
-    successResponse(res, {
-      user: { ...userWithoutHash, hasPassword: !!passwordHash },
-    });
+    successResponse(res, { user: toUserDto(user) });
   } catch (err) {
     next(err);
   }

@@ -31,13 +31,6 @@
 
 /* ---- Remove button inside table ---- */
 
-.team-confirm-remove {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 
 /* ---- Empty state ---- */
 .team-empty {

@@ -16,8 +16,9 @@ import {
   faSun,
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
-import { apiErrorMessage } from '../utils/apiError';
+import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -79,6 +80,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (profileLoading) return;
     setProfileError('');
     setProfileSuccess('');
     const payload: { name?: string; email?: string; password?: string } = {};
@@ -111,6 +113,7 @@ export default function SettingsPage() {
   };
 
   const handleRevokeAll = async () => {
+    if (revokeLoading) return;
     setRevokeError('');
     setRevokeSuccess('');
     setRevokeLoading(true);
@@ -125,18 +128,29 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Only an explicit `false` means an account without a password; a missing
+  // flag must not skip the check.
+  const needsPassword = user?.hasPassword !== false;
+
+  const handleDeleteAccount = async () => {
     setDeleteError('');
     setDeleteLoading(true);
     try {
-      await deleteMe(user?.hasPassword ? deletePassword : undefined);
+      await deleteMe(needsPassword ? deletePassword : undefined);
       await logout();
       navigate('/');
     } catch (err: unknown) {
-      setDeleteError(apiErrorMessage(err, 'Failed to delete account.'));
+      const wrongPassword = apiErrorField(err, 'code') === 'INVALID_PASSWORD';
+      setDeleteError(wrongPassword ? t.settings.wrongPassword : apiErrorMessage(err, 'Failed to delete account.'));
+      setDeletePassword('');
       setDeleteLoading(false);
     }
+  };
+
+  const closeDeleteConfirm = () => {
+    setShowDeleteConfirm(false);
+    setDeletePassword('');
+    setDeleteError('');
   };
 
   const passwordValid =
@@ -216,11 +230,12 @@ export default function SettingsPage() {
           {profileError && <Alert variant="danger">{profileError}</Alert>}
           {profileSuccess && <Alert variant="success">{profileSuccess}</Alert>}
           <button
-            className="btn btn--sm"
+            className={`btn btn--sm${profileLoading ? ' is-loading' : ''}`}
             type="submit"
-            disabled={profileLoading || !isProfileDirty || !passwordValid}
+            aria-busy={profileLoading}
+            disabled={!isProfileDirty || !passwordValid}
           >
-            {profileLoading ? t.settings.saving : t.settings.saveProfile}
+            {t.settings.saveProfile}
           </button>
         </form>
       </div>
@@ -291,12 +306,13 @@ export default function SettingsPage() {
         {revokeError && <Alert variant="danger">{revokeError}</Alert>}
         {revokeSuccess && <Alert variant="success">{revokeSuccess}</Alert>}
         <button
-          className="btn btn--secondary btn--sm"
+          className={`btn btn--secondary btn--sm${revokeLoading ? ' is-loading' : ''}`}
           type="button"
           onClick={handleRevokeAll}
-          disabled={revokeLoading || sessions.length === 0}
+          aria-busy={revokeLoading}
+          disabled={sessions.length === 0}
         >
-          {revokeLoading ? t.settings.revoking : t.settings.revokeAll}
+          {t.settings.revokeAll}
         </button>
       </div>
 
@@ -310,70 +326,51 @@ export default function SettingsPage() {
           {t.settings.dangerDesc}
         </p>
 
-        {!showDeleteConfirm ? (
-          <button
-            className="btn btn--danger btn--sm"
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            {t.settings.deleteAccount}
-          </button>
-        ) : user?.hasPassword ? (
-          <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <div className="field">
-              <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-              <input className="input"
-                id="delete-password"
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder={t.settings.confirmPasswordPlaceholder}
-                required
-              />
-            </div>
-            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className="btn btn--danger btn--sm"
-                type="submit"
-                disabled={deleteLoading || !deletePassword}
-              >
-                {deleteLoading ? t.settings.deleting : t.settings.confirmDelete}
-              </button>
-              <button
-                className="btn btn--secondary btn--sm"
-                type="button"
-                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
-              >
-                {t.settings.cancel}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <p className="settings-danger-desc">
-              {t.settings.areYouSure}
-            </p>
-            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className="btn btn--danger btn--sm"
-                type="submit"
-                disabled={deleteLoading}
-              >
-                {deleteLoading ? t.settings.deleting : t.settings.yesDelete}
-              </button>
-              <button
-                className="btn btn--secondary btn--sm"
-                type="button"
-                onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
-              >
-                {t.settings.cancel}
-              </button>
-            </div>
-          </form>
-        )}
+        <button
+          className="btn btn--danger btn--sm"
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          {t.settings.deleteAccount}
+        </button>
       </div>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.settings.deleteAccountTitle}
+          message={t.settings.deleteAccountMessage}
+          confirmLabel={t.settings.deleteAccountConfirmButton}
+          cancelLabel={t.settings.cancel}
+          busy={deleteLoading}
+          confirmDisabled={needsPassword && !deletePassword}
+          onConfirm={handleDeleteAccount}
+          onCancel={closeDeleteConfirm}
+        >
+          {needsPassword && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (deletePassword && !deleteLoading) handleDeleteAccount();
+              }}
+            >
+              <div className="field">
+                <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
+                <input className="input"
+                  id="delete-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder={t.settings.confirmPasswordPlaceholder}
+                  required
+                />
+              </div>
+            </form>
+          )}
+          {deleteError && <Alert variant="danger">{deleteError}</Alert>}
+        </ConfirmDialog>
+      )}
     </div>
   );
 }
