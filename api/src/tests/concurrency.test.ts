@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
 import { prisma } from '../utils/prisma';
 import {
@@ -10,8 +9,11 @@ import {
   type Tenant,
   ALL_OVERRIDABLE_RULES,
 } from './helpers';
+import { serve } from './testRequest';
 
 vi.mock('../services/email.service');
+
+const api = await serve(app);
 
 // Rule 1 under load: simultaneous requests fighting for one provider's time.
 // Exactly ONE may win; every loser is a clean 409; there must never be a 5xx
@@ -56,15 +58,13 @@ const odd = (rs: { status: number; body: unknown }[]) =>
   );
 const publicBook = (t: Tenant, i: number, startTime: string, phone?: string) =>
   timed(
-    request(app)
-      .post(`/public/${t.shop.slug}/book`)
-      .send({
-        name: `C${i}`,
-        phone: phone ?? `69000${String(i).padStart(5, '0')}`,
-        serviceId: t.service.id,
-        staffId: t.staff.id,
-        startTime,
-      }),
+    api.post(`/public/${t.shop.slug}/book`).send({
+      name: `C${i}`,
+      phone: phone ?? `69000${String(i).padStart(5, '0')}`,
+      serviceId: t.service.id,
+      staffId: t.staff.id,
+      startTime,
+    }),
   );
 
 describe('concurrent bookings for the same provider', () => {
@@ -118,15 +118,13 @@ describe('concurrent bookings for the same provider', () => {
       });
       const rs = await Promise.all(
         starts.map((hhmm, i) =>
-          request(app)
-            .post(`/public/${t.shop.slug}/book`)
-            .send({
-              name: `C${i}`,
-              phone: `67000${String(i).padStart(5, '0')}`,
-              serviceId: long.id,
-              staffId: t.staff.id,
-              startTime: `2026-12-08T${hhmm}:00+02:00`,
-            }),
+          api.post(`/public/${t.shop.slug}/book`).send({
+            name: `C${i}`,
+            phone: `67000${String(i).padStart(5, '0')}`,
+            serviceId: long.id,
+            staffId: t.staff.id,
+            startTime: `2026-12-08T${hhmm}:00+02:00`,
+          }),
         ),
       );
       expect(codes(rs), `round ${round} ${odd(rs)}`).toEqual([
@@ -142,7 +140,7 @@ describe('concurrent bookings for the same provider', () => {
       const t = await shop();
       const rs = await Promise.all(
         Array.from({ length: N }, (_, i) =>
-          request(app)
+          api
             .post(`/api/shops/${t.shop.id}/bookings`)
             .set(authHeader(t.token))
             .send({
@@ -185,7 +183,7 @@ describe('races between different write paths', () => {
         'CANCELED',
       );
       const [reactivate, create] = await Promise.all([
-        request(app)
+        api
           .patch(`/api/shops/${t.shop.id}/bookings/${old.id}/status`)
           .set(authHeader(t.token))
           .send({ status: 'CONFIRMED' }),
@@ -211,7 +209,7 @@ describe('races between different write paths', () => {
       const target = '2026-12-08T12:00:00+02:00';
       const rs = await Promise.all(
         [a, b].map((x) =>
-          request(app)
+          api
             .patch(`/api/shops/${t.shop.id}/bookings/${x.id}`)
             .set(authHeader(t.token))
             .send({ startTime: target }),
