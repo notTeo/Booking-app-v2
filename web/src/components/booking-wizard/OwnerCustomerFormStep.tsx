@@ -23,6 +23,7 @@ export default function OwnerCustomerFormStep({
   onSubmit,
   onBack,
   submitting,
+  cooling = false,
   error,
   notice,
 }: {
@@ -36,6 +37,8 @@ export default function OwnerCustomerFormStep({
   onSubmit: (values: OwnerCustomerFormValues) => void;
   onBack: () => void;
   submitting: boolean;
+  /** Disabled (not spinning) while the server's Retry-After window runs. */
+  cooling?: boolean;
   error: string | null;
   /** A non-error notice (e.g. the server is momentarily busy) — never rendered in the error style. */
   notice?: string | null;
@@ -213,10 +216,10 @@ export default function OwnerCustomerFormStep({
           {t.public.back}
         </button>
         <button
-          className={`btn wizard-btn${submitting ? ' is-loading' : ''}`}
+          className={`btn wizard-btn${submitting && !cooling ? ' is-loading' : ''}`}
           onClick={handleSubmit}
-          aria-busy={submitting}
-          disabled={name.trim() === '' || phone.trim() === ''}
+          aria-busy={submitting && !cooling}
+          disabled={cooling || name.trim() === '' || phone.trim() === ''}
         >
           {outsideRules.length > 0
             ? onlyOffGrid

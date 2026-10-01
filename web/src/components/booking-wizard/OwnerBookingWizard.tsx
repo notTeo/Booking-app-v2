@@ -44,6 +44,8 @@ export default function OwnerBookingWizard({
   const { t } = useLang();
   const wizard = useBookingWizard({ slug, shopId, initialMemberId, initialDate, internal: true });
   const [submitting, setSubmitting] = useState(false);
+  // After a 503 BOOKING_BUSY the submit button stays disabled (not spinning) for the Retry-After window.
+  const [cooling, setCooling] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   // The server is momentarily out of retry budget (503 BOOKING_BUSY) — never
   // shown as an error; kept separate from submitError so it can't render in
@@ -99,7 +101,11 @@ export default function OwnerBookingWizard({
         // server's Retry-After window instead of resetting immediately.
         setPendingOverride(null);
         setBusyNotice(t.bookings.bookingBusy);
-        setTimeout(() => setSubmitting(false), (info.retryAfterSeconds ?? 1) * 1000);
+        setCooling(true);
+        setTimeout(() => {
+          setCooling(false);
+          setSubmitting(false);
+        }, (info.retryAfterSeconds ?? 1) * 1000);
         return;
       }
       const acceptable = acceptableRuleCodes(info);
@@ -188,6 +194,7 @@ export default function OwnerBookingWizard({
           onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}
           submitting={submitting}
+          cooling={cooling}
           error={submitError}
           notice={busyNotice}
         />
