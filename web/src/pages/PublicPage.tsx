@@ -55,6 +55,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
   // ── Submission state ──
   const [submitting, setSubmitting] = useState(false);
+  // After a 503 BOOKING_BUSY the button stays disabled (not spinning) for the Retry-After window.
+  const [cooling, setCooling] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   // The server is momentarily out of retry budget (503 BOOKING_BUSY) — never
   // shown as an error; kept separate from submitError so it can't render in
@@ -74,7 +76,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const selectedMember = shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
 
   async function handleSubmit() {
-    if (!slug || !wizard.selectedServiceId) return;
+    if (!slug || !wizard.selectedServiceId || submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     setBusyNotice(null);
@@ -97,7 +99,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
         // Keep the button disabled for the server's Retry-After window so the
         // customer doesn't immediately retry into the same contention.
         setBusyNotice(t.public.bookingBusy);
-        setTimeout(() => setSubmitting(false), (info.retryAfterSeconds ?? 1) * 1000);
+        setCooling(true);
+        setTimeout(() => {
+          setCooling(false);
+          setSubmitting(false);
+        }, (info.retryAfterSeconds ?? 1) * 1000);
         return;
       }
       const msg = isBookingRuleViolation(info)
@@ -277,18 +283,19 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
                 <div className="public-wizard-actions">
                   <button
-                    className="btn btn--secondary wizard-btn"
+                    className="btn btn--ghost wizard-btn"
                     onClick={handleBackFromForm}
                     disabled={submitting}
                   >
                     {t.public.back}
                   </button>
                   <button
-                    className="btn wizard-btn"
+                    className={`btn wizard-btn${submitting && !cooling ? ' is-loading' : ''}`}
                     onClick={handleSubmit}
-                    disabled={submitting || name.trim() === '' || phone.trim() === ''}
+                    aria-busy={submitting && !cooling}
+                    disabled={cooling || name.trim() === '' || phone.trim() === ''}
                   >
-                    {submitting ? t.public.booking : t.public.confirmBooking}
+                    {t.public.confirmBooking}
                   </button>
                 </div>
               </div>

@@ -39,6 +39,7 @@ export default function ShopNewPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
     setLoading(true);
     try {
@@ -149,11 +150,11 @@ export default function ShopNewPage() {
           {error && <Alert variant="danger">{error}</Alert>}
 
           <div className="shop-form-actions">
-            <button className="btn" type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Shop'}
+            <button className={`btn${loading ? ' is-loading' : ''}`} type="submit" aria-busy={loading}>
+              Create Shop
             </button>
             <button
-              className="btn btn--secondary"
+              className="btn btn--ghost"
               type="button"
               onClick={() => navigate('/shops')}
             >

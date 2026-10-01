@@ -89,8 +89,7 @@
   background: color-mix(in srgb, var(--text) 2%, var(--surface));
 }
 
-.service-card-actions .service-delete-btn,
-.service-card-actions .service-confirm-delete {
+.service-card-actions .service-delete-btn {
   margin-left: auto;
 }
 
@@ -111,13 +110,6 @@
 .service-delete-btn:hover {
   color: var(--danger) !important;
   border-color: var(--danger) !important;
-}
-
-.service-confirm-delete {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 /* ---- Staff panel ---- */

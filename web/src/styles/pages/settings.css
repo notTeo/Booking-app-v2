@@ -159,11 +159,6 @@
   color: var(--text-muted);
 }
 
-.settings-danger-confirm {
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-
 /* ─── Mobile ─── */
 @media (max-width: 640px) {
   .settings-page h1 {

@@ -1,5 +1,5 @@
 import { formatDateTimeInZone } from '../utils/shopTime';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -7,10 +7,12 @@ import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type Custo
 import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 export default function ShopCustomerDetailPage() {
+  const uid = useId();
   const { slug, customerId } = useParams<{ slug: string; customerId: string }>();
   const { shop, isLoading: shopLoading } = useShop();
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ export default function ShopCustomerDetailPage() {
   }, [shop?.id, customerId]);
 
   const handleSave = async () => {
-    if (!shop || !customerId) return;
+    if (!shop || !customerId || saving) return;
     setSaving(true);
     setSaveError('');
     setSaveSuccess('');
@@ -68,7 +70,7 @@ export default function ShopCustomerDetailPage() {
   };
 
   const handleExport = async () => {
-    if (!shop || !customerId) return;
+    if (!shop || !customerId || privacyBusy !== null) return;
     setPrivacyBusy('export');
     setPrivacyError('');
     try {
@@ -88,15 +90,17 @@ export default function ShopCustomerDetailPage() {
     }
   };
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const handleDelete = async () => {
     if (!shop || !customerId) return;
-    if (!window.confirm(t.customers.deleteConfirm)) return;
     setPrivacyBusy('delete');
     setPrivacyError('');
     try {
       await deleteCustomer(shop.id, customerId);
       navigate(`/shops/${slug}/customers`, { replace: true });
     } catch {
+      setConfirmDelete(false);
       setPrivacyError(t.customers.deleteError);
       setPrivacyBusy(null);
     }
@@ -160,22 +164,22 @@ export default function ShopCustomerDetailPage() {
         <div className="card">
           <h2 className="card__title">{t.customers.editInfo}</h2>
           <div className="field">
-            <label className="field__label">{t.customers.nameLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-name`}>{t.customers.nameLabel}</label>
+            <input id={`${uid}-name`} className="input"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.phoneLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-phone`}>{t.customers.phoneLabel}</label>
+            <input id={`${uid}-phone`} className="input"
               value={editPhone}
               onChange={(e) => setEditPhone(e.target.value)}
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.emailLabel}</label>
-            <input className="input"
+            <label className="field__label" htmlFor={`${uid}-email`}>{t.customers.emailLabel}</label>
+            <input id={`${uid}-email`} className="input"
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
@@ -183,8 +187,8 @@ export default function ShopCustomerDetailPage() {
             />
           </div>
           <div className="field">
-            <label className="field__label">{t.customers.notesLabel}</label>
-            <textarea className="textarea"
+            <label className="field__label" htmlFor={`${uid}-notes`}>{t.customers.notesLabel}</label>
+            <textarea id={`${uid}-notes`} className="textarea"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               placeholder={t.customers.notesOptional}
@@ -194,11 +198,12 @@ export default function ShopCustomerDetailPage() {
           {saveError && <Alert variant="danger">{saveError}</Alert>}
           {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
           <button
-            className="btn"
+            className={`btn${saving ? ' is-loading' : ''}`}
             onClick={handleSave}
-            disabled={saving || !isDirty}
+            aria-busy={saving}
+            disabled={!isDirty}
           >
-            {saving ? t.customers.saving : t.customers.save}
+            {t.customers.save}
           </button>
         </div>
       )}
@@ -210,11 +215,21 @@ export default function ShopCustomerDetailPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
           {privacyError && <Alert variant="danger">{privacyError}</Alert>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
-              {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
+            <button
+              className={`btn btn--secondary${privacyBusy === 'export' ? ' is-loading' : ''}`}
+              onClick={handleExport}
+              aria-busy={privacyBusy === 'export'}
+              disabled={privacyBusy === 'delete'}
+            >
+              {t.customers.exportData}
             </button>
-            <button className="btn btn--danger" onClick={handleDelete} disabled={privacyBusy !== null}>
-              {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
+            <button
+              className={`btn btn--danger${privacyBusy === 'delete' ? ' is-loading' : ''}`}
+              onClick={() => setConfirmDelete(true)}
+              aria-busy={privacyBusy === 'delete'}
+              disabled={privacyBusy === 'export'}
+            >
+              {t.customers.deleteCustomer}
             </button>
           </div>
         </div>
@@ -256,6 +271,19 @@ export default function ShopCustomerDetailPage() {
           </div>
         </div>
       </div>
+
+      {confirmDelete && customer && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.customers.deleteTitle.replace('{name}', customer.name)}
+          message={t.customers.deleteConfirm}
+          confirmLabel={t.customers.deleteConfirmButton}
+          cancelLabel={t.customers.cancel}
+          busy={privacyBusy === 'delete'}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </div>
   );
 }

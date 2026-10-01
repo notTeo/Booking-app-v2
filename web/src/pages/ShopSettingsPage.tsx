@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -88,7 +89,7 @@ export default function ShopSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shop) return;
+    if (!shop || saveLoading) return;
     setSaveError('');
     setSaveSuccess('');
     setSaveLoading(true);
@@ -116,8 +117,7 @@ export default function ShopSettingsPage() {
     }
   };
 
-  const handleDelete = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDelete = async () => {
     if (!shop) return;
     setDeleteError('');
     setDeleteLoading(true);
@@ -125,6 +125,7 @@ export default function ShopSettingsPage() {
       await deleteShop(shop.id);
       navigate('/shops');
     } catch (err: unknown) {
+      setShowDeleteConfirm(false);
       setDeleteError(apiErrorMessage(err, t.shopSettings.errorDelete));
       setDeleteLoading(false);
     }
@@ -194,8 +195,8 @@ export default function ShopSettingsPage() {
               </p>
               <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
             </div>
-            <button className="btn btn--sm" type="submit" disabled={saveLoading}>
-              {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
+            <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
+              {t.shopSettings.saveChanges}
             </button>
           </div>
           {saveError && <Alert variant="danger">{saveError}</Alert>}
@@ -295,27 +296,24 @@ export default function ShopSettingsPage() {
             {t.shops.dangerZone}
           </p>
           <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
-          {!showDeleteConfirm ? (
-            <button className="btn btn--danger btn--sm" type="button" onClick={() => setShowDeleteConfirm(true)}>
-              {t.shops.deleteShop}
-            </button>
-          ) : (
-            <form onSubmit={handleDelete}>
-              <p className="settings-danger-desc">
-                {t.shopSettings.areYouSure.replace('{name}', shop.name)}
-              </p>
-              {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button className="btn btn--danger btn--sm" type="submit" disabled={deleteLoading}>
-                  {deleteLoading ? t.shops.deleting : t.shopSettings.yesDeleteShop}
-                </button>
-                <button className="btn btn--secondary btn--sm" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
-                  {t.shops.cancel}
-                </button>
-              </div>
-            </form>
-          )}
+          {deleteError && <Alert variant="danger">{deleteError}</Alert>}
+          <button className="btn btn--danger btn--sm" type="button" onClick={() => { setDeleteError(''); setShowDeleteConfirm(true); }}>
+            {t.shops.deleteShop}
+          </button>
         </div>
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.shopSettings.deleteShopTitle.replace('{name}', shop.name)}
+          message={t.shopSettings.areYouSure.replace('{name}', shop.name)}
+          confirmLabel={t.shopSettings.deleteShopConfirmButton}
+          cancelLabel={t.shops.cancel}
+          busy={deleteLoading}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
     </div>
   );

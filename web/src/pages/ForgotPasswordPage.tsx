@@ -14,6 +14,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError('');
     setSuccess('');
     setIsLoading(true);
@@ -45,8 +46,8 @@ export default function ForgotPasswordPage() {
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
-          <button className="btn btn--block" type="submit" disabled={isLoading}>
-            {isLoading ? 'Sending...' : 'Send Reset Link'}
+          <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading}>
+            Send Reset Link
           </button>
         </form>
         <div className="form-links">

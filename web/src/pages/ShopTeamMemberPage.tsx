@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -23,8 +23,10 @@ import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHo
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ShopTeamMemberPage() {
+  const uid = useId();
   const { slug, memberId } = useParams<{ slug: string; memberId: string }>();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
@@ -126,7 +128,7 @@ export default function ShopTeamMemberPage() {
   };
 
   const saveMemberChange = async () => {
-    if (!shop || !memberId || !member) return;
+    if (!shop || !memberId || !member || savingMember) return;
     setSavingMember(true);
     setMemberError('');
     setMemberSuccess('');
@@ -153,6 +155,7 @@ export default function ShopTeamMemberPage() {
     } catch (err: unknown) {
       const msg =
         err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setConfirmRoleChange(false);
       setMemberError(msg || t.team.errorUpdateRole);
     } finally {
       setSavingMember(false);
@@ -175,13 +178,14 @@ export default function ShopTeamMemberPage() {
       await removeMember(shop.id, memberId);
       navigate(`/shops/${slug}/team`);
     } catch {
+      setConfirmRemove(false);
       setRemoveError(t.team.errorRemove);
       setRemoving(false);
     }
   };
 
   const handleSendInvite = async () => {
-    if (!shop || !memberId) return;
+    if (!shop || !memberId || invitePending) return;
     setInvitePending(true);
     setInviteError('');
     setInviteSuccess('');
@@ -304,8 +308,8 @@ export default function ShopTeamMemberPage() {
         {isOwner ? (
           <>
             <div className="field">
-              <label className="field__label">{t.team.emailLabel}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-email`}>{t.team.emailLabel}</label>
+              <input id={`${uid}-email`} className="input"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -315,8 +319,8 @@ export default function ShopTeamMemberPage() {
             </div>
 
             <div className="field">
-              <label className="field__label">{t.team.role}</label>
-              <div className="select-wrap"><select className="select"
+              <label className="field__label" htmlFor={`${uid}-role`}>{t.team.role}</label>
+              <div className="select-wrap"><select id={`${uid}-role`} className="select"
                 value={editRole}
                 onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
               >
@@ -378,25 +382,15 @@ export default function ShopTeamMemberPage() {
 
             {memberError && <Alert variant="danger">{memberError}</Alert>}
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
-            {confirmRoleChange && (
-              <Alert variant="warning">
-                {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
-              </Alert>
-            )}
-
             <div className="team-invite-actions">
               <button
-                className="btn"
+                className={`btn${savingMember ? ' is-loading' : ''}`}
                 onClick={handleSaveMember}
-                disabled={savingMember || !isMemberDirty}
+                aria-busy={savingMember}
+                disabled={!isMemberDirty}
               >
-                {savingMember ? t.team.saving : confirmRoleChange ? t.team.confirmContinue : t.team.saveRole}
+                {t.team.saveRole}
               </button>
-              {confirmRoleChange && (
-                <button className="btn btn--secondary" onClick={() => setConfirmRoleChange(false)}>
-                  {t.team.cancel}
-                </button>
-              )}
             </div>
 
             {/* Login invite — only relevant until they accept and get a login;
@@ -413,12 +407,13 @@ export default function ShopTeamMemberPage() {
                 {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
                 <div className="team-invite-actions">
                   <button
-                    className="btn"
+                    className={`btn${invitePending ? ' is-loading' : ''}`}
                     onClick={handleSendInvite}
-                    disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
+                    aria-busy={invitePending}
+                    disabled={!member.email || editEmail !== (member.email ?? '')}
                     title={!member.email ? t.team.addEmailFirst : undefined}
                   >
-                    {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
+                    {member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
                   </button>
                   {member.hasPendingInvite && (
                     <button className="btn btn--secondary" onClick={handleCancelInvite} disabled={invitePending}>
@@ -482,6 +477,7 @@ export default function ShopTeamMemberPage() {
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
                     className="select select--sm"
+                    aria-label={t.team.selectService}
                   >
                     <option value="">{t.team.selectService}</option>
                     {available.map((s) => (
@@ -508,29 +504,36 @@ export default function ShopTeamMemberPage() {
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>
           {removeError && <Alert variant="danger">{removeError}</Alert>}
-          {!confirmRemove ? (
-            <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
-              {t.team.remove}
-            </button>
-          ) : (
-            <div className="wh-delete-confirm">
-              <span className="wh-delete-confirm-text">{t.team.confirmRemovePrompt}</span>
-              <button
-                className="btn btn--danger btn--block"
-                onClick={handleRemove}
-                disabled={removing}
-              >
-                {removing ? t.team.removing : t.team.remove}
-              </button>
-              <button
-                className="btn btn--secondary btn--block"
-                onClick={() => setConfirmRemove(false)}
-              >
-                {t.team.cancel}
-              </button>
-            </div>
-          )}
+          <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
+            {t.team.remove}
+          </button>
         </div>
+      )}
+
+      {confirmRoleChange && member && (
+        <ConfirmDialog
+          tone="warning"
+          title={(editRole === 'owner' ? t.team.promoteTitle : t.team.demoteTitle).replace('{name}', member.name)}
+          message={editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
+          confirmLabel={editRole === 'owner' ? t.team.promoteConfirmButton : t.team.demoteConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={savingMember}
+          onConfirm={saveMemberChange}
+          onCancel={() => setConfirmRoleChange(false)}
+        />
+      )}
+
+      {confirmRemove && member && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.team.removeTitle.replace('{name}', member.name)}
+          message={t.team.confirmRemovePrompt}
+          confirmLabel={t.team.removeConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={removing}
+          onConfirm={handleRemove}
+          onCancel={() => setConfirmRemove(false)}
+        />
       )}
     </div>
   );

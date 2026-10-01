@@ -206,6 +206,8 @@ export const loginUser = async ({
       name: user.name,
       isVerified: user.isVerified,
       createdAt: user.createdAt,
+      // Same shape as GET /user/me; the settings page needs it right after login.
+      hasPassword: true,
     },
     accessToken,
     refreshToken,

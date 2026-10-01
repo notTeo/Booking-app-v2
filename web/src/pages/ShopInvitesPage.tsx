@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -13,8 +13,10 @@ import Switch from '../components/Switch';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ShopInvitesPage() {
+  const uid = useId();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
 
@@ -61,7 +63,7 @@ export default function ShopInvitesPage() {
   };
 
   const submitCreate = async () => {
-    if (!shop) return;
+    if (!shop || sending) return;
     setSending(true);
     setSendFeedback(null);
     try {
@@ -77,6 +79,7 @@ export default function ShopInvitesPage() {
       setSendFeedback({ type: 'success', msg: sendEmail ? t.invites.sentOk : t.invites.createdNoEmail });
     } catch (err: unknown) {
       const msg = apiErrorMessage(err, t.invites.errorSend);
+      setConfirmOwner(false);
       setSendFeedback({ type: 'error', msg });
     } finally {
       setSending(false);
@@ -95,7 +98,7 @@ export default function ShopInvitesPage() {
   const pendingMembers = members.filter((m) => !m.userId);
 
   const handleResend = async (memberId: string) => {
-    if (!shop) return;
+    if (!shop || actionPendingId === memberId) return;
     setActionPendingId(memberId);
     setActionError('');
     try {
@@ -117,6 +120,7 @@ export default function ShopInvitesPage() {
       setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
       setConfirmCancel(null);
     } catch {
+      setConfirmCancel(null);
       setActionError(t.invites.errorCancel);
     } finally {
       setActionPendingId(null);
@@ -156,8 +160,8 @@ export default function ShopInvitesPage() {
         <form onSubmit={handleSend}>
           <div className="invites-form-row">
             <div className="field">
-              <label className="field__label">{t.invites.nameLabel}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-name`}>{t.invites.nameLabel}</label>
+              <input id={`${uid}-name`} className="input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -167,8 +171,8 @@ export default function ShopInvitesPage() {
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
-              <input className="input"
+              <label className="field__label" htmlFor={`${uid}-email`}>{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
+              <input id={`${uid}-email`} className="input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -178,8 +182,8 @@ export default function ShopInvitesPage() {
               />
             </div>
             <div className="field">
-              <label className="field__label">{t.invites.roleLabel}</label>
-              <div className="select-wrap"><select className="select"
+              <label className="field__label" htmlFor={`${uid}-role`}>{t.invites.roleLabel}</label>
+              <div className="select-wrap"><select id={`${uid}-role`} className="select"
                 value={role}
                 onChange={(e) => { setRole(e.target.value as ShopRole); setConfirmOwner(false); }}
                 disabled={sending}
@@ -213,19 +217,10 @@ export default function ShopInvitesPage() {
             <Switch checked={sendEmail} onChange={setSendEmail} label={t.invites.sendEmailNow} disabled={sending} />
           </div>
 
-          {confirmOwner && (
-            <Alert variant="warning">{t.invites.confirmOwnerInvite}</Alert>
-          )}
-
           <div className="invites-form-row">
-            <button type="submit" className="btn btn--block" disabled={sending}>
-              {sending ? t.invites.sending : confirmOwner ? t.team.confirmContinue : t.invites.addMember}
+            <button type="submit" className={`btn btn--block${sending ? ' is-loading' : ''}`} aria-busy={sending}>
+              {t.invites.addMember}
             </button>
-            {confirmOwner && (
-              <button type="button" className="btn btn--secondary btn--block" onClick={() => setConfirmOwner(false)}>
-                {t.team.cancel}
-              </button>
-            )}
           </div>
           {sendFeedback && (
             <p className={`invites-form-feedback invites-form-feedback--${sendFeedback.type}`}>
@@ -256,7 +251,9 @@ export default function ShopInvitesPage() {
                 </tr>
               </thead>
               <tbody>
-                {pendingMembers.map((m) => (
+                {pendingMembers.map((m) => {
+                  const resending = actionPendingId === m.id && confirmCancel !== m.id;
+                  return (
                   <tr key={m.id} role="row">
                     <td role="cell" data-label={t.invites.nameLabel} className="data-table__title">{m.name}</td>
                     <td role="cell" data-label={t.invites.emailLabel}>{m.email ?? '—'}</td>
@@ -273,41 +270,53 @@ export default function ShopInvitesPage() {
                     <td role="cell" data-label="" className="data-table__actions">
                       <div className="invite-actions">
                         <button
-                          className="btn btn--sm btn--secondary"
+                          className={`btn btn--sm btn--secondary${resending ? ' is-loading' : ''}`}
                           onClick={() => handleResend(m.id)}
-                          disabled={actionPendingId === m.id}
+                          aria-busy={resending}
                         >
-                          {actionPendingId === m.id ? t.invites.sending : m.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
+                          {m.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
                         </button>
                         {m.hasPendingInvite && (
-                          confirmCancel === m.id ? (
-                            <>
-                              <button
-                                className="btn btn--sm btn--danger"
-                                onClick={() => handleCancelInvite(m.id)}
-                                disabled={actionPendingId === m.id}
-                              >
-                                {t.invites.confirmCancel}
-                              </button>
-                              <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(null)}>
-                                {t.team.cancel}
-                              </button>
-                            </>
-                          ) : (
-                            <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(m.id)}>
-                              {t.invites.cancelInvite}
-                            </button>
-                          )
+                          <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(m.id)}>
+                            {t.invites.cancelInvite}
+                          </button>
                         )}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
       </div>
+
+      {confirmOwner && (
+        <ConfirmDialog
+          tone="warning"
+          title={t.invites.ownerInviteTitle.replace('{name}', name)}
+          message={t.invites.confirmOwnerInvite}
+          confirmLabel={t.invites.ownerInviteConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={sending}
+          onConfirm={submitCreate}
+          onCancel={() => setConfirmOwner(false)}
+        />
+      )}
+
+      {confirmCancel && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.invites.cancelInviteTitle.replace('{name}', members.find((m) => m.id === confirmCancel)?.name ?? '')}
+          message={t.invites.cancelInviteMessage}
+          confirmLabel={t.invites.cancelInviteConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={actionPendingId === confirmCancel}
+          onConfirm={() => handleCancelInvite(confirmCancel)}
+          onCancel={() => setConfirmCancel(null)}
+        />
+      )}
     </div>
   );
 }
