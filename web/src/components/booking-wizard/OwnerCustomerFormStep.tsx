@@ -1,11 +1,10 @@
 import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Alert from '../Alert';
 
 export interface OwnerCustomerFormValues {
   name: string;
@@ -195,18 +194,17 @@ export default function OwnerCustomerFormStep({
         </div>
 
         {outsideRules.length > 0 && (
-          <div className="ooh-panel" role="note">
-            <p className="ooh-panel-title">
-              <><FontAwesomeIcon icon={faClock} /> </>
-              {onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
-            </p>
+          <Alert
+            variant="warning"
+            title={onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
+          >
             <p>{outsideRules.map((c) => t.bookings.override[c]).join(' ')}</p>
             <p>{t.bookings.outsideHours.panelBody}</p>
-          </div>
+          </Alert>
         )}
 
-        {notice && <p className="public-submit-notice" role="status">{notice}</p>}
-        {error && <p className="public-submit-error">{error}</p>}
+        {notice && <Alert variant="info">{notice}</Alert>}
+        {error && <Alert variant="danger">{error}</Alert>}
       </div>
 
       <div className="public-wizard-actions">

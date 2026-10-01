@@ -15,6 +15,7 @@ import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
+import Alert from '../components/Alert';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
@@ -124,9 +125,9 @@ function PublicBookingPage({ slug }: { slug: string }) {
           <h1 className="public-shop-name">{shop.name}</h1>
           {shop.description && <p className="public-shop-desc">{shop.description}</p>}
           <div className="public-shop-meta">
-            {shop.phone && <span><FontAwesomeIcon icon={faPhone} /> {shop.phone}</span>}
-            {shop.formattedAddress && <span><FontAwesomeIcon icon={faLocationDot} /> {shop.formattedAddress}</span>}
-            <span><FontAwesomeIcon icon={faClock} /> {shop.timezone}</span>
+            {shop.phone && <span className="badge badge--neutral"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
+            {shop.formattedAddress && <span className="badge badge--neutral"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
+            <span className="badge badge--neutral"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
           </div>
         </div>
       </header>
@@ -134,12 +135,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
       <main className="public-main">
         {confirmed ? (
           <section className="public-section">
-            <div className="public-booking-confirmed">
+            <div className="card public-booking-confirmed">
               <div className="public-booking-confirmed-icon">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>
-              <h2 className="public-booking-confirmed-title">{t.public.bookingConfirmed}</h2>
-              <p className="public-booking-confirmed-message">
+              <h2 className="card__title">{t.public.bookingConfirmed}</h2>
+              <p className="card__text">
                 {t.public.bookingConfirmedMsg
                   .replace('{name}', name)
                   .replace('{service}', wizard.selectedService?.name ?? '')
@@ -147,7 +148,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   .replace('{time}', wizard.time)}
               </p>
               {(phone || email) && (
-                <p className="public-booking-confirmed-contact">
+                <p className="card__text">
                   {phone && <strong>{phone}</strong>}
                   {phone && email && ' / '}
                   {email && <strong>{email}</strong>}
@@ -270,8 +271,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     {t.public.privacyNoticeAfter}
                   </p>
 
-                  {busyNotice && <p className="public-submit-notice" role="status">{busyNotice}</p>}
-                  {submitError && <p className="public-submit-error">{submitError}</p>}
+                  {busyNotice && <Alert variant="info">{busyNotice}</Alert>}
+                  {submitError && <Alert variant="danger">{submitError}</Alert>}
                 </div>
 
                 <div className="public-wizard-actions">
