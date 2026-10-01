@@ -230,20 +230,7 @@
 }
 
 .service-staff-select {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  padding: 0.4rem 0.7rem;
-  outline: none;
-  transition: border-color 0.2s;
   min-width: 180px;
-}
-
-.service-staff-select:focus {
-  border-color: var(--accent);
 }
 
 /* ---- Create / Edit form ---- */
@@ -263,33 +250,10 @@
   padding-bottom: 1rem;
 }
 
-.service-form-active label {
+.service-form-active-label {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  cursor: pointer;
-  text-transform: none;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-textarea {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  padding: 0.7rem 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-  width: 100%;
-  resize: vertical;
-}
-
-textarea:focus {
-  border-color: var(--accent);
 }
 
 .service-form-actions {

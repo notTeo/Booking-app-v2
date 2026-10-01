@@ -262,10 +262,10 @@ export default function ShopServicesPage() {
           />
         </div>
         <div className="field service-form-active">
-          <label className="field__label">
+          <div className="service-form-active-label">
             <Switch checked={form.isActive} onChange={(v) => onChange('isActive', v)} label={t.services.isActive} />
-            {' '}{t.services.isActive}
-          </label>
+            <span className="field__label">{t.services.isActive}</span>
+          </div>
         </div>
       </div>
       <div className="field">

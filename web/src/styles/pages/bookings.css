@@ -46,8 +46,6 @@
   width: auto;
   min-width: 10rem;
   max-width: 100%;
-  padding: 0.4rem 2rem 0.4rem 0.75rem;
-  font-size: 0.9rem;
 }
 
 .cal-filters-count {
@@ -57,23 +55,6 @@
 
 
 /* ── Date picker ─────────────────────────────────────────────────────────── */
-
-.bookings-date-picker {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  padding: 0.4rem 0.75rem;
-  outline: none;
-  transition: border-color 0.2s;
-  appearance: none;
-}
-
-.bookings-date-picker:focus {
-  border-color: var(--accent);
-}
 
 .bookings-date-nav {
   display: flex;

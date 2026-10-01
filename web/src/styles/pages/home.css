@@ -956,10 +956,13 @@
 
 /* ─── Generic small inputs/selects/textareas used across the mock (customers
    search, invites form, settings form, working hours slots, booking wizard) —
-   layered on top of the real global input/select/textarea rules in
-   shared/components.css so colors/borders/focus match the real app exactly,
-   just scaled down to the preview card. ──────────────────────────────────── */
+   a scaled-down imitation of the real form controls, self-contained so it does
+   not depend on any global element rules. ──────────────────────────────────── */
 .home-preview-input {
+  width: 100%;
+  font-family: var(--font-body);
+  outline: none;
+  appearance: none;
   background: var(--surface);
   border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   border-radius: clamp(6px, 1cqw, 10px);
@@ -984,6 +987,10 @@
 }
 
 .home-preview-form-group label {
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   font-size: clamp(0.5rem, 0.9cqw, 0.65rem);
 }
 

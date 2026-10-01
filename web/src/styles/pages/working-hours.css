@@ -52,28 +52,13 @@
   flex-wrap: wrap;
 }
 
-/* iOS Safari sizes date/time inputs to their intrinsic width and overflows the
-   card — force them to fit their container. */
-.wh-create-fields input[type='date'],
-.working-hours-slot input[type='time'] {
-  -webkit-appearance: none;
-  appearance: none;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.wh-create-fields input[type='date'] {
-  width: 100%;
-}
-
 @media (max-width: 520px) {
-  .wh-create-fields .form-group {
+  .wh-create-fields .field {
     flex-basis: 100%;
   }
 }
 
-.wh-create-fields .form-group {
+.wh-create-fields .field {
   flex: 1;
   min-width: 0;
   margin-bottom: 0;
@@ -274,12 +259,11 @@
   flex-wrap: nowrap; /* start – end – ✕ always on one line */
 }
 
-.working-hours-slot input[type='time'] {
+.working-hours-slot .input {
   flex: 1 1 110px; /* wide enough for "12:00 PM" + the clock icon */
   width: auto;
+  min-width: 0;
   max-width: 150px;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.9rem;
 }
 
 .working-hours-sep {

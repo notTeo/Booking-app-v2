@@ -254,12 +254,6 @@
   cursor: pointer;
 }
 
-.shop-checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
 .shop-form-actions {
   display: flex;
   gap: 0.75rem;
@@ -293,25 +287,6 @@
 .shop-settings-section {
   max-width: 620px;
   margin-bottom: 1.25rem;
-}
-
-.shop-settings-section textarea {
-  width: 100%;
-  resize: vertical;
-  min-height: 80px;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-sunken);
-  color: var(--text);
-  font-size: 0.9rem;
-  font-family: inherit;
-  line-height: 1.5;
-}
-
-.shop-settings-section textarea:focus {
-  outline: none;
-  border-color: var(--accent);
 }
 
 /* Active status row */

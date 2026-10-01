@@ -526,63 +526,13 @@
   gap: 1rem;
 }
 
-.public-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.public-field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
+.public-wizard-panel .field {
+  margin-bottom: 0; /* the panel already spaces its children with a gap */
 }
 
 .public-field-required {
   color: var(--accent);
   margin-left: 0.15rem;
-}
-
-.public-field-hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin: 0.25rem 0 0;
-  line-height: 1.4;
-}
-
-.public-field-optional {
-  font-weight: 400;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.public-field-input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.55rem 0.85rem;
-  font-size: 0.9rem;
-  font-family: var(--font-body);
-  color: var(--text);
-  transition: border-color 0.2s;
-  appearance: none;
-}
-
-.public-field-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.public-field-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-.public-field-textarea {
-  resize: vertical;
-  min-height: 72px;
 }
 
 /* ── Submission error ────────────────────────────────────────────────────── */
@@ -893,9 +843,5 @@
   .ooh-toggle {
     min-height: 44px;
     padding: 0.25rem 0;
-  }
-
-  .public-field-input[type='time'] {
-    min-height: 44px;
   }
 }

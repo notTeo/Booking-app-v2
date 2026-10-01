@@ -48,65 +48,6 @@
 }
 
 /* --- Form --- */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-}
-
-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-input {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  padding: 0.7rem 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-
-input:focus {
-  border-color: var(--accent);
-}
-
-select {
-  appearance: none;
-  background: var(--surface-sunken) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 1rem;
-  outline: none;
-  padding: 0.7rem 2.25rem 0.7rem 1rem;
-  transition: border-color 0.2s;
-  width: 100%;
-}
-
-select:focus {
-  border-color: var(--accent);
-}
-
-/* Keyboard-only focus ring — border-color alone is too subtle to rely on */
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
 /* --- Alerts --- */
 .alert {
   border-radius: var(--radius-md);
@@ -447,5 +388,3 @@ textarea:focus-visible {
 .confirm-title { margin: 0 0 8px; font-size: 1.15rem; }
 .confirm-message { margin: 0 0 20px; line-height: 1.5; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-
-.form-hint { display: block; margin-top: 4px; color: var(--text-muted); font-size: 0.85rem; }
