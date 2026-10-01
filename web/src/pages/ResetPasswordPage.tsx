@@ -47,9 +47,9 @@ export default function ResetPasswordPage() {
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Reset Password</h1>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="password">New Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="password">New Password</label>
+            <input className="input"
               id="password"
               type="password"
               value={password}
@@ -65,9 +65,9 @@ export default function ResetPasswordPage() {
               </ul>
             )}
           </div>
-          <div className="form-group">
-            <label htmlFor="confirm">Confirm Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="confirm">Confirm Password</label>
+            <input className="input"
               id="confirm"
               type="password"
               value={confirm}

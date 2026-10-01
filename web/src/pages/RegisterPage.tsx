@@ -84,9 +84,9 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">{t.register.nameLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="name">{t.register.nameLabel}</label>
+            <input className="input"
               id="name"
               type="name"
               value={name}
@@ -94,9 +94,9 @@ export default function RegisterPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="email">Email</label>
+            <input className="input"
               id="email"
               type="email"
               value={email}
@@ -106,9 +106,9 @@ export default function RegisterPage() {
               style={inviteToken && emailFromInvite ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="password">Password</label>
+            <input className="input"
               id="password"
               type="password"
               value={password}
@@ -124,16 +124,17 @@ export default function RegisterPage() {
               </ul>
             )}
           </div>
-          <div className="form-group">
-            <label htmlFor="acceptTerms" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontWeight: 400 }}>
+          <div className="field">
+            <label className="checkbox">
               <input
                 id="acceptTerms"
+                className="checkbox__input"
                 type="checkbox"
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
                 required
-                style={{ width: 'auto', marginTop: '0.25rem' }}
               />
+              <span className="checkbox__box" />
               <span>
                 {t.register.acceptPrefix}{' '}
                 <Link to="/terms" target="_blank">{t.terms.linkLabel}</Link>{' '}

@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
         <h1>Forgot Password</h1>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="email">Email</label>
+            <input className="input"
               id="email"
               type="email"
               value={email}

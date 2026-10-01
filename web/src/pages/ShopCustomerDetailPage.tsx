@@ -166,32 +166,32 @@ export default function ShopCustomerDetailPage() {
       ) : (
         <div className="card team-role-card">
           <h2>{t.customers.editInfo}</h2>
-          <div className="form-group">
-            <label>{t.customers.nameLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label">{t.customers.nameLabel}</label>
+            <input className="input"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.phoneLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label">{t.customers.phoneLabel}</label>
+            <input className="input"
               value={editPhone}
               onChange={(e) => setEditPhone(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.emailLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label">{t.customers.emailLabel}</label>
+            <input className="input"
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
               placeholder={t.customers.emailOptional}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.notesLabel}</label>
-            <textarea
+          <div className="field">
+            <label className="field__label">{t.customers.notesLabel}</label>
+            <textarea className="textarea"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               placeholder={t.customers.notesOptional}

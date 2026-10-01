@@ -229,18 +229,18 @@ export default function ShopServicesPage() {
     <form className="service-form card" onSubmit={onSubmit}>
       {formError && <div className="alert alert-error">{formError}</div>}
       <div className="service-form-grid">
-        <div className="form-group">
-          <label>{t.services.name}</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.name}</label>
+          <input className="input"
             value={form.name}
             onChange={(e) => onChange('name', e.target.value)}
             required
             placeholder={t.services.name}
           />
         </div>
-        <div className="form-group">
-          <label>{t.services.duration} (min)</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.duration} (min)</label>
+          <input className="input"
             type="number"
             min="1"
             value={form.duration}
@@ -249,9 +249,9 @@ export default function ShopServicesPage() {
             placeholder="30"
           />
         </div>
-        <div className="form-group">
-          <label>{t.services.price} (€)</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.price} (€)</label>
+          <input className="input"
             type="number"
             min="0"
             step="0.01"
@@ -261,16 +261,16 @@ export default function ShopServicesPage() {
             placeholder="0.00"
           />
         </div>
-        <div className="form-group service-form-active">
-          <label>
+        <div className="field service-form-active">
+          <label className="field__label">
             <Switch checked={form.isActive} onChange={(v) => onChange('isActive', v)} label={t.services.isActive} />
             {' '}{t.services.isActive}
           </label>
         </div>
       </div>
-      <div className="form-group">
-        <label>{t.services.description}</label>
-        <textarea
+      <div className="field">
+        <label className="field__label">{t.services.description}</label>
+        <textarea className="textarea"
           value={form.description}
           onChange={(e) => onChange('description', e.target.value)}
           placeholder={t.services.description}
@@ -461,10 +461,10 @@ export default function ShopServicesPage() {
                             if (available.length === 0) return null;
                             return (
                               <div className="service-staff-add">
-                                <select
+                                <div className="select-wrap select-wrap--sm service-staff-select"><select
                                   value={selectedUserShopId}
                                   onChange={(e) => setSelectedUserShopId(e.target.value)}
-                                  className="service-staff-select"
+                                  className="select select--sm"
                                 >
                                   <option value="">{t.services.selectStaff}</option>
                                   {available.map((m) => (
@@ -472,7 +472,7 @@ export default function ShopServicesPage() {
                                       {m.name}
                                     </option>
                                   ))}
-                                </select>
+                                </select></div>
                                 <button
                                   className="btn btn--sm service-action-btn"
                                   onClick={handleAssign}

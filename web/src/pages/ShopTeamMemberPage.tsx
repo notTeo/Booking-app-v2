@@ -302,9 +302,9 @@ export default function ShopTeamMemberPage() {
 
         {isOwner ? (
           <>
-            <div className="form-group">
-              <label>{t.team.emailLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.team.emailLabel}</label>
+              <input className="input"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -313,15 +313,15 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="form-group">
-              <label>{t.team.role}</label>
-              <select
+            <div className="field">
+              <label className="field__label">{t.team.role}</label>
+              <div className="select-wrap"><select className="select"
                 value={editRole}
                 onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
               >
                 <option value="staff">{t.team.roles.staff}</option>
                 <option value="owner">{t.team.roles.owner}</option>
-              </select>
+              </select></div>
             </div>
 
             <div className="team-switch-row">
@@ -477,16 +477,16 @@ export default function ShopTeamMemberPage() {
               if (available.length === 0) return null;
               return (
                 <div className="service-staff-add">
-                  <select
+                  <div className="select-wrap select-wrap--sm service-staff-select"><select
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
-                    className="service-staff-select"
+                    className="select select--sm"
                   >
                     <option value="">{t.team.selectService}</option>
                     {available.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
-                  </select>
+                  </select></div>
                   <button
                     className="btn btn--sm service-action-btn"
                     onClick={handleAssignService}

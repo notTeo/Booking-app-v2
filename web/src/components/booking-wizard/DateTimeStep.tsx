@@ -149,10 +149,10 @@ export default function DateTimeStep({
       )}
 
       <div className="public-datetime-row">
-        <label className="public-field-label" htmlFor="booking-date">{t.public.date}</label>
+        <label className="field__label" htmlFor="booking-date">{t.public.date}</label>
         <input
           id="booking-date"
-          className="public-field-input"
+          className="input"
           type="date"
           value={date}
           onChange={onDateChange}
@@ -163,7 +163,7 @@ export default function DateTimeStep({
 
       {internal && date !== '' && intervalOptions && interval !== undefined && onIntervalChange && (
         <div className="interval-picker" role="group" aria-label={t.bookings.intervalPicker.label}>
-          <span className="public-field-label">{t.bookings.intervalPicker.label}</span>
+          <span className="field__label">{t.bookings.intervalPicker.label}</span>
           {intervalOptions.map((m) => (
             <button
               key={m}
@@ -251,10 +251,10 @@ export default function DateTimeStep({
 
       {internal && showOutside && date !== '' && (
         <div className="ooh-other-time">
-          <label className="public-field-label" htmlFor="booking-other-time">{os.otherTime}</label>
+          <label className="field__label" htmlFor="booking-other-time">{os.otherTime}</label>
           <input
             id="booking-other-time"
-            className="public-field-input"
+            className="input"
             type="time"
             step={300}
             value={customValue}

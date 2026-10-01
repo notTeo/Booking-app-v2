@@ -144,6 +144,9 @@ a { color: var(--accent); }
   border: solid var(--text-muted); border-width: 0 2px 2px 0; transform: translateY(-70%) rotate(45deg); pointer-events: none;
 }
 .select-wrap.is-disabled::after { opacity: 0.5; }
+.input--sm, .select--sm { min-height: var(--control-sm); padding-left: var(--space-3); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+.select--sm { padding-right: var(--space-10); }
+.select-wrap--sm::after { right: var(--space-4); }
 .input-wrap { position: relative; }
 .input-wrap .spinner { position: absolute; right: var(--space-4); top: 50%; margin-top: -0.5rem; }
 .input-wrap.is-loading .input { padding-right: var(--space-12); }

@@ -154,9 +154,9 @@ export default function ShopInvitesPage() {
         <h2>{t.invites.addMember}</h2>
         <form onSubmit={handleSend}>
           <div className="invites-form-row">
-            <div className="form-group">
-              <label>{t.invites.nameLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.invites.nameLabel}</label>
+              <input className="input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -165,9 +165,9 @@ export default function ShopInvitesPage() {
                 disabled={sending}
               />
             </div>
-            <div className="form-group">
-              <label>{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
+              <input className="input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -176,16 +176,16 @@ export default function ShopInvitesPage() {
                 disabled={sending}
               />
             </div>
-            <div className="form-group">
-              <label>{t.invites.roleLabel}</label>
-              <select
+            <div className="field">
+              <label className="field__label">{t.invites.roleLabel}</label>
+              <div className="select-wrap"><select className="select"
                 value={role}
                 onChange={(e) => { setRole(e.target.value as ShopRole); setConfirmOwner(false); }}
                 disabled={sending}
               >
                 <option value="staff">{t.invites.roles.staff}</option>
                 <option value="owner">{t.invites.roles.owner}</option>
-              </select>
+              </select></div>
             </div>
           </div>
 

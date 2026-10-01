@@ -175,9 +175,9 @@ export default function SettingsPage() {
           {t.settings.profileSection}
         </p>
         <form onSubmit={handleSaveProfile}>
-          <div className="form-group">
-            <label htmlFor="settings-name">{t.settings.nameLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-name">{t.settings.nameLabel}</label>
+            <input className="input"
               id="settings-name"
               type="text"
               value={name}
@@ -185,9 +185,9 @@ export default function SettingsPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="settings-email">{t.settings.emailLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-email">{t.settings.emailLabel}</label>
+            <input className="input"
               id="settings-email"
               type="email"
               value={email}
@@ -195,9 +195,9 @@ export default function SettingsPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
+            <input className="input"
               id="settings-password"
               type="password"
               value={password}
@@ -319,9 +319,9 @@ export default function SettingsPage() {
           </button>
         ) : user?.hasPassword ? (
           <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <div className="form-group">
-              <label htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
+              <input className="input"
                 id="delete-password"
                 type="password"
                 value={deletePassword}

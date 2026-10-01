@@ -81,8 +81,8 @@ export default function VerifyEmailPage() {
             {isExpired && (
               <form onSubmit={handleResend} className="verify-resend-form">
                 <p className="verify-resend-label">Enter your email to get a new link:</p>
-                <div className="form-group">
-                  <input
+                <div className="field">
+                  <input className="input"
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}

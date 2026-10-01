@@ -117,13 +117,13 @@ export default function OwnerCustomerFormStep({
 
       <div className="public-booking-form">
         {/* Phone first — with customer search dropdown */}
-        <div className="public-field-group" style={{ position: 'relative' }}>
-          <label className="public-field-label" htmlFor="b-phone">
+        <div className="field" style={{ position: 'relative' }}>
+          <label className="field__label" htmlFor="b-phone">
             {t.public.phoneLabel} <span className="public-field-required">*</span>
           </label>
           <input
             id="b-phone"
-            className="public-field-input"
+            className="input"
             type="tel"
             placeholder={t.bookings.phoneSearchHint}
             value={phone}
@@ -147,17 +147,17 @@ export default function OwnerCustomerFormStep({
             </ul>
           )}
           {phone.trim().length >= 2 && customerResults.length === 0 && (
-            <p className="public-field-hint">{t.bookings.newCustomerHint}</p>
+            <p className="field__hint">{t.bookings.newCustomerHint}</p>
           )}
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-name">
+        <div className="field">
+          <label className="field__label" htmlFor="b-name">
             {t.public.nameLabel} <span className="public-field-required">*</span>
           </label>
           <input
             id="b-name"
-            className="public-field-input"
+            className="input"
             type="text"
             placeholder={t.public.namePlaceholder}
             value={name}
@@ -165,13 +165,13 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-email">
-            {t.public.emailLabel} <span className="public-field-optional">{t.public.emailOptional}</span>
+        <div className="field">
+          <label className="field__label" htmlFor="b-email">
+            {t.public.emailLabel} <span className="field__optional">{t.public.emailOptional}</span>
           </label>
           <input
             id="b-email"
-            className="public-field-input"
+            className="input"
             type="email"
             placeholder={t.public.emailPlaceholder}
             value={email}
@@ -180,13 +180,13 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-notes">
-            {t.public.notesLabel} <span className="public-field-optional">{t.public.notesOptional}</span>
+        <div className="field">
+          <label className="field__label" htmlFor="b-notes">
+            {t.public.notesLabel} <span className="field__optional">{t.public.notesOptional}</span>
           </label>
           <textarea
             id="b-notes"
-            className="public-field-input public-field-textarea"
+            className="textarea"
             placeholder={t.public.notesPlaceholder}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

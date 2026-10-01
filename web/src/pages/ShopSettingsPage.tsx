@@ -199,13 +199,13 @@ export default function ShopSettingsPage() {
           </div>
           {saveError && <div className="alert alert-error">{saveError}</div>}
           {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
-          <div className="form-group">
-            <label htmlFor="detail-name">{t.shops.name}</label>
-            <input id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          <div className="field">
+            <label className="field__label" htmlFor="detail-name">{t.shops.name}</label>
+            <input className="input" id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-slug">{t.shops.slug}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-slug">{t.shops.slug}</label>
+            <input className="input"
               id="detail-slug"
               type="text"
               value={editSlug}
@@ -214,9 +214,9 @@ export default function ShopSettingsPage() {
             />
             <span className="shop-field-hint">{t.shops.slugLockedHint}</span>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-description">{t.shops.description}</label>
-            <textarea
+          <div className="field">
+            <label className="field__label" htmlFor="detail-description">{t.shops.description}</label>
+            <textarea className="textarea"
               id="detail-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -224,13 +224,13 @@ export default function ShopSettingsPage() {
               placeholder={t.shopSettings.descPlaceholder}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-phone">{t.shops.phone}</label>
-            <input id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <div className="field">
+            <label className="field__label" htmlFor="detail-phone">{t.shops.phone}</label>
+            <input className="input" id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-address">{t.shops.address}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-address">{t.shops.address}</label>
+            <input className="input"
               id="detail-address"
               type="text"
               value={address}
@@ -238,17 +238,17 @@ export default function ShopSettingsPage() {
               placeholder={t.shopSettings.addressPlaceholder}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-timezone">{t.shops.timezone}</label>
-            <select id="detail-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+          <div className="field">
+            <label className="field__label" htmlFor="detail-timezone">{t.shops.timezone}</label>
+            <div className="select-wrap"><select className="select" id="detail-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
               ))}
-            </select>
+            </select></div>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
+            <input className="input"
               id="detail-max-advance"
               type="number"
               inputMode="numeric"
@@ -259,11 +259,11 @@ export default function ShopSettingsPage() {
               onChange={(e) => setMaxAdvanceDays(e.target.value)}
               required
             />
-            <small className="form-hint">{t.shopSettings.maxAdvanceHint}</small>
+            <small className="field__hint">{t.shopSettings.maxAdvanceHint}</small>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-slot-interval">{t.shopSettings.slotIntervalLabel}</label>
-            <select
+          <div className="field">
+            <label className="field__label" htmlFor="detail-slot-interval">{t.shopSettings.slotIntervalLabel}</label>
+            <div className="select-wrap"><select className="select"
               id="detail-slot-interval"
               value={slotInterval}
               onChange={(e) => setSlotInterval(e.target.value)}
@@ -273,8 +273,8 @@ export default function ShopSettingsPage() {
                   {t.shopSettings.slotIntervalOption.replace('{n}', String(m))}
                 </option>
               ))}
-            </select>
-            <small className="form-hint">{t.shopSettings.slotIntervalHint}</small>
+            </select></div>
+            <small className="field__hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
           <div className="shop-active-row">
             <div className="shop-active-label">

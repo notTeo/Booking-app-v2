@@ -64,7 +64,7 @@ export default function ShopCustomersPage() {
         <label htmlFor="customer-search" className="visually-hidden">
           {t.customers.searchPlaceholder}
         </label>
-        <input
+        <input className="input"
           id="customer-search"
           type="text"
           placeholder={t.customers.searchPlaceholder}

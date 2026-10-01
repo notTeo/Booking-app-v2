@@ -372,17 +372,17 @@ const created = await api.createSchedule(dto);
         <div className="wh-create-form">
           <h3>{t.workingHours.newSchedule}</h3>
           <div className="wh-create-fields">
-            <div className="form-group">
-              <label>{t.workingHours.startDate}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.workingHours.startDate}</label>
+              <input className="input"
                 type="date"
                 value={createStart}
                 onChange={(e) => setCreateStart(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label>{t.workingHours.endDate}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.workingHours.endDate}</label>
+              <input className="input"
                 type="date"
                 value={createEnd}
                 onChange={(e) => setCreateEnd(e.target.value)}
@@ -544,17 +544,17 @@ const created = await api.createSchedule(dto);
                 {isOwner && (
                   <div className="wh-dates-section">
                     <div className="wh-create-fields">
-                      <div className="form-group">
-                        <label>{t.workingHours.startDate}</label>
-                        <input
+                      <div className="field">
+                        <label className="field__label">{t.workingHours.startDate}</label>
+                        <input className="input"
                           type="date"
                           value={state.startDate}
                           onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
                         />
                       </div>
-                      <div className="form-group">
-                        <label>{t.workingHours.endDate}</label>
-                        <input
+                      <div className="field">
+                        <label className="field__label">{t.workingHours.endDate}</label>
+                        <input className="input"
                           type="date"
                           value={state.endDate}
                           onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
@@ -594,7 +594,7 @@ const created = await api.createSchedule(dto);
                           <div className="working-hours-slots">
                             {dayState.hours.map((slot, idx) => (
                               <div key={idx} className="working-hours-slot">
-                                <input
+                                <input className="input"
                                   type="time"
                                   value={slot.startTime}
                                   onChange={(e) =>
@@ -603,7 +603,7 @@ const created = await api.createSchedule(dto);
                                   disabled={!isOwner}
                                 />
                                 <span className="working-hours-sep">–</span>
-                                <input
+                                <input className="input"
                                   type="time"
                                   value={slot.endTime}
                                   onChange={(e) =>
