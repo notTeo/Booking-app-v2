@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { authHeader, createStaffMember, createTenant } from './helpers';
+
+const api = await serve(app);
 
 // These five routes had NO validation chain at all before group 7 (every
 // input they read is the inherited :shopId/:memberId path param). Adding
@@ -14,7 +16,7 @@ import { authHeader, createStaffMember, createTenant } from './helpers';
 describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () => {
   it('GET /api/shops/:shopId/bookings/stats', async () => {
     const t = await createTenant('Stats');
-    const res = await request(app)
+    const res = await api
       .get(`/api/shops/${t.shop.id}/bookings/stats`)
       .set(authHeader(t.token));
     expect(res.status).toBe(200);
@@ -23,7 +25,7 @@ describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () 
 
   it('GET /api/shops/:shopId/team', async () => {
     const t = await createTenant('TeamList');
-    const res = await request(app)
+    const res = await api
       .get(`/api/shops/${t.shop.id}/team`)
       .set(authHeader(t.token));
     expect(res.status).toBe(200);
@@ -32,7 +34,7 @@ describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () 
 
   it('GET /api/shops/:shopId/services', async () => {
     const t = await createTenant('ServiceList');
-    const res = await request(app)
+    const res = await api
       .get(`/api/shops/${t.shop.id}/services`)
       .set(authHeader(t.token));
     expect(res.status).toBe(200);
@@ -41,7 +43,7 @@ describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () 
 
   it('has no shop-level schedules route: hours belong to team members', async () => {
     const t = await createTenant('ScheduleList');
-    const res = await request(app)
+    const res = await api
       .get(`/api/shops/${t.shop.id}/schedules`)
       .set(authHeader(t.token));
     expect(res.status).toBe(404);
@@ -50,7 +52,7 @@ describe('previously-unvalidated shop-scoped list routes (group 7, part 3)', () 
   it('GET /api/shops/:shopId/team/:memberId/schedules', async () => {
     const t = await createTenant('StaffScheduleList');
     const staff = await createStaffMember(t);
-    const res = await request(app)
+    const res = await api
       .get(`/api/shops/${t.shop.id}/team/${staff.staff.id}/schedules`)
       .set(authHeader(t.token));
     expect(res.status).toBe(200);

@@ -1,14 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { addWeeklySchedule, authHeader, createTenant, unique } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
 describe('shop.slotIntervalMinutes (gap between bookable start times)', () => {
   it('defaults to 30 minutes', async () => {
     const A = await createTenant('Alpha');
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set(authHeader(A.token))
       .send({ name: 'S', slug: `slot-${unique()}` });
@@ -18,13 +20,13 @@ describe('shop.slotIntervalMinutes (gap between bookable start times)', () => {
 
   it('can be set on create and updated by the owner', async () => {
     const A = await createTenant('Alpha');
-    const created = await request(app)
+    const created = await api
       .post('/api/shops')
       .set(authHeader(A.token))
       .send({ name: 'S', slug: `slot-${unique()}`, slotIntervalMinutes: 15 });
     expect(created.body.data.slotIntervalMinutes).toBe(15);
 
-    const updated = await request(app)
+    const updated = await api
       .patch(`/api/shops/${created.body.data.id}`)
       .set(authHeader(A.token))
       .send({ slotIntervalMinutes: 10 });
@@ -36,7 +38,7 @@ describe('shop.slotIntervalMinutes (gap between bookable start times)', () => {
     'rejects %s with 400',
     async (bad) => {
       const A = await createTenant('Alpha');
-      const res = await request(app)
+      const res = await api
         .patch(`/api/shops/${A.shop.id}`)
         .set(authHeader(A.token))
         .send({ slotIntervalMinutes: bad });
@@ -47,11 +49,11 @@ describe('shop.slotIntervalMinutes (gap between bookable start times)', () => {
   it('drives the slot grid: a 15-minute shop offers :15 and :45 starts', async () => {
     const A = await createTenant('Alpha');
     await addWeeklySchedule(A);
-    await request(app)
+    await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({ slotIntervalMinutes: 15 });
-    const res = await request(app).get(
+    const res = await api.get(
       `/public/${A.shop.slug}/slots?date=2026-12-08&serviceId=${A.service.id}&staffId=${A.staff.id}`,
     );
     const times = (res.body.data.slots as { time: string }[]).map(

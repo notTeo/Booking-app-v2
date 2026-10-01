@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { logger } from '../utils/logger';
 import {
@@ -18,6 +18,8 @@ import {
   txRunner,
   withSerializableRetry,
 } from '../utils/serializable';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service', () => ({
   sendBookingConfirmationEmail: vi.fn().mockResolvedValue(undefined),
@@ -64,17 +66,15 @@ function failFirstAttempt(whileFailing: () => Promise<unknown>) {
 }
 
 const pub = (t: Tenant, extra: object = {}) =>
-  request(app)
-    .post(`/public/${t.shop.slug}/book`)
-    .send({
-      name: 'Cust',
-      phone: '6911111111',
-      email: 'cust@example.com',
-      serviceId: t.service.id,
-      staffId: t.staff.id,
-      startTime: SLOT,
-      ...extra,
-    });
+  api.post(`/public/${t.shop.slug}/book`).send({
+    name: 'Cust',
+    phone: '6911111111',
+    email: 'cust@example.com',
+    serviceId: t.service.id,
+    staffId: t.staff.id,
+    startTime: SLOT,
+    ...extra,
+  });
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -151,7 +151,7 @@ describe('a retried booking re-reads everything it depends on (nothing stale)', 
         data: { userId: null },
       }),
     );
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${t.shop.id}/bookings`)
       .set(authHeader(t.token))
       .send({
@@ -183,7 +183,7 @@ describe('a retried booking re-reads everything it depends on (nothing stale)', 
         },
       }),
     );
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/bookings/${b.id}`)
       .set(authHeader(t.token))
       .send({ serviceId: long.id });
@@ -201,7 +201,7 @@ describe('a retried booking re-reads everything it depends on (nothing stale)', 
     });
     const b = await createBookingRow(t, new Date(SLOT).toISOString());
     failFirstAttempt(() => prisma.booking.delete({ where: { id: b.id } }));
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/bookings/${b.id}`)
       .set(authHeader(t.token))
       .send({ serviceId: long.id });
@@ -216,7 +216,7 @@ describe('a retried booking re-reads everything it depends on (nothing stale)', 
       'CANCELED',
     );
     failFirstAttempt(() => prisma.booking.delete({ where: { id: b.id } }));
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/bookings/${b.id}/status`)
       .set(authHeader(t.token))
       .send({ status: 'CONFIRMED' });

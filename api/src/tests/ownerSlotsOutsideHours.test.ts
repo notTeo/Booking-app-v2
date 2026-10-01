@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -10,6 +10,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -27,7 +29,7 @@ type Slot = {
 };
 
 const slotsReq = (t: Tenant, date: string, qs = '', token = t.token) =>
-  request(app)
+  api
     .get(
       `/api/shops/${t.shop.id}/bookings/slots?date=${date}&serviceId=${t.service.id}&staffId=${t.staff.id}&${qs}`,
     )
@@ -345,7 +347,7 @@ describe('access, scope and the public endpoint', () => {
   it('requires authentication and membership', async () => {
     const t = await shop();
     const other = await createTenant('Other');
-    const anon = await request(app).get(
+    const anon = await api.get(
       `/api/shops/${t.shop.id}/bookings/slots?date=${TUE}&serviceId=${t.service.id}&includeOutsideHours=true`,
     );
     expect(anon.status).toBe(401);
@@ -378,7 +380,7 @@ describe('access, scope and the public endpoint', () => {
   it("does not leak across tenants: another shop's service yields closed with no slots", async () => {
     const A = await shop();
     const B = await shop();
-    const res = await request(app)
+    const res = await api
       .get(
         `/api/shops/${A.shop.id}/bookings/slots?date=${TUE}&serviceId=${B.service.id}&staffId=${A.staff.id}&includeOutsideHours=true`,
       )
@@ -396,8 +398,8 @@ describe('access, scope and the public endpoint', () => {
   it('the public endpoint never offers out-of-hours slots, whatever the query says', async () => {
     const t = await shop();
     const q = `date=${TUE}&serviceId=${t.service.id}&staffId=${t.staff.id}`;
-    const plain = await request(app).get(`/public/${t.shop.slug}/slots?${q}`);
-    const flagged = await request(app).get(
+    const plain = await api.get(`/public/${t.shop.slug}/slots?${q}`);
+    const flagged = await api.get(
       `/public/${t.shop.slug}/slots?${q}&includeOutsideHours=true`,
     );
     expect(flagged.body.data).toEqual(plain.body.data);
@@ -410,7 +412,7 @@ describe('access, scope and the public endpoint', () => {
     // a closed day stays a plain closed on the public page
     const closedShop = await createTenant('Ooh');
     await addWeeklySchedule(closedShop, { closedDays: ['SUN'] });
-    const sun = await request(app).get(
+    const sun = await api.get(
       `/public/${closedShop.shop.slug}/slots?date=${SUN}&serviceId=${closedShop.service.id}&staffId=${closedShop.staff.id}&includeOutsideHours=true`,
     );
     expect(Object.keys(sun.body.data)).toEqual(['status']);

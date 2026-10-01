@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -9,6 +9,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -28,11 +30,11 @@ async function internalOnlyShop() {
 }
 
 const publicSlots = (t: Tenant, qs: string) =>
-  request(app).get(
+  api.get(
     `/public/${t.shop.slug}/slots?date=${DATE}&serviceId=${t.service.id}&${qs}`,
   );
 const ownerSlots = (t: Tenant, qs = '', token = t.token) =>
-  request(app)
+  api
     .get(
       `/api/shops/${t.shop.id}/bookings/slots?date=${DATE}&serviceId=${t.service.id}&${qs}`,
     )
@@ -92,7 +94,7 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
 
   it('requires authentication (401)', async () => {
     const t = await internalOnlyShop();
-    const res = await request(app).get(
+    const res = await api.get(
       `/api/shops/${t.shop.id}/bookings/slots?date=${DATE}&serviceId=${t.service.id}`,
     );
     expect(res.status).toBe(401);
@@ -109,7 +111,7 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
     const A = await internalOnlyShop();
     const B = await createTenant('Other');
     await addWeeklySchedule(B);
-    const foreignService = await request(app)
+    const foreignService = await api
       .get(
         `/api/shops/${A.shop.id}/bookings/slots?date=${DATE}&serviceId=${B.service.id}&staffId=${A.staff.id}`,
       )
@@ -143,7 +145,7 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
       where: { id: t.staff.id },
       data: { bookableByCustomers: true },
     });
-    const booked = await request(app)
+    const booked = await api
       .post(`/api/shops/${t.shop.id}/bookings`)
       .set(authHeader(t.token))
       .send({
@@ -165,13 +167,13 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
 
   it('rejects a malformed date (400) and a missing serviceId (400)', async () => {
     const t = await internalOnlyShop();
-    const bad = await request(app)
+    const bad = await api
       .get(
         `/api/shops/${t.shop.id}/bookings/slots?date=2026-12-08T00:00:00Z&serviceId=${t.service.id}`,
       )
       .set(authHeader(t.token));
     expect(bad.status).toBe(400);
-    const noService = await request(app)
+    const noService = await api
       .get(`/api/shops/${t.shop.id}/bookings/slots?date=${DATE}`)
       .set(authHeader(t.token));
     expect(noService.status).toBe(400);

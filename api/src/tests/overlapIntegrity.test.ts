@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
 import { prisma } from '../utils/prisma';
 import {
@@ -10,8 +9,11 @@ import {
   type Tenant,
   ALL_OVERRIDABLE_RULES,
 } from './helpers';
+import { serve } from './testRequest';
 
 vi.mock('../services/email.service');
+
+const api = await serve(app);
 
 // Rule 1: two ACTIVE bookings for one provider can never overlap, on any path.
 // Only CANCELED and NO_SHOW free a slot; COMPLETED time was really used and
@@ -25,12 +27,12 @@ async function shop() {
   return t;
 }
 const setStatus = (t: Tenant, id: string, status: string) =>
-  request(app)
+  api
     .patch(`/api/shops/${t.shop.id}/bookings/${id}/status`)
     .set(authHeader(t.token))
     .send({ status });
 const ownerBook = (t: Tenant, extra: object = {}) =>
-  request(app)
+  api
     .post(`/api/shops/${t.shop.id}/bookings`)
     .set(authHeader(t.token))
     .send({
@@ -93,7 +95,7 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
     const overridden = await ownerBook(t, {
       overrideRules: ALL_OVERRIDABLE_RULES,
     });
-    const pub = await request(app).post(`/public/${t.shop.slug}/book`).send({
+    const pub = await api.post(`/public/${t.shop.slug}/book`).send({
       name: 'C',
       phone: '6911111111',
       serviceId: t.service.id,
@@ -116,7 +118,7 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
       t,
       new Date('2026-12-08T12:00:00+02:00').toISOString(),
     );
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/bookings/${other.id}`)
       .set(authHeader(t.token))
       .send({ startTime: SLOT, overrideRules: ALL_OVERRIDABLE_RULES });
@@ -127,8 +129,8 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
     const t = await shop();
     await createBookingRow(t, SLOT_ISO, 'COMPLETED');
     const q = `date=2026-12-08&serviceId=${t.service.id}&staffId=${t.staff.id}`;
-    const pub = await request(app).get(`/public/${t.shop.slug}/slots?${q}`);
-    const owner = await request(app)
+    const pub = await api.get(`/public/${t.shop.slug}/slots?${q}`);
+    const owner = await api
       .get(`/api/shops/${t.shop.id}/bookings/slots?${q}`)
       .set(authHeader(t.token));
     for (const res of [pub, owner]) {
@@ -144,7 +146,7 @@ describe('COMPLETED blocks overlap; only CANCELED and NO_SHOW free a slot', () =
       const t = await shop();
       await createBookingRow(t, SLOT_ISO, freed);
       const q = `date=2026-12-08&serviceId=${t.service.id}&staffId=${t.staff.id}`;
-      const slots = await request(app).get(`/public/${t.shop.slug}/slots?${q}`);
+      const slots = await api.get(`/public/${t.shop.slug}/slots?${q}`);
       expect(
         slots.body.data.slots.find((s: { time: string }) => s.time === '10:00')
           .available,

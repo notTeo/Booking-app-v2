@@ -1,6 +1,6 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { deriveOpeningHours } from '../services/public.service';
 import {
@@ -11,6 +11,8 @@ import {
   unique,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -65,7 +67,7 @@ const book = async (
 
 const slots = async (t: Tenant) =>
   (
-    await request(app).get(
+    await api.get(
       `/public/${t.shop.slug}/slots?date=${DATE}&serviceId=${t.service.id}`,
     )
   ).body.data as {
@@ -74,15 +76,13 @@ const slots = async (t: Tenant) =>
   };
 
 const publicBook = (t: Tenant, hhmm: string, extra: object = {}) =>
-  request(app)
-    .post(`/public/${t.shop.slug}/book`)
-    .send({
-      name: 'C',
-      phone: unique().replace(/\D/g, '').slice(-10).padStart(10, '6'),
-      serviceId: t.service.id,
-      startTime: at(hhmm),
-      ...extra,
-    });
+  api.post(`/public/${t.shop.slug}/book`).send({
+    name: 'C',
+    phone: unique().replace(/\D/g, '').slice(-10).padStart(10, '6'),
+    serviceId: t.service.id,
+    startTime: at(hhmm),
+    ...extra,
+  });
 
 const staffOf = (res: request.Response): string =>
   res.body.data.staffId ?? res.body.data.staff?.id;
@@ -257,7 +257,7 @@ describe('assignment with no staff preference', () => {
     await work(t, members[0].id, '09:00', '11:00');
     await work(t, members[1].id, '09:00', '11:00');
     await book(t, members[0].id, '15:00');
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${t.shop.id}/bookings`)
       .set(authHeader(t.token))
       .send({
@@ -336,7 +336,7 @@ describe('public shop info hours', () => {
   it('GET /public/:slug returns openingHours and no shop-level schedules', async () => {
     const t = await createTenant('Pub');
     await addWeeklySchedule(t); // owner 09:00-13:00 every day
-    const res = await request(app).get(`/public/${t.shop.slug}`);
+    const res = await api.get(`/public/${t.shop.slug}`);
     expect(res.status).toBe(200);
     expect(res.body.data.shopWorkingSchedules).toBeUndefined();
     expect(res.body.data.openingHours).toHaveLength(7);

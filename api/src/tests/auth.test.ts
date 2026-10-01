@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+
+const api = await serve(app);
 
 // Mock email sending so tests don't hit Resend
 vi.mock('../services/email.service', () => ({
@@ -26,7 +28,7 @@ async function createVerifiedUser(
 
 // Helper: login and return tokens
 async function loginUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
-  const res = await request(app).post('/auth/login').send({ email, password });
+  const res = await api.post('/auth/login').send({ email, password });
   const cookies = res.headers['set-cookie'] as string[] | string;
   const cookieHeader = Array.isArray(cookies) ? cookies[0] : cookies;
   return {
@@ -41,7 +43,7 @@ describe('POST /auth/register', () => {
   it('creates a pending registration and sends verification email', async () => {
     const { sendVerificationEmail } = await import('../services/email.service');
 
-    const res = await request(app).post('/auth/register').send({
+    const res = await api.post('/auth/register').send({
       name: 'Test User',
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
@@ -65,7 +67,7 @@ describe('POST /auth/register', () => {
   it('returns 409 if email already registered', async () => {
     await createVerifiedUser();
 
-    const res = await request(app).post('/auth/register').send({
+    const res = await api.post('/auth/register').send({
       name: 'Test User',
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
@@ -77,7 +79,7 @@ describe('POST /auth/register', () => {
   });
 
   it('returns 400 for invalid email', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await api.post('/auth/register').send({
       email: 'not-an-email',
       password: TEST_PASSWORD,
       acceptTerms: true,
@@ -87,7 +89,7 @@ describe('POST /auth/register', () => {
   });
 
   it('returns 400 for short password', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/register')
       .send({ email: TEST_EMAIL, password: '123', acceptTerms: true });
 
@@ -107,9 +109,7 @@ describe('terms acceptance at registration', () => {
     ['false', { acceptTerms: false }],
     ['a truthy string', { acceptTerms: 'true' }],
   ])('rejects registration when acceptTerms is %s', async (_l, extra) => {
-    const res = await request(app)
-      .post('/auth/register')
-      .send({ ...base, ...extra });
+    const res = await api.post('/auth/register').send({ ...base, ...extra });
 
     expect(res.status).toBe(400);
     expect(await prisma.pendingRegistration.count()).toBe(0);
@@ -118,14 +118,14 @@ describe('terms acceptance at registration', () => {
   it('stamps the server terms version and time on the user after verification', async () => {
     const { TERMS_VERSION } = await import('../config/terms');
     const before = Date.now();
-    await request(app)
+    await api
       .post('/auth/register')
       // a client-supplied version must be ignored
       .send({ ...base, acceptTerms: true, termsVersion: 'client-lies' });
     const pending = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
     });
-    await request(app).get(`/auth/verify-email?token=${pending!.token}`);
+    await api.get(`/auth/verify-email?token=${pending!.token}`);
 
     const user = await prisma.user.findUnique({ where: { email: TEST_EMAIL } });
     expect(user!.termsVersion).toBe(TERMS_VERSION);
@@ -134,15 +134,11 @@ describe('terms acceptance at registration', () => {
   });
 
   it('keeps the original acceptance when the verification email is resent', async () => {
-    await request(app)
-      .post('/auth/register')
-      .send({ ...base, acceptTerms: true });
+    await api.post('/auth/register').send({ ...base, acceptTerms: true });
     const first = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
     });
-    await request(app)
-      .post('/auth/resend-verification')
-      .send({ email: TEST_EMAIL });
+    await api.post('/auth/resend-verification').send({ email: TEST_EMAIL });
     const second = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
     });
@@ -152,7 +148,7 @@ describe('terms acceptance at registration', () => {
 
 describe('GET /auth/verify-email', () => {
   it('verifies email and creates user', async () => {
-    await request(app).post('/auth/register').send({
+    await api.post('/auth/register').send({
       name: 'Test User',
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
@@ -162,9 +158,7 @@ describe('GET /auth/verify-email', () => {
       where: { email: TEST_EMAIL },
     });
 
-    const res = await request(app).get(
-      `/auth/verify-email?token=${pending!.token}`,
-    );
+    const res = await api.get(`/auth/verify-email?token=${pending!.token}`);
 
     expect(res.status).toBe(200);
     expect(res.body.data.user.email).toBe(TEST_EMAIL);
@@ -175,7 +169,7 @@ describe('GET /auth/verify-email', () => {
   });
 
   it('returns 400 for invalid token', async () => {
-    const res = await request(app).get('/auth/verify-email?token=invalidtoken');
+    const res = await api.get('/auth/verify-email?token=invalidtoken');
     expect(res.status).toBe(400);
   });
 
@@ -190,7 +184,7 @@ describe('GET /auth/verify-email', () => {
       },
     });
 
-    const res = await request(app).get('/auth/verify-email?token=expiredtoken');
+    const res = await api.get('/auth/verify-email?token=expiredtoken');
     expect(res.status).toBe(400);
     expect(res.body.message).toContain('expired');
   });
@@ -212,7 +206,7 @@ describe('POST /auth/login', () => {
   });
 
   it('returns 401 for wrong password', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/login')
       .send({ email: TEST_EMAIL, password: 'wrongpassword' });
 
@@ -221,7 +215,7 @@ describe('POST /auth/login', () => {
   });
 
   it('returns 401 for non-existent user', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/login')
       .send({ email: 'nobody@example.com', password: TEST_PASSWORD });
 
@@ -234,9 +228,7 @@ describe('POST /auth/refresh', () => {
     await createVerifiedUser();
     const { cookieHeader } = await loginUser();
 
-    const res = await request(app)
-      .post('/auth/refresh')
-      .set('Cookie', cookieHeader);
+    const res = await api.post('/auth/refresh').set('Cookie', cookieHeader);
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeDefined();
@@ -246,7 +238,7 @@ describe('POST /auth/refresh', () => {
   });
 
   it('returns 401 without cookie', async () => {
-    const res = await request(app).post('/auth/refresh');
+    const res = await api.post('/auth/refresh');
     expect(res.status).toBe(401);
   });
 
@@ -255,12 +247,10 @@ describe('POST /auth/refresh', () => {
     const { cookieHeader } = await loginUser();
 
     // Use the token once (rotates it)
-    await request(app).post('/auth/refresh').set('Cookie', cookieHeader);
+    await api.post('/auth/refresh').set('Cookie', cookieHeader);
 
     // Use the original token again — reuse attack
-    const res = await request(app)
-      .post('/auth/refresh')
-      .set('Cookie', cookieHeader);
+    const res = await api.post('/auth/refresh').set('Cookie', cookieHeader);
 
     expect(res.status).toBe(401);
     expect(res.body.message).toContain('Session invalidated');
@@ -279,9 +269,7 @@ describe('POST /auth/logout', () => {
     await createVerifiedUser();
     const { cookieHeader } = await loginUser();
 
-    const res = await request(app)
-      .post('/auth/logout')
-      .set('Cookie', cookieHeader);
+    const res = await api.post('/auth/logout').set('Cookie', cookieHeader);
 
     expect(res.status).toBe(200);
     const cookies = res.headers['set-cookie'] as string;
@@ -291,7 +279,7 @@ describe('POST /auth/logout', () => {
 
 describe('POST /auth/forgot-password', () => {
   it('always returns success (no info leak)', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/forgot-password')
       .send({ email: 'anyone@example.com' });
 
@@ -303,9 +291,7 @@ describe('POST /auth/forgot-password', () => {
     const { sendPasswordResetEmail } =
       await import('../services/email.service');
 
-    await request(app)
-      .post('/auth/forgot-password')
-      .send({ email: TEST_EMAIL });
+    await api.post('/auth/forgot-password').send({ email: TEST_EMAIL });
 
     expect(sendPasswordResetEmail).toHaveBeenCalledWith(
       TEST_EMAIL,
@@ -332,21 +318,21 @@ describe('POST /auth/reset-password', () => {
       },
     });
 
-    const res = await request(app)
+    const res = await api
       .post('/auth/reset-password')
       .send({ token, password: 'Newpassword123!' });
 
     expect(res.status).toBe(200);
 
     // Should be able to login with new password
-    const loginRes = await request(app)
+    const loginRes = await api
       .post('/auth/login')
       .send({ email: TEST_EMAIL, password: 'Newpassword123!' });
     expect(loginRes.status).toBe(200);
   });
 
   it('returns 400 for invalid token', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/reset-password')
       .send({ token: 'badtoken', password: 'newpassword123' });
 
@@ -359,7 +345,7 @@ describe('POST /auth/resend-verification', () => {
     const { sendVerificationEmail } = await import('../services/email.service');
     vi.clearAllMocks();
 
-    await request(app).post('/auth/register').send({
+    await api.post('/auth/register').send({
       name: 'Test User',
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
@@ -369,9 +355,7 @@ describe('POST /auth/resend-verification', () => {
       where: { email: TEST_EMAIL },
     });
 
-    await request(app)
-      .post('/auth/resend-verification')
-      .send({ email: TEST_EMAIL });
+    await api.post('/auth/resend-verification').send({ email: TEST_EMAIL });
 
     const after = await prisma.pendingRegistration.findUnique({
       where: { email: TEST_EMAIL },
@@ -381,7 +365,7 @@ describe('POST /auth/resend-verification', () => {
   });
 
   it('returns success even for unknown email (no info leak)', async () => {
-    const res = await request(app)
+    const res = await api
       .post('/auth/resend-verification')
       .send({ email: 'unknown@example.com' });
 
@@ -394,7 +378,7 @@ describe('GET /auth/sessions', () => {
     await createVerifiedUser();
     const { accessToken } = await loginUser();
 
-    const res = await request(app)
+    const res = await api
       .get('/auth/sessions')
       .set('Authorization', `Bearer ${accessToken}`);
 
@@ -404,7 +388,7 @@ describe('GET /auth/sessions', () => {
   });
 
   it('returns 401 without token', async () => {
-    const res = await request(app).get('/auth/sessions');
+    const res = await api.get('/auth/sessions');
     expect(res.status).toBe(401);
   });
 });
@@ -414,7 +398,7 @@ describe('DELETE /auth/sessions', () => {
     await createVerifiedUser();
     const { accessToken, cookieHeader } = await loginUser();
 
-    const res = await request(app)
+    const res = await api
       .delete('/auth/sessions')
       .set('Authorization', `Bearer ${accessToken}`)
       .set('Cookie', cookieHeader);
@@ -422,7 +406,7 @@ describe('DELETE /auth/sessions', () => {
     expect(res.status).toBe(200);
 
     // Refresh should now fail
-    const refreshRes = await request(app)
+    const refreshRes = await api
       .post('/auth/refresh')
       .set('Cookie', cookieHeader);
     expect(refreshRes.status).toBe(401);

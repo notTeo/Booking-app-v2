@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -10,13 +10,15 @@ import {
   type Tenant,
 } from './helpers';
 
+const api = await serve(app);
+
 vi.mock('../services/email.service');
 
 const TUE = '2026-12-08';
 const SUN = '2026-12-06';
 
 const dayReq = (t: Tenant, date: string | undefined, token = t.token) =>
-  request(app)
+  api
     .get(
       `/api/shops/${t.shop.id}/schedules/day${date === undefined ? '' : `?date=${date}`}`,
     )
@@ -156,11 +158,8 @@ describe('GET /api/shops/:shopId/schedules/day', () => {
     const other = await createTenant('Other');
     expect((await dayReq(t, TUE, staffer.token)).status).toBe(200);
     expect(
-      (
-        await request(app).get(
-          `/api/shops/${t.shop.id}/schedules/day?date=${TUE}`,
-        )
-      ).status,
+      (await api.get(`/api/shops/${t.shop.id}/schedules/day?date=${TUE}`))
+        .status,
     ).toBe(401);
     expect((await dayReq(t, TUE, other.token)).status).toBe(404);
   });

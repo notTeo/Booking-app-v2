@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   addWeeklySchedule,
@@ -8,6 +8,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service', () => ({
   sendBookingConfirmationEmail: vi.fn().mockResolvedValue(undefined),
@@ -38,10 +40,10 @@ const validBody = (t: Tenant, extra: object = {}) => ({
 });
 
 const pub = (t: Tenant, extra: object = {}) =>
-  request(app).post(`/public/${t.shop.slug}/book`).send(validBody(t, extra));
+  api.post(`/public/${t.shop.slug}/book`).send(validBody(t, extra));
 
 const owner = (t: Tenant, extra: object = {}) =>
-  request(app)
+  api
     .post(`/api/shops/${t.shop.id}/bookings`)
     .set(authHeader(t.token))
     .send(validBody(t, extra));
@@ -103,7 +105,7 @@ describe('PATCH customer: field validation (group 7)', () => {
   it('rejects a name over 100 characters', async () => {
     const t = await shop();
     const c = await customer(t);
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/customers/${c.id}`)
       .set(authHeader(t.token))
       .send({ name: 'x'.repeat(101) });
@@ -113,7 +115,7 @@ describe('PATCH customer: field validation (group 7)', () => {
   it('rejects an implausible phone', async () => {
     const t = await shop();
     const c = await customer(t);
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/customers/${c.id}`)
       .set(authHeader(t.token))
       .send({ phone: '???' });
@@ -123,7 +125,7 @@ describe('PATCH customer: field validation (group 7)', () => {
   it('rejects notes over 1000 characters', async () => {
     const t = await shop();
     const c = await customer(t);
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/customers/${c.id}`)
       .set(authHeader(t.token))
       .send({ notes: 'x'.repeat(1001) });
@@ -133,7 +135,7 @@ describe('PATCH customer: field validation (group 7)', () => {
   it('still allows clearing notes with null (unaffected by the new length check)', async () => {
     const t = await shop();
     const c = await customer(t);
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${t.shop.id}/customers/${c.id}`)
       .set(authHeader(t.token))
       .send({ notes: null });
@@ -144,7 +146,7 @@ describe('PATCH customer: field validation (group 7)', () => {
 describe('PATCH /user/me: field validation (group 7)', () => {
   it('rejects a name over 50 characters', async () => {
     const t = await createTenant('UserName');
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set(authHeader(t.token))
       .send({ name: 'x'.repeat(51) });
@@ -153,7 +155,7 @@ describe('PATCH /user/me: field validation (group 7)', () => {
 
   it('accepts a valid name change', async () => {
     const t = await createTenant('UserName2');
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set(authHeader(t.token))
       .send({ name: 'New Name' });
