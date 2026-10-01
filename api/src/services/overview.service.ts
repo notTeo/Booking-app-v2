@@ -37,7 +37,7 @@ const mondayOf = (date: string): string =>
  * The calendar period and bucket layout for a range, as shop-local dates.
  * - week: the current Monday-Sunday week, 7 daily buckets.
  * - month: the current calendar month, one daily bucket per day.
- * - quarter: the current month plus the next two, in Monday-start weekly
+ * - quarter: the current month plus the previous two, in Monday-start weekly
  *   buckets. The first and last weeks are clipped to the period, so every
  *   bucket (and the totals) covers exactly [from, to].
  * Each bucket's `key` is the value the SQL date_trunc produces for it.
@@ -54,10 +54,10 @@ export const overviewWindow = (range: OverviewRange, today: string) => {
     return { unit: 'day' as const, from, to: addDays(from, 6), buckets };
   }
 
-  const from = day.startOf('month').toISODate()!;
-  const to = (range === 'month' ? day : day.plus({ months: 2 }))
-    .endOf('month')
+  const from = (range === 'quarter' ? day.minus({ months: 2 }) : day)
+    .startOf('month')
     .toISODate()!;
+  const to = day.endOf('month').toISODate()!;
 
   if (range === 'month') {
     const buckets: { key: string; start: string; end: string }[] = [];

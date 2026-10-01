@@ -13,7 +13,7 @@ import {
 import { overviewWindow } from '../services/overview.service';
 
 // TEST_NOW is Tue 2026-12-01 09:00Z: 2026-12-01 in Athens, UTC and New York.
-// Week = Mon 30 Nov - Sun 6 Dec; month = Dec 2026; quarter = Dec 2026 - Feb 2027.
+// Week = Mon 30 Nov - Sun 6 Dec; month = Dec 2026; quarter = Oct - Dec 2026.
 // Minted per call: some tests move the fake clock, which would age a token.
 const get = (t: Tenant, range?: string, token = signAccessToken(t.user.id)) =>
   request(app)
@@ -58,39 +58,55 @@ describe('overviewWindow', () => {
     expect(overviewWindow('month', '2026-11-30').buckets).toHaveLength(30);
   });
 
-  it('quarter: this month and the next two, in weeks clipped to the period', () => {
+  it('quarter: this month and the previous two, in weeks clipped to the period', () => {
     const w = overviewWindow('quarter', '2026-12-01');
-    expect(w.from).toBe('2026-12-01');
-    expect(w.to).toBe('2027-02-28');
-    expect(w.buckets).toHaveLength(13);
-    // Dec 1 is a Tuesday: the first week is clipped to start on the 1st.
+    expect(w.from).toBe('2026-10-01');
+    expect(w.to).toBe('2026-12-31');
+    expect(w.buckets).toHaveLength(14);
+    // Oct 1 is a Thursday: the first week is clipped to start on the 1st.
     expect(w.buckets[0]).toEqual({
-      key: '2026-11-30',
-      start: '2026-12-01',
-      end: '2026-12-06',
+      key: '2026-09-28',
+      start: '2026-10-01',
+      end: '2026-10-04',
     });
-    expect(w.buckets[1].start).toBe('2026-12-07');
-    expect(w.buckets[12].end).toBe('2027-02-28');
+    expect(w.buckets[1].start).toBe('2026-10-05');
+    // Dec 31 is a Thursday: the last week is clipped to end on the 31st.
+    expect(w.buckets[13]).toEqual({
+      key: '2026-12-28',
+      start: '2026-12-28',
+      end: '2026-12-31',
+    });
   });
 
-  it('quarter: clips the last week when the period ends mid-week', () => {
-    // Jan 2027 + 2 months = through 31 Mar 2027 (a Wednesday).
-    const w = overviewWindow('quarter', '2027-01-15');
-    expect(w.from).toBe('2027-01-01');
-    expect(w.to).toBe('2027-03-31');
-    const last = w.buckets[w.buckets.length - 1];
-    expect(last).toEqual({
-      key: '2027-03-29',
-      start: '2027-03-29',
-      end: '2027-03-31',
-    });
-    expect(w.buckets[0].start).toBe('2027-01-01'); // a Friday
+  it('quarter: the period is the same wherever in the month today falls', () => {
+    for (const today of ['2026-12-01', '2026-12-15', '2026-12-31']) {
+      const w = overviewWindow('quarter', today);
+      expect([w.from, w.to]).toEqual(['2026-10-01', '2026-12-31']);
+    }
   });
 
-  it('quarter: rolls over the year', () => {
-    const w = overviewWindow('quarter', '2026-11-20');
+  it('quarter: rolls back over the year', () => {
+    const w = overviewWindow('quarter', '2027-01-20');
     expect(w.from).toBe('2026-11-01');
     expect(w.to).toBe('2027-01-31');
+    // Nov 1 2026 is a Sunday: a one-day first week, keyed on its Monday.
+    expect(w.buckets[0]).toEqual({
+      key: '2026-10-26',
+      start: '2026-11-01',
+      end: '2026-11-01',
+    });
+    expect(w.buckets[w.buckets.length - 1].end).toBe('2027-01-31');
+  });
+
+  it('quarter: first week clipped when the period starts mid-week', () => {
+    const w = overviewWindow('quarter', '2027-03-15');
+    expect(w.from).toBe('2027-01-01'); // a Friday
+    expect(w.to).toBe('2027-03-31');
+    expect(w.buckets[0]).toEqual({
+      key: '2026-12-28',
+      start: '2027-01-01',
+      end: '2027-01-03',
+    });
   });
 
   it('buckets are contiguous and cover [from, to] exactly', () => {
@@ -253,31 +269,31 @@ describe('GET /api/shops/:shopId/overview', () => {
       expect(data.totals.all).toBe(2);
     });
 
-    it('quarter: this month and the next two, in clipped Monday-start weeks', async () => {
+    it('quarter: this month and the previous two, in clipped Monday-start weeks', async () => {
       const t = await createTenant('Ovv');
-      await at(t, '2026-12-01T10:00:00Z'); // Tue: first (clipped) week
-      await at(t, '2026-12-06T10:00:00Z'); // Sun: still the first week
-      await at(t, '2026-12-07T10:00:00Z'); // Mon: second week
-      await at(t, '2027-02-28T10:00:00Z'); // last day of the period
-      await at(t, '2027-03-01T10:00:00Z'); // after the period
-      await at(t, '2026-11-30T10:00:00Z'); // before the period
+      await at(t, '2026-10-01T10:00:00Z'); // Thu: first (clipped) week
+      await at(t, '2026-10-04T10:00:00Z'); // Sun: still the first week
+      await at(t, '2026-10-05T10:00:00Z'); // Mon: second week
+      await at(t, '2026-12-31T10:00:00Z'); // last day of the period
+      await at(t, '2027-01-01T10:00:00Z'); // after the period
+      await at(t, '2026-09-30T10:00:00Z'); // before the period
       const { data } = (await get(t, 'quarter')).body;
-      expect(data.from).toBe('2026-12-01');
-      expect(data.to).toBe('2027-02-28');
-      expect(data.buckets).toHaveLength(13);
+      expect(data.from).toBe('2026-10-01');
+      expect(data.to).toBe('2026-12-31');
+      expect(data.buckets).toHaveLength(14);
       expect(data.buckets[0]).toEqual({
-        start: '2026-12-01',
-        end: '2026-12-06',
+        start: '2026-10-01',
+        end: '2026-10-04',
         count: 2,
       });
       expect(data.buckets[1]).toEqual({
-        start: '2026-12-07',
-        end: '2026-12-13',
+        start: '2026-10-05',
+        end: '2026-10-11',
         count: 1,
       });
-      expect(data.buckets[12]).toEqual({
-        start: '2027-02-22',
-        end: '2027-02-28',
+      expect(data.buckets[13]).toEqual({
+        start: '2026-12-28',
+        end: '2026-12-31',
         count: 1,
       });
       expect(data.totals.all).toBe(4);
@@ -434,14 +450,28 @@ describe('GET /api/shops/:shopId/overview', () => {
       expect(data.totals.all).toBe(2);
     });
 
-    it('quarter edges: the period ends with the last day of the third month', async () => {
+    it('quarter edges: first and last day of the three months in Athens', async () => {
       const t = await createTenant('Ovv');
       await setZone(t, 'Europe/Athens');
-      await at(t, '2027-02-28T21:30:00Z'); // 28 Feb 23:30 Athens: last day
-      await at(t, '2027-02-28T22:30:00Z'); // 1 Mar 00:30 Athens: after
+      await at(t, '2026-09-30T20:30:00Z'); // 30 Sep 23:30 Athens (EEST): before
+      await at(t, '2026-09-30T21:30:00Z'); // 1 Oct 00:30 Athens (EEST): first day
+      await at(t, '2026-12-31T21:30:00Z'); // 31 Dec 23:30 Athens: last day
+      await at(t, '2026-12-31T22:30:00Z'); // 1 Jan 00:30 Athens: after
       const { data } = (await get(t, 'quarter')).body;
-      expect(data.totals.all).toBe(1);
+      expect(data.totals.all).toBe(2);
+      expect(data.buckets[0].count).toBe(1);
       expect(data.buckets[data.buckets.length - 1].count).toBe(1);
+    });
+
+    it('quarter edges in New York', async () => {
+      const t = await createTenant('Ovv');
+      await setZone(t, 'America/New_York');
+      await at(t, '2026-10-01T03:30:00Z'); // 30 Sep 23:30 EDT: before
+      await at(t, '2026-10-01T04:30:00Z'); // 1 Oct 00:30 EDT: first day
+      await at(t, '2027-01-01T04:30:00Z'); // 31 Dec 23:30 EST: last day
+      await at(t, '2027-01-01T05:30:00Z'); // 1 Jan 00:30 EST: after
+      const { data } = (await get(t, 'quarter')).body;
+      expect(data.totals.all).toBe(2);
     });
 
     it('weeks start on Monday in the shop zone (quarter)', async () => {
@@ -450,7 +480,7 @@ describe('GET /api/shops/:shopId/overview', () => {
       await at(t, '2026-12-06T21:30:00Z'); // Sun 6 Dec 23:30 Athens
       await at(t, '2026-12-06T22:30:00Z'); // Mon 7 Dec 00:30 Athens
       const { buckets } = (await get(t, 'quarter')).body.data;
-      expect(countOn(buckets, '2026-12-01')).toBe(1);
+      expect(countOn(buckets, '2026-11-30')).toBe(1);
       expect(countOn(buckets, '2026-12-07')).toBe(1);
     });
 
