@@ -311,6 +311,9 @@ describe.each(Object.entries(SHOP_SCOPED))('%s', (routeKey, fx) => {
       }
       const owner = await call(method, fx, path, w, w.t.token);
       expect(owner.status, JSON.stringify(owner.body)).not.toBe(403);
+      // Letting the owner in must never surface as a server error (e.g. a
+      // service that still has bookings is a 409, not an FK-violation 500).
+      expect(owner.status, JSON.stringify(owner.body)).toBeLessThan(500);
       expect(owner.body.message).not.toBe('Shop not found');
     },
   );

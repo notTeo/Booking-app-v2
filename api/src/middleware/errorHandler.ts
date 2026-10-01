@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Prisma } from '../../dist/generated/prisma';
 import { logger } from '../utils/logger';
 
 export class AppError extends Error {
@@ -31,6 +32,24 @@ export const ErrorHandler = (
       ...(err.code && { code: err.code }),
       message: err.message,
       ...err.details,
+    });
+  }
+
+  // A foreign-key violation that slipped past a route's own checks: the row is
+  // still referenced elsewhere. A conflict with current data, not a server bug.
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === 'P2003'
+  ) {
+    logger.warn(
+      { err, path: req.path, method: req.method },
+      'Foreign key conflict',
+    );
+    return res.status(409).json({
+      status: 'error',
+      code: 'CONFLICT_REFERENCED',
+      message:
+        "This item is still referenced by other records and can't be removed.",
     });
   }
 

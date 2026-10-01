@@ -17,7 +17,7 @@ import Switch from '../components/Switch';
 import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { apiErrorMessage } from '../utils/apiError';
+import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -85,6 +85,9 @@ export default function ShopServicesPage() {
   // delete
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // The API refused the delete because the service has bookings; the dialog
+  // then offers to deactivate it instead.
+  const [hasBookingsId, setHasBookingsId] = useState<string | null>(null);
 
   // staff panel
   const [staffServiceId, setStaffServiceId] = useState<string | null>(null);
@@ -169,6 +172,11 @@ export default function ShopServicesPage() {
   };
 
   // delete
+  const closeDeleteDialog = () => {
+    setConfirmDeleteId(null);
+    setHasBookingsId(null);
+  };
+
   const handleDelete = async (serviceId: string) => {
     if (!shop) return;
     setDeleting(true);
@@ -176,9 +184,35 @@ export default function ShopServicesPage() {
       await deleteService(shop.id, serviceId);
       setServices((prev) => prev.filter((s) => s.id !== serviceId));
       if (staffServiceId === serviceId) closeStaffPanel();
-      setConfirmDeleteId(null);
+      closeDeleteDialog();
+    } catch (err: unknown) {
+      if (apiErrorField(err, 'code') === 'SERVICE_HAS_BOOKINGS') {
+        if (services.find((s) => s.id === serviceId)?.isActive) {
+          setConfirmDeleteId(null);
+          setHasBookingsId(serviceId);
+        } else {
+          closeDeleteDialog();
+          setError(t.services.errorHasBookingsInactive);
+        }
+      } else {
+        closeDeleteDialog();
+        setError(apiErrorMessage(err, t.services.errorDelete));
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeactivate = async (serviceId: string) => {
+    if (!shop) return;
+    setDeleting(true);
+    try {
+      const updated = await updateService(shop.id, serviceId, { isActive: false });
+      setServices((prev) => prev.map((s) => (s.id === serviceId ? updated : s)));
+      closeDeleteDialog();
     } catch {
-      setConfirmDeleteId(null);
+      closeDeleteDialog();
+      setError(t.services.errorDeactivate);
     } finally {
       setDeleting(false);
     }
@@ -498,7 +532,20 @@ export default function ShopServicesPage() {
           cancelLabel={t.services.cancel}
           busy={deleting}
           onConfirm={() => handleDelete(confirmDeleteId)}
-          onCancel={() => setConfirmDeleteId(null)}
+          onCancel={closeDeleteDialog}
+        />
+      )}
+
+      {hasBookingsId && (
+        <ConfirmDialog
+          tone="warning"
+          title={t.services.deactivateTitle.replace('{name}', services.find((sv) => sv.id === hasBookingsId)?.name ?? '')}
+          message={t.services.errorHasBookings}
+          confirmLabel={t.services.deactivate}
+          cancelLabel={t.services.cancel}
+          busy={deleting}
+          onConfirm={() => handleDeactivate(hasBookingsId)}
+          onCancel={closeDeleteDialog}
         />
       )}
     </div>

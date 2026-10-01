@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import express from 'express';
 import { AppError, ErrorHandler } from '../middleware/errorHandler';
 import { serve } from './testRequest';
+import { Prisma } from '../../dist/generated/prisma';
 
 function appWithRoute(handler: express.RequestHandler) {
   const app = express();
@@ -65,5 +66,30 @@ describe('ErrorHandler', () => {
     const res2 = await api2.post('/x').send({});
     expect(res2.status).toBe(500);
     expect(res2.body.message).toBe('Internal server error');
+  });
+});
+
+describe('ErrorHandler: foreign-key violations', () => {
+  it('an unhandled Prisma P2003 is a 409 CONFLICT_REFERENCED with a generic message, not a 500', async () => {
+    const api = await appWithRoute(() => {
+      throw new Prisma.PrismaClientKnownRequestError(
+        'Foreign key constraint violated on the constraint: `Booking_serviceId_fkey`',
+        { code: 'P2003', clientVersion: 'test' },
+      );
+    });
+    const res = await api.post('/x').send({});
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe('CONFLICT_REFERENCED');
+    expect(res.body.message).not.toMatch(/Booking_serviceId_fkey|constraint/i);
+  });
+
+  it('other Prisma errors are still a generic 500', async () => {
+    const api = await appWithRoute(() => {
+      throw new Prisma.PrismaClientKnownRequestError('boom', {
+        code: 'P2025',
+        clientVersion: 'test',
+      });
+    });
+    expect((await api.post('/x').send({})).status).toBe(500);
   });
 });
