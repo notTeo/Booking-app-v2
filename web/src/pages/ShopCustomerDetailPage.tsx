@@ -138,7 +138,7 @@ export default function ShopCustomerDetailPage() {
 
       {/* Customer info */}
       <div className="card team-member-card">
-        <h1>{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
+        <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
         <div className="team-member-meta">
           <span className="team-date">
             {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
@@ -152,13 +152,13 @@ export default function ShopCustomerDetailPage() {
 
       {/* Edit card */}
       {customer.contactHidden ? (
-        <div className="card team-role-card">
-          <h2>{t.customers.editInfo}</h2>
+        <div className="card">
+          <h2 className="card__title">{t.customers.editInfo}</h2>
           <p className="team-empty">{t.customers.contactHiddenNotice}</p>
         </div>
       ) : (
-        <div className="card team-role-card">
-          <h2>{t.customers.editInfo}</h2>
+        <div className="card">
+          <h2 className="card__title">{t.customers.editInfo}</h2>
           <div className="field">
             <label className="field__label">{t.customers.nameLabel}</label>
             <input className="input"
@@ -205,8 +205,8 @@ export default function ShopCustomerDetailPage() {
 
       {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
       {shop?.role === 'owner' && (
-        <div className="card team-role-card">
-          <h2>{t.customers.privacyHeading}</h2>
+        <div className="card">
+          <h2 className="card__title">{t.customers.privacyHeading}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
           {privacyError && <Alert variant="danger">{privacyError}</Alert>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -221,8 +221,8 @@ export default function ShopCustomerDetailPage() {
       )}
 
       {/* Recent bookings */}
-      <div className="card team-role-card">
-        <h2>{t.customers.recentBookings}</h2>
+      <div className="card">
+        <h2 className="card__title">{t.customers.recentBookings}</h2>
         {customer.bookings.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.noBookings}</p>
         ) : (

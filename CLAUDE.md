@@ -9,3 +9,5 @@
 ## TODO
 
 - Later: convert saving buttons to `.is-loading` + `aria-busy`.
+- Table phase: check if row-card lists (Customers, Team, Invites) can use .data-table's container-query card layout instead.
+- Later: convert inline confirms (service delete, team remove, shop delete, role change) to <ConfirmDialog tone='danger'>.

@@ -38,8 +38,8 @@ export default function VerifyEmailChangePage() {
 
   return (
     <div className="page">
-      <div className="card">
-        <h1>Email Change Verification</h1>
+      <div className="card card--auth">
+        <h1 className="t-heading">Email Change Verification</h1>
 
         {status === 'loading' && <p className="verify-email-status">Verifying...</p>}
 

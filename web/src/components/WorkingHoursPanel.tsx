@@ -372,7 +372,7 @@ const created = await api.createSchedule(dto);
 
       {/* Create form */}
       {showCreate && (
-        <div className="wh-create-form">
+        <div className="card wh-create-form">
           <h3>{t.workingHours.newSchedule}</h3>
           <div className="wh-create-fields">
             <div className="field">
@@ -430,7 +430,7 @@ const created = await api.createSchedule(dto);
         const hasErrors = Object.keys(state.slotErrors).length > 0;
 
         return (
-          <div key={schedule.id} className="wh-schedule-card">
+          <div key={schedule.id} className="card card--flush wh-schedule-card">
             {/* Header — role="button" (not a real <button>) since it wraps the
                 nested active/inactive toggle button; buttons can't contain buttons. */}
             <div
@@ -569,7 +569,7 @@ const created = await api.createSchedule(dto);
 
                 {/* Day rows */}
                 <div
-                  className="working-hours-card"
+                  className="card card--flush working-hours-card"
                   style={{ borderRadius: 0, border: 'none', marginBottom: 0 }}
                 >
                   {DAY_ORDER.map((day) => {

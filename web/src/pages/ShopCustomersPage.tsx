@@ -125,7 +125,7 @@ export default function ShopCustomersPage() {
             {customers.map((c) => (
               <div
                 key={c.id}
-                className="row-card"
+                className="card card--interactive row-card"
                 role="button"
                 tabIndex={0}
                 onClick={() => navigate(c.id)}

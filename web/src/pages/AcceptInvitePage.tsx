@@ -55,7 +55,7 @@ export default function AcceptInvitePage() {
   if (authLoading || loading) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <div className="spinner" />
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function AcceptInvitePage() {
   if (lookupError) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <p className="accept-invite-error">{lookupError}</p>
           <Link to="/dashboard" className="btn btn--secondary btn--block" style={{ marginTop: '1.5rem' }}>
             Dashboard
@@ -81,8 +81,8 @@ export default function AcceptInvitePage() {
 
   return (
     <div className="accept-invite-page">
-      <div className="accept-invite-card">
-        <h1>{t.invites.youreInvited}</h1>
+      <div className="card card--auth accept-invite-card">
+        <h1 className="t-heading">{t.invites.youreInvited}</h1>
         <div className="accept-invite-meta">
           <p>
             <strong>{invite.invitedBy}</strong> invited you to join{' '}

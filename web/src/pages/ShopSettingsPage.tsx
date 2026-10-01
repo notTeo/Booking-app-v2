@@ -174,8 +174,8 @@ export default function ShopSettingsPage() {
       </div>
 
       {/* Booking link — copyable public /:slug link */}
-      <div className="settings-section shop-settings-section">
-        <p className="settings-section-title">
+      <div className="card shop-settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faLink} className="settings-section-icon" />
           {t.sharing.title}
         </p>
@@ -185,10 +185,10 @@ export default function ShopSettingsPage() {
 
       <form onSubmit={handleSave}>
         {/* Shop Details + Configuration — one card, one Save */}
-        <div className="settings-section shop-settings-section">
+        <div className="card shop-settings-section">
           <div className="settings-section-header">
             <div>
-              <p className="settings-section-title">
+              <p className="card__title settings-section-title">
                 <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
                 {t.shopSettings.shopDetails}
               </p>
@@ -289,8 +289,8 @@ export default function ShopSettingsPage() {
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (
-        <div className="settings-section settings-section--danger shop-settings-section">
-          <p className="settings-section-title">
+        <div className="card card--danger shop-settings-section">
+          <p className="card__title settings-section-title">
             <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
             {t.shops.dangerZone}
           </p>

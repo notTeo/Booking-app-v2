@@ -63,8 +63,8 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="page">
-      <div className="card">
-        <h1>Email Verification</h1>
+      <div className="card card--auth">
+        <h1 className="t-heading">Email Verification</h1>
 
         {status === 'loading' && <p className="verify-email-status">Verifying...</p>}
 

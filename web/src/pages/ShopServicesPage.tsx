@@ -227,7 +227,7 @@ export default function ShopServicesPage() {
     formError: string,
     onCancel: () => void,
   ) => (
-    <form className="service-form card" onSubmit={onSubmit}>
+    <form className="card service-form" onSubmit={onSubmit}>
       {formError && <Alert variant="danger">{formError}</Alert>}
       <div className="service-form-grid">
         <div className="field">
@@ -332,7 +332,7 @@ export default function ShopServicesPage() {
       {(services.length > 0 || (isOwner && !showCreate && !editingId)) && (
         <div className="services-list">
           {services.map((service) => (
-            <div key={service.id} className="service-card">
+            <div key={service.id} className="card card--flush">
               {editingId === service.id ? (
                 renderServiceForm(
                   editForm,
@@ -494,8 +494,8 @@ export default function ShopServicesPage() {
           ))}
 
           {isOwner && !showCreate && !editingId && (
-            <button type="button" className="service-card service-card--add" onClick={() => setShowCreate(true)}>
-              <FontAwesomeIcon icon={faPlus} className="service-card--add-icon" />
+            <button type="button" className="card card--interactive card--dashed" onClick={() => setShowCreate(true)}>
+              <FontAwesomeIcon icon={faPlus} />
               <span>{t.services.addService}</span>
             </button>
           )}

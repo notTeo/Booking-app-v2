@@ -74,9 +74,9 @@ export default function RegisterPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Register</h1>
+        <h1 className="t-heading">Register</h1>
 
         {inviteToken && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1rem' }}>

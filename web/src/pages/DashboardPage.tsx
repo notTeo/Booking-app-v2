@@ -77,7 +77,7 @@ export default function DashboardPage() {
           {/* Per-shop quick stats */}
           <div className="dash-actions">
             {shopStats.map(({ shop, todayCount, upcomingCount }) => (
-              <Link key={shop.id} to={`/shops/${shop.slug}`} className="dash-action-card">
+              <Link key={shop.id} to={`/shops/${shop.slug}`} className="card card--interactive dash-action-card">
                 <div className="dash-action-icon">
                   <FontAwesomeIcon icon={faStore} />
                 </div>
@@ -95,8 +95,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Upcoming across all shops */}
-          <div className="dash-card">
-            <p className="dash-card-title">{t.dashboard.upcomingAcrossShops}</p>
+          <div className="card dash-card">
+            <p className="card__title">{t.dashboard.upcomingAcrossShops}</p>
             {upcoming.length === 0 ? (
               <p className="dash-field-value--muted">{t.dashboard.noUpcoming}</p>
             ) : (

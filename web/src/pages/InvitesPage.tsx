@@ -179,7 +179,7 @@ export default function InvitesPage() {
             {/* Mobile: stacked cards (hidden at 640px and above) */}
             <div className="row-cards card-view">
               {received.map((invite) => (
-                <div key={invite.id} className="row-card row-card--static">
+                <div key={invite.id} className="card row-card">
                   <div className="row-card__field">
                     <span className="row-card__label">{t.invites.shopLabel}</span>
                     <span className="row-card__value">{invite.shop?.name ?? invite.shopId}</span>
@@ -252,7 +252,7 @@ export default function InvitesPage() {
             {/* Mobile: stacked cards (hidden at 640px and above) */}
             <div className="row-cards card-view">
               {sent.map((invite) => (
-                <div key={invite.id} className="row-card row-card--static">
+                <div key={invite.id} className="card row-card">
                   <div className="row-card__field">
                     <span className="row-card__label">{t.invites.shopLabel}</span>
                     <span className="row-card__value">{invite.shop?.name ?? invite.shopId}</span>

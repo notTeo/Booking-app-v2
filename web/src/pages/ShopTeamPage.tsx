@@ -157,7 +157,7 @@ export default function ShopTeamPage() {
             {members.map((member) => (
               <div
                 key={member.id}
-                className="row-card"
+                className="card card--interactive row-card"
                 role="button"
                 tabIndex={0}
                 onClick={() => navigate(member.id)}

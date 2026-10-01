@@ -291,7 +291,7 @@ export default function ShopTeamMemberPage() {
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
-        <h1>{member.name}</h1>
+        <h1 className="t-heading">{member.name}</h1>
         <div className="team-member-meta">
           <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
             {t.team.roles[member.role]}
@@ -403,7 +403,7 @@ export default function ShopTeamMemberPage() {
                 sends an email, so it stays a distinct action from the save above. */}
             {!member.userId && (
               <div className="team-invite-block">
-                <p className="shop-danger-desc">
+                <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
                 </p>
                 {editEmail !== (member.email ?? '') && (
@@ -443,8 +443,8 @@ export default function ShopTeamMemberPage() {
       )}
 
       {/* Assigned services */}
-      <div className="card team-services-card">
-        <h2>{t.team.assignedServices}</h2>
+      <div className="card">
+        <h2 className="card__title">{t.team.assignedServices}</h2>
         {servicesLoading ? (
           <div className="shops-spinner-wrap">
             <div className="spinner" style={{ width: 24, height: 24 }} />
@@ -504,9 +504,9 @@ export default function ShopTeamMemberPage() {
 
       {/* Danger zone — owner only */}
       {isOwner && (
-        <div className="card shop-danger-card">
-          <h2 className="shop-danger-title">{t.team.dangerZone}</h2>
-          <p className="shop-danger-desc">{t.team.removeMemberDesc}</p>
+        <div className="card card--danger shop-danger-card">
+          <h2 className="card__title">{t.team.dangerZone}</h2>
+          <p className="card__text">{t.team.removeMemberDesc}</p>
           {removeError && <Alert variant="danger">{removeError}</Alert>}
           {!confirmRemove ? (
             <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>

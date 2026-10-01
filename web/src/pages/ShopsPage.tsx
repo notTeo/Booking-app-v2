@@ -46,8 +46,8 @@ export default function ShopsPage() {
         <div className="shops-empty">
           <p>{t.shops.noShops}</p>
           {isPro && (
-            <button type="button" className="shop-card shop-card--add" onClick={() => navigate('/shops/new')}>
-              <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
+            <button type="button" className="card card--interactive card--dashed" onClick={() => navigate('/shops/new')}>
+              <FontAwesomeIcon icon={faPlus} />
               <span>{t.shops.createFirstShop}</span>
             </button>
           )}
@@ -57,7 +57,7 @@ export default function ShopsPage() {
       {!loading && !error && shops.length > 0 && (
         <div className="shops-grid">
           {shops.map((shop) => (
-            <Link key={shop.id} to={`/shops/${shop.slug}`} className="shop-card">
+            <Link key={shop.id} to={`/shops/${shop.slug}`} className="card card--interactive shop-card">
               <div className="shop-card-top">
                 <span className="shop-card-name">{shop.name}</span>
                 <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
@@ -76,12 +76,12 @@ export default function ShopsPage() {
           ))}
           <button
             type="button"
-            className="shop-card shop-card--add"
+            className="card card--interactive card--dashed"
             onClick={() => navigate('/shops/new')}
             disabled={!isPro}
             title={!isPro ? t.shops.upgradeToCreate : undefined}
           >
-            <FontAwesomeIcon icon={faPlus} className="shop-card--add-icon" />
+            <FontAwesomeIcon icon={faPlus} />
             <span>{t.shops.newShop}</span>
           </button>
         </div>

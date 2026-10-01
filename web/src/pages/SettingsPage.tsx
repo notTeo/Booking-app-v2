@@ -151,7 +151,7 @@ export default function SettingsPage() {
       <h1>{t.settings.title}</h1>
 
       {/* Account Overview */}
-      <div className="settings-section settings-overview">
+      <div className="card settings-section settings-overview">
         <div className="settings-avatar">
           {getInitials(user?.email ?? '?')}
         </div>
@@ -170,8 +170,8 @@ export default function SettingsPage() {
         </div>
       </div>
       {/* Profile — name, email, password, one save */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
           {t.settings.profileSection}
         </p>
@@ -226,8 +226,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Preferences */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faSlidersH} className="settings-section-icon" />
           {t.settings.preferencesSection}
         </p>
@@ -263,8 +263,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Active Sessions */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faShieldHalved} className="settings-section-icon" />
           {t.settings.activeSessionsSection}
         </p>
@@ -301,8 +301,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="settings-section settings-section--danger">
-        <p className="settings-section-title">
+      <div className="card card--danger settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
           {t.settings.dangerZone}
         </p>

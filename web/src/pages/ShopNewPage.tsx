@@ -26,8 +26,8 @@ export default function ShopNewPage() {
     return (
       <div className="shops-page">
         <div className="card shops-upgrade-card">
-          <h2>Pro Account Required</h2>
-          <p>Creating a shop requires a Pro account. Contact us to upgrade.</p>
+          <h2 className="card__title">Pro Account Required</h2>
+          <p className="card__text">Creating a shop requires a Pro account. Contact us to upgrade.</p>
         </div>
       </div>
     );
@@ -68,7 +68,7 @@ export default function ShopNewPage() {
       </div>
 
       <div className="card shop-form-card">
-        <h1>New Shop</h1>
+        <h1 className="t-heading">New Shop</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="field">

@@ -45,6 +45,17 @@ a { color: var(--accent); }
 @keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px); } }
 @keyframes ds-modal-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
 
+/* ---------- Typography ---------- */
+.t-display { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); }
+.t-title { font: var(--fw-black) var(--fs-2xl) / var(--lh-2xl) var(--font-display); }
+.t-heading { font: var(--fw-bold) var(--fs-xl) / var(--lh-xl) var(--font-display); }
+.t-subheading { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
+.t-body { font: var(--fw-regular) var(--fs-base) / var(--lh-base) var(--font-body); }
+.t-body-sm { font: var(--fw-regular) var(--fs-sm) / var(--lh-sm) var(--font-body); }
+.t-caption { font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); }
+.label-caps { text-transform: uppercase; letter-spacing: 0.04em; }
+@media (max-width: 639px) { .t-display { font-size: clamp(2.25rem, 9vw, 3rem); } }
+
 /* ---------- 1. Wordmark ---------- */
 .wordmark {
   display: inline-block; font-family: var(--font-logo); font-size: var(--fs-xl);
@@ -219,6 +230,15 @@ a.card, button.card, .card--interactive { cursor: pointer; text-align: left; fon
 a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is-hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
 .card--selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
 .card.is-disabled { background: var(--surface-sunken); color: var(--text-muted); cursor: not-allowed; }
+.card--flush { padding: 0; gap: 0; overflow: hidden; }
+.card--danger { border-color: var(--danger-border); }
+.card--dashed { flex-direction: row; align-items: center; justify-content: center; gap: var(--space-2); background: transparent; border-style: dashed; color: var(--accent); font-weight: var(--fw-semibold); }
+.card--dashed:hover:not(:disabled) { background: var(--accent-soft); box-shadow: none; }
+.card--dashed:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--border); }
+/* The card gap owns vertical rhythm: direct children drop their own margins. */
+.card > :is(h1, h2, h3, h4, p, .field) { margin: 0; }
+.card > .btn:not(.btn--block) { align-self: flex-start; }
+.card > .alert + * { margin-top: 0; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
 .stat { display: flex; flex-direction: column; gap: var(--space-1); }
 .stat__value { font: var(--fw-black) var(--fs-2xl) / var(--lh-2xl) var(--font-display); }

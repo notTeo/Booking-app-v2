@@ -151,8 +151,8 @@ export default function ShopInvitesPage() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Add team member form */}
-      <div className="invites-form-card">
-        <h2>{t.invites.addMember}</h2>
+      <div className="card">
+        <h2 className="card__title">{t.invites.addMember}</h2>
         <form onSubmit={handleSend}>
           <div className="invites-form-row">
             <div className="field">
@@ -309,7 +309,7 @@ export default function ShopInvitesPage() {
           {/* Mobile: stacked cards (hidden at 640px and above) */}
           <div className="row-cards card-view">
             {pendingMembers.map((m) => (
-              <div key={m.id} className="row-card row-card--static">
+              <div key={m.id} className="card row-card">
                 <div className="row-card__field">
                   <span className="row-card__label">{t.invites.nameLabel}</span>
                   <span className="row-card__value">{m.name}</span>

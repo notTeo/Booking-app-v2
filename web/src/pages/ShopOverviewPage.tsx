@@ -81,7 +81,7 @@ export default function ShopOverviewPage() {
       {user && <p className="overview-page__greeting">{t.overview.greeting.replace('{name}', user.name)}</p>}
       <h1 className="overview-page__title">{t.overview.title}</h1>
 
-      <div className="shop-overview-card">
+      <div className="card card--flush">
         {/* ── Header ── */}
         <div className="shop-overview-card__header">
           <div className="shop-overview-card__header-text">

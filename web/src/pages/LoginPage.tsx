@@ -32,9 +32,9 @@ export default function LoginPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Login</h1>
+        <h1 className="t-heading">Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label className="field__label" htmlFor="email">Email</label>
