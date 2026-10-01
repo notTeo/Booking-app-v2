@@ -2,6 +2,20 @@
 
 What changed relative to `styles/shared/variables.css` and the shared components, in the order to do it.
 
+## Status
+
+Done (branch `feat/design-system`):
+
+- **Phase 1, tokens** (order of work steps 1-3): `tokens.css` and `components.css` added, old variables renamed and `variables.css` dropped, stray tokens removed, white fills tokenized, brand orange split from warning. No raw hex remains outside `tokens.css`.
+- **Phase 2, form and action components** (step 4): buttons, form controls (field, input, select, textarea, checkbox), switch.
+- **Phase 3, display components** (step 4): badges and alerts, cards and confirm dialog, data tables (one markup per table, phone cards from the container query). Old CSS for each is removed.
+
+Left:
+
+- **Page CSS cleanup** (steps 5-6): duplicates and raw sizes/gaps in `home.css`, `public.css`, `bookings.css` and the other page files. `home.css` keeps its fake-preview `clamp()` values. The landing page still has its own `.home-btn-primary` / `.home-btn-ghost` buttons, and a few `rgba()` shadows and scrims remain in `home.css`, `public.css`, `bookings.css` and `sidebar.css` (no shadow or scrim token covers them yet).
+- **New components** (step 7): toast, tabs, empty and skeleton states, avatar, sidebar and booking-flow pieces, as pages need them. Tooltip is not designed.
+- **CLAUDE.md TODOs:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
+
 ## Decisions on the section 5 issues
 
 | # | Issue | Decision |
