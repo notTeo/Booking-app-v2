@@ -136,7 +136,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
         {confirmed ? (
           <section className="public-section">
             <div className="card public-booking-confirmed">
-              <div className="public-booking-confirmed-icon">
+              <div className="avatar avatar--xl" aria-hidden="true">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>
               <h2 className="card__title">{t.public.bookingConfirmed}</h2>
