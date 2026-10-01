@@ -20,10 +20,10 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
 }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
-  await page.locator('.public-slot-btn', { hasText: /^10:00$/ }).click();
+  await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
 
   await page.locator('#b-name').fill('Busy Tester');
@@ -49,14 +49,15 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
   });
 
   const before = await bookingCount();
-  const submit = page.locator('button.btn-primary').last();
+  // Located by position, not name: the label changes while the button is busy/disabled.
+  const submit = page.locator('.public-wizard-actions').getByRole('button').last();
   await submit.click();
 
   // Neutral, not the red rejection style; nothing was actually booked.
-  const notice = page.locator('.public-submit-notice');
+  const notice = page.getByRole('status').filter({ hasText: /busy/i });
   await expect(notice).toBeVisible();
   await expect(notice).toContainText(/busy/i);
-  await expect(page.locator('.public-submit-error')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toHaveCount(0);
   expect(await bookingCount()).toBe(before);
 
   // The typed values are untouched.
@@ -81,10 +82,10 @@ test('the owner wizard gets the same treatment: neutral notice, never the overri
   await page.waitForURL('**/dashboard');
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(addDays(date, 1));
-  await page.locator('.public-slot-btn', { hasText: /^10:00$/ }).click();
+  await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
 
   await page.locator('#b-name').fill('Busy Owner Test');
@@ -112,10 +113,10 @@ test('the owner wizard gets the same treatment: neutral notice, never the overri
   const before = await bookingCount();
   await page.getByRole('button', { name: /create booking/i }).click();
 
-  const notice = page.locator('.public-submit-notice');
+  const notice = page.getByRole('status').filter({ hasText: /busy/i });
   await expect(notice).toBeVisible();
   await expect(notice).toContainText(/busy/i);
-  await expect(page.locator('.public-submit-error')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toHaveCount(0);
   // Never treated as an overridable rule violation.
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
   expect(await bookingCount()).toBe(before);

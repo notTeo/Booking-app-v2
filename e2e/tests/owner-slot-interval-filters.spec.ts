@@ -35,10 +35,10 @@ test('a 15-minute interval offers :15 starts, and the calendar filter bar hides 
 
   // the wizard now offers a :15 start
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
-  await page.locator('.public-slot-btn', { hasText: /^10:15$/ }).click();
+  await page.getByRole('button', { name: '10:15', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
   await page.locator('#b-name').fill('Filter Test');
   await page.locator('#b-phone').fill('6911111111');
@@ -82,13 +82,13 @@ test('the "Time step" buttons in the staff wizard offer 10-minute starts for one
   await page.waitForURL('**/dashboard');
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
 
   // default: the shop's 30-minute grid, no :10 start
-  await expect(page.locator('.public-slot-btn', { hasText: /^10:30$/ })).toBeVisible();
-  await expect(page.locator('.public-slot-btn', { hasText: /^10:10$/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '10:30', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '10:10', exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: '10 min', exact: true }).click();
   await page.getByRole('button', { name: /^10:10/ }).click();
@@ -97,7 +97,7 @@ test('the "Time step" buttons in the staff wizard offer 10-minute starts for one
   await page.locator('#b-name').fill('Ten Minute');
   await page.locator('#b-phone').fill('6922222222');
   await page.waitForTimeout(600);
-  await expect(page.locator('.ooh-panel')).toContainText(/custom time/i);
+  await expect(page.getByRole('status').filter({ hasText: /outside working hours|custom time/i })).toContainText(/custom time/i);
   await page.getByRole('button', { name: 'Book this time' }).click();
   await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
 

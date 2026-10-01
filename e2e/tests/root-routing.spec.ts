@@ -6,13 +6,13 @@ import { E2E } from '../support/env';
 
 test('the shop booking page is served at /<slug>', async ({ page }) => {
   await page.goto(`/${E2E.shop.slug}`);
-  await expect(page.locator('.public-service-card--selectable').first()).toBeVisible();
+  await expect(page.getByRole('radiogroup').getByRole('radio').first()).toBeVisible();
 });
 
 test('the old /p/<slug> link redirects to /<slug>', async ({ page }) => {
   await page.goto(`/p/${E2E.shop.slug}`);
   await expect(page).toHaveURL(`${E2E.webUrl}/${E2E.shop.slug}`);
-  await expect(page.locator('.public-service-card--selectable').first()).toBeVisible();
+  await expect(page.getByRole('radiogroup').getByRole('radio').first()).toBeVisible();
 });
 
 test('static routes are not shadowed by /:slug', async ({ page }) => {
