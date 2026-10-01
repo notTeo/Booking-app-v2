@@ -675,8 +675,14 @@ paths:
                   message: Account deleted successfully
         '400':
           $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Wrong or missing password (code INVALID_PASSWORD)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Wrong password or missing token
+          description: Missing or invalid access token
           content:
             application/json:
               schema:

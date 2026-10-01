@@ -46,6 +46,27 @@ describe('GET /user/me', () => {
     expect(res.body.data.user.passwordHash).toBeUndefined(); // never exposed
   });
 
+  it('returns the same user shape as login', async () => {
+    const login = await request(app)
+      .post('/auth/login')
+      .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+    const me = await request(app)
+      .get('/user/me')
+      .set('Authorization', `Bearer ${login.body.data.accessToken}`);
+
+    expect(login.body.data.user).toEqual(me.body.data.user);
+    expect(Object.keys(me.body.data.user).sort()).toEqual([
+      'createdAt',
+      'email',
+      'hasPassword',
+      'id',
+      'isPro',
+      'isVerified',
+      'name',
+    ]);
+    expect(me.body.data.user.hasPassword).toBe(true);
+  });
+
   it('returns 401 without token', async () => {
     const res = await request(app).get('/user/me');
     expect(res.status).toBe(401);
@@ -208,23 +229,35 @@ describe('DELETE /user/me', () => {
     expect(user).toBeNull();
   });
 
-  it('returns 401 for wrong password', async () => {
+  it('returns 403 INVALID_PASSWORD for a wrong password (not 401, which triggers a token refresh)', async () => {
     const token = await loginUser();
     const res = await request(app)
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: 'wrongpassword' });
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('INVALID_PASSWORD');
+    expect(
+      await prisma.user.findUnique({ where: { email: TEST_EMAIL } }),
+    ).not.toBeNull();
   });
 
-  it('returns 401 without password field', async () => {
+  it('returns 403 INVALID_PASSWORD without password field', async () => {
     const token = await loginUser();
     const res = await request(app)
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({});
 
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('INVALID_PASSWORD');
+  });
+
+  it('still returns 401 without a token', async () => {
+    const res = await request(app)
+      .delete('/user/me')
+      .send({ password: TEST_PASSWORD });
     expect(res.status).toBe(401);
   });
 });
