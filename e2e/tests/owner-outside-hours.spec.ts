@@ -34,15 +34,16 @@ async function openWizard(
   await page.locator('button[type=submit]').click();
   await page.waitForURL('**/dashboard');
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(targetDate);
   if (targetDate === date) {
-    await expect(page.locator('.public-slot-btn', { hasText: /^10:00$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: '10:00', exact: true })).toBeVisible();
   }
 }
 
-const toggle = (page: Page) => page.locator('.ooh-toggle [role="switch"]');
+// The switch input is visually replaced by its track, which intercepts the pointer, hence force.
+const toggle = (page: Page) => page.getByRole('switch', { name: /outside working hours/i });
 
 async function lastBooking() {
   const rows = await query<{ startTime: Date; overriddenRules: string[]; createdById: string | null }>(
@@ -58,7 +59,7 @@ test('the out-of-hours grid is hidden until asked for, and is never colour alone
   await expect(page.getByRole('button', { name: /^20:30/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^06:00/ })).toHaveCount(0);
 
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   await expect(page.getByRole('heading', { name: /before opening/i })).toBeVisible();
   await expect(page.getByRole('heading', { name: /after closing/i })).toBeVisible();
 
@@ -84,19 +85,19 @@ test('the out-of-hours grid is hidden until asked for, and is never colour alone
   await expect(slot.locator('svg')).toBeVisible();
   expect(await slot.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('dashed');
   // an in-hours slot has neither
-  const inHours = page.locator('.public-slot-btn', { hasText: /^10:00$/ });
+  const inHours = page.getByRole('button', { name: '10:00', exact: true });
   expect(await inHours.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe('solid');
 
   // turning the toggle off drops a selected out-of-hours time (no unseen selection)
   await slot.click();
   await expect(page.getByRole('button', { name: /continue/i })).toBeVisible();
-  await toggle(page).uncheck();
+  await toggle(page).uncheck({ force: true });
   await expect(page.getByRole('button', { name: /continue/i })).toHaveCount(0);
 });
 
 test('owner books 20:30 via the toggle: confirmation panel, stored as an exception', async ({ page, context }) => {
   await openWizard(page, context);
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   await page.getByRole('button', { name: '20:30, outside working hours' }).click();
   await page.getByRole('button', { name: /continue/i }).click();
 
@@ -104,7 +105,7 @@ test('owner books 20:30 via the toggle: confirmation panel, stored as an excepti
   await page.locator('#b-phone').fill('6900000201');
 
   // non-modal panel, and the submit button says what it does
-  const panel = page.locator('.ooh-panel');
+  const panel = page.getByRole('status').filter({ hasText: /outside working hours|custom time/i });
   await expect(panel).toBeVisible();
   await expect(panel).toContainText(/outside working hours/i);
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
@@ -128,7 +129,7 @@ test('the booked out-of-hours slot is shown as booked, and overlap is refused ev
   context,
 }) => {
   await openWizard(page, context);
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   const booked = page.getByRole('button', { name: '20:30, outside working hours, booked' });
   await expect(booked).toBeDisabled();
   await expect(booked).toContainText('booked');
@@ -139,12 +140,12 @@ test('the booked out-of-hours slot is shown as booked, and overlap is refused ev
   await page.getByRole('button', { name: /continue/i }).click();
   await page.locator('#b-name').fill('Double Booker');
   await page.locator('#b-phone').fill('6900000202');
-  await expect(page.locator('.ooh-panel')).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: /outside working hours|custom time/i })).toBeVisible();
   const before = await bookingCount();
   await page.getByRole('button', { name: 'Book outside working hours' }).click();
 
   // accepting the rule is not enough: the slot is taken (409), nothing created
-  await expect(page.locator('.public-submit-error')).toContainText(/already booked/i);
+  await expect(page.getByRole('alert')).toContainText(/already booked/i);
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
   expect(await bookingCount()).toBe(before);
 });
@@ -154,14 +155,14 @@ test('owner books 21:10 via "Other time": the dialog fallback lists the rule, th
   context,
 }) => {
   await openWizard(page, context);
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   await page.locator('#booking-other-time').fill('21:10');
   await page.getByRole('button', { name: /continue/i }).click();
   await page.locator('#b-name').fill('Walk In');
   await page.locator('#b-phone').fill('6900000203');
 
   // a typed-in time is unknown client-side: no panel, an ordinary button
-  await expect(page.locator('.ooh-panel')).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: /outside working hours|custom time/i })).toHaveCount(0);
   const before = await bookingCount();
   await page.getByRole('button', { name: /create booking/i }).click();
 
@@ -216,7 +217,7 @@ test('the public booking page never offers those times', async ({ request }) => 
 
 test('a 06:15 booking (before opening) lands on the calendar', async ({ page, context }) => {
   await openWizard(page, context);
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   await page.getByRole('button', { name: '06:15, outside working hours' }).click();
   await page.getByRole('button', { name: /continue/i }).click();
   await page.locator('#b-name').fill('Early Bird');
@@ -232,7 +233,7 @@ test('a 22:30 booking (after closing, via "Other time") lands on the calendar', 
   // 22:30 is beyond the 4h-after-closing cap, so it is off-grid: typed via
   // "Other time" and confirmed through the dialog fallback (like 21:10 above).
   await openWizard(page, context);
-  await toggle(page).check();
+  await toggle(page).check({ force: true });
   await page.locator('#booking-other-time').fill('22:30');
   await page.getByRole('button', { name: /continue/i }).click();
   await page.locator('#b-name').fill('Night Owl');
@@ -263,15 +264,15 @@ test.describe('a booking on a fully closed day', () => {
 
   test('is visible on the calendar and tagged as a closed-day exception', async ({ page, context }) => {
     await openWizard(page, context, closedDate);
-    await expect(page.locator('.public-closed-message')).toBeVisible();
-    await toggle(page).check();
+    await expect(page.getByRole('status').filter({ hasText: /closed/i })).toBeVisible();
+    await toggle(page).check({ force: true });
     await expect(page.getByRole('heading', { name: /closed day/i })).toBeVisible();
 
     await page.getByRole('button', { name: '10:00, outside working hours' }).click();
     await page.getByRole('button', { name: /continue/i }).click();
     await page.locator('#b-name').fill('Sunday Regular');
     await page.locator('#b-phone').fill('6900000207');
-    await expect(page.locator('.ooh-panel')).toContainText(/outside working hours/i);
+    await expect(page.getByRole('status').filter({ hasText: /outside working hours|custom time/i })).toContainText(/outside working hours/i);
     await page.getByRole('button', { name: 'Book outside working hours' }).click();
     await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
 

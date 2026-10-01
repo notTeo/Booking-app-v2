@@ -30,10 +30,10 @@ async function openCustomerForm(page: Page) {
   await page.locator('button[type=submit]').click();
   await page.waitForURL('**/dashboard');
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(addDays(athensDate(), 5));
-  await page.locator('.public-slot-btn', { hasText: /^11:00$/ }).click();
+  await page.getByRole('button', { name: '11:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
   await expect(page.locator('#b-phone')).toBeVisible();
 }
