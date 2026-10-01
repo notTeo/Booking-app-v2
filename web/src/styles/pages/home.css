@@ -105,7 +105,8 @@
   margin: 0;
   padding: 0;
   width: 95%;
-  height: 64px; /* JS drives this per scroll frame; this is just the pre-JS fallback */
+  height: 64px; /* JS sets the full pill height on measure; scroll slides it via transform */
+  will-change: transform;
   z-index: 100;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(20px);
@@ -116,7 +117,7 @@
   border-top-right-radius: 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 /* Colorful gradient fill for the pill, only while it's tall — fades out via
@@ -330,6 +331,7 @@
 .home-nav-hero {
   position: relative;
   z-index: 1;
+  will-change: transform;
   display: flex;
   flex-direction: column;
   align-items: center;

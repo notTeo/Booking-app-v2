@@ -111,7 +111,6 @@ function PreviewMenuIcon() {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** How far (in px) the preview card overlaps up into the bottom of the giant pill. */
 const PREVIEW_OVERLAP = 380;
@@ -233,6 +232,8 @@ export default function HomePage() {
         previewRef.current.style.paddingTop = `${topPad}px`;
       }
 
+      if (navWrapperRef.current) navWrapperRef.current.style.height = `${giantHeight}px`;
+
       applyFrame();
     };
 
@@ -243,7 +244,13 @@ export default function HomePage() {
 
       const progress = Math.min(Math.max(window.scrollY / metrics.triggerDistance, 0), 1);
 
-      wrapper.style.height = `${lerp(metrics.giantHeight, metrics.slimHeight, progress)}px`;
+      // The pill keeps its full (giant) size and slides up instead of changing
+      // height, so scrolling only moves a composited layer — no per-frame
+      // layout or backdrop-blur repaint. The hero is counter-translated so it
+      // stays put while the pill's overflow clips it, exactly as before.
+      const shift = (metrics.giantHeight - metrics.slimHeight) * progress;
+      wrapper.style.transform = `translate(-50%, ${-shift}px)`;
+      if (navHeroRef.current) navHeroRef.current.style.transform = `translateY(${shift}px)`;
       glow.style.opacity = `${1 - progress}`;
 
       // The preview card overlaps on top of the pill body while it's tall,
