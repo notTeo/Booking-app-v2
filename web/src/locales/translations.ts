@@ -739,6 +739,7 @@ export interface Translations {
       empty: string;
       customerCol: string;
       serviceCol: string;
+      shopCol: string;
       whenCol: string;
       statusCol: string;
     };
@@ -1620,6 +1621,7 @@ home: {
         empty: 'Δεν υπάρχουν επερχόμενα ραντεβού',
         customerCol: 'Πελάτης',
         serviceCol: 'Υπηρεσία',
+        shopCol: 'Κατάστημα',
         whenCol: 'Πότε',
         statusCol: 'Κατάσταση',
       },
@@ -2520,6 +2522,7 @@ home: {
         empty: 'No upcoming bookings',
         customerCol: 'Customer',
         serviceCol: 'Service',
+        shopCol: 'Shop',
         whenCol: 'When',
         statusCol: 'Status',
       },

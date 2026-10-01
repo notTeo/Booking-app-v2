@@ -5,15 +5,24 @@ import StatusBadge from '../StatusBadge';
 import Alert from '../Alert';
 import { formatWhen } from '../../utils/overviewFormat';
 
+/** A booking from another shop: carries that shop's identity and timezone. */
+export type UpcomingBooking = BookingWithStaff & {
+  shop?: { id: string; name: string; slug: string; timezone: string };
+};
+
 interface Props {
-  bookings: BookingWithStaff[] | undefined;
+  bookings: UpcomingBooking[] | undefined;
   isError: boolean;
   onRetry: () => void;
-  zone: string;
-  viewAllTo: string;
+  /** Timezone for bookings that don't carry their own shop. */
+  zone?: string;
+  /** Omit to hide the "view all" link. */
+  viewAllTo?: string;
+  /** Adds a Shop column (shop name in the row card on phones). */
+  showShop?: boolean;
 }
 
-export default function UpcomingBookings({ bookings, isError, onRetry, zone, viewAllTo }: Props) {
+export default function UpcomingBookings({ bookings, isError, onRetry, zone = 'UTC', viewAllTo, showShop = false }: Props) {
   const { t, language } = useLang();
   const r = t.overview.upcoming;
 
@@ -21,7 +30,7 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone, vie
     <section className="overview-grid__upcoming" aria-labelledby="overview-upcoming-title">
       <div className="overview-upcoming__head">
         <h2 className="card__title" id="overview-upcoming-title">{r.title}</h2>
-        <Link to={viewAllTo}>{r.viewAll}</Link>
+        {viewAllTo && <Link to={viewAllTo}>{r.viewAll}</Link>}
       </div>
 
       {isError ? (
@@ -47,6 +56,7 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone, vie
                 <tr>
                   <th scope="col">{r.customerCol}</th>
                   <th scope="col">{r.serviceCol}</th>
+                  {showShop && <th scope="col">{r.shopCol}</th>}
                   <th scope="col">{r.whenCol}</th>
                   <th scope="col">{r.statusCol}</th>
                 </tr>
@@ -58,7 +68,8 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone, vie
                       {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
                     </td>
                     <td data-label={r.serviceCol}>{b.service.name}</td>
-                    <td data-label={r.whenCol}>{formatWhen(b.startTime, zone, language)}</td>
+                    {showShop && <td data-label={r.shopCol}>{b.shop?.name}</td>}
+                    <td data-label={r.whenCol}>{formatWhen(b.startTime, b.shop?.timezone ?? zone, language)}</td>
                     <td data-label={r.statusCol}><StatusBadge status={b.status} /></td>
                   </tr>
                 ))}
