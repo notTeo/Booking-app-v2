@@ -87,10 +87,15 @@ export const listBookings = async (
     const date = req.query['date'] as string | undefined;
     const status = req.query['status'] as BookingStatus | undefined;
     const staffId = req.query['staffId'] as string | undefined;
+    const from = req.query['from'] as string | undefined;
+    const to = req.query['to'] as string | undefined;
+    const limitParam = req.query['limit'] as string | undefined;
+    const limit = limitParam ? Number(limitParam) : undefined;
+    const order = req.query['order'] as 'asc' | 'desc' | undefined;
     const canView = await bookingService.canViewCustomerDetails(userId, shopId);
     const bookings = await bookingService.listBookings(
       shopId,
-      { date, status, staffId },
+      { date, status, staffId, from, to, limit, order },
       canView,
     );
     successResponse(res, bookings);

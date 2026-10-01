@@ -134,6 +134,24 @@ export const listBookingsValidation = [
     .isIn(validStatuses)
     .withMessage(`status must be one of: ${validStatuses.join(', ')}`),
   query('staffId').optional().notEmpty().withMessage('staffId cannot be empty'),
+  query('from')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .isISO8601({ strict: true })
+    .withMessage('from must be YYYY-MM-DD'),
+  query('to')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .isISO8601({ strict: true })
+    .withMessage('to must be YYYY-MM-DD'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('limit must be an integer between 1 and 50'),
+  query('order')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('order must be asc or desc'),
 ];
 
 export const bookingParamsValidation = [

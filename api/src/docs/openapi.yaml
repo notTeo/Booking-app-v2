@@ -17,6 +17,8 @@ tags:
     description: Authentication and session management
   - name: user
     description: Current user profile operations
+  - name: overview
+    description: Shop dashboard aggregates
 
 components:
   securitySchemes:
@@ -97,7 +99,62 @@ components:
               message:
                 type: string
 
+    OverviewResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          required: [range, from, to, totals, buckets]
+          properties:
+            range:
+              type: string
+              enum: [week, month, quarter]
+            from:
+              type: string
+              format: date
+              description: First day of the window, a calendar date in the shop's timezone.
+            to:
+              type: string
+              format: date
+              description: Last day of the window (inclusive), in the shop's timezone.
+            totals:
+              type: object
+              required: [all, pending, confirmed, completed, canceled, noShow]
+              description: >
+                Booking counts by status for bookings starting in the window.
+                `all` is every non-canceled booking, i.e. the sum of the bucket counts.
+              properties:
+                all: { type: integer, minimum: 0 }
+                pending: { type: integer, minimum: 0 }
+                confirmed: { type: integer, minimum: 0 }
+                completed: { type: integer, minimum: 0 }
+                canceled: { type: integer, minimum: 0 }
+                noShow: { type: integer, minimum: 0 }
+            buckets:
+              type: array
+              description: >
+                Non-canceled bookings per bucket, oldest first. Always complete:
+                7 daily buckets (week), 30 daily (month) or 13 Monday-to-Sunday
+                weekly buckets (quarter). Empty buckets have count 0.
+              items:
+                type: object
+                required: [start, end, count]
+                properties:
+                  start: { type: string, format: date }
+                  end: { type: string, format: date, description: Inclusive. }
+                  count: { type: integer, minimum: 0 }
+
   responses:
+    NotFound:
+      description: Resource not found, or the caller is not a member of the shop
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
     Unauthorized:
       description: Missing or invalid access token
       content:
@@ -687,3 +744,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /shops/{shopId}/overview:
+    get:
+      tags: [overview]
+      summary: Shop overview for a period
+      description: >
+        Totals by status and a bookings-per-bucket series for the selected
+        period. Day and week boundaries are computed in the shop's timezone;
+        weeks start on Monday. The window ends today (week: last 7 days,
+        month: last 30 days, quarter: the last 13 weeks including the current
+        one). Available to the shop's owner and staff.
+      operationId: getShopOverview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shopId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [week, month, quarter]
+      responses:
+        '200':
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OverviewResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
