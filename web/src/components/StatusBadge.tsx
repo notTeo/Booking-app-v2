@@ -1,23 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faBan,
-  faCalendarCheck,
-  faCircleCheck,
-  faClock,
-  faXmark,
-  type IconDefinition,
-} from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import type { BookingStatus } from '../api/booking.api';
-
-// Single place that maps a DB booking status to its design-system badge modifier.
-const STATUS: Record<BookingStatus, { cls: string; icon: IconDefinition }> = {
-  PENDING: { cls: 'pending', icon: faClock },
-  CONFIRMED: { cls: 'confirmed', icon: faCalendarCheck },
-  COMPLETED: { cls: 'completed', icon: faCircleCheck },
-  CANCELED: { cls: 'canceled', icon: faXmark },
-  NO_SHOW: { cls: 'no-show', icon: faBan },
-};
+import { BOOKING_STATUS as STATUS } from './bookingStatus';
 
 export default function StatusBadge({ status }: { status: BookingStatus | string }) {
   const { t } = useLang();

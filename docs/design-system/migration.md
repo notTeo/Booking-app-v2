@@ -9,6 +9,7 @@ Done (branch `feat/design-system`):
 - **Phase 1, tokens** (order of work steps 1-3): `tokens.css` and `components.css` added, old variables renamed and `variables.css` dropped, stray tokens removed, white fills tokenized, brand orange split from warning. No raw hex remains outside `tokens.css`.
 - **Phase 2, form and action components** (step 4): buttons, form controls (field, input, select, textarea, checkbox), switch.
 - **Phase 3, display components** (step 4): badges and alerts, cards and confirm dialog, data tables (one markup per table, phone cards from the container query). Old CSS for each is removed.
+- **Phase 4, owner bookings page** (`bookings.css`): booking blocks use the badge status tokens plus an icon; new `.chip` toggle and `--shadow-sheet` token; page-level button, alert, card and type duplicates removed.
 
 Left:
 

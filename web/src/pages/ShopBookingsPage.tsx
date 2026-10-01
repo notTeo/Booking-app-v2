@@ -25,12 +25,14 @@ import {
 } from './calendarModel';
 import '../styles/pages/bookings.css';
 import Alert from '../components/Alert';
+import { BOOKING_STATUS } from '../components/bookingStatus';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
 const SLOT_H      = 64;                           // px per hour
 const PX_PER_MIN  = SLOT_H / 60;
 const MIN_BLOCK_H = 28;                           // minimum block height px
+const COMPACT_BLOCK_H = 56;                       // below this, time and name share one row
 const OTHER_COLUMN_ID = '__other__';
 
 const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED', 'NO_SHOW'];
@@ -273,15 +275,15 @@ export default function ShopBookingsPage() {
   // ── render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bookings-page bookings-page--wide">
+    <div className="bookings-page">
 
       {/* ── Header ── */}
       <div className="bookings-header">
-        <h1>{t.bookings.title}</h1>
+        <h1 className="t-title">{t.bookings.title}</h1>
         <div className="bookings-date-nav">
           <button
             type="button"
-            className="bookings-date-nav-btn"
+            className="btn btn--secondary btn--icon btn--sm"
             onClick={() => setDateOverride(shiftDate(date, -1))}
             aria-label="Previous day"
           >
@@ -293,13 +295,13 @@ export default function ShopBookingsPage() {
           <input
             id="bookings-date"
             type="date"
-            className="input input--sm bookings-date-picker"
+            className="input input--sm"
             value={date}
             onChange={e => setDateOverride(e.target.value)}
           />
           <button
             type="button"
-            className="bookings-date-nav-btn"
+            className="btn btn--secondary btn--icon btn--sm"
             onClick={() => setDateOverride(shiftDate(date, 1))}
             aria-label="Next day"
           >
@@ -318,7 +320,7 @@ export default function ShopBookingsPage() {
                 key={s}
                 type="button"
                 aria-pressed={active}
-                className={`cal-status-btn cal-status-btn--${s.toLowerCase()}${active ? ' cal-status-btn--active' : ''}`}
+                className={`chip chip--${BOOKING_STATUS[s].cls}`}
                 onClick={() =>
                   setStatusFilter(prev => {
                     const next = new Set(prev);
@@ -327,7 +329,8 @@ export default function ShopBookingsPage() {
                   })
                 }
               >
-                {t.bookings.filters.status[s]}
+                <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
+                <span className="chip__label">{t.bookings.filters.status[s]}</span>
               </button>
             );
           })}
@@ -361,12 +364,12 @@ export default function ShopBookingsPage() {
         </select></div>
         {filtersActive && (
           <>
-            <span className="cal-filters-count">
+            <span className="cal-filters-count t-body-sm">
               {t.bookings.filters.showing.replace('{shown}', String(shownCount)).replace('{total}', String(bookings.length))}
             </span>
             <button
               type="button"
-              className="btn btn--secondary btn--block btn--sm cal-filters-clear"
+              className="btn btn--secondary btn--sm"
               onClick={() => {
                 setStatusFilter(new Set());
                 setStaffFilter(null);
@@ -383,11 +386,12 @@ export default function ShopBookingsPage() {
 
       {/* ── Detail panel ── */}
       {creatingSlot ? (
-        <div className="cal-detail-panel">
+        <div className="card cal-detail-panel">
           <div className="cal-detail-header">
-            <div className="cal-detail-title">{t.bookings.newBookingTitle}</div>
+            <h2 className="t-subheading">{t.bookings.newBookingTitle}</h2>
             <button
-              className="cal-detail-close"
+              type="button"
+              className="btn btn--ghost btn--icon btn--sm"
               onClick={() => setCreatingSlot(null)}
               aria-label={t.bookings.close}
             >
@@ -408,13 +412,14 @@ export default function ShopBookingsPage() {
           )}
         </div>
       ) : selectedBooking && (
-        <div className="cal-detail-panel">
+        <div className="card cal-detail-panel">
           <div className="cal-detail-header">
-            <div className="cal-detail-title">
+            <h2 className="t-subheading">
               {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
-            </div>
+            </h2>
             <button
-              className="cal-detail-close"
+              type="button"
+              className="btn btn--ghost btn--icon btn--sm"
               onClick={() => { setSelectedBooking(null); }}
               aria-label={t.bookings.close}
             >
@@ -422,34 +427,33 @@ export default function ShopBookingsPage() {
             </button>
           </div>
 
-          <div className="cal-detail-meta">
+          <div className="cal-detail-meta t-body-sm">
             <span>{selectedBooking.service.name}</span>
-            <span className="cal-detail-sep">·</span>
+            <span aria-hidden="true">·</span>
             <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
-            <span className="cal-detail-sep">·</span>
+            <span aria-hidden="true">·</span>
             <span>{formatDuration(selectedBooking.service.duration)}</span>
           </div>
 
           {!selectedBooking.customer.contactHidden && (
-            <div className="cal-detail-phone">{selectedBooking.customer.phone}</div>
+            <div className="t-body-sm cal-detail-muted">{selectedBooking.customer.phone}</div>
           )}
           {selectedBooking.notes && (
-            <div className="cal-detail-notes">{selectedBooking.notes}</div>
+            <div className="t-body-sm cal-detail-muted cal-detail-notes">{selectedBooking.notes}</div>
           )}
 
-          <div className="cal-detail-statuses">
+          <div className="cal-detail-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
             {ALL_STATUSES.map(s => (
               <button
                 key={s}
-                className={[
-                  'cal-status-btn',
-                  `cal-status-btn--${s.toLowerCase()}`,
-                  selectedBooking.status === s ? 'cal-status-btn--active' : '',
-                ].join(' ').trim()}
+                type="button"
+                aria-pressed={selectedBooking.status === s}
+                className={`chip chip--${BOOKING_STATUS[s].cls}`}
                 onClick={() => handleStatusUpdate(selectedBooking.id, s)}
                 disabled={updatingId === selectedBooking.id}
               >
-                {s.replace('_', ' ')}
+                <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
+                <span className="chip__label">{t.bookings.filters.status[s]}</span>
               </button>
             ))}
           </div>
@@ -462,22 +466,23 @@ export default function ShopBookingsPage() {
       ) : (
         <>
           {outsideRangeCount > 0 && (
-            <div className="cal-outside-banner">
+            <Alert variant="warning">
               {t.bookings.calendar.outsideBanner.replace('{count}', String(outsideRangeCount))}
-            </div>
+            </Alert>
           )}
 
-          {/* Phone layout only (CSS-hidden ≥641px): jump to a provider's page. */}
+          {/* Phone layout only (CSS-hidden ≥640px): jump to a provider's page. */}
           {columns.length > 1 && (
             <div className="cal-chips">
               {columns.map(col => (
                 <button
                   key={col.id}
                   type="button"
-                  className={`cal-chip${activeColId === col.id ? ' cal-chip--active' : ''}`}
+                  aria-pressed={activeColId === col.id}
+                  className="chip chip--lg"
                   onClick={() => scrollToCol(col.id)}
                 >
-                  {col.label}
+                  <span className="chip__label">{col.label}</span>
                   {overrideCountByCol[col.id] > 0 && (
                     <span className="cal-chip-badge"><FontAwesomeIcon icon={faClock} /> {overrideCountByCol[col.id]}</span>
                   )}
@@ -493,7 +498,7 @@ export default function ShopBookingsPage() {
               <div className="cal-header-row">
                 <div className="cal-gutter-cell" />
                 {columns.map(col => (
-                  <div key={col.id} className="cal-col-header">{col.label}</div>
+                  <div key={col.id} className="cal-col-header t-caption label-caps">{col.label}</div>
                 ))}
               </div>
 
@@ -540,7 +545,7 @@ export default function ShopBookingsPage() {
                           className="cal-off-segment"
                           style={{ top: (seg.from - range.start) * PX_PER_MIN, height: (seg.to - seg.from) * PX_PER_MIN }}
                         >
-                          <span className="cal-off-label">{seg.closed ? t.bookings.calendar.closed : t.bookings.calendar.off}</span>
+                          <span className="badge badge--neutral cal-off-label">{seg.closed ? t.bookings.calendar.closed : t.bookings.calendar.off}</span>
                         </div>
                       ))}
 
@@ -560,13 +565,15 @@ export default function ShopBookingsPage() {
                         const isSelected = selectedBooking?.id === b.id;
 
                         return (
-                          <div
+                          <button
                             key={b.id}
+                            type="button"
                             className={[
                               'cal-block',
-                              `cal-block--${b.status.toLowerCase()}`,
+                              `cal-block--${BOOKING_STATUS[b.status].cls}`,
                               tags.length > 0 ? 'cal-block--override' : '',
                               isSelected ? 'cal-block--selected' : '',
+                              geom.height < COMPACT_BLOCK_H ? 'cal-block--compact' : '',
                             ].join(' ').trim()}
                             style={{ top: geom.top, height: geom.height }}
                             onClick={(e) => {
@@ -574,21 +581,23 @@ export default function ShopBookingsPage() {
                               openBookingDetail(b, isSelected);
                             }}
                           >
-                            <div className="cal-block-time">
-                              {tags.length > 0 && <><FontAwesomeIcon icon={faClock} /> </>}
+                            <span className="cal-block-time">
+                              <FontAwesomeIcon icon={BOOKING_STATUS[b.status].icon} aria-hidden="true" />
+                              {tags.length > 0 && <FontAwesomeIcon icon={faClock} aria-hidden="true" />}
                               {formatTimeInZone(b.startTime, zone)}
-                            </div>
-                            <div className="cal-block-name">
+                              <span className="visually-hidden">{t.bookings.filters.status[b.status]}</span>
+                            </span>
+                            <span className="cal-block-name">
                               {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
-                            </div>
-                            <div className="cal-block-service">{b.service.name}</div>
+                            </span>
+                            <span className="cal-block-service">{b.service.name}</span>
                             {tags.length > 0 && (
-                              <div className="cal-block-tag">{tags.map(tagLabel).join(' · ')}</div>
+                              <span className="cal-block-tag label-caps">{tags.map(tagLabel).join(' · ')}</span>
                             )}
                             {geom.crossesNextDay && (
-                              <div className="cal-block-next-day">{t.bookings.calendar.nextDay}</div>
+                              <span className="cal-block-next-day">{t.bookings.calendar.nextDay}</span>
                             )}
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
