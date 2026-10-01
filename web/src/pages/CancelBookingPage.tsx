@@ -70,10 +70,10 @@ export default function CancelBookingPage() {
           <h1 style={{ marginBottom: '0.5rem' }}>{t.cancelBooking.confirmTitle}</h1>
           <p className="accept-invite-meta">{t.cancelBooking.confirmText}</p>
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-danger" onClick={confirmCancel}>
+            <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
               {t.cancelBooking.confirmButton}
             </button>
-            <button type="button" className="btn btn-ghost" onClick={() => setKept(true)}>
+            <button type="button" className="btn btn--secondary btn--block" onClick={() => setKept(true)}>
               {t.cancelBooking.keepButton}
             </button>
           </div>

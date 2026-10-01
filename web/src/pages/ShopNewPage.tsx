@@ -148,11 +148,11 @@ export default function ShopNewPage() {
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="shop-form-actions">
-            <button className="btn btn-primary" type="submit" disabled={loading}>
+            <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Creating...' : 'Create Shop'}
             </button>
             <button
-              className="btn btn-ghost"
+              className="btn btn--secondary"
               type="button"
               onClick={() => navigate('/shops')}
             >

@@ -333,7 +333,7 @@ const created = await api.createSchedule(dto);
         <h1>{t.workingHours.title}</h1>
         {isOwner && (
           <button
-            className="btn btn-primary"
+            className="btn"
             onClick={() => {
               setShowCreate((v) => !v);
               setCreateError('');
@@ -359,7 +359,7 @@ const created = await api.createSchedule(dto);
           </span>
           <button
             type="button"
-            className="btn btn-ghost"
+            className="btn btn--secondary"
             onClick={() => setExpandedId(openEnded.id)}
           >
             {t.workingHours.setEndDate}
@@ -395,14 +395,14 @@ const created = await api.createSchedule(dto);
           {createError && <div className="alert alert-error">{createError}</div>}
           <div className="wh-create-actions">
             <button
-              className="btn btn-primary"
+              className="btn"
               onClick={handleCreate}
               disabled={creating || !createStart || !!createConflict}
             >
               {creating ? t.workingHours.creating : t.workingHours.createSchedule}
             </button>
             <button
-              className="btn btn-ghost"
+              className="btn btn--secondary"
               onClick={() => {
                 setShowCreate(false);
                 setCreateError('');
@@ -490,7 +490,7 @@ const created = await api.createSchedule(dto);
                 {isOwner && (
                   <div className="wh-schedule-actions">
                     <button
-                      className="btn btn-primary"
+                      className="btn"
                       onClick={() => handleSaveSchedule(schedule.id)}
                       disabled={state.saving || hasErrors}
                     >
@@ -500,7 +500,7 @@ const created = await api.createSchedule(dto);
                     <div>
                       {!state.confirmDelete ? (
                         <button
-                          className="btn btn-danger"
+                          className="btn btn--danger"
                           onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
                           disabled={state.deleting}
                         >
@@ -514,7 +514,7 @@ const created = await api.createSchedule(dto);
                             {t.workingHours.confirmDelete}
                           </span>
                           <button
-                            className="btn btn-danger"
+                            className="btn btn--danger"
                             onClick={() => handleDelete(schedule.id)}
                             disabled={state.deleting}
                           >
@@ -523,7 +523,7 @@ const created = await api.createSchedule(dto);
                               : t.workingHours.deleteSchedule}
                           </button>
                           <button
-                            className="btn btn-ghost"
+                            className="btn btn--secondary"
                             onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
                           >
                             {t.workingHours.cancel}

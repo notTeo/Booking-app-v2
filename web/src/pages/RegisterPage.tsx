@@ -155,7 +155,7 @@ export default function RegisterPage() {
                 <div className="alert alert-error">Failed to resend. Please try again.</div>
               )}
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
                 type="button"
                 onClick={handleResend}
                 disabled={resendStatus === 'loading'}
@@ -165,7 +165,7 @@ export default function RegisterPage() {
             </>
           )}
           {!success && (
-            <button className="btn btn-primary" type="submit" disabled={isLoading || !acceptTerms}>
+            <button className="btn btn--block" type="submit" disabled={isLoading || !acceptTerms}>
               {isLoading ? 'Registering...' : 'Register'}
             </button>
           )}

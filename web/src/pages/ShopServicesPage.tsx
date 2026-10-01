@@ -278,10 +278,10 @@ export default function ShopServicesPage() {
         />
       </div>
       <div className="service-form-actions">
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
+        <button className="btn" type="submit" disabled={submitting}>
           {submitting ? t.services.saving : submitLabel}
         </button>
-        <button className="btn btn-ghost" type="button" onClick={onCancel}>
+        <button className="btn btn--secondary" type="button" onClick={onCancel}>
           {t.services.cancel}
         </button>
       </div>
@@ -369,7 +369,7 @@ export default function ShopServicesPage() {
                   {isOwner && (
                     <div className="service-card-actions">
                       <button
-                        className="btn btn-ghost service-action-btn"
+                        className="btn btn--secondary service-action-btn"
                         onClick={() => {
                           closeStaffPanel();
                           setEditingId(service.id);
@@ -381,7 +381,7 @@ export default function ShopServicesPage() {
                       </button>
 
                       <button
-                        className={`btn btn-ghost service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
+                        className={`btn btn--secondary service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
                         onClick={() => {
                           if (staffServiceId === service.id) {
                             closeStaffPanel();
@@ -396,14 +396,14 @@ export default function ShopServicesPage() {
                       {confirmDeleteId === service.id ? (
                         <div className="service-confirm-delete">
                           <button
-                            className="btn btn-danger service-action-btn"
+                            className="btn btn--danger service-action-btn"
                             onClick={() => handleDelete(service.id)}
                             disabled={deleting}
                           >
                             {deleting ? t.services.deleting : t.services.confirmDelete}
                           </button>
                           <button
-                            className="btn btn-ghost service-action-btn"
+                            className="btn btn--secondary service-action-btn"
                             onClick={() => setConfirmDeleteId(null)}
                           >
                             {t.services.cancel}
@@ -411,7 +411,7 @@ export default function ShopServicesPage() {
                         </div>
                       ) : (
                         <button
-                          className="btn btn-ghost service-action-btn service-delete-btn"
+                          className="btn btn--secondary service-action-btn service-delete-btn"
                           onClick={() => setConfirmDeleteId(service.id)}
                         >
                           <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
@@ -441,7 +441,7 @@ export default function ShopServicesPage() {
                                 <li key={ss.userShopId} className="service-staff-item">
                                   <span>{ss.userShop.name}</span>
                                   <button
-                                    className="btn btn-ghost service-action-btn"
+                                    className="btn btn--secondary service-action-btn"
                                     onClick={() => handleUnassign(ss.userShopId)}
                                     disabled={unassigningId === ss.userShopId}
                                   >
@@ -474,7 +474,7 @@ export default function ShopServicesPage() {
                                   ))}
                                 </select>
                                 <button
-                                  className="btn btn-primary service-action-btn"
+                                  className="btn service-action-btn"
                                   onClick={handleAssign}
                                   disabled={!selectedUserShopId || assigning}
                                 >

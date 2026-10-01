@@ -66,7 +66,7 @@ export default function AcceptInvitePage() {
       <div className="accept-invite-page">
         <div className="accept-invite-card">
           <p className="accept-invite-error">{lookupError}</p>
-          <Link to="/dashboard" className="btn btn-ghost" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
+          <Link to="/dashboard" className="btn btn--secondary btn--block" style={{ marginTop: '1.5rem' }}>
             Dashboard
           </Link>
         </div>
@@ -106,7 +106,7 @@ export default function AcceptInvitePage() {
           {isAuthenticated ? (
             emailMatches ? (
               <button
-                className="btn btn-primary"
+                className="btn btn--block"
                 disabled={accepting}
                 onClick={handleAcceptNow}
               >
@@ -119,7 +119,7 @@ export default function AcceptInvitePage() {
                 </div>
                 <Link
                   to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
-                  className="btn btn-primary"
+                  className="btn btn--block"
                 >
                   {t.invites.registerToAccept}
                 </Link>
@@ -129,13 +129,13 @@ export default function AcceptInvitePage() {
             <>
               <Link
                 to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
-                className="btn btn-primary"
+                className="btn btn--block"
               >
                 {t.invites.registerToAccept}
               </Link>
               <Link
                 to={`/login?redirect=${encodeURIComponent(`/invite?token=${token}`)}`}
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
               >
                 {t.invites.loginToAccept}
               </Link>

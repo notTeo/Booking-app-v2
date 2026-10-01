@@ -47,12 +47,12 @@ export default function ConfirmDialog({
         <h2 id="confirm-title" className="confirm-title">{title}</h2>
         <p id="confirm-message" className="confirm-message">{message}</p>
         <div className="confirm-actions">
-          <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={busy}>
+          <button type="button" className="btn btn--secondary btn--block" onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn--block"
             ref={confirmRef}
             onClick={onConfirm}
             disabled={busy}

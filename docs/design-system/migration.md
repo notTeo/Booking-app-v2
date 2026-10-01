@@ -41,7 +41,8 @@ What changed relative to `styles/shared/variables.css` and the shared components
 | Old | New |
 |---|---|
 | `.btn .btn-primary` | `.btn` |
-| `.btn-danger`, `.btn-ghost` | `.btn--danger`, `.btn--ghost` |
+| `.btn-danger` | `.btn--danger` |
+| `.btn-ghost` | `.btn--secondary` (old ghost is outlined); use `.btn--ghost` only for new text-only actions |
 | (full width default) | `.btn--block` |
 | `.alert-error`, `.alert-success` | `.alert--danger`, `.alert--success` (+ `role`) |
 | `.status-badge--no_show` and siblings | `.badge--pending`, `--confirmed`, `--completed`, `--canceled`, `--no-show`. Map the DB value `no_show` to `no-show` in the component |

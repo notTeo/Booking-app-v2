@@ -217,11 +217,11 @@ export default function ShopInvitesPage() {
           )}
 
           <div className="invites-form-row">
-            <button type="submit" className="btn btn-primary" disabled={sending}>
+            <button type="submit" className="btn btn--block" disabled={sending}>
               {sending ? t.invites.sending : confirmOwner ? t.team.confirmContinue : t.invites.addMember}
             </button>
             {confirmOwner && (
-              <button type="button" className="btn btn-ghost" onClick={() => setConfirmOwner(false)}>
+              <button type="button" className="btn btn--secondary btn--block" onClick={() => setConfirmOwner(false)}>
                 {t.team.cancel}
               </button>
             )}
@@ -271,7 +271,7 @@ export default function ShopInvitesPage() {
                     <td>
                       <div className="invite-actions">
                         <button
-                          className="btn btn-ghost"
+                          className="btn btn--secondary btn--block"
                           onClick={() => handleResend(m.id)}
                           disabled={actionPendingId === m.id}
                         >
@@ -281,18 +281,18 @@ export default function ShopInvitesPage() {
                           confirmCancel === m.id ? (
                             <>
                               <button
-                                className="btn btn-danger"
+                                className="btn btn--danger btn--block"
                                 onClick={() => handleCancelInvite(m.id)}
                                 disabled={actionPendingId === m.id}
                               >
                                 {t.invites.confirmCancel}
                               </button>
-                              <button className="btn btn-ghost" onClick={() => setConfirmCancel(null)}>
+                              <button className="btn btn--secondary btn--block" onClick={() => setConfirmCancel(null)}>
                                 {t.team.cancel}
                               </button>
                             </>
                           ) : (
-                            <button className="btn btn-ghost" onClick={() => setConfirmCancel(m.id)}>
+                            <button className="btn btn--secondary btn--block" onClick={() => setConfirmCancel(m.id)}>
                               {t.invites.cancelInvite}
                             </button>
                           )
@@ -331,7 +331,7 @@ export default function ShopInvitesPage() {
                 </div>
                 <div className="row-card__actions">
                   <button
-                    className="btn btn-ghost"
+                    className="btn btn--secondary btn--block"
                     onClick={() => handleResend(m.id)}
                     disabled={actionPendingId === m.id}
                   >
@@ -341,18 +341,18 @@ export default function ShopInvitesPage() {
                     confirmCancel === m.id ? (
                       <>
                         <button
-                          className="btn btn-danger"
+                          className="btn btn--danger btn--block"
                           onClick={() => handleCancelInvite(m.id)}
                           disabled={actionPendingId === m.id}
                         >
                           {t.invites.confirmCancel}
                         </button>
-                        <button className="btn btn-ghost" onClick={() => setConfirmCancel(null)}>
+                        <button className="btn btn--secondary btn--block" onClick={() => setConfirmCancel(null)}>
                           {t.team.cancel}
                         </button>
                       </>
                     ) : (
-                      <button className="btn btn-ghost" onClick={() => setConfirmCancel(m.id)}>
+                      <button className="btn btn--secondary btn--block" onClick={() => setConfirmCancel(m.id)}>
                         {t.invites.cancelInvite}
                       </button>
                     )

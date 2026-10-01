@@ -215,7 +215,7 @@ export default function SettingsPage() {
           {profileError && <div className="alert alert-error">{profileError}</div>}
           {profileSuccess && <div className="alert alert-success">{profileSuccess}</div>}
           <button
-            className="btn btn-primary"
+            className="btn"
             type="submit"
             disabled={profileLoading || !isProfileDirty || !passwordValid}
           >
@@ -236,7 +236,7 @@ export default function SettingsPage() {
             <span className="settings-pref-desc">{t.settings.themeDesc}</span>
           </div>
           <button
-            className="btn btn-ghost settings-pref-btn"
+            className="btn btn--secondary settings-pref-btn"
             onClick={toggleTheme}
             type="button"
             aria-label={theme === 'dark' ? t.toggles.switchToLight : t.toggles.switchToDark}
@@ -251,7 +251,7 @@ export default function SettingsPage() {
             <span className="settings-pref-desc">{t.settings.languageDesc}</span>
           </div>
           <button
-            className="btn btn-ghost settings-pref-btn"
+            className="btn btn--secondary settings-pref-btn"
             onClick={toggleLanguage}
             type="button"
             aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
@@ -290,7 +290,7 @@ export default function SettingsPage() {
         {revokeError && <div className="alert alert-error">{revokeError}</div>}
         {revokeSuccess && <div className="alert alert-success">{revokeSuccess}</div>}
         <button
-          className="btn btn-ghost"
+          className="btn btn--secondary"
           type="button"
           onClick={handleRevokeAll}
           disabled={revokeLoading || sessions.length === 0}
@@ -311,7 +311,7 @@ export default function SettingsPage() {
 
         {!showDeleteConfirm ? (
           <button
-            className="btn btn-danger"
+            className="btn btn--danger"
             type="button"
             onClick={() => setShowDeleteConfirm(true)}
           >
@@ -333,14 +333,14 @@ export default function SettingsPage() {
             {deleteError && <div className="alert alert-error">{deleteError}</div>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger"
                 type="submit"
                 disabled={deleteLoading || !deletePassword}
               >
                 {deleteLoading ? t.settings.deleting : t.settings.confirmDelete}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
               >
@@ -356,14 +356,14 @@ export default function SettingsPage() {
             {deleteError && <div className="alert alert-error">{deleteError}</div>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger"
                 type="submit"
                 disabled={deleteLoading}
               >
                 {deleteLoading ? t.settings.deleting : t.settings.yesDelete}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
               >

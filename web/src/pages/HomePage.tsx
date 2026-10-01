@@ -908,7 +908,7 @@ export default function HomePage() {
                           </button>
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(1)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(1)}>{t.public.back}</button>
                         </div>
                       </div>
                     )}
@@ -949,9 +949,9 @@ export default function HomePage() {
                           })}
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(2)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(2)}>{t.public.back}</button>
                           {wizardDate && wizardTime && (
-                            <button type="button" className="btn btn-primary" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
+                            <button type="button" className="btn" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
                           )}
                         </div>
                       </div>
@@ -962,7 +962,7 @@ export default function HomePage() {
                         <div className="home-preview-wizard-success">
                           <span className="home-preview-wizard-success-icon"><FontAwesomeIcon icon={faCheck} /></span>
                           <p>{t.public.bookingConfirmed}</p>
-                          <button type="button" className="btn btn-primary" onClick={resetWizard}>{t.bookings.newBookingTitle}</button>
+                          <button type="button" className="btn" onClick={resetWizard}>{t.bookings.newBookingTitle}</button>
                         </div>
                       ) : (
                         <div className="home-preview-wizard-panel">
@@ -1016,10 +1016,10 @@ export default function HomePage() {
                             />
                           </div>
                           <div className="home-preview-wizard-actions">
-                            <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(3)}>{t.public.back}</button>
+                            <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(3)}>{t.public.back}</button>
                             <button
                               type="button"
-                              className="btn btn-primary"
+                              className="btn"
                               disabled={wizardName.trim() === '' || wizardPhone.trim() === ''}
                               onClick={() => setWizardDone(true)}
                             >

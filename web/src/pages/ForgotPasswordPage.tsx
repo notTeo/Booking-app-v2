@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
           </div>
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
-          <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>

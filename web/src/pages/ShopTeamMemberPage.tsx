@@ -385,14 +385,14 @@ export default function ShopTeamMemberPage() {
 
             <div className="team-invite-actions">
               <button
-                className="btn btn-primary"
+                className="btn"
                 onClick={handleSaveMember}
                 disabled={savingMember || !isMemberDirty}
               >
                 {savingMember ? t.team.saving : confirmRoleChange ? t.team.confirmContinue : t.team.saveRole}
               </button>
               {confirmRoleChange && (
-                <button className="btn btn-ghost" onClick={() => setConfirmRoleChange(false)}>
+                <button className="btn btn--secondary" onClick={() => setConfirmRoleChange(false)}>
                   {t.team.cancel}
                 </button>
               )}
@@ -412,7 +412,7 @@ export default function ShopTeamMemberPage() {
                 {inviteSuccess && <div className="alert alert-success">{inviteSuccess}</div>}
                 <div className="team-invite-actions">
                   <button
-                    className="btn btn-primary"
+                    className="btn"
                     onClick={handleSendInvite}
                     disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
                     title={!member.email ? t.team.addEmailFirst : undefined}
@@ -420,7 +420,7 @@ export default function ShopTeamMemberPage() {
                     {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
                   </button>
                   {member.hasPendingInvite && (
-                    <button className="btn btn-ghost" onClick={handleCancelInvite} disabled={invitePending}>
+                    <button className="btn btn--secondary" onClick={handleCancelInvite} disabled={invitePending}>
                       {t.team.cancelInvite}
                     </button>
                   )}
@@ -460,7 +460,7 @@ export default function ShopTeamMemberPage() {
                     <span>{a.service.name}</span>
                     {isOwner && (
                       <button
-                        className="btn btn-ghost service-action-btn"
+                        className="btn btn--secondary service-action-btn"
                         onClick={() => handleUnassignService(a.serviceId)}
                         disabled={unassigningServiceId === a.serviceId}
                       >
@@ -488,7 +488,7 @@ export default function ShopTeamMemberPage() {
                     ))}
                   </select>
                   <button
-                    className="btn btn-primary service-action-btn"
+                    className="btn service-action-btn"
                     onClick={handleAssignService}
                     disabled={!selectedServiceId || assigningService}
                   >
@@ -508,21 +508,21 @@ export default function ShopTeamMemberPage() {
           <p className="shop-danger-desc">{t.team.removeMemberDesc}</p>
           {removeError && <div className="alert alert-error">{removeError}</div>}
           {!confirmRemove ? (
-            <button className="btn btn-danger" onClick={() => setConfirmRemove(true)}>
+            <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
               {t.team.remove}
             </button>
           ) : (
             <div className="wh-delete-confirm">
               <span className="wh-delete-confirm-text">{t.team.confirmRemovePrompt}</span>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger btn--block"
                 onClick={handleRemove}
                 disabled={removing}
               >
                 {removing ? t.team.removing : t.team.remove}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
                 onClick={() => setConfirmRemove(false)}
               >
                 {t.team.cancel}

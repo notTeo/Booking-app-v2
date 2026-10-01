@@ -70,7 +70,7 @@ export default function VerifyEmailPage() {
         {status === 'success' && (
           <>
             <div className="alert alert-success">{message}</div>
-            <Link to="/login"><button className="btn btn-primary">Go to Login</button></Link>
+            <Link to="/login"><button className="btn btn--block">Go to Login</button></Link>
           </>
         )}
 
@@ -98,14 +98,14 @@ export default function VerifyEmailPage() {
                 {resendStatus === 'error' && (
                   <div className="alert alert-error">{resendError}</div>
                 )}
-                <button className="btn btn-primary" type="submit" disabled={resendStatus === 'loading'}>
+                <button className="btn btn--block" type="submit" disabled={resendStatus === 'loading'}>
                   {resendStatus === 'loading' ? 'Sending...' : 'Resend Verification Email'}
                 </button>
               </form>
             )}
 
             {!isExpired && (
-              <Link to="/register"><button className="btn btn-ghost">Back to Register</button></Link>
+              <Link to="/register"><button className="btn btn--secondary btn--block">Back to Register</button></Link>
             )}
           </>
         )}

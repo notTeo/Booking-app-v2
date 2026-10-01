@@ -45,14 +45,14 @@ export default function VerifyEmailChangePage() {
         {status === 'success' && (
           <>
             <div className="alert alert-success">{message}</div>
-            <Link to="/dashboard"><button className="btn btn-primary">Go to Dashboard</button></Link>
+            <Link to="/dashboard"><button className="btn btn--block">Go to Dashboard</button></Link>
           </>
         )}
 
         {status === 'error' && (
           <>
             <div className="alert alert-error">{message}</div>
-            <Link to="/settings"><button className="btn btn-ghost">Back to Settings</button></Link>
+            <Link to="/settings"><button className="btn btn--secondary btn--block">Back to Settings</button></Link>
           </>
         )}
       </div>

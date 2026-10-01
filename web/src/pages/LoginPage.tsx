@@ -65,7 +65,7 @@ export default function LoginPage() {
             Remember me
           </label>
           {error && <div className="alert alert-error">{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>

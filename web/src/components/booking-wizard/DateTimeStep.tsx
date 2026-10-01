@@ -268,9 +268,9 @@ export default function DateTimeStep({
       )}
 
       <div className="public-wizard-actions">
-        <button className="btn btn-ghost wizard-btn" onClick={onBack}>{t.public.back}</button>
+        <button className="btn btn--secondary wizard-btn" onClick={onBack}>{t.public.back}</button>
         {date !== '' && time !== '' && (
-          <button className="btn btn-primary wizard-btn" onClick={onContinue}>{t.public.continue}</button>
+          <button className="btn wizard-btn" onClick={onContinue}>{t.public.continue}</button>
         )}
       </div>
     </div>

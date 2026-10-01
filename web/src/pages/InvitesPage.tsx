@@ -69,7 +69,7 @@ export default function InvitesPage() {
   const renderReceivedActions = (invite: ShopInvite) => (
     <div className="invite-actions">
       <button
-        className="btn btn-primary"
+        className="btn btn--block"
         disabled={actionLoading === invite.id}
         onClick={() => handleAccept(invite.id)}
       >
@@ -78,18 +78,18 @@ export default function InvitesPage() {
       {confirmDecline === invite.id ? (
         <>
           <button
-            className="btn btn-danger"
+            className="btn btn--danger btn--block"
             disabled={actionLoading === invite.id}
             onClick={() => handleDecline(invite.id)}
           >
             {actionLoading === invite.id ? t.invites.declining : t.invites.decline}
           </button>
-          <button className="btn btn-ghost" onClick={() => setConfirmDecline(null)}>
+          <button className="btn btn--secondary btn--block" onClick={() => setConfirmDecline(null)}>
             Cancel
           </button>
         </>
       ) : (
-        <button className="btn btn-ghost" onClick={() => setConfirmDecline(invite.id)}>
+        <button className="btn btn--secondary btn--block" onClick={() => setConfirmDecline(invite.id)}>
           {t.invites.decline}
         </button>
       )}

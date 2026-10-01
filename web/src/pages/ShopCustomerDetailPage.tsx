@@ -201,7 +201,7 @@ export default function ShopCustomerDetailPage() {
           {saveError && <div className="alert alert-error">{saveError}</div>}
           {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
           <button
-            className="btn btn-primary"
+            className="btn"
             onClick={handleSave}
             disabled={saving || !isDirty}
           >
@@ -217,10 +217,10 @@ export default function ShopCustomerDetailPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
           {privacyError && <div className="alert alert-error">{privacyError}</div>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" onClick={handleExport} disabled={privacyBusy !== null}>
+            <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
               {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
             </button>
-            <button className="btn btn-danger" onClick={handleDelete} disabled={privacyBusy !== null}>
+            <button className="btn btn--danger" onClick={handleDelete} disabled={privacyBusy !== null}>
               {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
             </button>
           </div>
