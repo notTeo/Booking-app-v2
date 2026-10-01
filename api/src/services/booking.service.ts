@@ -334,7 +334,7 @@ export const createBooking = async (
     if (!shop) throw new AppError(404, 'Shop not found');
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId: shop.id },
+      where: { id: data.serviceId, shopId: shop.id, isActive: true },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
@@ -409,7 +409,7 @@ export const createBookingForShop = async (
     await requireShopAccess(userId, shopId, { db: tx });
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId },
+      where: { id: data.serviceId, shopId, isActive: true },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
@@ -526,7 +526,13 @@ export const getAvailableSlots = async (
   context: BookingContext = 'public',
   // Authenticated owner/staff view only: also list out-of-hours times. The
   // public route never passes this.
-  options: { includeOutsideHours?: boolean; intervalMinutes?: number } = {},
+  options: {
+    includeOutsideHours?: boolean;
+    intervalMinutes?: number;
+    // Rescheduling an existing booking: its own service stays usable even if
+    // the service has since been deactivated (only new bookings are blocked).
+    forBookingId?: string;
+  } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
   // `date` is a calendar date in the shop's timezone; its weekday does not
@@ -552,7 +558,16 @@ export const getAvailableSlots = async (
   if (team.length === 0) return closed();
 
   const service = await prisma.service.findFirst({
-    where: { id: serviceId, shopId },
+    where: {
+      id: serviceId,
+      shopId,
+      OR: [
+        { isActive: true },
+        ...(options.forBookingId
+          ? [{ bookings: { some: { id: options.forBookingId, shopId } } }]
+          : []),
+      ],
+    },
   });
   if (!service) return closed();
 
@@ -831,12 +846,16 @@ export const updateBooking = async (
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
     // Any service/staff being referenced must belong to this shop.
-    let newService: { duration: number } | null = null;
+    let newService: { duration: number; isActive: boolean } | null = null;
     if (data.serviceId) {
       newService = await tx.service.findFirst({
         where: { id: data.serviceId, shopId },
       });
       if (!newService) throw new AppError(404, 'Service not found');
+      // Keeping the booking's current service is always fine; moving it TO a
+      // deactivated one is not.
+      if (data.serviceId !== existing.serviceId && !newService.isActive)
+        throw new AppError(404, 'Service not found');
     }
     const staffChanged =
       data.staffId !== undefined && data.staffId !== existing.staffId;

@@ -69,6 +69,8 @@ export const getAvailableSlots = async (
         intervalMinutes: req.query['intervalMinutes']
           ? Number(req.query['intervalMinutes'])
           : undefined,
+        forBookingId:
+          (req.query['forBookingId'] as string | undefined) || undefined,
       },
     );
     successResponse(res, slots);

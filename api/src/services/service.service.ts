@@ -110,6 +110,16 @@ export const deleteService = async (
   });
   if (!existing) throw new AppError(404, 'Service not found');
 
+  // Bookings (past or future) reference the service and are never deleted
+  // with it; the owner deactivates it instead.
+  const bookingCount = await prisma.booking.count({ where: { serviceId } });
+  if (bookingCount > 0)
+    throw new AppError(
+      409,
+      "This service has bookings. Deactivate it instead so customers can't book it.",
+      'SERVICE_HAS_BOOKINGS',
+    );
+
   await prisma.service.delete({ where: { id: serviceId } });
   logger.info(`Service deleted: ${serviceId}`);
 };

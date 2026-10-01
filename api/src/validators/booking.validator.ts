@@ -90,6 +90,9 @@ export const ownerSlotsValidation = [
     .withMessage('date must be a valid calendar date'),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
   query('staffId').optional({ values: 'falsy' }).isString(),
+  // Rescheduling: lets this booking's own (possibly deactivated) service be
+  // looked up. Has no effect for any other service.
+  query('forBookingId').optional({ values: 'falsy' }).isString(),
   query('includeOutsideHours')
     .optional()
     .isBoolean()

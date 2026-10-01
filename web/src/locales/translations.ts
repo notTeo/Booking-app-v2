@@ -531,6 +531,11 @@ export interface Translations {
     optional: string;
   };
   services: {
+    errorHasBookings: string;
+    errorHasBookingsInactive: string;
+    deactivateTitle: string;
+    deactivate: string;
+    errorDeactivate: string;
     deleteConfirmButton: string;
     deleteMessage: string;
     deleteTitle: string;
@@ -1415,6 +1420,11 @@ home: {
       optional: 'προαιρετικό',
     },
     services: {
+      errorHasBookings: 'Αυτή η υπηρεσία έχει κρατήσεις. Απενεργοποιήστε την ώστε να μην μπορούν οι πελάτες να την κλείσουν.',
+      errorHasBookingsInactive: 'Αυτή η υπηρεσία έχει κρατήσεις και δεν μπορεί να διαγραφεί. Είναι ήδη ανενεργή, άρα οι πελάτες δεν μπορούν να την κλείσουν.',
+      deactivateTitle: 'Απενεργοποίηση «{name}»;',
+      deactivate: 'Απενεργοποίηση',
+      errorDeactivate: 'Αποτυχία απενεργοποίησης υπηρεσίας.',
       deleteConfirmButton: 'Διαγραφή υπηρεσίας',
       deleteMessage: 'Η υπηρεσία θα διαγραφεί οριστικά. Η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteTitle: 'Διαγραφή «{name}»;',
@@ -2325,6 +2335,11 @@ home: {
       optional: 'optional',
     },
     services: {
+      errorHasBookings: "This service has bookings. Deactivate it instead so customers can't book it.",
+      errorHasBookingsInactive: "This service has bookings so it can't be deleted. It's already inactive, so customers can't book it.",
+      deactivateTitle: 'Deactivate {name}?',
+      deactivate: 'Deactivate',
+      errorDeactivate: 'Failed to deactivate service.',
       deleteConfirmButton: 'Delete service',
       deleteMessage: 'This service will be permanently deleted. This can\'t be undone.',
       deleteTitle: 'Delete {name}?',
