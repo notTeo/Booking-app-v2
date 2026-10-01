@@ -61,9 +61,9 @@ States use real pseudo-classes. `is-hover`, `is-focus`, `is-active` classes exis
 | Component | Classes | Notes |
 |---|---|---|
 | Button | `btn` + `btn--secondary` / `--ghost` / `--danger`; `btn--sm` / `--lg`; `btn--icon`; `btn--block`; `is-loading` | Loading: add `is-loading` and `aria-busy="true"`, keep the label, don't set `disabled` (it must stay focusable). Disabled: `disabled`. Icon-only needs `aria-label`. |
-| Field | `field`, `field__label`, `field__optional`, `field__hint`, `field__error` | Link hint and error with `aria-describedby`. Error: `aria-invalid="true"` on the control, error text in `field__error`. |
-| Input / Textarea | `input`, `textarea` | `input-wrap.is-loading` + `.spinner.spinner--sm` for async validation. |
-| Select | `.select-wrap > .select` | Native `<select>`; caret is CSS. `select-wrap.is-disabled` dims the caret. |
+| Field | `field`, `field__label`, `field__optional`, `field__hint`, `field__error` | Link hint and error with `aria-describedby`. Error: `aria-invalid="true"` on the control, error text in `field__error`. `.field` has `margin-bottom: var(--space-4)`; flex/grid containers with `gap` must reset it (`.x .field { margin-bottom: 0 }`). |
+| Input / Textarea | `input`, `textarea`; `input--sm` | `input--sm`: 36px, only for compact toolbars/filters. `input-wrap.is-loading` + `.spinner.spinner--sm` for async validation. |
+| Select | `.select-wrap > .select`; `select--sm` + `select-wrap--sm` | `select--sm` / `select-wrap--sm`: 36px, only for compact toolbars/filters. Native `<select>`; caret is CSS. `select-wrap.is-disabled` dims the caret. |
 | Checkbox | `<label class="checkbox"><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span>Text</label>` | `indeterminate` is set in JS. Error: `.checkbox.is-error`. |
 | Switch | `<label class="switch"><input class="switch__input" type="checkbox" role="switch"><span class="switch__track"></span>Text</label>` | `.is-loading` while the change saves (pointer events off). |
 | Card | `card`, `card__header`, `card__title`, `card__text`, `card__footer`; `card--flat`, `--glow`, `--interactive`, `--selected`, `--auth`; `is-disabled` | Use `<a>` or `<button class="card">` when the whole card is clickable. |
