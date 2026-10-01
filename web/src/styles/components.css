@@ -261,6 +261,26 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .badge--canceled { text-decoration: line-through; text-decoration-thickness: 1px; }
 .badge--lg { padding: var(--space-1) var(--space-4); font-size: var(--fs-sm); line-height: var(--lh-sm); }
 
+/* ---------- 7b. Chip (toggle pill) ---------- */
+.chip {
+  --c-fg: var(--text-muted); --c-bg: var(--surface-sunken); --c-bd: var(--border-strong);
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-sm); padding: 0 var(--space-3);
+  font: var(--fw-semibold) var(--fs-sm) / 1 var(--font-body); white-space: nowrap; cursor: pointer;
+  color: var(--c-fg); background: var(--c-bg); border: 1px solid var(--c-bd); border-radius: var(--radius-pill);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.chip:hover:not(:disabled), .chip.is-hover { border-color: var(--accent); color: var(--text); }
+.chip:focus-visible, .chip.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.chip[aria-pressed="true"] { --c-fg: var(--accent); --c-bg: var(--accent-soft); --c-bd: var(--accent); }
+.chip--success[aria-pressed="true"], .chip--confirmed[aria-pressed="true"] { --c-fg: var(--success); --c-bg: var(--success-bg); --c-bd: var(--success-border); }
+.chip--warning[aria-pressed="true"], .chip--pending[aria-pressed="true"] { --c-fg: var(--warning); --c-bg: var(--warning-bg); --c-bd: var(--warning-border); }
+.chip--danger[aria-pressed="true"], .chip--no-show[aria-pressed="true"] { --c-fg: var(--danger); --c-bg: var(--danger-bg); --c-bd: var(--danger-border); }
+.chip--info[aria-pressed="true"], .chip--completed[aria-pressed="true"] { --c-fg: var(--info); --c-bg: var(--info-bg); --c-bd: var(--info-border); }
+.chip--canceled[aria-pressed="true"] { --c-fg: var(--text-muted); --c-bg: var(--surface-sunken); --c-bd: var(--border); }
+.chip--canceled .chip__label { text-decoration: line-through; text-decoration-thickness: 1px; }
+.chip--lg { min-height: var(--control-md); padding: 0 var(--space-4); }
+.chip:disabled, .chip[aria-disabled="true"] { --c-fg: var(--text-muted); --c-bd: var(--border); opacity: 0.6; cursor: not-allowed; }
+
 /* ---------- 8. Alert ---------- */
 .alert {
   --a-fg: var(--info); --a-bg: var(--info-bg); --a-bd: var(--info-border);

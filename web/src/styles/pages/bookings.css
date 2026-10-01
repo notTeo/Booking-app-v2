@@ -1,12 +1,9 @@
-/* ── Bookings Page ───────────────────────────────────────────────────────── */
+/* ── Bookings page ───────────────────────────────────────────────────────────
+   Layout and the calendar grid only. Buttons, chips, cards, alerts, badges and
+   type come from components.css. */
 
 .bookings-page {
-  max-width: 860px;
   width: 100%;
-}
-
-.bookings-page--wide {
-  max-width: 100%;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -15,31 +12,45 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
 }
 
 .bookings-header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
   margin: 0;
 }
 
-/* ── Filter bar (status chips reuse .cal-status-btn) ─────────────────────── */
+.bookings-date-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Keep the arrow buttons circular: the date input must not squeeze them. */
+.bookings-date-nav .btn--icon {
+  flex: none;
+}
+
+/* At rest the arrows share the date input's fill; hover/active keep the button's own. */
+.bookings-date-nav .btn--icon:not(:hover, :active) {
+  --btn-bg: var(--surface-sunken);
+}
+
+/* ── Filter bar ──────────────────────────────────────────────────────────── */
 
 .cal-filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .cal-filters-statuses {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .cal-filter-select {
@@ -49,54 +60,18 @@
 }
 
 .cal-filters-count {
-  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
-
-/* ── Date picker ─────────────────────────────────────────────────────────── */
-
-.bookings-date-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.bookings-date-nav-btn {
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  width: 2.1rem;
-  height: 2.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.bookings-date-nav-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ── Detail panel ────────────────────────────────────────────────────────── */
+/* ── Detail panel (card on desktop, bottom sheet on phones) ──────────────── */
 
 .cal-detail-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  animation: cal-panel-in 0.15s ease;
+  margin-bottom: var(--space-5);
+  animation: cal-panel-in var(--motion-base) var(--ease-standard);
 }
 
 @keyframes cal-panel-in {
-  from { opacity: 0; transform: translateY(-6px); }
+  from { opacity: 0; transform: translateY(calc(var(--space-2) * -1)); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -104,128 +79,49 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.cal-detail-title {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 900;
-  color: var(--text);
-}
-
-.cal-detail-close {
-  background: none;
-  border: none;
-  font-size: 1.3rem;
-  line-height: 1;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.6rem;
-  margin: -0.6rem;
-  border-radius: var(--radius-md);
-  transition: color 0.15s;
-}
-
-.cal-detail-close:hover {
-  color: var(--text);
+  gap: var(--space-2);
 }
 
 .cal-detail-meta {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
   flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--text-muted);
 }
 
-.cal-detail-sep {
-  opacity: 0.4;
-}
-
-.cal-detail-phone {
-  font-size: 0.85rem;
+.cal-detail-muted {
   color: var(--text-muted);
 }
 
 .cal-detail-notes {
-  font-size: 0.85rem;
-  color: var(--text-muted);
   font-style: italic;
 }
-
-/* ── Status buttons (all 5, always visible) ──────────────────────────────── */
 
 .cal-detail-statuses {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.25rem;
-}
-
-.cal-status-btn {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: calc(var(--radius-md) * 2);
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: opacity 0.15s, filter 0.15s;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-.cal-status-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cal-status-btn:hover:not(:disabled) {
-  filter: brightness(1.1);
-  opacity: 0.9;
-}
-
-/* Active = solid fill per status color — same tokens as the shared
-   .badge--* (components.css), just with a border to match this button's shape. */
-.cal-status-btn--pending.cal-status-btn--active    { background: color-mix(in srgb, var(--warning) 20%, transparent); border-color: var(--warning); color: var(--warning); }
-.cal-status-btn--confirmed.cal-status-btn--active  { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: var(--accent); color: var(--accent); }
-.cal-status-btn--completed.cal-status-btn--active  { background: color-mix(in srgb, var(--success) 20%, transparent); border-color: var(--success); color: var(--success); }
-.cal-status-btn--canceled.cal-status-btn--active   { background: var(--surface-sunken); border-color: var(--text-muted); color: var(--text-muted); }
-.cal-status-btn--no_show.cal-status-btn--active    { background: color-mix(in srgb, var(--danger) 15%, transparent); border-color: var(--danger); color: var(--danger); }
-
-/* ── Outside-range banner (safety net: no booking is ever hidden) ──────────── */
-
-.cal-outside-banner {
-  background: color-mix(in srgb, var(--warning) 15%, var(--surface));
-  border: 1px solid var(--warning);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-size: 0.85rem;
-  padding: 0.5rem 0.85rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-2);
 }
 
 /* ── Calendar scroll wrapper ─────────────────────────────────────────────── */
 
+/* Grid geometry. The hour row height (64px) is SLOT_H in ShopBookingsPage.tsx. */
 .cal-scroll {
-  overflow-x: auto;
-  overflow-y: auto;
+  --cal-gutter-w: 56px;
+  --cal-col-min: 140px;
+  --cal-stripe: 6px;
+  overflow: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
 }
 
-/* ── Grid ────────────────────────────────────────────────────────────────── */
-
 .cal-grid {
   min-width: fit-content;
 }
 
-/* ── Column headers row ──────────────────────────────────────────────────── */
+/* ── Column headers ──────────────────────────────────────────────────────── */
 
 .cal-header-row {
   display: flex;
@@ -237,20 +133,16 @@
 }
 
 .cal-gutter-cell {
-  width: 56px;
+  width: var(--cal-gutter-w);
   flex-shrink: 0;
   border-right: 1px solid var(--border);
 }
 
 .cal-col-header {
   flex: 1;
-  min-width: 140px;
+  min-width: var(--cal-col-min);
   text-align: center;
-  padding: 0.6rem 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  padding: var(--space-3) var(--space-2);
   color: var(--text-muted);
   border-right: 1px solid var(--border);
 }
@@ -259,16 +151,14 @@
   border-right: none;
 }
 
-/* ── Grid body ───────────────────────────────────────────────────────────── */
+/* ── Grid body, time gutter, staff columns ───────────────────────────────── */
 
 .cal-body {
   display: flex;
 }
 
-/* ── Time gutter ─────────────────────────────────────────────────────────── */
-
 .cal-gutter {
-  width: 56px;
+  width: var(--cal-gutter-w);
   flex-shrink: 0;
   border-right: 1px solid var(--border);
 }
@@ -278,18 +168,17 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 4px 8px 0 0;
-  font-size: 0.72rem;
-  font-weight: 500;
+  padding: var(--space-1) var(--space-2) 0 0;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
   color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
   box-sizing: border-box;
 }
 
-/* ── Staff columns ───────────────────────────────────────────────────────── */
-
 .cal-col {
   flex: 1;
-  min-width: 140px;
+  min-width: var(--cal-col-min);
   position: relative;
   border-right: 1px solid var(--border);
 }
@@ -312,8 +201,8 @@
   pointer-events: none;
 }
 
-/* ── Off-hours hatching (not-working parts of a column) ─────────────────────
-   Pattern, never colour alone: a repeating diagonal stripe plus a text label. */
+/* ── Off-hours hatching ──────────────────────────────────────────────────────
+   Pattern plus a text label, never colour alone. */
 
 .cal-off-segment {
   position: absolute;
@@ -321,10 +210,10 @@
   right: 0;
   background-image: repeating-linear-gradient(
     135deg,
-    color-mix(in srgb, var(--text-muted) 14%, transparent) 0,
-    color-mix(in srgb, var(--text-muted) 14%, transparent) 6px,
-    transparent 6px,
-    transparent 12px
+    var(--surface-sunken) 0,
+    var(--surface-sunken) var(--cal-stripe),
+    var(--border) var(--cal-stripe),
+    var(--border) calc(var(--cal-stripe) * 2)
   );
   pointer-events: none;
   display: flex;
@@ -334,165 +223,159 @@
 }
 
 .cal-off-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  background: var(--surface);
-  padding: 1px 6px;
-  border-radius: 999px;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
-/* ── Booking blocks ──────────────────────────────────────────────────────── */
+/* ── Booking blocks ──────────────────────────────────────────────────────────
+   Status = fill + left bar + icon + (canceled) strike-through, same tokens as
+   .badge--*. Never colour alone. */
 
 .cal-block {
+  --blk-bg: var(--surface-sunken);
+  --blk-bd: var(--border);
+  --blk-bar: var(--border-strong);
   position: absolute;
-  left: 4px;
-  right: 4px;
-  border-radius: 6px;
-  padding: 4px 6px;
+  left: var(--space-1);
+  width: calc(100% - var(--space-2));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--blk-bg);
+  border: 1px solid var(--blk-bd);
+  border-left: 3px solid var(--blk-bar);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   overflow: hidden;
-  border-left: 3px solid transparent;
-  transition: filter 0.12s, box-shadow 0.12s;
   box-sizing: border-box;
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
 }
 
 .cal-block:hover {
-  filter: brightness(1.06);
+  box-shadow: var(--shadow-sm);
   z-index: 2;
 }
 
-.cal-block--selected {
-  box-shadow: 0 0 0 2px var(--accent);
+.cal-block:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
   z-index: 3;
 }
 
-/* Status color schemes for blocks — same tokens as .badge--* */
-.cal-block--pending {
-  background: color-mix(in srgb, var(--warning) 18%, var(--surface));
-  border-left-color: var(--warning);
+.cal-block--selected {
+  outline: 2px solid var(--accent);
+  z-index: 3;
 }
 
-.cal-block--confirmed {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
-  border-left-color: var(--accent);
+.cal-block--pending   { --blk-bg: var(--warning-bg); --blk-bd: var(--warning-border); --blk-bar: var(--warning); }
+.cal-block--confirmed { --blk-bg: var(--success-bg); --blk-bd: var(--success-border); --blk-bar: var(--success); }
+.cal-block--completed { --blk-bg: var(--info-bg);    --blk-bd: var(--info-border);    --blk-bar: var(--info); }
+.cal-block--no-show   { --blk-bg: var(--danger-bg);  --blk-bd: var(--danger-border);  --blk-bar: var(--danger); }
+.cal-block--canceled  { color: var(--text-muted); }
+
+.cal-block--canceled .cal-block-name {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
-.cal-block--completed {
-  background: color-mix(in srgb, var(--success) 18%, var(--surface));
-  border-left-color: var(--success);
-}
-
-.cal-block--canceled {
-  background: var(--surface-sunken);
-  border-left-color: var(--border);
-  opacity: 0.65;
-}
-
-.cal-block--no_show {
-  background: color-mix(in srgb, var(--danger) 15%, var(--surface));
-  border-left-color: var(--danger);
-  opacity: 0.8;
-}
-
-/* Out-of-hours exceptions: dashed border (never colour alone), ☾ icon + text
-   tag are rendered inline in the block's markup. */
+/* Out-of-hours exceptions: dashed edge (never colour alone); the clock icon and
+   a text tag are rendered in the block's markup. */
 .cal-block--override {
-  border: 1px dashed var(--text-muted);
-  border-left-width: 3px;
+  border-style: dashed;
+  border-color: var(--text-muted);
+  border-left-style: solid;
+  border-left-color: var(--blk-bar);
 }
 
-.cal-block-tag {
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-}
-
-.cal-block-next-day {
-  font-size: 0.64rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  line-height: 1.2;
-}
-
-/* Block text */
 .cal-block-time {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-xs);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-block-time > svg:first-child {
+  color: var(--blk-bar);
 }
 
 .cal-block-name {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
 }
 
-.cal-block-service {
-  font-size: 0.70rem;
+/* Short bookings (under an hour): time, name and service share one row; the
+   out-of-hours tag text is left to the detail panel. */
+.cal-block--compact {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.cal-block--compact .cal-block-name {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.cal-block--compact .cal-block-service {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.cal-block--compact .cal-block-tag,
+.cal-block--compact .cal-block-next-day {
+  display: none;
+}
+
+.cal-block-service,
+.cal-block-tag,
+.cal-block-next-day {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.2;
 }
 
-/* ── Phone provider chips (docs/plan-out-of-hours.md D2) ─────────────────────
-   Hidden ≥641px, where every provider column is already on screen at once. */
+.cal-block-tag,
+.cal-block-next-day {
+  font-weight: var(--fw-semibold);
+}
+
+/* ── Phone provider chips ────────────────────────────────────────────────────
+   Hidden from 640px up, where every provider column is on screen at once. */
 
 .cal-chips {
   display: none;
 }
 
-.cal-chip {
+.cal-chip-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  padding: 0.4rem 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-sunken);
-  color: var(--text-muted);
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
 }
 
-.cal-chip--active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.cal-chip-badge {
-  font-size: 0.72rem;
-  opacity: 0.85;
-}
-
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .cal-chips {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-2);
     overflow-x: auto;
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   /* One provider column per "page"; swipe or tap a chip to move between them.
@@ -503,8 +386,8 @@
 
   .cal-col-header,
   .cal-col {
-    flex: 0 0 calc(100% - 56px);
-    min-width: calc(100% - 56px);
+    flex: 0 0 calc(100% - var(--cal-gutter-w));
+    min-width: calc(100% - var(--cal-gutter-w));
     scroll-snap-align: start;
   }
 
@@ -523,13 +406,16 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 20;
-    max-height: 80vh;
+    z-index: calc(var(--z-nav) + 1);
+    max-height: 80dvh;
     overflow-y: auto;
     margin: 0;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
-    animation: cal-sheet-in 0.2s ease;
+    padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+    background: var(--surface-raised);
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-sheet);
+    animation: cal-sheet-in var(--motion-base) var(--ease-standard);
   }
 }
 
