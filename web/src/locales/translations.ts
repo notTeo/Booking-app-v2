@@ -38,13 +38,15 @@ export interface Translations {
   };
   dashboard: {
     title: string;
-    subtitle: string;
-    errorLoad: string;
-    noShops: string;
-    todayCount: string;
-    upcomingCount: string;
-    upcomingAcrossShops: string;
-    noUpcoming: string;
+    shops: {
+      title: string;
+      bookings: string;
+      today: string;
+      pending: string;
+      noPending: string;
+    };
+    empty: { title: string; text: string };
+    neverBooked: { title: string; text: string };
   };
   shops: {
     title: string;
@@ -913,13 +915,21 @@ export const translations: Record<Language, Translations> = {
     },
     dashboard: {
       title: 'Επισκόπηση',
-      subtitle: 'Τα ραντεβού και οι καταστήματά σου, με μια ματιά.',
-      errorLoad: 'Αποτυχία φόρτωσης δεδομένων.',
-      noShops: 'Δεν έχεις ακόμα κανένα κατάστημα.',
-      todayCount: 'Σήμερα: {count}',
-      upcomingCount: 'Επόμενα: {count}',
-      upcomingAcrossShops: 'Επόμενα Ραντεβού',
-      noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
+      shops: {
+        title: 'Τα καταστήματά σου',
+        bookings: 'Ραντεβού',
+        today: 'Σήμερα',
+        pending: '{count} σε αναμονή',
+        noPending: 'Κανένα σε αναμονή',
+      },
+      empty: {
+        title: 'Δεν έχεις ακόμα κανένα κατάστημα',
+        text: 'Δημιούργησε το πρώτο σου κατάστημα και τα ραντεβού σου θα εμφανίζονται εδώ.',
+      },
+      neverBooked: {
+        title: 'Δεν υπάρχουν ακόμα ραντεβού',
+        text: 'Μοιράσου τη σελίδα κρατήσεων ενός καταστήματος και ο πρώτος σου πελάτης θα εμφανιστεί εδώ.',
+      },
     },
     shops: {
       title: 'Τα Καταστήματά μου',
@@ -1814,13 +1824,21 @@ home: {
     },
     dashboard: {
       title: 'Overview',
-      subtitle: 'Your bookings and shops, at a glance.',
-      errorLoad: 'Failed to load your data.',
-      noShops: "You don't have any shops yet.",
-      todayCount: 'Today: {count}',
-      upcomingCount: 'Upcoming: {count}',
-      upcomingAcrossShops: 'Upcoming Bookings',
-      noUpcoming: 'No upcoming bookings.',
+      shops: {
+        title: 'Your shops',
+        bookings: 'Bookings',
+        today: 'Today',
+        pending: '{count} pending',
+        noPending: 'None pending',
+      },
+      empty: {
+        title: "You don't have any shops yet",
+        text: 'Create your first shop and your bookings will show up here.',
+      },
+      neverBooked: {
+        title: 'No bookings yet',
+        text: "Share a shop's booking page and your first customer will appear here.",
+      },
     },
     shops: {
       title: 'My Shops',
