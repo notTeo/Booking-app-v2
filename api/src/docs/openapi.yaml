@@ -106,56 +106,146 @@ components:
           type: string
           example: success
         data:
+          $ref: '#/components/schemas/OverviewData'
+
+    OverviewData:
+      type: object
+      required: [range, from, to, today, hasAnyBookings, totals, buckets]
+      properties:
+        range:
+          type: string
+          enum: [week, month, quarter]
+        from:
+          type: string
+          format: date
+          description: First day of the period, a calendar date in the shop's timezone.
+        to:
+          type: string
+          format: date
+          description: Last day of the period (inclusive), in the shop's timezone.
+        today:
+          type: string
+          format: date
+          description: The shop-local date the period was computed for. Buckets starting after it are in the future.
+        hasAnyBookings:
+          type: boolean
+          description: Whether the shop has any booking at all (any period, any status).
+        totals:
           type: object
-          required: [range, from, to, today, hasAnyBookings, totals, buckets]
+          required: [all, pending, confirmed, completed, canceled, noShow]
+          description: >
+            Booking counts by status for bookings starting in the period,
+            including future ones.
+            `all` is every non-canceled booking, i.e. the sum of the bucket counts.
           properties:
-            range:
-              type: string
-              enum: [week, month, quarter]
-            from:
-              type: string
-              format: date
-              description: First day of the period, a calendar date in the shop's timezone.
-            to:
-              type: string
-              format: date
-              description: Last day of the period (inclusive), in the shop's timezone.
-            today:
-              type: string
-              format: date
-              description: The shop-local date the period was computed for. Buckets starting after it are in the future.
-            hasAnyBookings:
-              type: boolean
-              description: Whether the shop has any booking at all (any period, any status).
-            totals:
-              type: object
-              required: [all, pending, confirmed, completed, canceled, noShow]
-              description: >
-                Booking counts by status for bookings starting in the period,
-                including future ones.
-                `all` is every non-canceled booking, i.e. the sum of the bucket counts.
+            all: { type: integer, minimum: 0 }
+            pending: { type: integer, minimum: 0 }
+            confirmed: { type: integer, minimum: 0 }
+            completed: { type: integer, minimum: 0 }
+            canceled: { type: integer, minimum: 0 }
+            noShow: { type: integer, minimum: 0 }
+        buckets:
+          type: array
+          description: >
+            Non-canceled bookings per bucket, oldest first; the buckets cover
+            exactly [from, to] with no gaps. Always complete, empty buckets
+            have count 0. week: 7 daily buckets; month: one daily bucket per
+            day of the month (28-31); quarter: Monday-start weekly buckets
+            (13-14), the first and last clipped to the period.
+          items:
+            type: object
+            required: [start, end, count]
+            properties:
+              start: { type: string, format: date }
+              end: { type: string, format: date, description: Inclusive. }
+              count: { type: integer, minimum: 0 }
+
+    MyOverviewResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          allOf:
+            - $ref: '#/components/schemas/OverviewData'
+            - type: object
+              required: [perShop]
               properties:
-                all: { type: integer, minimum: 0 }
-                pending: { type: integer, minimum: 0 }
-                confirmed: { type: integer, minimum: 0 }
-                completed: { type: integer, minimum: 0 }
-                canceled: { type: integer, minimum: 0 }
-                noShow: { type: integer, minimum: 0 }
-            buckets:
-              type: array
-              description: >
-                Non-canceled bookings per bucket, oldest first; the buckets cover
-                exactly [from, to] with no gaps. Always complete, empty buckets
-                have count 0. week: 7 daily buckets; month: one daily bucket per
-                day of the month (28-31); quarter: Monday-start weekly buckets
-                (13-14), the first and last clipped to the period.
-              items:
+                perShop:
+                  type: array
+                  description: >
+                    One entry per shop the user is an active member of, sorted by
+                    `total` descending, then by name. Empty for a user with no shops.
+                  items:
+                    type: object
+                    required: [shopId, name, slug, total, pending, today]
+                    properties:
+                      shopId: { type: string }
+                      name: { type: string }
+                      slug: { type: string }
+                      total:
+                        type: integer
+                        minimum: 0
+                        description: Non-canceled bookings in the period (this shop's share of `totals.all`).
+                      pending:
+                        type: integer
+                        minimum: 0
+                        description: Pending bookings in the period.
+                      today:
+                        type: integer
+                        minimum: 0
+                        description: Non-canceled bookings starting today, "today" being in THIS shop's timezone.
+
+    UpcomingBookingsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          description: The next 5 bookings from now across the user's shops, soonest first. Canceled and no-show are excluded.
+          maxItems: 5
+          items:
+            type: object
+            required: [id, shopId, startTime, endTime, status, customer, service, staff, shop]
+            properties:
+              id: { type: string }
+              shopId: { type: string }
+              startTime: { type: string, format: date-time }
+              endTime: { type: string, format: date-time }
+              status: { type: string, enum: [PENDING, CONFIRMED, COMPLETED, CANCELED, NO_SHOW] }
+              customer:
                 type: object
-                required: [start, end, count]
+                description: >
+                  Name, phone and email are blank and `contactHidden` is true for
+                  staff whose membership in that shop cannot view customer details.
                 properties:
-                  start: { type: string, format: date }
-                  end: { type: string, format: date, description: Inclusive. }
-                  count: { type: integer, minimum: 0 }
+                  id: { type: string }
+                  name: { type: string }
+                  phone: { type: string }
+                  email: { type: string, nullable: true }
+                  contactHidden: { type: boolean }
+              service:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+              staff:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  email: { type: string, nullable: true }
+              shop:
+                type: object
+                required: [id, name, slug, timezone]
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  slug: { type: string }
+                  timezone: { type: string, description: IANA timezone; format startTime in it. }
 
   responses:
     NotFound:
@@ -754,6 +844,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /shops/overview:
+    get:
+      tags: [overview]
+      summary: Overview across all of the user's shops
+      description: >
+        The shop overview (`/shops/{shopId}/overview`) summed across every shop
+        the user is an ACTIVE member of (owner or staff, the same set as
+        `GET /shops`), plus a `perShop` breakdown.
+
+
+        The period (`from`, `to`, `today`) is computed ONCE, in the timezone of
+        the user's first shop, the one with the oldest membership (ties by shop
+        id), so the response has a single calendar axis. Each shop's bookings
+        are then taken from those calendar dates in the SHOP's own timezone and
+        counted on that shop's own local day (or Monday-start week); bucket
+        counts from different shops are summed by date label. With a single
+        shop the totals and buckets equal that shop's own overview.
+
+
+        A user with no shops gets 200 with zero totals, empty-count buckets (in
+        UTC) and an empty `perShop`.
+
+
+        Registered before `/shops/{id}`; "overview" is never read as a shop id.
+      operationId: getMyOverview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [week, month, quarter]
+      responses:
+        '200':
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyOverviewResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /shops/upcoming:
+    get:
+      tags: [overview]
+      summary: Upcoming bookings across all of the user's shops
+      description: >
+        The next 5 bookings from now (canceled and no-show excluded), soonest
+        first, across the shops the user is an active member of. Customer
+        details are redacted per shop for staff who cannot view them.
+      operationId: getMyUpcoming
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Upcoming bookings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpcomingBookingsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /shops/{shopId}/overview:
     get:
