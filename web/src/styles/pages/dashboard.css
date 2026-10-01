@@ -24,99 +24,6 @@
   margin: 0;
 }
 
-/* ── Stats row ──────────────────────────────────────────────────────────────── */
-.dash-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.dash-stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1.4rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.dash-stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: calc(var(--radius-md) * 0.75);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.dash-stat-icon--warning {
-  background: color-mix(in srgb, var(--warning) 10%, transparent);
-  color: var(--warning);
-}
-
-.dash-stat-icon--error {
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  color: var(--danger);
-}
-
-.dash-stat-body {
-  min-width: 0;
-}
-
-.dash-stat-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin: 0 0 0.3rem;
-}
-
-.dash-stat-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 0.2rem;
-  line-height: 1.2;
-}
-
-.dash-stat-value--accent {
-  color: var(--accent);
-}
-
-.dash-stat-value--warning {
-  color: var(--warning);
-}
-
-.dash-stat-value--success {
-  color: var(--success);
-}
-
-.dash-stat-value--sm {
-  font-size: 0.95rem;
-}
-
-.dash-stat-action {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: opacity 0.2s;
-}
-
-.dash-stat-action:hover {
-  opacity: 0.75;
-}
-
 /* ── Detail card ────────────────────────────────────────────────────────────── */
 .dash-card {
   margin-bottom: var(--space-5);
@@ -278,10 +185,6 @@
 
 /* Tablet */
 @media (max-width: 900px) {
-  .dash-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .dash-actions {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -291,10 +194,6 @@
 @media (max-width: 640px) {
   .dash-title { font-size: 1.4rem; }
 
-  .dash-stats {
-    grid-template-columns: 1fr;
-  }
-
   .dash-actions {
     grid-template-columns: 1fr;
   }
@@ -303,9 +202,5 @@
   .dash-field-value {
     white-space: normal;
     word-break: break-word;
-  }
-
-  .dash-stat-card {
-    padding: 1rem 1.1rem;
   }
 }
