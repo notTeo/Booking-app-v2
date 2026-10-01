@@ -9,6 +9,8 @@ import '@fontsource/league-spartan/latin-700.css';
 import '@fontsource/league-spartan/latin-800.css';
 import '@fontsource/league-spartan/latin-900.css';
 import '@fontsource/gasoek-one/latin-400.css';
+import './styles/tokens.css';
+import './styles/components.css';
 import './index.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
