@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { requireShopAccess } from '../utils/shopAccess';
 
 interface CreateServiceDto {
   name: string;
@@ -20,20 +21,10 @@ interface UpdateServiceDto {
 
 // ── helpers ──────────────────────────────────────────────
 
-const getMembership = async (userId: string, shopId: string) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(403, 'You are not a member of this shop');
-  return membership;
-};
-
-const requireOwner = async (userId: string, shopId: string) => {
-  const membership = await getMembership(userId, shopId);
-  if (membership.role !== 'owner')
-    throw new AppError(403, 'Only the shop owner can perform this action');
-  return membership;
-};
+const OWNER_ONLY = {
+  role: 'owner',
+  ownerMessage: 'Only the shop owner can perform this action',
+} as const;
 
 // ── service CRUD ──────────────────────────────────────────
 
@@ -42,7 +33,7 @@ export const createService = async (
   shopId: string,
   dto: CreateServiceDto,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   const service = await prisma.service.create({
     data: { shopId, ...dto },
@@ -53,7 +44,7 @@ export const createService = async (
 };
 
 export const getServices = async (userId: string, shopId: string) => {
-  await getMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
 
   return prisma.service.findMany({
     where: { shopId },
@@ -66,7 +57,7 @@ export const getServiceById = async (
   shopId: string,
   serviceId: string,
 ) => {
-  await getMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
 
   const service = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
@@ -91,7 +82,7 @@ export const updateService = async (
   serviceId: string,
   dto: UpdateServiceDto,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   const existing = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
@@ -112,7 +103,7 @@ export const deleteService = async (
   shopId: string,
   serviceId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   const existing = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
@@ -131,7 +122,7 @@ export const assignStaffToService = async (
   serviceId: string,
   userShopId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   // verify service belongs to this shop
   const service = await prisma.service.findFirst({
@@ -160,7 +151,7 @@ export const unassignStaffFromService = async (
   serviceId: string,
   userShopId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   const assignment = await prisma.staffService.findFirst({
     where: { userShopId, serviceId },
@@ -176,7 +167,7 @@ export const getMemberServices = async (
   shopId: string,
   memberId: string,
 ) => {
-  await getMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
 
   // memberId is UserShop.id
   const targetMembership = await prisma.userShop.findFirst({

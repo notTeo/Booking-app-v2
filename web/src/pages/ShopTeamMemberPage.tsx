@@ -194,9 +194,10 @@ export default function ShopTeamMemberPage() {
       setMember(updated);
       setInviteSuccess(t.team.inviteSent);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-      setInviteError(msg || t.team.errorSendInvite);
+      const data = (err as { response?: { data?: { message?: string; code?: string } } }).response?.data;
+      setInviteError(
+        data?.code === 'MEMBER_INACTIVE' ? t.team.errorInviteInactive : data?.message || t.team.errorSendInvite,
+      );
     } finally {
       setInvitePending(false);
     }

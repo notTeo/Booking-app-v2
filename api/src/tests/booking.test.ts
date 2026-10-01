@@ -85,7 +85,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-04T10:00:00.000Z',
     });
 
-    const updated = await updateBooking(shop.id, booking.id, {
+    const updated = await updateBooking(owner.id, shop.id, booking.id, {
       overrideRules: ALL_OVERRIDABLE_RULES,
       startTime: '2027-01-04T14:00:00.000Z',
     });
@@ -115,7 +115,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
     });
 
     await expect(
-      updateBooking(shop.id, bookingA.id, {
+      updateBooking(owner.id, shop.id, bookingA.id, {
         overrideRules: ALL_OVERRIDABLE_RULES,
         startTime: '2027-01-05T11:00:00.000Z',
       }),
@@ -137,7 +137,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-06T10:00:00.000Z',
     });
 
-    const updated = await updateBooking(shop.id, booking.id, {
+    const updated = await updateBooking(owner.id, shop.id, booking.id, {
       overrideRules: ALL_OVERRIDABLE_RULES,
       startTime: '2027-01-06T10:00:00.000Z',
       notes: 'Confirmed by phone',
@@ -169,7 +169,7 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-07T12:00:00.000Z',
     });
 
-    const updated = await updateBooking(shop.id, bookingA.id, {
+    const updated = await updateBooking(owner.id, shop.id, bookingA.id, {
       notes: 'Client requested extra time',
     });
 

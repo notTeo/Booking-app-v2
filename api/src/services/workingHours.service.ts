@@ -3,6 +3,7 @@ import { AppError } from '../middleware/errorHandler';
 import { isExclusionViolation } from '../utils/serializable';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
+import { requireShopAccess } from '../utils/shopAccess';
 import { loadDayHours, type DayHours } from './bookingRules.service';
 
 export interface HourRangeDto {
@@ -45,20 +46,10 @@ const WITH_DAYS = {
   },
 };
 
-async function requireMembership(userId: string, shopId: string) {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-  });
-  if (!membership) throw new AppError(404, 'Shop not found');
-  return membership;
-}
-
-async function requireOwner(userId: string, shopId: string) {
-  const membership = await requireMembership(userId, shopId);
-  if (membership.role !== 'owner')
-    throw new AppError(403, 'Only the shop owner can manage working hours');
-  return membership;
-}
+const OWNER_ONLY = {
+  role: 'owner',
+  ownerMessage: 'Only the shop owner can manage working hours',
+} as const;
 
 function assertValidRange(startDate: Date, endDate: Date | null) {
   if (endDate && endDate < startDate) {
@@ -145,7 +136,7 @@ export const createSchedule = async (
   dto: CreateScheduleDto,
   staffId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
 
   // Verify the member exists in the shop (staffId here is UserShop.id, not
   // User.id — a member may not have a login yet)
@@ -203,7 +194,7 @@ export const getSchedules = async (
   shopId: string,
   staffId: string,
 ) => {
-  await requireMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
 
   return prisma.shopWorkingSchedule.findMany({
     where: {
@@ -221,7 +212,7 @@ export const getSchedule = async (
   scheduleId: string,
   staffId: string,
 ) => {
-  await requireMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   return prisma.shopWorkingSchedule.findUnique({
@@ -237,7 +228,7 @@ export const updateSchedule = async (
   dto: UpdateScheduleDto,
   staffId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   const target = await requireScheduleInShop(scheduleId, shopId, staffId);
 
   const newStart = dto.startDate ? new Date(dto.startDate) : target.startDate;
@@ -286,7 +277,7 @@ export const deleteSchedule = async (
   scheduleId: string,
   staffId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   await prisma.shopWorkingSchedule.delete({ where: { id: scheduleId } });
@@ -303,7 +294,7 @@ export const upsertDays = async (
   dto: UpsertDaysDto,
   staffId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   await prisma.$transaction(async (tx) => {
@@ -357,7 +348,7 @@ export const updateDay = async (
   dto: UpdateDayDto,
   staffId: string,
 ) => {
-  await requireOwner(userId, shopId);
+  await requireShopAccess(userId, shopId, OWNER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   const result = await prisma.$transaction(async (tx) => {
@@ -413,7 +404,7 @@ export const getDaySchedule = async (
   shopId: string,
   date: string,
 ): Promise<Record<string, DayHours[] | null>> => {
-  await requireMembership(userId, shopId); // 404 for non-members
+  await requireShopAccess(userId, shopId);
   const members = await prisma.userShop.findMany({
     where: { shopId },
     select: { id: true },

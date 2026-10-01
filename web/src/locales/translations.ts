@@ -444,6 +444,7 @@ export interface Translations {
     cancelInvite: string;
     inviteSent: string;
     errorSendInvite: string;
+    errorInviteInactive: string;
     errorCancelInvite: string;
     canViewCustomerDetails: string;
     canViewCustomerDetailsDesc: string;
@@ -1327,6 +1328,7 @@ home: {
       cancelInvite: 'Ακύρωση Πρόσκλησης',
       inviteSent: 'Η πρόσκληση σύνδεσης εστάλη.',
       errorSendInvite: 'Αποτυχία αποστολής πρόσκλησης.',
+      errorInviteInactive: 'Ενεργοποιήστε αυτό το μέλος πριν στείλετε πρόσκληση.',
       errorCancelInvite: 'Αποτυχία ακύρωσης πρόσκλησης.',
       canViewCustomerDetails: 'Προβολή στοιχείων πελατών',
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, το μέλος βλέπει μόνο τη λέξη «Πελάτης», χωρίς όνομα, τηλέφωνο ή email.',
@@ -2236,6 +2238,7 @@ home: {
       cancelInvite: 'Cancel Invite',
       inviteSent: 'Login invite sent.',
       errorSendInvite: 'Failed to send invite.',
+      errorInviteInactive: 'Activate this member before sending an invite.',
       errorCancelInvite: 'Failed to cancel invite.',
       canViewCustomerDetails: 'View customer details',
       canViewCustomerDetailsDesc: "When off, this member sees just the word \"Customer\" — no name, phone, or email.",
