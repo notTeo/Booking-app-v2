@@ -245,9 +245,9 @@ describe('day ranges are the shop-local day (half-open)', () => {
     const outBefore = await bookAt(t, '2027-01-31T23:59:00+02:00', 1);
     const outAfter = await bookAt(t, '2027-02-02T00:00:00+02:00', 30);
 
-    const got = (await listBookings(t.user.id, t.shop.id, { date: '2027-02-01' })).map(
-      (b) => b.id,
-    );
+    const got = (
+      await listBookings(t.user.id, t.shop.id, { date: '2027-02-01' })
+    ).map((b) => b.id);
 
     expect(got.sort()).toEqual([inLate.id, inEarly.id].sort());
     expect(got).not.toContain(outBefore.id);
@@ -260,9 +260,9 @@ describe('day ranges are the shop-local day (half-open)', () => {
     const last = await bookAt(t, '2027-03-28T23:30:00+03:00', 30);
     const next = await bookAt(t, '2027-03-29T00:00:00+03:00', 30); // 21:00Z
 
-    const got = (await listBookings(t.user.id, t.shop.id, { date: '2027-03-28' })).map(
-      (b) => b.id,
-    );
+    const got = (
+      await listBookings(t.user.id, t.shop.id, { date: '2027-03-28' })
+    ).map((b) => b.id);
 
     expect(got.sort()).toEqual([first.id, last.id].sort());
     expect(got).not.toContain(next.id);
