@@ -91,8 +91,8 @@ export default function ShopOverviewPage() {
             )}
           </div>
           <div className="shop-overview-card__badges">
-            <span className="badge badge--role">{shop.role}</span>
-            <span className={`badge badge--status ${shop.isActive ? "badge--active" : "badge--inactive"}`}>
+            <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
+            <span className={`badge ${shop.isActive ? "badge--success" : "badge--neutral"}`}>
               {shop.isActive ? t.shops.active : t.shops.inactive}
             </span>
           </div>

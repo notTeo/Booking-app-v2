@@ -5,6 +5,7 @@ import { useLang } from '../context/LanguageContext';
 import { getCustomers, type Customer } from '../api/customer.api';
 import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 const PAGE_SIZE = 20;
 
@@ -74,7 +75,7 @@ export default function ShopCustomersPage() {
         />
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {loading ? (
         <div className="shops-spinner-wrap">

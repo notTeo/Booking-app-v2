@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
 import '../styles/pages/verify-email.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -69,14 +70,14 @@ export default function VerifyEmailPage() {
 
         {status === 'success' && (
           <>
-            <div className="alert alert-success">{message}</div>
+            <Alert variant="success">{message}</Alert>
             <Link to="/login"><button className="btn btn--block">Go to Login</button></Link>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <div className="alert alert-error">{message}</div>
+            <Alert variant="danger">{message}</Alert>
 
             {isExpired && (
               <form onSubmit={handleResend} className="verify-resend-form">
@@ -91,12 +92,12 @@ export default function VerifyEmailPage() {
                   />
                 </div>
                 {resendStatus === 'sent' && (
-                  <div className="alert alert-success">
+                  <Alert variant="success">
                     Email sent! Check your inbox and spam folder.
-                  </div>
+                  </Alert>
                 )}
                 {resendStatus === 'error' && (
-                  <div className="alert alert-error">{resendError}</div>
+                  <Alert variant="danger">{resendError}</Alert>
                 )}
                 <button className="btn btn--block" type="submit" disabled={resendStatus === 'loading'}>
                   {resendStatus === 'loading' ? 'Sending...' : 'Resend Verification Email'}

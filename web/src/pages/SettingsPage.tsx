@@ -17,6 +17,7 @@ import {
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -158,9 +159,9 @@ export default function SettingsPage() {
           <p className="settings-overview-email">{user?.email}</p>
           <div className="settings-overview-badges">
             {user?.isVerified ? (
-              <span className="settings-verified-badge">{t.settings.verified}</span>
+              <span className="badge badge--success">{t.settings.verified}</span>
             ) : (
-              <span className="settings-unverified-badge">{t.settings.notVerified}</span>
+              <span className="badge badge--warning">{t.settings.notVerified}</span>
             )}
           </div>
           {user?.createdAt && (
@@ -212,8 +213,8 @@ export default function SettingsPage() {
               </ul>
             )}
           </div>
-          {profileError && <div className="alert alert-error">{profileError}</div>}
-          {profileSuccess && <div className="alert alert-success">{profileSuccess}</div>}
+          {profileError && <Alert variant="danger">{profileError}</Alert>}
+          {profileSuccess && <Alert variant="success">{profileSuccess}</Alert>}
           <button
             className="btn btn--sm"
             type="submit"
@@ -287,8 +288,8 @@ export default function SettingsPage() {
             </div>
           </>
         )}
-        {revokeError && <div className="alert alert-error">{revokeError}</div>}
-        {revokeSuccess && <div className="alert alert-success">{revokeSuccess}</div>}
+        {revokeError && <Alert variant="danger">{revokeError}</Alert>}
+        {revokeSuccess && <Alert variant="success">{revokeSuccess}</Alert>}
         <button
           className="btn btn--secondary btn--sm"
           type="button"
@@ -330,7 +331,7 @@ export default function SettingsPage() {
                 required
               />
             </div>
-            {deleteError && <div className="alert alert-error">{deleteError}</div>}
+            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 className="btn btn--danger btn--sm"
@@ -353,7 +354,7 @@ export default function SettingsPage() {
             <p className="settings-danger-desc">
               {t.settings.areYouSure}
             </p>
-            {deleteError && <div className="alert alert-error">{deleteError}</div>}
+            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 className="btn btn--danger btn--sm"

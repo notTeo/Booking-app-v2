@@ -15,6 +15,7 @@ import { apiErrorMessage } from '../utils/apiError';
 import { findOverlap, scheduleStatus } from '../utils/scheduleOverlap';
 import Switch from './Switch';
 import '../styles/pages/working-hours.css';
+import Alert from './Alert';
 
 // API bundle — callers build this with the correct shopId / memberId baked in
 export interface WorkingHoursApi {
@@ -344,27 +345,29 @@ const created = await api.createSchedule(dto);
         )}
       </div>
 
-      {pageError && <div className="alert alert-error">{pageError}</div>}
+      {pageError && <Alert variant="danger">{pageError}</Alert>}
 
 
       <p className="wh-rule-note">{t.workingHours.ruleNote}</p>
 
       {isOwner && openEnded && (
-        <div className="alert wh-open-ended-notice">
-          <span>
-            {t.workingHours.openEndedNotice.replace(
-              '{range}',
-              `${t.workingHours.from} ${formatDate(openEnded.startDate)} — ${t.workingHours.ongoing}`,
-            )}
-          </span>
-          <button
-            type="button"
-            className="btn btn--secondary btn--sm"
-            onClick={() => setExpandedId(openEnded.id)}
-          >
-            {t.workingHours.setEndDate}
-          </button>
-        </div>
+        <Alert
+          variant="warning"
+          actions={
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              onClick={() => setExpandedId(openEnded.id)}
+            >
+              {t.workingHours.setEndDate}
+            </button>
+          }
+        >
+          {t.workingHours.openEndedNotice.replace(
+            '{range}',
+            `${t.workingHours.from} ${formatDate(openEnded.startDate)} — ${t.workingHours.ongoing}`,
+          )}
+        </Alert>
       )}
 
       {/* Create form */}
@@ -390,9 +393,9 @@ const created = await api.createSchedule(dto);
             </div>
           </div>
           {createConflict && (
-            <div className="alert alert-error">{conflictText(createConflict)}</div>
+            <Alert variant="danger">{conflictText(createConflict)}</Alert>
           )}
-          {createError && <div className="alert alert-error">{createError}</div>}
+          {createError && <Alert variant="danger">{createError}</Alert>}
           <div className="wh-create-actions">
             <button
               className="btn"
@@ -474,7 +477,7 @@ const created = await api.createSchedule(dto);
                   />
                 </span>
               ) : (
-                <span className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'}`}>
+                <span className={`badge ${schedule.isActive ? 'badge--success' : 'badge--neutral'}`}>
                   {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
                 </span>
               )}
@@ -535,11 +538,11 @@ const created = await api.createSchedule(dto);
                   </div>
                 )}
 
-                {state.error && (
-                  <div className="alert alert-error wh-schedule-alert">{state.error}</div>
-                )}
-                {state.success && (
-                  <div className="alert alert-success wh-schedule-alert">{state.success}</div>
+                {(state.error || state.success) && (
+                  <div className="wh-schedule-alerts">
+                    {state.error && <Alert variant="danger">{state.error}</Alert>}
+                    {state.success && <Alert variant="success">{state.success}</Alert>}
+                  </div>
                 )}
                 {isOwner && (
                   <div className="wh-dates-section">

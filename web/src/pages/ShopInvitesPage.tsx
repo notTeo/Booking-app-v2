@@ -12,6 +12,7 @@ import {
 import Switch from '../components/Switch';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function ShopInvitesPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -147,7 +148,7 @@ export default function ShopInvitesPage() {
         <h1>{t.invites.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Add team member form */}
       <div className="invites-form-card">
@@ -213,7 +214,7 @@ export default function ShopInvitesPage() {
           </div>
 
           {confirmOwner && (
-            <div className="alert alert-error">{t.invites.confirmOwnerInvite}</div>
+            <Alert variant="danger">{t.invites.confirmOwnerInvite}</Alert>
           )}
 
           <div className="invites-form-row">
@@ -240,7 +241,7 @@ export default function ShopInvitesPage() {
         <p className="invites-empty">{t.invites.noPendingLogins}</p>
       ) : (
         <>
-          {actionError && <div className="alert alert-error">{actionError}</div>}
+          {actionError && <Alert variant="danger">{actionError}</Alert>}
           {/* Desktop / tablet: table (hidden below 640px) */}
           <div className="data-table-card table-view">
             <table className="data-table">
@@ -259,12 +260,12 @@ export default function ShopInvitesPage() {
                     <td>{m.name}</td>
                     <td>{m.email ?? '—'}</td>
                     <td>
-                      <span className={`invite-role-badge ${m.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                      <span className={`badge ${m.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                         {t.invites.roles[m.role]}
                       </span>
                     </td>
                     <td>
-                      <span className={`invite-status-badge invite-status-${m.hasPendingInvite ? 'pending' : 'expired'}`}>
+                      <span className={`badge ${m.hasPendingInvite ? 'badge--warning' : 'badge--neutral'}`}>
                         {m.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
                       </span>
                     </td>
@@ -319,13 +320,13 @@ export default function ShopInvitesPage() {
                 </div>
                 <div className="row-card__field">
                   <span className="row-card__label">{t.invites.roleLabel}</span>
-                  <span className={`invite-role-badge ${m.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                  <span className={`badge ${m.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                     {t.invites.roles[m.role]}
                   </span>
                 </div>
                 <div className="row-card__field">
                   <span className="row-card__label">{t.invites.statusLabel}</span>
-                  <span className={`invite-status-badge invite-status-${m.hasPendingInvite ? 'pending' : 'expired'}`}>
+                  <span className={`badge ${m.hasPendingInvite ? 'badge--warning' : 'badge--neutral'}`}>
                     {m.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
                   </span>
                 </div>

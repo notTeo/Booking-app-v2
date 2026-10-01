@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmailChange } from '../api/auth.api';
 import '../styles/pages/verify-email.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function VerifyEmailChangePage() {
   const [searchParams] = useSearchParams();
@@ -44,14 +45,14 @@ export default function VerifyEmailChangePage() {
 
         {status === 'success' && (
           <>
-            <div className="alert alert-success">{message}</div>
+            <Alert variant="success">{message}</Alert>
             <Link to="/dashboard"><button className="btn btn--block">Go to Dashboard</button></Link>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <div className="alert alert-error">{message}</div>
+            <Alert variant="danger">{message}</Alert>
             <Link to="/settings"><button className="btn btn--secondary btn--block">Back to Settings</button></Link>
           </>
         )}

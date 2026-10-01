@@ -6,6 +6,7 @@ import { getMyShops, type Shop } from '../api/shop.api';
 import '../styles/pages/shops.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import Alert from '../components/Alert';
 
 export default function ShopsPage() {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ export default function ShopsPage() {
       )}
 
       {!loading && error && (
-        <div className="alert alert-error">{error}</div>
+        <Alert variant="danger">{error}</Alert>
       )}
 
       {!loading && !error && shops.length === 0 && (
@@ -59,7 +60,7 @@ export default function ShopsPage() {
             <Link key={shop.id} to={`/shops/${shop.slug}`} className="shop-card">
               <div className="shop-card-top">
                 <span className="shop-card-name">{shop.name}</span>
-                <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
+                <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
                   {shop.isActive ? t.shops.active : t.shops.inactive}
                 </span>
               </div>
@@ -68,7 +69,7 @@ export default function ShopsPage() {
                 <p className="shop-card-desc">{shop.description}</p>
               )}
               <div className="shop-card-meta">
-                <span className="shop-role-badge">{shop.role}</span>
+                <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
                 {shop.formattedAddress && <span className="shop-card-city">{shop.formattedAddress}</span>}
               </div>
             </Link>

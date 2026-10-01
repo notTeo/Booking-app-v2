@@ -8,6 +8,7 @@ import { getBookingStats, type BookingWithStaff } from '../api/booking.api';
 import { useLang } from '../context/LanguageContext';
 import '../styles/pages/dashboard.css';
 import '../styles/pages/shops.css';
+import Alert from '../components/Alert';
 
 interface ShopStat {
   shop: Shop;
@@ -65,7 +66,7 @@ export default function DashboardPage() {
         <p className="dash-subtitle">{t.dashboard.subtitle}</p>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {shopStats.length === 0 ? (
         <div className="shops-empty">

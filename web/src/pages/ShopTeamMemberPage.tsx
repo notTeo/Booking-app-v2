@@ -22,6 +22,7 @@ import {
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 export default function ShopTeamMemberPage() {
   const { slug, memberId } = useParams<{ slug: string; memberId: string }>();
@@ -276,7 +277,7 @@ export default function ShopTeamMemberPage() {
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
           {t.team.backToTeam}
         </button>
-        <div className="alert alert-error">{error || t.team.notFound}</div>
+        <Alert variant="danger">{error || t.team.notFound}</Alert>
       </div>
     );
   }
@@ -292,7 +293,7 @@ export default function ShopTeamMemberPage() {
       <div className="card team-member-card">
         <h1>{member.name}</h1>
         <div className="team-member-meta">
-          <span className={`team-role-badge team-role-${member.role}`}>
+          <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
             {t.team.roles[member.role]}
           </span>
           <span className="team-date">
@@ -375,12 +376,12 @@ export default function ShopTeamMemberPage() {
               </div>
             )}
 
-            {memberError && <div className="alert alert-error">{memberError}</div>}
-            {memberSuccess && <div className="alert alert-success">{memberSuccess}</div>}
+            {memberError && <Alert variant="danger">{memberError}</Alert>}
+            {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
             {confirmRoleChange && (
-              <div className="alert alert-error">
+              <Alert variant="danger">
                 {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
-              </div>
+              </Alert>
             )}
 
             <div className="team-invite-actions">
@@ -408,8 +409,8 @@ export default function ShopTeamMemberPage() {
                 {editEmail !== (member.email ?? '') && (
                   <p className="team-switch-desc">{t.team.emailChangedHint}</p>
                 )}
-                {inviteError && <div className="alert alert-error">{inviteError}</div>}
-                {inviteSuccess && <div className="alert alert-success">{inviteSuccess}</div>}
+                {inviteError && <Alert variant="danger">{inviteError}</Alert>}
+                {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
                 <div className="team-invite-actions">
                   <button
                     className="btn"
@@ -450,7 +451,7 @@ export default function ShopTeamMemberPage() {
           </div>
         ) : (
           <>
-            {servicesError && <div className="alert alert-error">{servicesError}</div>}
+            {servicesError && <Alert variant="danger">{servicesError}</Alert>}
             {memberServices.length === 0 ? (
               <p className="team-services-empty">{t.team.noAssignedServices}</p>
             ) : (
@@ -506,7 +507,7 @@ export default function ShopTeamMemberPage() {
         <div className="card shop-danger-card">
           <h2 className="shop-danger-title">{t.team.dangerZone}</h2>
           <p className="shop-danger-desc">{t.team.removeMemberDesc}</p>
-          {removeError && <div className="alert alert-error">{removeError}</div>}
+          {removeError && <Alert variant="danger">{removeError}</Alert>}
           {!confirmRemove ? (
             <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
               {t.team.remove}

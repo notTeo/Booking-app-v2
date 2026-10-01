@@ -18,6 +18,7 @@ import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -227,7 +228,7 @@ export default function ShopServicesPage() {
     onCancel: () => void,
   ) => (
     <form className="service-form card" onSubmit={onSubmit}>
-      {formError && <div className="alert alert-error">{formError}</div>}
+      {formError && <Alert variant="danger">{formError}</Alert>}
       <div className="service-form-grid">
         <div className="field">
           <label className="field__label">{t.services.name}</label>
@@ -308,7 +309,7 @@ export default function ShopServicesPage() {
         <h1>{t.services.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Create form */}
       {showCreate &&
@@ -349,7 +350,7 @@ export default function ShopServicesPage() {
                       <div className="service-card-name">
                         {service.name}
                         <span
-                          className={`service-status-badge service-status-${service.isActive ? 'active' : 'inactive'}`}
+                          className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
                         >
                           {service.isActive ? t.services.active : t.services.inactive}
                         </span>
@@ -429,7 +430,7 @@ export default function ShopServicesPage() {
                         </div>
                       ) : (
                         <>
-                          {staffError && <div className="alert alert-error">{staffError}</div>}
+                          {staffError && <Alert variant="danger">{staffError}</Alert>}
 
                           <div className="service-staff-title">{t.services.assignedStaff}</div>
 

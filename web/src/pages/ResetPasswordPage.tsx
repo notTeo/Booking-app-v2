@@ -5,6 +5,7 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/reset-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -75,7 +76,7 @@ export default function ResetPasswordPage() {
               required
             />
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
           <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Resetting...' : 'Reset Password'}
           </button>

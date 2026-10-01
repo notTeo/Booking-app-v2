@@ -5,6 +5,7 @@ import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, type TeamMember } from '../api/team.api';
 import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -88,7 +89,7 @@ export default function ShopTeamPage() {
         <h1>{t.team.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {members.length === 0 ? (
         <p className="team-empty">{t.team.noMembers}</p>
@@ -118,15 +119,15 @@ export default function ShopTeamPage() {
                     <td>
                       {member.email}
                       {!member.userId && (
-                        <span className="team-no-login-badge">{t.team.noLoginYet}</span>
+                        <span className="badge badge--warning">{t.team.noLoginYet}</span>
                       )}
                     </td>
                     <td>
-                      <span className={`team-role-badge team-role-${member.role}`}>
+                      <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                         {t.team.roles[member.role]}
                       </span>
                       {!member.active && (
-                        <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
+                        <span className="badge badge--neutral">{t.team.inactiveBadge}</span>
                       )}
                     </td>
                     <td className="team-date">
@@ -146,7 +147,7 @@ export default function ShopTeamPage() {
             </table>
             {removeError && (
               <div style={{ padding: '0.75rem 1.25rem' }}>
-                <div className="alert alert-error">{removeError}</div>
+                <Alert variant="danger">{removeError}</Alert>
               </div>
             )}
           </div>
@@ -167,17 +168,17 @@ export default function ShopTeamPage() {
                   <span className="row-card__value">
                     {member.email}
                     {!member.userId && (
-                      <span className="team-no-login-badge">{t.team.noLoginYet}</span>
+                      <span className="badge badge--warning">{t.team.noLoginYet}</span>
                     )}
                   </span>
                 </div>
                 <div className="row-card__field">
                   <span className="row-card__label">{t.team.role}</span>
-                  <span className={`team-role-badge team-role-${member.role}`}>
+                  <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                     {t.team.roles[member.role]}
                   </span>
                   {!member.active && (
-                    <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
+                    <span className="badge badge--neutral">{t.team.inactiveBadge}</span>
                   )}
                 </div>
                 <div className="row-card__field">
@@ -197,7 +198,7 @@ export default function ShopTeamPage() {
                 )}
               </div>
             ))}
-            {removeError && <div className="alert alert-error">{removeError}</div>}
+            {removeError && <Alert variant="danger">{removeError}</Alert>}
           </div>
         </>
       )}

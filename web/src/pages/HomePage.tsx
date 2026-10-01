@@ -499,8 +499,8 @@ export default function HomePage() {
                     <div className="home-preview-overview-header">
                       <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
                       <div className="home-preview-badges">
-                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
-                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                        <span className="badge badge--accent">{t.team.roles.owner}</span>
+                        <span className="badge badge--success">{t.shops.active}</span>
                       </div>
                     </div>
 
@@ -641,12 +641,12 @@ export default function HomePage() {
                       <tbody>
                         <tr>
                           <td>marcus@demo.shop</td>
-                          <td><span className="home-preview-role-badge home-preview-role-badge--owner">{t.team.roles.owner}</span></td>
+                          <td><span className="badge badge--accent">{t.team.roles.owner}</span></td>
                           <td>2024</td>
                         </tr>
                         <tr>
                           <td>sofia@demo.shop</td>
-                          <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.team.roles.staff}</span></td>
+                          <td><span className="badge badge--neutral">{t.team.roles.staff}</span></td>
                           <td>2025</td>
                         </tr>
                       </tbody>
@@ -704,13 +704,13 @@ export default function HomePage() {
                         <tbody>
                           <tr>
                             <td>{t.home.previewInviteRowName1}</td>
-                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
-                            <td><span className="home-preview-status-badge home-preview-status-badge--pending">{t.invites.status.pending}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.roles.staff}</span></td>
+                            <td><span className="badge badge--warning">{t.invites.status.pending}</span></td>
                           </tr>
                           <tr>
                             <td>{t.home.previewInviteRowName2}</td>
-                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
-                            <td><span className="home-preview-status-badge home-preview-status-badge--expired">{t.invites.notSentYet}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.roles.staff}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.notSentYet}</span></td>
                           </tr>
                         </tbody>
                       </table>
@@ -723,8 +723,8 @@ export default function HomePage() {
                     <div className="home-preview-overview-header">
                       <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
                       <div className="home-preview-badges">
-                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
-                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                        <span className="badge badge--accent">{t.team.roles.owner}</span>
+                        <span className="badge badge--success">{t.shops.active}</span>
                       </div>
                     </div>
 
@@ -815,7 +815,7 @@ export default function HomePage() {
                     <div className="home-preview-service-row">
                       <div className="home-preview-service-row-top">
                         <h4>{t.home.previewService1Name}</h4>
-                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                        <span className="badge badge--success">{t.services.active}</span>
                       </div>
                       <p className="home-preview-service-desc">{t.home.previewService1Desc}</p>
                       <p className="home-preview-service-meta">{t.home.previewService1Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[0]}</p>
@@ -823,7 +823,7 @@ export default function HomePage() {
                     <div className="home-preview-service-row">
                       <div className="home-preview-service-row-top">
                         <h4>{t.home.previewService2Name}</h4>
-                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                        <span className="badge badge--success">{t.services.active}</span>
                       </div>
                       <p className="home-preview-service-desc">{t.home.previewService2Desc}</p>
                       <p className="home-preview-service-meta">{t.home.previewService2Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[1]}</p>

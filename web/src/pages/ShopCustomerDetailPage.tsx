@@ -4,16 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
-import type { BookingStatus } from '../api/booking.api';
+import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
-
-function StatusBadge({ status }: { status: BookingStatus }) {
-  return (
-    <span className={`status-badge status-badge--${status.toLowerCase()}`}>
-      {status.replace('_', ' ').toLowerCase()}
-    </span>
-  );
-}
+import Alert from '../components/Alert';
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -132,7 +125,7 @@ export default function ShopCustomerDetailPage() {
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
           {t.customers.backToCustomers}
         </button>
-        <div className="alert alert-error">{error || t.customers.notFound}</div>
+        <Alert variant="danger">{error || t.customers.notFound}</Alert>
       </div>
     );
   }
@@ -198,8 +191,8 @@ export default function ShopCustomerDetailPage() {
               rows={3}
             />
           </div>
-          {saveError && <div className="alert alert-error">{saveError}</div>}
-          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
+          {saveError && <Alert variant="danger">{saveError}</Alert>}
+          {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
           <button
             className="btn"
             onClick={handleSave}
@@ -215,7 +208,7 @@ export default function ShopCustomerDetailPage() {
         <div className="card team-role-card">
           <h2>{t.customers.privacyHeading}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
-          {privacyError && <div className="alert alert-error">{privacyError}</div>}
+          {privacyError && <Alert variant="danger">{privacyError}</Alert>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
               {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}

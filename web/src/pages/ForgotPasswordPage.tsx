@@ -4,6 +4,7 @@ import { forgotPassword } from '../api/auth.api';
 import '../styles/pages/forgot-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -42,8 +43,8 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
           <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>

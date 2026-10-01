@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -145,7 +146,7 @@ export default function ShopNewPage() {
             />
           </div>
 
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
 
           <div className="shop-form-actions">
             <button className="btn" type="submit" disabled={loading}>

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -66,7 +67,7 @@ export default function LoginPage() {
             <span className="checkbox__box" />
             Remember me
           </label>
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
           <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}
           </button>

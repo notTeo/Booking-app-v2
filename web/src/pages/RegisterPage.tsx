@@ -8,6 +8,7 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/register.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
@@ -143,17 +144,17 @@ export default function RegisterPage() {
               </span>
             </label>
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
           {success && (
             <>
-              <div className="alert alert-success">
+              <Alert variant="success">
                 {success} Check your spam folder if you don't see it.
-              </div>
+              </Alert>
               {resendStatus === 'sent' && (
-                <div className="alert alert-success">Email resent successfully.</div>
+                <Alert variant="success">Email resent successfully.</Alert>
               )}
               {resendStatus === 'error' && (
-                <div className="alert alert-error">Failed to resend. Please try again.</div>
+                <Alert variant="danger">Failed to resend. Please try again.</Alert>
               )}
               <button
                 className="btn btn--secondary btn--block"

@@ -14,6 +14,7 @@ import {
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -140,7 +141,7 @@ export default function ShopSettingsPage() {
   if (loadError) {
     return (
       <div className="shops-page">
-        <div className="alert alert-error">{loadError}</div>
+        <Alert variant="danger">{loadError}</Alert>
       </div>
     );
   }
@@ -163,8 +164,8 @@ export default function ShopSettingsPage() {
       <div className="shop-detail-header">
         <h1>{shop.name}</h1>
         <div className="shop-detail-meta">
-          <span className="shop-role-badge">{shop.role}</span>
-          <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
+          <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
+          <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>
           <span className="shop-detail-date">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
@@ -197,8 +198,8 @@ export default function ShopSettingsPage() {
               {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
             </button>
           </div>
-          {saveError && <div className="alert alert-error">{saveError}</div>}
-          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
+          {saveError && <Alert variant="danger">{saveError}</Alert>}
+          {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
           <div className="field">
             <label className="field__label" htmlFor="detail-name">{t.shops.name}</label>
             <input className="input" id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -303,7 +304,7 @@ export default function ShopSettingsPage() {
               <p className="settings-danger-desc">
                 {t.shopSettings.areYouSure.replace('{name}', shop.name)}
               </p>
-              {deleteError && <div className="alert alert-error">{deleteError}</div>}
+              {deleteError && <Alert variant="danger">{deleteError}</Alert>}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <button className="btn btn--danger btn--sm" type="submit" disabled={deleteLoading}>
                   {deleteLoading ? t.shops.deleting : t.shopSettings.yesDeleteShop}

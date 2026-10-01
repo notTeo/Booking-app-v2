@@ -9,6 +9,7 @@ import {
 } from '../api/invite.api';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 type Tab = 'received' | 'sent';
 
@@ -112,8 +113,8 @@ export default function InvitesPage() {
         <h1>{t.invites.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
-      {actionError && <div className="alert alert-error">{actionError}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
+      {actionError && <Alert variant="danger">{actionError}</Alert>}
 
       <div className="invites-tabs">
         <button
@@ -158,7 +159,7 @@ export default function InvitesPage() {
                     <tr key={invite.id} className="data-table-row">
                       <td>{invite.shop?.name ?? invite.shopId}</td>
                       <td>
-                        <span className={`invite-role-badge ${invite.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                        <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                           {t.invites.roles[invite.role]}
                         </span>
                       </td>
@@ -185,7 +186,7 @@ export default function InvitesPage() {
                   </div>
                   <div className="row-card__field">
                     <span className="row-card__label">{t.invites.roleLabel}</span>
-                    <span className={`invite-role-badge ${invite.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                    <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                       {t.invites.roles[invite.role]}
                     </span>
                   </div>
@@ -230,12 +231,12 @@ export default function InvitesPage() {
                       <td>{invite.shop?.name ?? invite.shopId}</td>
                       <td>{invite.email}</td>
                       <td>
-                        <span className={`invite-role-badge ${invite.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                        <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                           {t.invites.roles[invite.role]}
                         </span>
                       </td>
                       <td>
-                        <span className={`invite-status-badge invite-status-${invite.status}`}>
+                        <span className={`badge ${invite.status === 'accepted' ? 'badge--success' : invite.status === 'pending' ? 'badge--warning' : 'badge--neutral'}`}>
                           {t.invites.status[invite.status]}
                         </span>
                       </td>
@@ -262,13 +263,13 @@ export default function InvitesPage() {
                   </div>
                   <div className="row-card__field">
                     <span className="row-card__label">{t.invites.roleLabel}</span>
-                    <span className={`invite-role-badge ${invite.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                    <span className={`badge ${invite.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                       {t.invites.roles[invite.role]}
                     </span>
                   </div>
                   <div className="row-card__field">
                     <span className="row-card__label">Status</span>
-                    <span className={`invite-status-badge invite-status-${invite.status}`}>
+                    <span className={`badge ${invite.status === 'accepted' ? 'badge--success' : invite.status === 'pending' ? 'badge--warning' : 'badge--neutral'}`}>
                       {t.invites.status[invite.status]}
                     </span>
                   </div>

@@ -5,6 +5,7 @@ import { useLang } from '../context/LanguageContext';
 import { lookupInvite, acceptInvite, type InviteLookup } from '../api/invite.api';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function AcceptInvitePage() {
   const { t } = useLang();
@@ -97,9 +98,9 @@ export default function AcceptInvitePage() {
         </div>
 
         {acceptError && (
-          <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+          <Alert variant="danger">
             {acceptError}
-          </div>
+          </Alert>
         )}
 
         <div className="accept-invite-actions">

@@ -24,6 +24,7 @@ import {
   type OverrideTag,
 } from './calendarModel';
 import '../styles/pages/bookings.css';
+import Alert from '../components/Alert';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
@@ -378,7 +379,7 @@ export default function ShopBookingsPage() {
         )}
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Detail panel ── */}
       {creatingSlot ? (
