@@ -25,7 +25,6 @@ import {
   faMagnifyingGlass,
   faArrowUp,
   faRightFromBracket,
-  faChevronDown,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -34,7 +33,6 @@ import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 import Switch from '../components/Switch';
 import { handleActivateKeyDown } from '../utils/a11y';
-import type { DayOfWeek, HourRange } from '../api/workingHours.api';
 import '../styles/pages/home.css';
 import '../styles/pages/sidebar.css';
 import Wordmark from '../components/Wordmark';
@@ -43,7 +41,7 @@ import BrandText from '../components/BrandText';
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
 // real app, matching components/Sidebar.tsx's link set and classes.
-type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'hours' | 'customers' | 'settings';
+type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'customers' | 'settings';
 
 type T = ReturnType<typeof useLang>['t'];
 
@@ -70,7 +68,6 @@ const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageI
   { label: t.sidebar.manageSection, items: [
     { id: 'team', label: t.sidebar.team, icon: faUsers },
     { id: 'invites', label: t.sidebar.invites, icon: faUserPlus },
-    { id: 'hours', label: t.sidebar.shopWorkingHours, icon: faClock },
     { id: 'customers', label: t.sidebar.customers, icon: faMagnifyingGlass },
   ]},
 ];
@@ -85,21 +82,6 @@ const PREVIEW_UPCOMING_COUNT = 4;
 
 const PREVIEW_SERVICE_PRICES = ['€25', '€12'];
 
-// ─── Working-hours mock demo data ──────────────────────────────────────────
-const WH_DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-type WhDayState = { isOpen: boolean; hours: HourRange[] };
-type WhDaysForm = Record<DayOfWeek, WhDayState>;
-
-const defaultWhDays = (): WhDaysForm => ({
-  MON: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  TUE: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  WED: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  THU: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  FRI: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  SAT: { isOpen: true, hours: [{ startTime: '10:00', endTime: '14:00' }] },
-  SUN: { isOpen: false, hours: [] },
-});
-
 // ─── Booking wizard mock demo data ─────────────────────────────────────────
 type WizardStep = 1 | 2 | 3 | 4;
 const WIZARD_DEMO_SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
@@ -112,7 +94,6 @@ const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle:
   services: { title: t.sidebar.services, subtitle: t.home.previewServicesSubtitle },
   team: { title: t.sidebar.team, subtitle: t.home.previewTeamPageSubtitle },
   invites: { title: t.sidebar.invites, subtitle: t.home.previewInvitesSubtitle },
-  hours: { title: t.sidebar.shopWorkingHours, subtitle: t.home.previewHoursSubtitle },
   customers: { title: t.sidebar.customers, subtitle: t.home.previewCustomersSubtitle },
   settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle },
 });
@@ -179,42 +160,6 @@ export default function HomePage() {
   const [settingsAddress, setSettingsAddress] = useState('123 Main St, Springfield');
   const [settingsTimezone, setSettingsTimezone] = useState('Europe/Athens');
   const [settingsActive, setSettingsActive] = useState(true);
-
-  // Working hours mock — interactive per-day toggles + real time-slot inputs
-  const [whExpanded, setWhExpanded] = useState(true);
-  const [whDays, setWhDays] = useState<WhDaysForm>(defaultWhDays);
-
-  const toggleWhDay = (day: DayOfWeek) => {
-    setWhDays(prev => {
-      const wasOpen = prev[day].isOpen;
-      const hours = !wasOpen && prev[day].hours.length === 0
-        ? [{ startTime: '09:00', endTime: '17:00' }]
-        : prev[day].hours;
-      return { ...prev, [day]: { isOpen: !wasOpen, hours } };
-    });
-  };
-
-  const updateWhSlot = (day: DayOfWeek, idx: number, field: 'startTime' | 'endTime', value: string) => {
-    setWhDays(prev => {
-      const hours = [...prev[day].hours];
-      hours[idx] = { ...hours[idx], [field]: value };
-      return { ...prev, [day]: { ...prev[day], hours } };
-    });
-  };
-
-  const addWhSlot = (day: DayOfWeek) => {
-    setWhDays(prev => ({
-      ...prev,
-      [day]: { ...prev[day], hours: [...prev[day].hours, { startTime: '09:00', endTime: '17:00' }] },
-    }));
-  };
-
-  const removeWhSlot = (day: DayOfWeek, idx: number) => {
-    setWhDays(prev => ({
-      ...prev,
-      [day]: { ...prev[day], hours: prev[day].hours.filter((_, i) => i !== idx) },
-    }));
-  };
 
   // New-booking wizard mock — click-through 4-step flow, local state only
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
@@ -887,78 +832,6 @@ export default function HomePage() {
                       <FontAwesomeIcon icon={faPlus} />
                       <span>{t.services.addService}</span>
                     </div>
-                  </div>
-                ) : previewPage === 'hours' ? (
-                  // Mirrors WorkingHoursPanel.tsx: a collapsible schedule card with
-                  // per-day Switch toggles and real time-slot inputs — same
-                  // interactions and demo data, but everything stays local (no
-                  // save/API calls).
-                  <div className="home-preview-wh-schedule-card">
-                    <div
-                      className="home-preview-wh-header"
-                      role="button"
-                      tabIndex={0}
-                      aria-expanded={whExpanded}
-                      onClick={() => setWhExpanded(v => !v)}
-                      onKeyDown={handleActivateKeyDown(() => setWhExpanded(v => !v))}
-                    >
-                      <span className="home-preview-wh-date-range">{t.workingHours.from} Jan 1 — {t.workingHours.ongoing}</span>
-                      <span className="home-preview-wh-badge home-preview-wh-badge--active">{t.shops.active}</span>
-                      <FontAwesomeIcon
-                        icon={faChevronDown}
-                        className={`home-preview-wh-chevron${whExpanded ? ' home-preview-wh-chevron--open' : ''}`}
-                      />
-                    </div>
-                    {whExpanded && (
-                      <div className="home-preview-wh-body">
-                        {WH_DAY_ORDER.map((day) => {
-                          const dayState = whDays[day];
-                          return (
-                            <div key={day} className="home-preview-wh-row home-preview-wh-row--full">
-                              <div className="home-preview-wh-row-top">
-                                <span className="home-preview-wh-day">{t.workingHours.days[day]}</span>
-                                <Switch checked={dayState.isOpen} onChange={() => toggleWhDay(day)} />
-                                <span className={`home-preview-wh-status home-preview-wh-status--${dayState.isOpen ? 'open' : 'closed'}`}>
-                                  {dayState.isOpen ? t.workingHours.open : t.workingHours.closed}
-                                </span>
-                              </div>
-                              {dayState.isOpen && (
-                                <div className="home-preview-wh-slots">
-                                  {dayState.hours.map((slot, idx) => (
-                                    <div key={idx} className="home-preview-wh-slot-row">
-                                      <input
-                                        type="time"
-                                        className="home-preview-input home-preview-time-input"
-                                        value={slot.startTime}
-                                        onChange={(e) => updateWhSlot(day, idx, 'startTime', e.target.value)}
-                                      />
-                                      <span className="home-preview-wh-slot-sep">–</span>
-                                      <input
-                                        type="time"
-                                        className="home-preview-input home-preview-time-input"
-                                        value={slot.endTime}
-                                        onChange={(e) => updateWhSlot(day, idx, 'endTime', e.target.value)}
-                                      />
-                                      <button
-                                        type="button"
-                                        className="home-preview-wh-slot-remove"
-                                        onClick={() => removeWhSlot(day, idx)}
-                                        aria-label={t.workingHours.removeSlot}
-                                      >
-                                        <FontAwesomeIcon icon={faXmark} />
-                                      </button>
-                                    </div>
-                                  ))}
-                                  <button type="button" className="home-preview-wh-add-slot" onClick={() => addWhSlot(day)}>
-                                    {t.workingHours.addSlot}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
                 ) : previewPage === 'newBooking' ? (
                   // Mirrors OwnerBookingWizard.tsx: a real click-through 4-step flow

@@ -158,7 +158,6 @@ export interface Translations {
     previewServicesSubtitle: string;
     previewTeamPageSubtitle: string;
     previewInvitesSubtitle: string;
-    previewHoursSubtitle: string;
     previewCustomersSubtitle: string;
     previewSettingsSubtitle: string;
     previewCalStaff1: string;
@@ -986,7 +985,6 @@ home: {
     previewServicesSubtitle: 'Τι προσφέρει το κατάστημά σου.',
     previewTeamPageSubtitle: '5 μέλη προσωπικού ενεργά.',
     previewInvitesSubtitle: 'Φέρε την ομάδα σου στο BeBooked.',
-    previewHoursSubtitle: 'Πότε είναι ανοιχτό το κατάστημά σου.',
     previewCustomersSubtitle: '312 πελάτες καταχωρημένοι.',
     previewSettingsSubtitle: 'Στοιχεία καταστήματος & προτιμήσεις.',
     previewCalStaff1: 'Μάρκος',
@@ -1832,7 +1830,6 @@ home: {
     previewServicesSubtitle: 'What your shop offers.',
     previewTeamPageSubtitle: '5 staff members active.',
     previewInvitesSubtitle: 'Bring your team onto BeBooked.',
-    previewHoursSubtitle: 'When your shop is open.',
     previewCustomersSubtitle: '312 clients on file.',
     previewSettingsSubtitle: 'Shop details & preferences.',
     previewCalStaff1: 'Marcus',
