@@ -19,6 +19,8 @@ import teamRouter from './team.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
 import customerRouter from './customer.routes';
+import { overviewValidation } from '../validators/overview.validator';
+import { getOverview } from '../controllers/overview.controller';
 
 const router = Router();
 
@@ -42,6 +44,13 @@ router.get(
   dayScheduleValidation,
   validate,
   getDaySchedule,
+);
+router.get(
+  '/:shopId/overview',
+  authenticate,
+  overviewValidation,
+  validate,
+  getOverview,
 );
 router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/services', serviceRouter);

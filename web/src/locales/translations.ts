@@ -713,6 +713,47 @@ export interface Translations {
     noBookingsToday: string;
     upcomingBookings: string;
     noUpcoming: string;
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
+    rangeLabel: string;
+    range: { week: string; month: string; quarter: string };
+    stats: {
+      bookings: string;
+      pending: string;
+      completed: string;
+      canceledNoShow: string;
+    };
+    chart: {
+      title: string;
+      tableCaption: string;
+      periodCol: string;
+      countCol: string;
+      bookingOne: string;
+      bookingMany: string;
+      scheduled: string;
+    };
+    upcoming: {
+      title: string;
+      viewAll: string;
+      empty: string;
+      customerCol: string;
+      serviceCol: string;
+      whenCol: string;
+      statusCol: string;
+    };
+    breakdown: { title: string; total: string; listLabel: string };
+    error: { title: string; text: string; retry: string };
+    empty: {
+      title: string;
+      text: string;
+      copy: string;
+      copied: string;
+      week: string;
+      month: string;
+      quarter: string;
+    };
+    loadingLabel: string;
   };
   customers: {
     cancel: string;
@@ -1553,6 +1594,55 @@ home: {
       noBookingsToday: 'Δεν υπάρχουν ραντεβού σήμερα.',
       upcomingBookings: 'Προσεχή Ραντεβού',
       noUpcoming: 'Δεν υπάρχουν προσεχή ραντεβού.',
+      greetingMorning: 'Καλημέρα, {name}',
+      greetingAfternoon: 'Καλό απόγευμα, {name}',
+      greetingEvening: 'Καλησπέρα, {name}',
+      rangeLabel: 'Χρονική περίοδος',
+      range: { week: 'Εβδομάδα', month: 'Μήνας', quarter: '3 μήνες' },
+      stats: {
+        bookings: 'Ραντεβού',
+        pending: 'Σε αναμονή',
+        completed: 'Ολοκληρωμένα',
+        canceledNoShow: 'Ακυρωμένα / Δεν προσήλθαν',
+      },
+      chart: {
+        title: 'Ραντεβού ανά περίοδο',
+        tableCaption: 'Ραντεβού ανά περίοδο (χωρίς ακυρωμένα)',
+        periodCol: 'Περίοδος',
+        countCol: 'Ραντεβού',
+        bookingOne: 'ραντεβού',
+        bookingMany: 'ραντεβού',
+        scheduled: 'προγραμματισμένα',
+      },
+      upcoming: {
+        title: 'Επερχόμενα ραντεβού',
+        viewAll: 'Προβολή όλων',
+        empty: 'Δεν υπάρχουν επερχόμενα ραντεβού',
+        customerCol: 'Πελάτης',
+        serviceCol: 'Υπηρεσία',
+        whenCol: 'Πότε',
+        statusCol: 'Κατάσταση',
+      },
+      breakdown: {
+        title: 'Κατανομή καταστάσεων',
+        total: 'Σύνολο',
+        listLabel: 'Ραντεβού ανά κατάσταση',
+      },
+      error: {
+        title: 'Δεν μπορέσαμε να φορτώσουμε την επισκόπηση',
+        text: 'Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.',
+        retry: 'Δοκιμάστε ξανά',
+      },
+      empty: {
+        title: 'Δεν υπάρχουν ραντεβού σε αυτή την περίοδο',
+        text: 'Μοιραστείτε τη σελίδα κρατήσεων και ο πρώτος σας πελάτης θα εμφανιστεί εδώ.',
+        copy: 'Αντιγραφή συνδέσμου κράτησης',
+        copied: 'Ο σύνδεσμος αντιγράφηκε',
+        week: 'Δεν υπάρχουν ραντεβού αυτή την εβδομάδα',
+        month: 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα',
+        quarter: 'Δεν υπάρχουν ραντεβού τους τελευταίους 3 μήνες',
+      },
+      loadingLabel: 'Φόρτωση επισκόπησης',
     },
     customers: {
       cancel: 'Ακύρωση',
@@ -2404,6 +2494,55 @@ home: {
       noBookingsToday: 'No bookings today.',
       upcomingBookings: 'Upcoming Bookings',
       noUpcoming: 'No upcoming bookings.',
+      greetingMorning: 'Good morning, {name}',
+      greetingAfternoon: 'Good afternoon, {name}',
+      greetingEvening: 'Good evening, {name}',
+      rangeLabel: 'Time period',
+      range: { week: 'Week', month: 'Month', quarter: '3 months' },
+      stats: {
+        bookings: 'Bookings',
+        pending: 'Pending',
+        completed: 'Completed',
+        canceledNoShow: 'Canceled / no-show',
+      },
+      chart: {
+        title: 'Bookings over time',
+        tableCaption: 'Bookings per period (canceled excluded)',
+        periodCol: 'Period',
+        countCol: 'Bookings',
+        bookingOne: 'booking',
+        bookingMany: 'bookings',
+        scheduled: 'scheduled',
+      },
+      upcoming: {
+        title: 'Upcoming bookings',
+        viewAll: 'View all',
+        empty: 'No upcoming bookings',
+        customerCol: 'Customer',
+        serviceCol: 'Service',
+        whenCol: 'When',
+        statusCol: 'Status',
+      },
+      breakdown: {
+        title: 'Status breakdown',
+        total: 'Total',
+        listLabel: 'Bookings by status',
+      },
+      error: {
+        title: "We couldn't load your overview",
+        text: 'Check your connection and try again.',
+        retry: 'Try again',
+      },
+      empty: {
+        title: 'No bookings in this period',
+        text: 'Share your booking page and your first customer will show up here.',
+        copy: 'Copy booking link',
+        copied: 'Link copied',
+        week: 'No bookings this week',
+        month: 'No bookings this month',
+        quarter: 'No bookings in the last 3 months',
+      },
+      loadingLabel: 'Loading overview',
     },
     customers: {
       cancel: 'Cancel',

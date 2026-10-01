@@ -1,160 +1,114 @@
-import { publicShopUrl } from '../utils/publicLink';
-import { formatDateTimeInZone, formatTimeInZone, todayInZone } from '../utils/shopTime';
-import { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
-import { listBookings, getBookingStats, type Booking, type BookingWithStaff } from '../api/booking.api';
-import { getMembers } from '../api/team.api';
-import { getServices } from '../api/service.api';
-import { getCustomers } from '../api/customer.api';
-import CopyLinkButton from '../components/CopyLinkButton';
+import { getOverview, type OverviewRange } from '../api/overview.api';
+import { getBookingStats } from '../api/booking.api';
+import { publicShopUrl } from '../utils/publicLink';
+import { firstName, greetingPeriod } from '../utils/overviewFormat';
+import Alert from '../components/Alert';
+import RangeTabs from '../components/overview/RangeTabs';
+import { PANEL_ID, tabId } from '../utils/overviewRanges';
+import StatCards from '../components/overview/StatCards';
+import BookingsChart from '../components/overview/BookingsChart';
+import UpcomingBookings from '../components/overview/UpcomingBookings';
+import StatusDonut from '../components/overview/StatusDonut';
+import OverviewSkeleton from '../components/overview/OverviewSkeleton';
+import OverviewEmpty, { PeriodEmpty } from '../components/overview/OverviewEmpty';
 import '../styles/pages/shop-overview.css';
-import '../styles/pages/dashboard.css';
 
-interface Counts {
-  team: number;
-  services: number;
-  customers: number;
-}
-
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="field">
-      <span className="field__label">{label}</span>
-      <span className="field__value">{value}</span>
-    </div>
-  );
-}
-
-function BookingRow({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="dash-field">
-      <div className="dash-field-icon"><FontAwesomeIcon icon={faCalendarCheck} /></div>
-      <div className="dash-field-body">
-        <p className="dash-field-label">{title}</p>
-        <p className="dash-field-value">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
+// One quick retry, then show the error; the default (3 retries with backoff) leaves the skeleton up for ~7s.
+const RETRY = 1;
 
 export default function ShopOverviewPage() {
   const { shop, isLoading } = useShop();
   const { user } = useAuth();
   const { t } = useLang();
+  const [range, setRange] = useState<OverviewRange>('week');
 
-  const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
-  const [upcoming, setUpcoming] = useState<BookingWithStaff[]>([]);
-  const [upcomingCount, setUpcomingCount] = useState(0);
-  const [counts, setCounts] = useState<Counts | null>(null);
-  const [loadingStats, setLoadingStats] = useState(true);
+  const overviewQuery = useQuery({
+    queryKey: ['overview', shop?.id, range],
+    queryFn: () => getOverview(shop!.id, range),
+    enabled: !!shop,
+    retry: RETRY,
+  });
+  const overview = overviewQuery.data;
+  const periodIsEmpty = !!overview && overview.totals.all + overview.totals.canceled === 0;
 
-  useEffect(() => {
-    if (!shop) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query (see docs/plan-phase2.md LATER)
-    setLoadingStats(true);
-    Promise.all([
-      listBookings(shop.id, { date: todayInZone(shop.timezone) }),
-      getBookingStats(shop.id),
-      getMembers(shop.id),
-      getServices(shop.id),
-      getCustomers(shop.id),
-    ])
-      .then(([today, stats, members, services, customers]) => {
-        setTodayBookings(today);
-        setUpcoming(stats.upcoming);
-        setUpcomingCount(stats.upcomingCount);
-        setCounts({ team: members.length, services: services.length, customers: customers.total });
-      })
-      .catch(() => {})
-      .finally(() => setLoadingStats(false));
-  }, [shop?.id]);
+  // The next 5 bookings from now (canceled excluded). Deliberately independent
+  // of the selected period, so it is not refetched when the switch changes.
+  const upcomingQuery = useQuery({
+    queryKey: ['overview-upcoming', shop?.id],
+    queryFn: () => getBookingStats(shop!.id).then((stats) => stats.upcoming),
+    enabled: !!shop,
+    retry: RETRY,
+  });
+  const upcoming = (
+    <UpcomingBookings
+      bookings={upcomingQuery.data}
+      isError={upcomingQuery.isError}
+      onRetry={() => upcomingQuery.refetch()}
+      zone={shop?.timezone ?? 'UTC'}
+      viewAllTo={`/shops/${shop?.slug}/bookings`}
+    />
+  );
 
   if (isLoading) return <div className="state-view">{t.overview.loading}</div>;
   if (!shop) return <div className="state-view">{t.overview.noShop}</div>;
 
+  const greetingKey = {
+    morning: 'greetingMorning',
+    afternoon: 'greetingAfternoon',
+    evening: 'greetingEvening',
+  }[greetingPeriod(shop.timezone)] as 'greetingMorning' | 'greetingAfternoon' | 'greetingEvening';
+  const greeting = t.overview[greetingKey].replace('{name}', firstName(user?.name ?? ''));
+
   return (
     <div className="overview-page">
-      {user && <p className="overview-page__greeting">{t.overview.greeting.replace('{name}', user.name)}</p>}
-      <h1 className="overview-page__title">{t.overview.title}</h1>
+      <div className="overview-head">
+        <h1 className="t-title">{greeting}</h1>
+        <RangeTabs value={range} onChange={setRange} />
+      </div>
 
-      <div className="card card--flush">
-        {/* ── Header ── */}
-        <div className="shop-overview-card__header">
-          <div className="shop-overview-card__header-text">
-            <h2 className="shop-overview-card__name">{shop.name}</h2>
-            {shop.description && (
-              <p className="shop-overview-card__description">{shop.description}</p>
-            )}
-          </div>
-          <div className="shop-overview-card__badges">
-            <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
-            <span className={`badge ${shop.isActive ? "badge--success" : "badge--neutral"}`}>
-              {shop.isActive ? t.shops.active : t.shops.inactive}
-            </span>
-          </div>
-        </div>
-
-        {/* ── Body ── */}
-        <div className="shop-overview-card__body">
-          <section className="field-group">
-            <h3 className="field-group__title">{t.sharing.title}</h3>
-            <CopyLinkButton link={publicShopUrl(shop.slug)} compact />
-          </section>
-
-          {loadingStats ? (
-            <div className="shops-spinner-wrap"><div className="spinner" /></div>
-          ) : (
-            <>
-              <section className="field-group">
-                <div className="field-group__grid">
-                  <Field label={t.overview.teamLabel} value={counts?.team ?? 0} />
-                  <Field label={t.overview.servicesLabel} value={counts?.services ?? 0} />
-                  <Field label={t.overview.customersLabel} value={counts?.customers ?? 0} />
+      <div role="tabpanel" id={PANEL_ID} aria-labelledby={tabId(range)} className="overview-page">
+        {overviewQuery.isError ? (
+          <Alert
+            variant="danger"
+            title={t.overview.error.title}
+            actions={
+              <button type="button" className="btn btn--secondary btn--sm" onClick={() => overviewQuery.refetch()}>
+                {t.overview.error.retry}
+              </button>
+            }
+          >
+            {t.overview.error.text}
+          </Alert>
+        ) : !overview ? (
+          <OverviewSkeleton />
+        ) : (
+          <>
+            <StatCards totals={overview.totals} />
+            {periodIsEmpty ? (
+              overview.hasAnyBookings ? (
+                <>
+                  <PeriodEmpty range={overview.range} />
+                  {upcoming}
+                </>
+              ) : (
+                <OverviewEmpty link={publicShopUrl(shop.slug)} />
+              )
+            ) : (
+              <div className="overview-grid">
+                <div className="overview-grid__chart">
+                  <BookingsChart overview={overview} />
                 </div>
-              </section>
-
-              <section className="field-group">
-                <h3 className="field-group__title">{t.overview.todaysBookings}</h3>
-                {todayBookings.length === 0 ? (
-                  <p className="dash-field-value--muted">{t.overview.noBookingsToday}</p>
-                ) : (
-                  <div className="dash-fields">
-                    {todayBookings.map((b) => (
-                      <BookingRow
-                        key={b.id}
-                        title={b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
-                        subtitle={`${b.service.name} — ${formatTimeInZone(b.startTime, shop.timezone)}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="field-group">
-                <h3 className="field-group__title">
-                  {t.overview.upcomingBookings}{upcomingCount > 0 ? ` (${upcomingCount})` : ''}
-                </h3>
-                {upcoming.length === 0 ? (
-                  <p className="dash-field-value--muted">{t.overview.noUpcoming}</p>
-                ) : (
-                  <div className="dash-fields">
-                    {upcoming.map((b) => (
-                      <BookingRow
-                        key={b.id}
-                        title={`${b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name} · ${b.staff.name}`}
-                        subtitle={`${b.service.name} — ${formatDateTimeInZone(b.startTime, shop.timezone)}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-            </>
-          )}
-        </div>
+                {upcoming}
+                <StatusDonut totals={overview.totals} />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
