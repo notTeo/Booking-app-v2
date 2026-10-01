@@ -168,7 +168,7 @@ export default function OwnerBookingWizard({
           closedLinkTo={
             wizard.selectedMemberId
               ? `/shops/${slug}/team/${wizard.selectedMemberId}`
-              : `/shops/${slug}/working-hours`
+              : `/shops/${slug}/team`
           }
           onDateChange={wizard.handleDateChange}
           onSelectTime={wizard.setTime}

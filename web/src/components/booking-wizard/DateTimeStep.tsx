@@ -47,7 +47,7 @@ export default function DateTimeStep({
   timeHint?: string;
   /** 'public' = customer-facing booking page, 'internal' = owner/staff creating a booking. */
   mode: 'public' | 'internal';
-  /** Internal mode only — link to the working-hours page to fix a closed/no-schedule day. */
+  /** Internal mode only — link to the team page (where working hours are set) to fix a closed/no-schedule day. */
   closedLinkTo?: string;
   /** Internal mode only — start with the out-of-hours toggle already on (e.g. the calendar's hatched area was clicked). */
   defaultShowOutside?: boolean;
