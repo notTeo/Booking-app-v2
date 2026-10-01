@@ -58,11 +58,6 @@
 }
 
 /* ---- Remove button inside table ---- */
-.team-remove-btn {
-  width: auto !important;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.7rem;
-}
 
 .team-confirm-remove {
   display: flex;
@@ -71,11 +66,6 @@
   flex-wrap: wrap;
 }
 
-.team-confirm-remove .btn {
-  width: auto;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.7rem;
-}
 
 /* ---- Empty state ---- */
 .team-empty {
@@ -113,9 +103,6 @@
   margin-bottom: 1.25rem;
 }
 
-.team-member-card .btn {
-  width: auto;
-}
 
 .team-invite-block {
   margin-top: 1.25rem;
@@ -138,9 +125,6 @@
   margin-bottom: 1rem;
 }
 
-.team-role-card .btn {
-  width: auto;
-}
 
 /* ---- Availability section ---- */
 .team-member-schedules {

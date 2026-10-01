@@ -365,7 +365,7 @@ export default function ShopBookingsPage() {
             </span>
             <button
               type="button"
-              className="btn btn--secondary btn--block cal-filters-clear"
+              className="btn btn--secondary btn--block btn--sm cal-filters-clear"
               onClick={() => {
                 setStatusFilter(new Set());
                 setStaffFilter(null);

@@ -19,9 +19,6 @@
   margin: 0;
 }
 
-.services-header .btn {
-  width: auto;
-}
 
 /* ---- Empty state ---- */
 .services-empty {
@@ -127,14 +124,6 @@
   margin-left: auto;
 }
 
-.service-action-btn {
-  width: auto !important;
-  font-size: 0.82rem;
-  padding: 0.4rem 0.8rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
 
 .service-icon-btn {
   padding: 0.4rem 0.55rem;
@@ -309,6 +298,3 @@ textarea:focus {
   margin-top: 0.5rem;
 }
 
-.service-form-actions .btn {
-  width: auto;
-}

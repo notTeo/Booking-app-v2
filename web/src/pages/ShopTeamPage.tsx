@@ -50,19 +50,19 @@ export default function ShopTeamPage() {
     confirmRemove === member.id ? (
       <div className="team-confirm-remove">
         <button
-          className="btn btn--danger"
+          className="btn btn--danger btn--sm"
           onClick={() => handleRemove(member.id)}
           disabled={removing}
         >
           {removing ? t.team.removing : t.team.confirmRemove}
         </button>
-        <button className="btn btn--secondary" onClick={() => setConfirmRemove(null)}>
+        <button className="btn btn--secondary btn--sm" onClick={() => setConfirmRemove(null)}>
           {t.team.cancel}
         </button>
       </div>
     ) : (
       <button
-        className="btn btn--secondary team-remove-btn"
+        className="btn btn--secondary btn--sm team-remove-btn"
         onClick={() => {
           setConfirmRemove(member.id);
           setRemoveError('');

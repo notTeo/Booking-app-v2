@@ -36,14 +36,14 @@ export default function Navbar() {
       <div className="navbar-actions">
         {!isLoading && (
           isAuthenticated ? (
-            <button className="btn btn--secondary" onClick={handleLogout}>{t.nav.logout}</button>
+            <button className="btn btn--secondary btn--sm" onClick={handleLogout}>{t.nav.logout}</button>
           ) : (
             <>
               <Link to="/login">
-                <button className="btn btn--secondary">{t.nav.login}</button>
+                <button className="btn btn--secondary btn--sm">{t.nav.login}</button>
               </Link>
               <Link to="/register">
-                <button className="btn">{t.nav.register}</button>
+                <button className="btn btn--sm">{t.nav.register}</button>
               </Link>
             </>
           )

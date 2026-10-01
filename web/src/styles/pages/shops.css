@@ -36,9 +36,6 @@
   gap: 1rem;
 }
 
-.shops-empty .btn {
-  width: auto;
-}
 
 /* ---- Shop grid ---- */
 .shops-grid {
@@ -184,10 +181,7 @@
   margin: 0;
 }
 
-.shops-upgrade-card .btn {
-  width: auto;
-  align-self: flex-start;
-}
+.shops-upgrade-card .btn { align-self: flex-start; }
 
 /* ---- Detail page ---- */
 .shop-detail-back {
@@ -273,9 +267,6 @@
   margin-top: 0.5rem;
 }
 
-.shop-form-actions .btn {
-  width: auto;
-}
 
 /* ---- Danger card ---- */
 .shop-danger-card {
@@ -349,12 +340,6 @@
 .shop-active-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-.shop-settings-section .btn {
-  width: auto;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.9rem;
 }
 
 @media (max-width: 640px) {

@@ -1379,6 +1379,7 @@
 
 .home-preview-wizard-actions .btn {
   width: auto;
+  min-height: 0;
   font-size: clamp(0.68rem, 1.25cqw, 0.85rem);
   padding: clamp(0.4rem, 1.2cqw, 0.65rem) clamp(0.7rem, 2cqw, 1.1rem);
 }
@@ -1413,6 +1414,7 @@
 
 .home-preview-wizard-success .btn {
   width: auto;
+  min-height: 0;
   font-size: clamp(0.68rem, 1.25cqw, 0.85rem);
   padding: clamp(0.4rem, 1.2cqw, 0.65rem) clamp(0.8rem, 2.2cqw, 1.3rem);
 }

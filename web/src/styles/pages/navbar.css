@@ -74,11 +74,6 @@
   background: var(--surface-sunken);
 }
 
-.navbar-actions .btn {
-  width: auto;
-  padding: 0.45rem 1rem;
-  font-size: 0.9rem;
-}
 
 /* --- Hamburger button (hidden on desktop) --- */
 .navbar-hamburger {
@@ -143,9 +138,6 @@
     z-index: 10;
   }
 
-  .navbar-mobile-menu .btn {
-    width: 100%;
-  }
 
   .navbar-mobile-divider {
     border-top: 1px solid var(--border);

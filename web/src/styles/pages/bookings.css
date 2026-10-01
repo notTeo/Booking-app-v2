@@ -55,10 +55,6 @@
   color: var(--text-muted);
 }
 
-.cal-filters-clear {
-  padding: 0.3rem 0.75rem;
-  font-size: 0.85rem;
-}
 
 /* ── Date picker ─────────────────────────────────────────────────────────── */
 

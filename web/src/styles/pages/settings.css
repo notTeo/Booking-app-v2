@@ -32,12 +32,6 @@
   color: var(--text-muted);
 }
 
-.settings-section .btn {
-  width: auto;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.9rem;
-}
-
 /* ─── Account Overview ─── */
 .settings-overview {
   display: flex;
@@ -144,8 +138,6 @@
 }
 
 .settings-pref-btn {
-  padding: 0.45rem 0.9rem;
-  font-size: 0.85rem;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -266,7 +258,6 @@
 }
 
 .settings-section .settings-section-header .btn {
-  width: auto; /* .btn is width:100% by default — keep Save compact in the header */
+  width: auto; /* stay compact in the header on phones, where `.settings-section .btn` goes full width */
   flex-shrink: 0;
-  padding: 0.6rem 1.25rem;
 }

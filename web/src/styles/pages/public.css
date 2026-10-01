@@ -496,15 +496,10 @@
 }
 
 /* ── Wizard buttons ──────────────────────────────────────────────────────── */
-/* The wizard's Back/Continue/Confirm buttons use the shared .btn / .btn-ghost /
-   .btn-primary system (components.css) — this just un-stretches them (.btn
-   defaults to width:100%) the same way other inline buttons do elsewhere in
-   the app (e.g. .service-action-btn in services.css). */
+/* The wizard's Back/Continue/Confirm buttons use the shared .btn system
+   (components.css); this only keeps them from stretching in the column. */
 
-.wizard-btn {
-  width: auto;
-  align-self: flex-start;
-}
+.wizard-btn { align-self: flex-start; }
 
 /* ── Wizard action row (Back + Continue/Submit side by side) ─────────────── */
 

@@ -460,7 +460,7 @@ export default function ShopTeamMemberPage() {
                     <span>{a.service.name}</span>
                     {isOwner && (
                       <button
-                        className="btn btn--secondary service-action-btn"
+                        className="btn btn--secondary btn--sm service-action-btn"
                         onClick={() => handleUnassignService(a.serviceId)}
                         disabled={unassigningServiceId === a.serviceId}
                       >
@@ -488,7 +488,7 @@ export default function ShopTeamMemberPage() {
                     ))}
                   </select>
                   <button
-                    className="btn service-action-btn"
+                    className="btn btn--sm service-action-btn"
                     onClick={handleAssignService}
                     disabled={!selectedServiceId || assigningService}
                   >

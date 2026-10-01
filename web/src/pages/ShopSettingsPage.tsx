@@ -193,7 +193,7 @@ export default function ShopSettingsPage() {
               </p>
               <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
             </div>
-            <button className="btn" type="submit" disabled={saveLoading}>
+            <button className="btn btn--sm" type="submit" disabled={saveLoading}>
               {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
             </button>
           </div>
@@ -295,7 +295,7 @@ export default function ShopSettingsPage() {
           </p>
           <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
           {!showDeleteConfirm ? (
-            <button className="btn btn--danger" type="button" onClick={() => setShowDeleteConfirm(true)}>
+            <button className="btn btn--danger btn--sm" type="button" onClick={() => setShowDeleteConfirm(true)}>
               {t.shops.deleteShop}
             </button>
           ) : (
@@ -305,10 +305,10 @@ export default function ShopSettingsPage() {
               </p>
               {deleteError && <div className="alert alert-error">{deleteError}</div>}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button className="btn btn--danger" type="submit" disabled={deleteLoading}>
+                <button className="btn btn--danger btn--sm" type="submit" disabled={deleteLoading}>
                   {deleteLoading ? t.shops.deleting : t.shopSettings.yesDeleteShop}
                 </button>
-                <button className="btn btn--secondary" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
+                <button className="btn btn--secondary btn--sm" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
                   {t.shops.cancel}
                 </button>
               </div>

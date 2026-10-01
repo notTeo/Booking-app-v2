@@ -359,7 +359,7 @@ const created = await api.createSchedule(dto);
           </span>
           <button
             type="button"
-            className="btn btn--secondary"
+            className="btn btn--secondary btn--sm"
             onClick={() => setExpandedId(openEnded.id)}
           >
             {t.workingHours.setEndDate}
