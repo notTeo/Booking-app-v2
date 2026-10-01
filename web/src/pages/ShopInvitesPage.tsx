@@ -104,8 +104,9 @@ export default function ShopInvitesPage() {
     try {
       const updated = await sendLoginInvite(shop.id, memberId);
       setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
-    } catch {
-      setActionError(t.invites.errorResend);
+    } catch (err: unknown) {
+      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+      setActionError(code === 'MEMBER_INACTIVE' ? t.team.errorInviteInactive : t.invites.errorResend);
     } finally {
       setActionPendingId(null);
     }
