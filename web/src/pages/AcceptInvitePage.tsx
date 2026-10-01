@@ -5,6 +5,7 @@ import { useLang } from '../context/LanguageContext';
 import { lookupInvite, acceptInvite, type InviteLookup } from '../api/invite.api';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function AcceptInvitePage() {
   const { t } = useLang();
@@ -54,7 +55,7 @@ export default function AcceptInvitePage() {
   if (authLoading || loading) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <div className="spinner" />
         </div>
       </div>
@@ -64,9 +65,9 @@ export default function AcceptInvitePage() {
   if (lookupError) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <p className="accept-invite-error">{lookupError}</p>
-          <Link to="/dashboard" className="btn btn-ghost" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
+          <Link to="/dashboard" className="btn btn--secondary btn--block" style={{ marginTop: '1.5rem' }}>
             Dashboard
           </Link>
         </div>
@@ -80,8 +81,8 @@ export default function AcceptInvitePage() {
 
   return (
     <div className="accept-invite-page">
-      <div className="accept-invite-card">
-        <h1>{t.invites.youreInvited}</h1>
+      <div className="card card--auth accept-invite-card">
+        <h1 className="t-heading">{t.invites.youreInvited}</h1>
         <div className="accept-invite-meta">
           <p>
             <strong>{invite.invitedBy}</strong> invited you to join{' '}
@@ -97,16 +98,16 @@ export default function AcceptInvitePage() {
         </div>
 
         {acceptError && (
-          <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+          <Alert variant="danger">
             {acceptError}
-          </div>
+          </Alert>
         )}
 
         <div className="accept-invite-actions">
           {isAuthenticated ? (
             emailMatches ? (
               <button
-                className="btn btn-primary"
+                className="btn btn--block"
                 disabled={accepting}
                 onClick={handleAcceptNow}
               >
@@ -119,7 +120,7 @@ export default function AcceptInvitePage() {
                 </div>
                 <Link
                   to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
-                  className="btn btn-primary"
+                  className="btn btn--block"
                 >
                   {t.invites.registerToAccept}
                 </Link>
@@ -129,13 +130,13 @@ export default function AcceptInvitePage() {
             <>
               <Link
                 to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
-                className="btn btn-primary"
+                className="btn btn--block"
               >
                 {t.invites.registerToAccept}
               </Link>
               <Link
                 to={`/login?redirect=${encodeURIComponent(`/invite?token=${token}`)}`}
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
               >
                 {t.invites.loginToAccept}
               </Link>

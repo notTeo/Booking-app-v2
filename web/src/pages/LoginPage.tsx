@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,13 +32,13 @@ export default function LoginPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Login</h1>
+        <h1 className="t-heading">Login</h1>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="email">Email</label>
+            <input className="input"
               id="email"
               type="email"
               value={email}
@@ -45,9 +46,9 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="password">Password</label>
+            <input className="input"
               id="password"
               type="password"
               value={password}
@@ -55,17 +56,19 @@ export default function LoginPage() {
               required
             />
           </div>
-          <label className="remember-me" htmlFor="rememberMe">
+          <label className="checkbox remember-me">
             <input
               id="rememberMe"
+              className="checkbox__input"
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
             />
+            <span className="checkbox__box" />
             Remember me
           </label>
-          {error && <div className="alert alert-error">{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          {error && <Alert variant="danger">{error}</Alert>}
+          <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>

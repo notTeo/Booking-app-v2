@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
 import '../styles/pages/verify-email.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -62,27 +63,27 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="page">
-      <div className="card">
-        <h1>Email Verification</h1>
+      <div className="card card--auth">
+        <h1 className="t-heading">Email Verification</h1>
 
         {status === 'loading' && <p className="verify-email-status">Verifying...</p>}
 
         {status === 'success' && (
           <>
-            <div className="alert alert-success">{message}</div>
-            <Link to="/login"><button className="btn btn-primary">Go to Login</button></Link>
+            <Alert variant="success">{message}</Alert>
+            <Link to="/login"><button className="btn btn--block">Go to Login</button></Link>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <div className="alert alert-error">{message}</div>
+            <Alert variant="danger">{message}</Alert>
 
             {isExpired && (
               <form onSubmit={handleResend} className="verify-resend-form">
                 <p className="verify-resend-label">Enter your email to get a new link:</p>
-                <div className="form-group">
-                  <input
+                <div className="field">
+                  <input className="input"
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
@@ -91,21 +92,21 @@ export default function VerifyEmailPage() {
                   />
                 </div>
                 {resendStatus === 'sent' && (
-                  <div className="alert alert-success">
+                  <Alert variant="success">
                     Email sent! Check your inbox and spam folder.
-                  </div>
+                  </Alert>
                 )}
                 {resendStatus === 'error' && (
-                  <div className="alert alert-error">{resendError}</div>
+                  <Alert variant="danger">{resendError}</Alert>
                 )}
-                <button className="btn btn-primary" type="submit" disabled={resendStatus === 'loading'}>
+                <button className="btn btn--block" type="submit" disabled={resendStatus === 'loading'}>
                   {resendStatus === 'loading' ? 'Sending...' : 'Resend Verification Email'}
                 </button>
               </form>
             )}
 
             {!isExpired && (
-              <Link to="/register"><button className="btn btn-ghost">Back to Register</button></Link>
+              <Link to="/register"><button className="btn btn--secondary btn--block">Back to Register</button></Link>
             )}
           </>
         )}

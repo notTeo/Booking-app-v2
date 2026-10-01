@@ -204,13 +204,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 )}
 
                 <div className="public-booking-form">
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-name">
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-name">
                       {t.public.nameLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-name"
-                      className="public-field-input"
+                      className="input"
                       type="text"
                       placeholder={t.public.namePlaceholder}
                       value={name}
@@ -219,13 +219,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-phone">
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-phone">
                       {t.public.phoneLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-phone"
-                      className="public-field-input"
+                      className="input"
                       type="tel"
                       placeholder={t.public.phonePlaceholder}
                       value={phone}
@@ -234,29 +234,29 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-email">
-                      {t.public.emailLabel} <span className="public-field-optional">{t.public.emailOptional}</span>
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-email">
+                      {t.public.emailLabel} <span className="field__optional">{t.public.emailOptional}</span>
                     </label>
                     <input
                       id="b-email"
-                      className="public-field-input"
+                      className="input"
                       type="email"
                       placeholder={t.public.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoComplete="email"
                     />
-                    <p className="public-field-hint">{t.public.emailHint}</p>
+                    <p className="field__hint">{t.public.emailHint}</p>
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-notes">
-                      {t.public.notesLabel} <span className="public-field-optional">{t.public.notesOptional}</span>
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-notes">
+                      {t.public.notesLabel} <span className="field__optional">{t.public.notesOptional}</span>
                     </label>
                     <textarea
                       id="b-notes"
-                      className="public-field-input public-field-textarea"
+                      className="textarea"
                       placeholder={t.public.notesPlaceholder}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
@@ -264,7 +264,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <p className="public-field-hint">
+                  <p className="field__hint">
                     {t.public.privacyNoticeBefore}{' '}
                     <Link to="/privacy" target="_blank" rel="noopener">{t.public.privacyNoticeLink}</Link>
                     {t.public.privacyNoticeAfter}
@@ -276,14 +276,14 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
                 <div className="public-wizard-actions">
                   <button
-                    className="btn btn-ghost wizard-btn"
+                    className="btn btn--secondary wizard-btn"
                     onClick={handleBackFromForm}
                     disabled={submitting}
                   >
                     {t.public.back}
                   </button>
                   <button
-                    className="btn btn-primary wizard-btn"
+                    className="btn wizard-btn"
                     onClick={handleSubmit}
                     disabled={submitting || name.trim() === '' || phone.trim() === ''}
                   >

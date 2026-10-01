@@ -23,34 +23,6 @@
    in components.css — see ShopTeamPage/ShopCustomersPage/ShopCustomerDetailPage
    for the className usage. */
 
-/* ---- Role badges ---- */
-.team-role-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  text-transform: capitalize;
-  letter-spacing: 0.04em;
-  display: inline-block;
-}
-
-.team-role-owner {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--accent);
-}
-
-.team-role-staff {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-.team-role-inactive {
-  margin-left: 0.4rem;
-  background: color-mix(in srgb, var(--error) 15%, transparent);
-  color: var(--error);
-}
-
 /* ---- Date cell ---- */
 .team-date {
   color: var(--text-muted);
@@ -58,11 +30,6 @@
 }
 
 /* ---- Remove button inside table ---- */
-.team-remove-btn {
-  width: auto !important;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.7rem;
-}
 
 .team-confirm-remove {
   display: flex;
@@ -71,11 +38,6 @@
   flex-wrap: wrap;
 }
 
-.team-confirm-remove .btn {
-  width: auto;
-  font-size: 0.82rem;
-  padding: 0.3rem 0.7rem;
-}
 
 /* ---- Empty state ---- */
 .team-empty {
@@ -94,14 +56,7 @@
   gap: 1.5rem;
 }
 
-.team-member-card.card {
-  max-width: unset;
-}
-
 .team-member-card h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
   word-break: break-all;
 }
 
@@ -110,12 +65,8 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
 }
 
-.team-member-card .btn {
-  width: auto;
-}
 
 .team-invite-block {
   margin-top: 1.25rem;
@@ -124,23 +75,6 @@
 }
 
 /* ---- Role edit card ---- */
-.team-role-card {
-  max-width: unset !important;
-}
-
-.team-role-card h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-}
-
-.team-role-card .form-group {
-  margin-bottom: 1rem;
-}
-
-.team-role-card .btn {
-  width: auto;
-}
 
 /* ---- Availability section ---- */
 .team-member-schedules {
@@ -200,18 +134,6 @@
 .team-switch-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-.team-no-login-badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  background: var(--bg-input);
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 .pagination-controls {

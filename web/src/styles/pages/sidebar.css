@@ -22,10 +22,10 @@
   gap: 0.6rem;
   width: 240px;
   padding: 0.75rem;
-  background: var(--bg-card);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
-  border-top-right-radius: calc(var(--radius) * 2);
-  border-bottom-right-radius: calc(var(--radius) * 2);
+  border-top-right-radius: calc(var(--radius-md) * 2);
+  border-bottom-right-radius: calc(var(--radius-md) * 2);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -49,11 +49,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
 }
 
 .hamburger-btn:hover {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
 }
 
 /* ─── Sidebar ─── */
@@ -64,10 +64,10 @@
   height: 100vh;
   height: 100dvh;
   flex-shrink: 0;
-  background: var(--bg-card);
+  background: var(--surface);
   border-right: 1px solid var(--border);
-  border-top-right-radius: calc(var(--radius) * 2);
-  border-bottom-right-radius: calc(var(--radius) * 2);
+  border-top-right-radius: calc(var(--radius-md) * 2);
+  border-bottom-right-radius: calc(var(--radius-md) * 2);
   padding: 1.25rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -152,12 +152,12 @@
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   transition: background 0.15s, color 0.15s;
 }
 
 .sidebar-close-btn:hover {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   color: var(--text);
 }
 
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.55rem 0.75rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -177,7 +177,7 @@
 }
 
 .sidebar-link:hover {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   color: var(--text);
   text-decoration: none;
 }
@@ -206,8 +206,8 @@
   height: 32px;
   flex-shrink: 0;
   margin-left: auto;
-  border-radius: var(--radius);
-  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   color: var(--text-muted);
   font-size: 0.85rem;
   text-decoration: none;
@@ -237,12 +237,12 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: var(--font);
+  font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
   padding: 0.55rem 0.75rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   text-align: left;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
@@ -250,14 +250,14 @@
 }
 
 .sidebar-bottom{
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   border-top: 1px solid var(--border);
   margin-top: auto;
 }
 
 .sidebar-logout:hover {
-  background: var(--bg-input);
-  color: var(--red);
+  background: var(--surface-sunken);
+  color: var(--danger);
 }
 
 /* ─── Main content ─── */

@@ -36,9 +36,6 @@
   gap: 1rem;
 }
 
-.shops-empty .btn {
-  width: auto;
-}
 
 /* ---- Shop grid ---- */
 .shops-grid {
@@ -49,22 +46,7 @@
 
 /* ---- Shop card ---- */
 .shop-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.shop-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
-  text-decoration: none;
+  gap: var(--space-2);
 }
 
 .shop-card-top {
@@ -108,85 +90,9 @@
 }
 
 /* ---- "Add" card — dashed border, sits alongside real shop cards ---- */
-.shop-card--add {
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  gap: 0.6rem;
-  min-height: 96px;
-  background: transparent;
-  border-style: dashed;
-  color: var(--accent);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-align: left;
-  cursor: pointer;
-}
-
-.shop-card--add:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  box-shadow: none;
-}
-
-.shop-card--add:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.shop-card--add-icon {
-  font-size: 1.1rem;
-}
-
-/* ---- Status & Role badges ---- */
-.shop-status-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.shop-status-badge.active {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  color: var(--success);
-}
-
-.shop-status-badge.inactive {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-  color: var(--error);
-}
-
-.shop-role-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 999px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  text-transform: capitalize;
-}
-
 /* ---- Upgrade card ---- */
 .shops-upgrade-card {
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.shops-upgrade-card h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.shops-upgrade-card .btn {
-  width: auto;
-  align-self: flex-start;
+  max-width: 26.25rem;
 }
 
 /* ---- Detail page ---- */
@@ -216,9 +122,7 @@
   color: var(--text-muted);
 }
 
-/* ---- Form card ---- */
-/* h1 size/weight/margin comes from the shared .card h1 rule (components.css)
-   — same 1.6rem/800 as every other page title. */
+/* ---- Form card (layout only; surface and heading come from .card / .t-heading) ---- */
 .shop-form-card {
   max-width: 600px;
   margin-bottom: 1.5rem;
@@ -260,12 +164,6 @@
   cursor: pointer;
 }
 
-.shop-checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
 .shop-form-actions {
   display: flex;
   gap: 0.75rem;
@@ -273,54 +171,16 @@
   margin-top: 0.5rem;
 }
 
-.shop-form-actions .btn {
-  width: auto;
-}
 
 /* ---- Danger card ---- */
 .shop-danger-card {
   max-width: 600px;
-  border-color: color-mix(in srgb, var(--error) 35%, transparent);
-}
-
-.shop-danger-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--error);
-  margin: 0 0 0.5rem;
-}
-
-.shop-danger-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0 0 1rem;
 }
 
 /* ---- Settings page sections ---- */
 .shop-settings-section {
   max-width: 620px;
   margin-bottom: 1.25rem;
-}
-
-.shop-settings-section textarea {
-  width: 100%;
-  resize: vertical;
-  min-height: 80px;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
-  color: var(--text);
-  font-size: 0.9rem;
-  font-family: inherit;
-  line-height: 1.5;
-}
-
-.shop-settings-section textarea:focus {
-  outline: none;
-  border-color: var(--accent);
 }
 
 /* Active status row */
@@ -330,7 +190,6 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 0;
-  margin-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -349,12 +208,6 @@
 .shop-active-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-}
-
-.shop-settings-section .btn {
-  width: auto;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.9rem;
 }
 
 @media (max-width: 640px) {

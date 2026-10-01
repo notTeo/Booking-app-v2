@@ -8,6 +8,7 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/register.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
@@ -73,9 +74,9 @@ export default function RegisterPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Register</h1>
+        <h1 className="t-heading">Register</h1>
 
         {inviteToken && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1rem' }}>
@@ -84,9 +85,9 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">{t.register.nameLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="name">{t.register.nameLabel}</label>
+            <input className="input"
               id="name"
               type="name"
               value={name}
@@ -94,9 +95,9 @@ export default function RegisterPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="email">Email</label>
+            <input className="input"
               id="email"
               type="email"
               value={email}
@@ -106,9 +107,9 @@ export default function RegisterPage() {
               style={inviteToken && emailFromInvite ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="password">Password</label>
+            <input className="input"
               id="password"
               type="password"
               value={password}
@@ -124,16 +125,17 @@ export default function RegisterPage() {
               </ul>
             )}
           </div>
-          <div className="form-group">
-            <label htmlFor="acceptTerms" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontWeight: 400 }}>
+          <div className="field">
+            <label className="checkbox">
               <input
                 id="acceptTerms"
+                className="checkbox__input"
                 type="checkbox"
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
                 required
-                style={{ width: 'auto', marginTop: '0.25rem' }}
               />
+              <span className="checkbox__box" />
               <span>
                 {t.register.acceptPrefix}{' '}
                 <Link to="/terms" target="_blank">{t.terms.linkLabel}</Link>{' '}
@@ -142,20 +144,20 @@ export default function RegisterPage() {
               </span>
             </label>
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
           {success && (
             <>
-              <div className="alert alert-success">
+              <Alert variant="success">
                 {success} Check your spam folder if you don't see it.
-              </div>
+              </Alert>
               {resendStatus === 'sent' && (
-                <div className="alert alert-success">Email resent successfully.</div>
+                <Alert variant="success">Email resent successfully.</Alert>
               )}
               {resendStatus === 'error' && (
-                <div className="alert alert-error">Failed to resend. Please try again.</div>
+                <Alert variant="danger">Failed to resend. Please try again.</Alert>
               )}
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
                 type="button"
                 onClick={handleResend}
                 disabled={resendStatus === 'loading'}
@@ -165,7 +167,7 @@ export default function RegisterPage() {
             </>
           )}
           {!success && (
-            <button className="btn btn-primary" type="submit" disabled={isLoading || !acceptTerms}>
+            <button className="btn btn--block" type="submit" disabled={isLoading || !acceptTerms}>
               {isLoading ? 'Registering...' : 'Register'}
             </button>
           )}

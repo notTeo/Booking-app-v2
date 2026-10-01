@@ -33,7 +33,7 @@ export default function CancelBookingPage() {
   if (loading) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <div className="spinner" />
           <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             {t.cancelBooking.cancelling}
@@ -46,7 +46,7 @@ export default function CancelBookingPage() {
   if (error) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <p className="accept-invite-error">{error}</p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function CancelBookingPage() {
   if (kept) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <p style={{ textAlign: 'center' }}>{t.cancelBooking.kept}</p>
         </div>
       </div>
@@ -66,14 +66,14 @@ export default function CancelBookingPage() {
   if (!result) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
-          <h1 style={{ marginBottom: '0.5rem' }}>{t.cancelBooking.confirmTitle}</h1>
+        <div className="card card--auth accept-invite-card">
+          <h1 className="t-heading">{t.cancelBooking.confirmTitle}</h1>
           <p className="accept-invite-meta">{t.cancelBooking.confirmText}</p>
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-danger" onClick={confirmCancel}>
+            <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
               {t.cancelBooking.confirmButton}
             </button>
-            <button type="button" className="btn btn-ghost" onClick={() => setKept(true)}>
+            <button type="button" className="btn btn--secondary btn--block" onClick={() => setKept(true)}>
               {t.cancelBooking.keepButton}
             </button>
           </div>
@@ -95,8 +95,8 @@ export default function CancelBookingPage() {
 
   return (
     <div className="accept-invite-page">
-      <div className="accept-invite-card">
-        <h1 style={{ marginBottom: '0.5rem' }}>{t.cancelBooking.cancelled}</h1>
+      <div className="card card--auth accept-invite-card">
+        <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <div className="accept-invite-meta">
           <p>
             {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}

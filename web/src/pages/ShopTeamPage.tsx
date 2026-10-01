@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { handleRowClick } from '../utils/a11y';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, type TeamMember } from '../api/team.api';
-import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -50,19 +51,19 @@ export default function ShopTeamPage() {
     confirmRemove === member.id ? (
       <div className="team-confirm-remove">
         <button
-          className="btn btn-danger"
+          className="btn btn--danger btn--sm"
           onClick={() => handleRemove(member.id)}
           disabled={removing}
         >
           {removing ? t.team.removing : t.team.confirmRemove}
         </button>
-        <button className="btn btn-ghost" onClick={() => setConfirmRemove(null)}>
+        <button className="btn btn--secondary btn--sm" onClick={() => setConfirmRemove(null)}>
           {t.team.cancel}
         </button>
       </div>
     ) : (
       <button
-        className="btn btn-ghost team-remove-btn"
+        className="btn btn--secondary btn--sm team-remove-btn"
         onClick={() => {
           setConfirmRemove(member.id);
           setRemoveError('');
@@ -88,54 +89,50 @@ export default function ShopTeamPage() {
         <h1>{t.team.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
-      {members.length === 0 ? (
-        <p className="team-empty">{t.team.noMembers}</p>
-      ) : (
-        <>
-          {/* Desktop / tablet: table (hidden below 640px) */}
-          <div className="data-table-card table-view">
-            <table className="data-table">
+      <div className="table-wrap">
+        <div className="table-surface">
+          {members.length === 0 ? (
+            <div className="empty empty--sm">
+              <p className="empty__text">{t.team.noMembers}</p>
+            </div>
+          ) : (
+            <table className="data-table" role="table">
               <thead>
-                <tr>
-                  <th>{t.team.email}</th>
-                  <th>{t.team.role}</th>
-                  <th>{t.team.joined}</th>
-                  {isOwner && <th>{t.team.actions}</th>}
+                <tr role="row">
+                  <th scope="col" role="columnheader">{t.team.email}</th>
+                  <th scope="col" role="columnheader">{t.team.role}</th>
+                  <th scope="col" role="columnheader">{t.team.joined}</th>
+                  {isOwner && <th scope="col" role="columnheader">{t.team.actions}</th>}
                 </tr>
               </thead>
               <tbody>
                 {members.map((member) => (
-                  <tr
-                    key={member.id}
-                    className="data-table-row data-table-row--clickable"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => navigate(member.id)}
-                    onKeyDown={handleActivateKeyDown(() => navigate(member.id))}
-                  >
-                    <td>
-                      {member.email}
+                  <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
+                    <td role="cell" data-label={t.team.email} className="data-table__title">
+                      <Link to={member.id} className="data-table__link">{member.email}</Link>
                       {!member.userId && (
-                        <span className="team-no-login-badge">{t.team.noLoginYet}</span>
+                        <span className="badge badge--warning">{t.team.noLoginYet}</span>
                       )}
                     </td>
-                    <td>
-                      <span className={`team-role-badge team-role-${member.role}`}>
+                    <td role="cell" data-label={t.team.role}>
+                      <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                         {t.team.roles[member.role]}
                       </span>
                       {!member.active && (
-                        <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
+                        <span className="badge badge--neutral">{t.team.inactiveBadge}</span>
                       )}
                     </td>
-                    <td className="team-date">
+                    <td role="cell" data-label={t.team.joined}>
                       {new Date(member.createdAt).toLocaleDateString()}
                     </td>
                     {isOwner && (
                       <td
+                        role="cell"
+                        data-label=""
+                        className="data-table__actions"
                         onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => e.stopPropagation()}
                       >
                         {renderActions(member)}
                       </td>
@@ -144,63 +141,10 @@ export default function ShopTeamPage() {
                 ))}
               </tbody>
             </table>
-            {removeError && (
-              <div style={{ padding: '0.75rem 1.25rem' }}>
-                <div className="alert alert-error">{removeError}</div>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile: stacked cards (hidden at 640px and above) */}
-          <div className="row-cards card-view">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="row-card"
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(member.id)}
-                onKeyDown={handleActivateKeyDown(() => navigate(member.id))}
-              >
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.team.email}</span>
-                  <span className="row-card__value">
-                    {member.email}
-                    {!member.userId && (
-                      <span className="team-no-login-badge">{t.team.noLoginYet}</span>
-                    )}
-                  </span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.team.role}</span>
-                  <span className={`team-role-badge team-role-${member.role}`}>
-                    {t.team.roles[member.role]}
-                  </span>
-                  {!member.active && (
-                    <span className="team-role-badge team-role-inactive">{t.team.inactiveBadge}</span>
-                  )}
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.team.joined}</span>
-                  <span className="row-card__value">
-                    {new Date(member.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                {isOwner && (
-                  <div
-                    className="row-card__actions"
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                  >
-                    {renderActions(member)}
-                  </div>
-                )}
-              </div>
-            ))}
-            {removeError && <div className="alert alert-error">{removeError}</div>}
-          </div>
-        </>
-      )}
+          )}
+        </div>
+      </div>
+      {removeError && <Alert variant="danger">{removeError}</Alert>}
     </div>
   );
 }

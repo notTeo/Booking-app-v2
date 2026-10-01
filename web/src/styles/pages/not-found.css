@@ -19,7 +19,7 @@
 }
 
 .not-found-title {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 900;
 }
@@ -30,8 +30,4 @@
   max-width: 320px;
 }
 
-.not-found .btn {
-  width: auto;
-  padding: 0.7rem 1.75rem;
-  margin-top: 0.5rem;
-}
+.not-found .btn { margin-top: 0.5rem; }

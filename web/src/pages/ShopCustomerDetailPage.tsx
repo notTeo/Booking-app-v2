@@ -4,16 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
-import type { BookingStatus } from '../api/booking.api';
+import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
-
-function StatusBadge({ status }: { status: BookingStatus }) {
-  return (
-    <span className={`status-badge status-badge--${status.toLowerCase()}`}>
-      {status.replace('_', ' ').toLowerCase()}
-    </span>
-  );
-}
+import Alert from '../components/Alert';
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -132,7 +125,7 @@ export default function ShopCustomerDetailPage() {
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
           {t.customers.backToCustomers}
         </button>
-        <div className="alert alert-error">{error || t.customers.notFound}</div>
+        <Alert variant="danger">{error || t.customers.notFound}</Alert>
       </div>
     );
   }
@@ -145,7 +138,7 @@ export default function ShopCustomerDetailPage() {
 
       {/* Customer info */}
       <div className="card team-member-card">
-        <h1>{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
+        <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
         <div className="team-member-meta">
           <span className="team-date">
             {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
@@ -159,49 +152,49 @@ export default function ShopCustomerDetailPage() {
 
       {/* Edit card */}
       {customer.contactHidden ? (
-        <div className="card team-role-card">
-          <h2>{t.customers.editInfo}</h2>
+        <div className="card">
+          <h2 className="card__title">{t.customers.editInfo}</h2>
           <p className="team-empty">{t.customers.contactHiddenNotice}</p>
         </div>
       ) : (
-        <div className="card team-role-card">
-          <h2>{t.customers.editInfo}</h2>
-          <div className="form-group">
-            <label>{t.customers.nameLabel}</label>
-            <input
+        <div className="card">
+          <h2 className="card__title">{t.customers.editInfo}</h2>
+          <div className="field">
+            <label className="field__label">{t.customers.nameLabel}</label>
+            <input className="input"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.phoneLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label">{t.customers.phoneLabel}</label>
+            <input className="input"
               value={editPhone}
               onChange={(e) => setEditPhone(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.emailLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label">{t.customers.emailLabel}</label>
+            <input className="input"
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
               placeholder={t.customers.emailOptional}
             />
           </div>
-          <div className="form-group">
-            <label>{t.customers.notesLabel}</label>
-            <textarea
+          <div className="field">
+            <label className="field__label">{t.customers.notesLabel}</label>
+            <textarea className="textarea"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
               placeholder={t.customers.notesOptional}
               rows={3}
             />
           </div>
-          {saveError && <div className="alert alert-error">{saveError}</div>}
-          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
+          {saveError && <Alert variant="danger">{saveError}</Alert>}
+          {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
           <button
-            className="btn btn-primary"
+            className="btn"
             onClick={handleSave}
             disabled={saving || !isDirty}
           >
@@ -212,15 +205,15 @@ export default function ShopCustomerDetailPage() {
 
       {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
       {shop?.role === 'owner' && (
-        <div className="card team-role-card">
-          <h2>{t.customers.privacyHeading}</h2>
+        <div className="card">
+          <h2 className="card__title">{t.customers.privacyHeading}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
-          {privacyError && <div className="alert alert-error">{privacyError}</div>}
+          {privacyError && <Alert variant="danger">{privacyError}</Alert>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" onClick={handleExport} disabled={privacyBusy !== null}>
+            <button className="btn btn--secondary" onClick={handleExport} disabled={privacyBusy !== null}>
               {privacyBusy === 'export' ? t.customers.exporting : t.customers.exportData}
             </button>
-            <button className="btn btn-danger" onClick={handleDelete} disabled={privacyBusy !== null}>
+            <button className="btn btn--danger" onClick={handleDelete} disabled={privacyBusy !== null}>
               {privacyBusy === 'delete' ? t.customers.deleting : t.customers.deleteCustomer}
             </button>
           </div>
@@ -228,36 +221,40 @@ export default function ShopCustomerDetailPage() {
       )}
 
       {/* Recent bookings */}
-      <div className="card team-role-card">
-        <h2>{t.customers.recentBookings}</h2>
-        {customer.bookings.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.noBookings}</p>
-        ) : (
-          <div className="data-table-card" style={{ border: 'none', borderRadius: 0 }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>{t.customers.serviceCol}</th>
-                  <th>{t.customers.dateTimeCol}</th>
-                  <th>{t.customers.statusCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customer.bookings.map((b) => (
-                  <tr key={b.id} className="data-table-row">
-                    <td>{b.service.name}</td>
-                    <td className="team-date">
-                      {formatDateTimeInZone(b.startTime, shop!.timezone)}
-                    </td>
-                    <td>
-                      <StatusBadge status={b.status} />
-                    </td>
+      <div className="card">
+        <h2 className="card__title">{t.customers.recentBookings}</h2>
+        <div className="table-wrap">
+          <div className="table-surface">
+            {customer.bookings.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.customers.noBookings}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
+                <thead>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customer.bookings.map((b) => (
+                    <tr key={b.id} role="row">
+                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
+                      <td role="cell" data-label={t.customers.dateTimeCol}>
+                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
+                      </td>
+                      <td role="cell" data-label={t.customers.statusCol}>
+                        <StatusBadge status={b.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

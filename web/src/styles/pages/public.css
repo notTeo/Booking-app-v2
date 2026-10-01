@@ -4,7 +4,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
-  font-family: var(--font);
+  font-family: var(--font-body);
   color: var(--text);
 }
 
@@ -21,7 +21,7 @@
   gap: 1rem;
   background: var(--bg);
   color: var(--text-muted);
-  font-family: var(--font);
+  font-family: var(--font-body);
 }
 
 .public-error p {
@@ -32,7 +32,7 @@
 /* ── Header / Hero ───────────────────────────────────────────────────────── */
 
 .public-header {
-  background: var(--bg-card);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 2rem 1.25rem 1.75rem;
 }
@@ -87,7 +87,7 @@
   gap: 0.375rem;
   font-size: 0.875rem;
   color: var(--text-muted);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 0.3rem 0.75rem;
@@ -140,9 +140,9 @@
 }
 
 .public-service-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -191,7 +191,7 @@
   gap: 0.25rem;
   font-size: 0.8rem;
   color: var(--text-muted);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border-radius: 6px;
   padding: 0.2rem 0.5rem;
   font-weight: 500;
@@ -202,9 +202,9 @@
 /* ── Working Hours ───────────────────────────────────────────────────────── */
 
 .public-hours-list {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -236,7 +236,7 @@
 
 .public-hours-closed {
   font-size: 0.875rem;
-  color: var(--error);
+  color: var(--danger);
   font-weight: 500;
   text-align: right;
 }
@@ -256,9 +256,9 @@
 }
 
 .public-team-card {
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   padding: 1.25rem;
   display: flex;
   align-items: flex-start;
@@ -275,7 +275,7 @@
   height: 48px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,7 +308,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.15rem 0.5rem;
@@ -325,7 +325,7 @@
 .public-team-service-tag {
   font-size: 0.75rem;
   color: var(--text-muted);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 0.15rem 0.6rem;
@@ -378,7 +378,7 @@
   height: 28px;
   border-radius: 50%;
   border: 2px solid var(--border);
-  background: var(--bg-card);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,13 +393,13 @@
 .public-wizard-step--active .public-wizard-step-number {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .public-wizard-step--completed .public-wizard-step-number {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.7rem;
 }
 
@@ -483,7 +483,7 @@
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.35rem 0.85rem;
@@ -496,15 +496,10 @@
 }
 
 /* ── Wizard buttons ──────────────────────────────────────────────────────── */
-/* The wizard's Back/Continue/Confirm buttons use the shared .btn / .btn-ghost /
-   .btn-primary system (components.css) — this just un-stretches them (.btn
-   defaults to width:100%) the same way other inline buttons do elsewhere in
-   the app (e.g. .service-action-btn in services.css). */
+/* The wizard's Back/Continue/Confirm buttons use the shared .btn system
+   (components.css); this only keeps them from stretching in the column. */
 
-.wizard-btn {
-  width: auto;
-  align-self: flex-start;
-}
+.wizard-btn { align-self: flex-start; }
 
 /* ── Wizard action row (Back + Continue/Submit side by side) ─────────────── */
 
@@ -531,16 +526,8 @@
   gap: 1rem;
 }
 
-.public-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.public-field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
+.public-wizard-panel .field {
+  margin-bottom: 0; /* the panel already spaces its children with a gap */
 }
 
 .public-field-required {
@@ -548,58 +535,16 @@
   margin-left: 0.15rem;
 }
 
-.public-field-hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin: 0.25rem 0 0;
-  line-height: 1.4;
-}
-
-.public-field-optional {
-  font-weight: 400;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.public-field-input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.55rem 0.85rem;
-  font-size: 0.9rem;
-  font-family: var(--font);
-  color: var(--text);
-  transition: border-color 0.2s;
-  appearance: none;
-}
-
-.public-field-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.public-field-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-.public-field-textarea {
-  resize: vertical;
-  min-height: 72px;
-}
-
 /* ── Submission error ────────────────────────────────────────────────────── */
 
 .public-submit-error {
   font-size: 0.875rem;
-  color: var(--error);
+  color: var(--danger);
   margin: 0;
   padding: 0.6rem 0.9rem;
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
-  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: var(--radius-md);
 }
 
 /* A genuinely neutral notice (e.g. "the system is busy, try again") — never
@@ -609,9 +554,9 @@
   color: var(--text-muted);
   margin: 0;
   padding: 0.6rem 0.9rem;
-  background: var(--bg-input);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
 }
 
 /* ── Booking confirmed panel ─────────────────────────────────────────────── */
@@ -623,9 +568,9 @@
   gap: 1rem;
   padding: 3rem 1.5rem;
   text-align: center;
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
 }
 
 .public-booking-confirmed-icon {
@@ -633,7 +578,7 @@
   height: 56px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -673,11 +618,11 @@
 .public-slot-btn {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   color: var(--text);
   cursor: pointer;
-  font-family: var(--font);
+  font-family: var(--font-body);
   font-size: 0.875rem;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -693,7 +638,7 @@
 
 .public-slot-btn--selected {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent);
 }
 
@@ -746,7 +691,7 @@
   margin: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-secondary, var(--text));
+  color: var(--text-muted);
 }
 
 /* Out-of-hours sections are collapsible (<details>/<summary>): a native
@@ -801,8 +746,8 @@
   margin-top: 12px;
   padding: 0.75rem 1rem;
   border: 1px dashed var(--accent);
-  border-radius: var(--radius);
-  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   font-size: 0.875rem;
 }
 
@@ -819,8 +764,8 @@
   margin-top: 12px;
   padding: 1.25rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   text-align: center;
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -842,7 +787,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--bg-card);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -868,7 +813,7 @@
 
 .customer-search-item:hover,
 .customer-search-item:focus-visible {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
 }
 
 .customer-search-item:focus-visible {
@@ -898,9 +843,5 @@
   .ooh-toggle {
     min-height: 44px;
     padding: 0.25rem 0;
-  }
-
-  .public-field-input[type='time'] {
-    min-height: 44px;
   }
 }

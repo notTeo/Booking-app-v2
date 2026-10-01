@@ -1,5 +1,3 @@
-import '../styles/shared/switch.css';
-
 interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -10,17 +8,18 @@ interface SwitchProps {
 
 export default function Switch({ checked, onChange, label, disabled, id }: SwitchProps) {
   return (
-    <button
-      type="button"
-      id={id}
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      className={`switch${checked ? ' switch--on' : ' switch--off'}`}
-      onClick={() => !disabled && onChange(!checked)}
-    >
-      <span className="switch-thumb" />
-    </button>
+    <label className="switch">
+      <input
+        id={id}
+        className="switch__input"
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span className="switch__track" />
+    </label>
   );
 }

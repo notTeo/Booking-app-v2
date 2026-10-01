@@ -14,6 +14,7 @@ import {
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -140,7 +141,7 @@ export default function ShopSettingsPage() {
   if (loadError) {
     return (
       <div className="shops-page">
-        <div className="alert alert-error">{loadError}</div>
+        <Alert variant="danger">{loadError}</Alert>
       </div>
     );
   }
@@ -163,8 +164,8 @@ export default function ShopSettingsPage() {
       <div className="shop-detail-header">
         <h1>{shop.name}</h1>
         <div className="shop-detail-meta">
-          <span className="shop-role-badge">{shop.role}</span>
-          <span className={`shop-status-badge ${shop.isActive ? 'active' : 'inactive'}`}>
+          <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
+          <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>
           <span className="shop-detail-date">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
@@ -173,8 +174,8 @@ export default function ShopSettingsPage() {
       </div>
 
       {/* Booking link — copyable public /:slug link */}
-      <div className="settings-section shop-settings-section">
-        <p className="settings-section-title">
+      <div className="card shop-settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faLink} className="settings-section-icon" />
           {t.sharing.title}
         </p>
@@ -184,28 +185,28 @@ export default function ShopSettingsPage() {
 
       <form onSubmit={handleSave}>
         {/* Shop Details + Configuration — one card, one Save */}
-        <div className="settings-section shop-settings-section">
+        <div className="card shop-settings-section">
           <div className="settings-section-header">
             <div>
-              <p className="settings-section-title">
+              <p className="card__title settings-section-title">
                 <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
                 {t.shopSettings.shopDetails}
               </p>
               <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
             </div>
-            <button className="btn btn-primary" type="submit" disabled={saveLoading}>
+            <button className="btn btn--sm" type="submit" disabled={saveLoading}>
               {saveLoading ? t.shopSettings.saving : t.shopSettings.saveChanges}
             </button>
           </div>
-          {saveError && <div className="alert alert-error">{saveError}</div>}
-          {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
-          <div className="form-group">
-            <label htmlFor="detail-name">{t.shops.name}</label>
-            <input id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          {saveError && <Alert variant="danger">{saveError}</Alert>}
+          {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
+          <div className="field">
+            <label className="field__label" htmlFor="detail-name">{t.shops.name}</label>
+            <input className="input" id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-slug">{t.shops.slug}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-slug">{t.shops.slug}</label>
+            <input className="input"
               id="detail-slug"
               type="text"
               value={editSlug}
@@ -214,9 +215,9 @@ export default function ShopSettingsPage() {
             />
             <span className="shop-field-hint">{t.shops.slugLockedHint}</span>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-description">{t.shops.description}</label>
-            <textarea
+          <div className="field">
+            <label className="field__label" htmlFor="detail-description">{t.shops.description}</label>
+            <textarea className="textarea"
               id="detail-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -224,13 +225,13 @@ export default function ShopSettingsPage() {
               placeholder={t.shopSettings.descPlaceholder}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-phone">{t.shops.phone}</label>
-            <input id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <div className="field">
+            <label className="field__label" htmlFor="detail-phone">{t.shops.phone}</label>
+            <input className="input" id="detail-phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-address">{t.shops.address}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-address">{t.shops.address}</label>
+            <input className="input"
               id="detail-address"
               type="text"
               value={address}
@@ -238,17 +239,17 @@ export default function ShopSettingsPage() {
               placeholder={t.shopSettings.addressPlaceholder}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-timezone">{t.shops.timezone}</label>
-            <select id="detail-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+          <div className="field">
+            <label className="field__label" htmlFor="detail-timezone">{t.shops.timezone}</label>
+            <div className="select-wrap"><select className="select" id="detail-timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
               ))}
-            </select>
+            </select></div>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
+            <input className="input"
               id="detail-max-advance"
               type="number"
               inputMode="numeric"
@@ -259,11 +260,11 @@ export default function ShopSettingsPage() {
               onChange={(e) => setMaxAdvanceDays(e.target.value)}
               required
             />
-            <small className="form-hint">{t.shopSettings.maxAdvanceHint}</small>
+            <small className="field__hint">{t.shopSettings.maxAdvanceHint}</small>
           </div>
-          <div className="form-group">
-            <label htmlFor="detail-slot-interval">{t.shopSettings.slotIntervalLabel}</label>
-            <select
+          <div className="field">
+            <label className="field__label" htmlFor="detail-slot-interval">{t.shopSettings.slotIntervalLabel}</label>
+            <div className="select-wrap"><select className="select"
               id="detail-slot-interval"
               value={slotInterval}
               onChange={(e) => setSlotInterval(e.target.value)}
@@ -273,8 +274,8 @@ export default function ShopSettingsPage() {
                   {t.shopSettings.slotIntervalOption.replace('{n}', String(m))}
                 </option>
               ))}
-            </select>
-            <small className="form-hint">{t.shopSettings.slotIntervalHint}</small>
+            </select></div>
+            <small className="field__hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
           <div className="shop-active-row">
             <div className="shop-active-label">
@@ -288,14 +289,14 @@ export default function ShopSettingsPage() {
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (
-        <div className="settings-section settings-section--danger shop-settings-section">
-          <p className="settings-section-title">
+        <div className="card card--danger shop-settings-section">
+          <p className="card__title settings-section-title">
             <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
             {t.shops.dangerZone}
           </p>
           <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
           {!showDeleteConfirm ? (
-            <button className="btn btn-danger" type="button" onClick={() => setShowDeleteConfirm(true)}>
+            <button className="btn btn--danger btn--sm" type="button" onClick={() => setShowDeleteConfirm(true)}>
               {t.shops.deleteShop}
             </button>
           ) : (
@@ -303,12 +304,12 @@ export default function ShopSettingsPage() {
               <p className="settings-danger-desc">
                 {t.shopSettings.areYouSure.replace('{name}', shop.name)}
               </p>
-              {deleteError && <div className="alert alert-error">{deleteError}</div>}
+              {deleteError && <Alert variant="danger">{deleteError}</Alert>}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button className="btn btn-danger" type="submit" disabled={deleteLoading}>
+                <button className="btn btn--danger btn--sm" type="submit" disabled={deleteLoading}>
                   {deleteLoading ? t.shops.deleting : t.shopSettings.yesDeleteShop}
                 </button>
-                <button className="btn btn-ghost" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
+                <button className="btn btn--secondary btn--sm" type="button" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>
                   {t.shops.cancel}
                 </button>
               </div>

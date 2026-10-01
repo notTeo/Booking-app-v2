@@ -22,6 +22,7 @@ import {
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 export default function ShopTeamMemberPage() {
   const { slug, memberId } = useParams<{ slug: string; memberId: string }>();
@@ -276,7 +277,7 @@ export default function ShopTeamMemberPage() {
         <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
           {t.team.backToTeam}
         </button>
-        <div className="alert alert-error">{error || t.team.notFound}</div>
+        <Alert variant="danger">{error || t.team.notFound}</Alert>
       </div>
     );
   }
@@ -290,9 +291,9 @@ export default function ShopTeamMemberPage() {
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
-        <h1>{member.name}</h1>
+        <h1 className="t-heading">{member.name}</h1>
         <div className="team-member-meta">
-          <span className={`team-role-badge team-role-${member.role}`}>
+          <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
             {t.team.roles[member.role]}
           </span>
           <span className="team-date">
@@ -302,9 +303,9 @@ export default function ShopTeamMemberPage() {
 
         {isOwner ? (
           <>
-            <div className="form-group">
-              <label>{t.team.emailLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.team.emailLabel}</label>
+              <input className="input"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -313,15 +314,15 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="form-group">
-              <label>{t.team.role}</label>
-              <select
+            <div className="field">
+              <label className="field__label">{t.team.role}</label>
+              <div className="select-wrap"><select className="select"
                 value={editRole}
                 onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
               >
                 <option value="staff">{t.team.roles.staff}</option>
                 <option value="owner">{t.team.roles.owner}</option>
-              </select>
+              </select></div>
             </div>
 
             <div className="team-switch-row">
@@ -375,24 +376,24 @@ export default function ShopTeamMemberPage() {
               </div>
             )}
 
-            {memberError && <div className="alert alert-error">{memberError}</div>}
-            {memberSuccess && <div className="alert alert-success">{memberSuccess}</div>}
+            {memberError && <Alert variant="danger">{memberError}</Alert>}
+            {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
             {confirmRoleChange && (
-              <div className="alert alert-error">
+              <Alert variant="warning">
                 {editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
-              </div>
+              </Alert>
             )}
 
             <div className="team-invite-actions">
               <button
-                className="btn btn-primary"
+                className="btn"
                 onClick={handleSaveMember}
                 disabled={savingMember || !isMemberDirty}
               >
                 {savingMember ? t.team.saving : confirmRoleChange ? t.team.confirmContinue : t.team.saveRole}
               </button>
               {confirmRoleChange && (
-                <button className="btn btn-ghost" onClick={() => setConfirmRoleChange(false)}>
+                <button className="btn btn--secondary" onClick={() => setConfirmRoleChange(false)}>
                   {t.team.cancel}
                 </button>
               )}
@@ -402,17 +403,17 @@ export default function ShopTeamMemberPage() {
                 sends an email, so it stays a distinct action from the save above. */}
             {!member.userId && (
               <div className="team-invite-block">
-                <p className="shop-danger-desc">
+                <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
                 </p>
                 {editEmail !== (member.email ?? '') && (
                   <p className="team-switch-desc">{t.team.emailChangedHint}</p>
                 )}
-                {inviteError && <div className="alert alert-error">{inviteError}</div>}
-                {inviteSuccess && <div className="alert alert-success">{inviteSuccess}</div>}
+                {inviteError && <Alert variant="danger">{inviteError}</Alert>}
+                {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
                 <div className="team-invite-actions">
                   <button
-                    className="btn btn-primary"
+                    className="btn"
                     onClick={handleSendInvite}
                     disabled={invitePending || !member.email || editEmail !== (member.email ?? '')}
                     title={!member.email ? t.team.addEmailFirst : undefined}
@@ -420,7 +421,7 @@ export default function ShopTeamMemberPage() {
                     {invitePending ? t.team.saving : member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
                   </button>
                   {member.hasPendingInvite && (
-                    <button className="btn btn-ghost" onClick={handleCancelInvite} disabled={invitePending}>
+                    <button className="btn btn--secondary" onClick={handleCancelInvite} disabled={invitePending}>
                       {t.team.cancelInvite}
                     </button>
                   )}
@@ -442,15 +443,15 @@ export default function ShopTeamMemberPage() {
       )}
 
       {/* Assigned services */}
-      <div className="card team-services-card">
-        <h2>{t.team.assignedServices}</h2>
+      <div className="card">
+        <h2 className="card__title">{t.team.assignedServices}</h2>
         {servicesLoading ? (
           <div className="shops-spinner-wrap">
             <div className="spinner" style={{ width: 24, height: 24 }} />
           </div>
         ) : (
           <>
-            {servicesError && <div className="alert alert-error">{servicesError}</div>}
+            {servicesError && <Alert variant="danger">{servicesError}</Alert>}
             {memberServices.length === 0 ? (
               <p className="team-services-empty">{t.team.noAssignedServices}</p>
             ) : (
@@ -460,7 +461,7 @@ export default function ShopTeamMemberPage() {
                     <span>{a.service.name}</span>
                     {isOwner && (
                       <button
-                        className="btn btn-ghost service-action-btn"
+                        className="btn btn--secondary btn--sm service-action-btn"
                         onClick={() => handleUnassignService(a.serviceId)}
                         disabled={unassigningServiceId === a.serviceId}
                       >
@@ -477,18 +478,18 @@ export default function ShopTeamMemberPage() {
               if (available.length === 0) return null;
               return (
                 <div className="service-staff-add">
-                  <select
+                  <div className="select-wrap select-wrap--sm service-staff-select"><select
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
-                    className="service-staff-select"
+                    className="select select--sm"
                   >
                     <option value="">{t.team.selectService}</option>
                     {available.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
-                  </select>
+                  </select></div>
                   <button
-                    className="btn btn-primary service-action-btn"
+                    className="btn btn--sm service-action-btn"
                     onClick={handleAssignService}
                     disabled={!selectedServiceId || assigningService}
                   >
@@ -503,26 +504,26 @@ export default function ShopTeamMemberPage() {
 
       {/* Danger zone — owner only */}
       {isOwner && (
-        <div className="card shop-danger-card">
-          <h2 className="shop-danger-title">{t.team.dangerZone}</h2>
-          <p className="shop-danger-desc">{t.team.removeMemberDesc}</p>
-          {removeError && <div className="alert alert-error">{removeError}</div>}
+        <div className="card card--danger shop-danger-card">
+          <h2 className="card__title">{t.team.dangerZone}</h2>
+          <p className="card__text">{t.team.removeMemberDesc}</p>
+          {removeError && <Alert variant="danger">{removeError}</Alert>}
           {!confirmRemove ? (
-            <button className="btn btn-danger" onClick={() => setConfirmRemove(true)}>
+            <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
               {t.team.remove}
             </button>
           ) : (
             <div className="wh-delete-confirm">
               <span className="wh-delete-confirm-text">{t.team.confirmRemovePrompt}</span>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger btn--block"
                 onClick={handleRemove}
                 disabled={removing}
               >
                 {removing ? t.team.removing : t.team.remove}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--block"
                 onClick={() => setConfirmRemove(false)}
               >
                 {t.team.cancel}

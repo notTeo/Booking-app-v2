@@ -24,6 +24,7 @@ import {
   type OverrideTag,
 } from './calendarModel';
 import '../styles/pages/bookings.css';
+import Alert from '../components/Alert';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
@@ -292,7 +293,7 @@ export default function ShopBookingsPage() {
           <input
             id="bookings-date"
             type="date"
-            className="bookings-date-picker"
+            className="input input--sm bookings-date-picker"
             value={date}
             onChange={e => setDateOverride(e.target.value)}
           />
@@ -332,9 +333,9 @@ export default function ShopBookingsPage() {
           })}
         </div>
         <label htmlFor="cal-filter-staff" className="visually-hidden">{t.bookings.filters.staffLabel}</label>
-        <select
+        <div className="select-wrap select-wrap--sm cal-filter-select"><select
           id="cal-filter-staff"
-          className="cal-filter-select"
+          className="select select--sm"
           value={staffFilter ?? ''}
           onChange={e => setStaffFilter(e.target.value || null)}
         >
@@ -342,11 +343,11 @@ export default function ShopBookingsPage() {
           {allColumns.map(c => (
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
-        </select>
+        </select></div>
         <label htmlFor="cal-filter-service" className="visually-hidden">{t.bookings.filters.serviceLabel}</label>
-        <select
+        <div className="select-wrap select-wrap--sm cal-filter-select"><select
           id="cal-filter-service"
-          className="cal-filter-select"
+          className="select select--sm"
           value={serviceFilter?.id ?? ''}
           onChange={e => {
             const id = e.target.value;
@@ -357,7 +358,7 @@ export default function ShopBookingsPage() {
           {[...serviceOptions].map(([id, name]) => (
             <option key={id} value={id}>{name}</option>
           ))}
-        </select>
+        </select></div>
         {filtersActive && (
           <>
             <span className="cal-filters-count">
@@ -365,7 +366,7 @@ export default function ShopBookingsPage() {
             </span>
             <button
               type="button"
-              className="btn btn-ghost cal-filters-clear"
+              className="btn btn--secondary btn--block btn--sm cal-filters-clear"
               onClick={() => {
                 setStatusFilter(new Set());
                 setStaffFilter(null);
@@ -378,7 +379,7 @@ export default function ShopBookingsPage() {
         )}
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Detail panel ── */}
       {creatingSlot ? (

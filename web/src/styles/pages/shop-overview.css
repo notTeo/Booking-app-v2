@@ -27,13 +27,6 @@
    unrelated .shop-card list-item class defined in shops.css — both
    stylesheets end up in the same global bundle. */
 
-.shop-overview-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
 /* ─── Header ─────────────────────────────────────────────────────── */
 
 .shop-overview-card__header {
@@ -42,7 +35,7 @@
   gap: 1rem;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-input);
+  background: var(--surface-sunken);
 }
 
 /* Avatar */
@@ -50,9 +43,9 @@
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -93,31 +86,6 @@
   align-items: flex-end;
   gap: 0.4rem;
   flex-shrink: 0;
-}
-
-.badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-}
-
-.badge--role {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
-.badge--active {
-  background: color-mix(in srgb, var(--success) 15%, transparent);
-  color: var(--success);
-}
-
-.badge--inactive {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-  color: var(--error);
 }
 
 /* ─── Body ───────────────────────────────────────────────────────── */

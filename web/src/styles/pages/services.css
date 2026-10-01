@@ -19,9 +19,6 @@
   margin: 0;
 }
 
-.services-header .btn {
-  width: auto;
-}
 
 /* ---- Empty state ---- */
 .services-empty {
@@ -39,13 +36,6 @@
 }
 
 /* ---- Service card ---- */
-.service-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
 .service-card-main {
   display: flex;
   align-items: flex-start;
@@ -88,29 +78,6 @@
   opacity: 0.4;
 }
 
-/* ---- Status badge ---- */
-.service-status-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.service-status-active {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--accent);
-}
-
-.service-status-inactive {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
 /* ---- Card actions — footer bar: Edit + Staff left, Delete pushed right ---- */
 .service-card-actions {
   display: flex;
@@ -119,7 +86,7 @@
   flex-wrap: wrap;
   padding: 0.65rem 1.25rem;
   border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--text) 2%, var(--bg-card));
+  background: color-mix(in srgb, var(--text) 2%, var(--surface));
 }
 
 .service-card-actions .service-delete-btn,
@@ -127,14 +94,6 @@
   margin-left: auto;
 }
 
-.service-action-btn {
-  width: auto !important;
-  font-size: 0.82rem;
-  padding: 0.4rem 0.8rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
 
 .service-icon-btn {
   padding: 0.4rem 0.55rem;
@@ -144,40 +103,14 @@
 }
 
 /* ---- "Add" card — dashed border, sits at the end of the list ---- */
-.service-card--add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 1.1rem 1.25rem;
-  background: transparent;
-  border-style: dashed;
-  color: var(--accent);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.service-card--add:hover {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-
-.service-card--add-icon {
-  font-size: 1rem;
-}
-
 .service-action-active {
   border-color: var(--accent) !important;
   color: var(--accent) !important;
 }
 
 .service-delete-btn:hover {
-  color: var(--error) !important;
-  border-color: var(--error) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
 }
 
 .service-confirm-delete {
@@ -191,7 +124,7 @@
 .service-staff-panel {
   border-top: 1px solid var(--border);
   padding: 1rem 1.25rem;
-  background: color-mix(in srgb, var(--accent) 3%, var(--bg-card));
+  background: color-mix(in srgb, var(--accent) 3%, var(--surface));
 }
 
 .service-staff-title {
@@ -241,26 +174,12 @@
 }
 
 .service-staff-select {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 0.9rem;
-  padding: 0.4rem 0.7rem;
-  outline: none;
-  transition: border-color 0.2s;
   min-width: 180px;
-}
-
-.service-staff-select:focus {
-  border-color: var(--accent);
 }
 
 /* ---- Create / Edit form ---- */
 .service-form.card {
-  max-width: unset;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .service-form-grid {
@@ -274,33 +193,10 @@
   padding-bottom: 1rem;
 }
 
-.service-form-active label {
+.service-form-active-label {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  cursor: pointer;
-  text-transform: none;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-textarea {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 1rem;
-  padding: 0.7rem 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-  width: 100%;
-  resize: vertical;
-}
-
-textarea:focus {
-  border-color: var(--accent);
 }
 
 .service-form-actions {
@@ -309,6 +205,3 @@ textarea:focus {
   margin-top: 0.5rem;
 }
 
-.service-form-actions .btn {
-  width: auto;
-}

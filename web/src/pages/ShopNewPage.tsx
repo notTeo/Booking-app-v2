@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -25,8 +26,8 @@ export default function ShopNewPage() {
     return (
       <div className="shops-page">
         <div className="card shops-upgrade-card">
-          <h2>Pro Account Required</h2>
-          <p>Creating a shop requires a Pro account. Contact us to upgrade.</p>
+          <h2 className="card__title">Pro Account Required</h2>
+          <p className="card__text">Creating a shop requires a Pro account. Contact us to upgrade.</p>
         </div>
       </div>
     );
@@ -67,12 +68,12 @@ export default function ShopNewPage() {
       </div>
 
       <div className="card shop-form-card">
-        <h1>New Shop</h1>
+        <h1 className="t-heading">New Shop</h1>
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="shop-name">Name *</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="shop-name">Name *</label>
+            <input className="input"
               id="shop-name"
               type="text"
               value={name}
@@ -81,9 +82,9 @@ export default function ShopNewPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="shop-slug">Slug *</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="shop-slug">Slug *</label>
+            <input className="input"
               id="shop-slug"
               type="text"
               value={slug}
@@ -99,9 +100,9 @@ export default function ShopNewPage() {
             </span>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="shop-description">Description</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="shop-description">Description</label>
+            <input className="input"
               id="shop-description"
               type="text"
               value={description}
@@ -110,9 +111,9 @@ export default function ShopNewPage() {
           </div>
 
           <div className="shop-form-row">
-            <div className="form-group">
-              <label htmlFor="shop-phone">Phone</label>
-              <input
+            <div className="field">
+              <label className="field__label" htmlFor="shop-phone">Phone</label>
+              <input className="input"
                 id="shop-phone"
                 type="text"
                 value={phone}
@@ -120,9 +121,9 @@ export default function ShopNewPage() {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="shop-timezone">Timezone</label>
-              <select
+            <div className="field">
+              <label className="field__label" htmlFor="shop-timezone">Timezone</label>
+              <div className="select-wrap"><select className="select"
                 id="shop-timezone"
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
@@ -130,13 +131,13 @@ export default function ShopNewPage() {
                 {TIMEZONES.map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>
                 ))}
-              </select>
+              </select></div>
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="shop-address">Address</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="shop-address">Address</label>
+            <input className="input"
               id="shop-address"
               type="text"
               value={address}
@@ -145,14 +146,14 @@ export default function ShopNewPage() {
             />
           </div>
 
-          {error && <div className="alert alert-error">{error}</div>}
+          {error && <Alert variant="danger">{error}</Alert>}
 
           <div className="shop-form-actions">
-            <button className="btn btn-primary" type="submit" disabled={loading}>
+            <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Creating...' : 'Create Shop'}
             </button>
             <button
-              className="btn btn-ghost"
+              className="btn btn--secondary"
               type="button"
               onClick={() => navigate('/shops')}
             >

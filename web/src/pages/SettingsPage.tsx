@@ -17,6 +17,7 @@ import {
   faMoon,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -150,7 +151,7 @@ export default function SettingsPage() {
       <h1>{t.settings.title}</h1>
 
       {/* Account Overview */}
-      <div className="settings-section settings-overview">
+      <div className="card settings-section settings-overview">
         <div className="settings-avatar">
           {getInitials(user?.email ?? '?')}
         </div>
@@ -158,9 +159,9 @@ export default function SettingsPage() {
           <p className="settings-overview-email">{user?.email}</p>
           <div className="settings-overview-badges">
             {user?.isVerified ? (
-              <span className="settings-verified-badge">{t.settings.verified}</span>
+              <span className="badge badge--success">{t.settings.verified}</span>
             ) : (
-              <span className="settings-unverified-badge">{t.settings.notVerified}</span>
+              <span className="badge badge--warning">{t.settings.notVerified}</span>
             )}
           </div>
           {user?.createdAt && (
@@ -169,15 +170,15 @@ export default function SettingsPage() {
         </div>
       </div>
       {/* Profile — name, email, password, one save */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
           {t.settings.profileSection}
         </p>
         <form onSubmit={handleSaveProfile}>
-          <div className="form-group">
-            <label htmlFor="settings-name">{t.settings.nameLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-name">{t.settings.nameLabel}</label>
+            <input className="input"
               id="settings-name"
               type="text"
               value={name}
@@ -185,9 +186,9 @@ export default function SettingsPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="settings-email">{t.settings.emailLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-email">{t.settings.emailLabel}</label>
+            <input className="input"
               id="settings-email"
               type="email"
               value={email}
@@ -195,9 +196,9 @@ export default function SettingsPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
+            <input className="input"
               id="settings-password"
               type="password"
               value={password}
@@ -212,10 +213,10 @@ export default function SettingsPage() {
               </ul>
             )}
           </div>
-          {profileError && <div className="alert alert-error">{profileError}</div>}
-          {profileSuccess && <div className="alert alert-success">{profileSuccess}</div>}
+          {profileError && <Alert variant="danger">{profileError}</Alert>}
+          {profileSuccess && <Alert variant="success">{profileSuccess}</Alert>}
           <button
-            className="btn btn-primary"
+            className="btn btn--sm"
             type="submit"
             disabled={profileLoading || !isProfileDirty || !passwordValid}
           >
@@ -225,8 +226,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Preferences */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faSlidersH} className="settings-section-icon" />
           {t.settings.preferencesSection}
         </p>
@@ -236,7 +237,7 @@ export default function SettingsPage() {
             <span className="settings-pref-desc">{t.settings.themeDesc}</span>
           </div>
           <button
-            className="btn btn-ghost settings-pref-btn"
+            className="btn btn--secondary btn--sm settings-pref-btn"
             onClick={toggleTheme}
             type="button"
             aria-label={theme === 'dark' ? t.toggles.switchToLight : t.toggles.switchToDark}
@@ -251,7 +252,7 @@ export default function SettingsPage() {
             <span className="settings-pref-desc">{t.settings.languageDesc}</span>
           </div>
           <button
-            className="btn btn-ghost settings-pref-btn"
+            className="btn btn--secondary btn--sm settings-pref-btn"
             onClick={toggleLanguage}
             type="button"
             aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
@@ -262,8 +263,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Active Sessions */}
-      <div className="settings-section">
-        <p className="settings-section-title">
+      <div className="card settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faShieldHalved} className="settings-section-icon" />
           {t.settings.activeSessionsSection}
         </p>
@@ -287,10 +288,10 @@ export default function SettingsPage() {
             </div>
           </>
         )}
-        {revokeError && <div className="alert alert-error">{revokeError}</div>}
-        {revokeSuccess && <div className="alert alert-success">{revokeSuccess}</div>}
+        {revokeError && <Alert variant="danger">{revokeError}</Alert>}
+        {revokeSuccess && <Alert variant="success">{revokeSuccess}</Alert>}
         <button
-          className="btn btn-ghost"
+          className="btn btn--secondary btn--sm"
           type="button"
           onClick={handleRevokeAll}
           disabled={revokeLoading || sessions.length === 0}
@@ -300,8 +301,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="settings-section settings-section--danger">
-        <p className="settings-section-title">
+      <div className="card card--danger settings-section">
+        <p className="card__title settings-section-title">
           <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
           {t.settings.dangerZone}
         </p>
@@ -311,7 +312,7 @@ export default function SettingsPage() {
 
         {!showDeleteConfirm ? (
           <button
-            className="btn btn-danger"
+            className="btn btn--danger btn--sm"
             type="button"
             onClick={() => setShowDeleteConfirm(true)}
           >
@@ -319,9 +320,9 @@ export default function SettingsPage() {
           </button>
         ) : user?.hasPassword ? (
           <form className="settings-danger-confirm" onSubmit={handleDeleteAccount}>
-            <div className="form-group">
-              <label htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
+              <input className="input"
                 id="delete-password"
                 type="password"
                 value={deletePassword}
@@ -330,17 +331,17 @@ export default function SettingsPage() {
                 required
               />
             </div>
-            {deleteError && <div className="alert alert-error">{deleteError}</div>}
+            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger btn--sm"
                 type="submit"
                 disabled={deleteLoading || !deletePassword}
               >
                 {deleteLoading ? t.settings.deleting : t.settings.confirmDelete}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--sm"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
               >
@@ -353,17 +354,17 @@ export default function SettingsPage() {
             <p className="settings-danger-desc">
               {t.settings.areYouSure}
             </p>
-            {deleteError && <div className="alert alert-error">{deleteError}</div>}
+            {deleteError && <Alert variant="danger">{deleteError}</Alert>}
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
-                className="btn btn-danger"
+                className="btn btn--danger btn--sm"
                 type="submit"
                 disabled={deleteLoading}
               >
                 {deleteLoading ? t.settings.deleting : t.settings.yesDelete}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn--secondary btn--sm"
                 type="button"
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
               >
