@@ -55,9 +55,15 @@ describe('GET /user/me', () => {
       .set('Authorization', `Bearer ${login.body.data.accessToken}`);
 
     expect(login.body.data.user).toEqual(me.body.data.user);
-    expect(Object.keys(me.body.data.user).sort()).toEqual(
-      ['createdAt', 'email', 'hasPassword', 'id', 'isPro', 'isVerified', 'name'],
-    );
+    expect(Object.keys(me.body.data.user).sort()).toEqual([
+      'createdAt',
+      'email',
+      'hasPassword',
+      'id',
+      'isPro',
+      'isVerified',
+      'name',
+    ]);
     expect(me.body.data.user.hasPassword).toBe(true);
   });
 
@@ -232,7 +238,9 @@ describe('DELETE /user/me', () => {
 
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('INVALID_PASSWORD');
-    expect(await prisma.user.findUnique({ where: { email: TEST_EMAIL } })).not.toBeNull();
+    expect(
+      await prisma.user.findUnique({ where: { email: TEST_EMAIL } }),
+    ).not.toBeNull();
   });
 
   it('returns 403 INVALID_PASSWORD without password field', async () => {
@@ -247,7 +255,9 @@ describe('DELETE /user/me', () => {
   });
 
   it('still returns 401 without a token', async () => {
-    const res = await request(app).delete('/user/me').send({ password: TEST_PASSWORD });
+    const res = await request(app)
+      .delete('/user/me')
+      .send({ password: TEST_PASSWORD });
     expect(res.status).toBe(401);
   });
 });

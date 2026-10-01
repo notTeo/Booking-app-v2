@@ -333,9 +333,7 @@ export const updateUser = async (
   userId: string,
   data: { email?: string; password?: string; name?: string },
 ): Promise<
-  | { user: UserDto }
-  | { message: string }
-  | { user: UserDto; message: string }
+  { user: UserDto } | { message: string } | { user: UserDto; message: string }
 > => {
   // Name and password apply immediately, in one update; email goes through a
   // pending verification instead, so it's handled separately below.
@@ -435,7 +433,8 @@ export const deleteUser = async (userId: string, password?: string) => {
   if (user.passwordHash) {
     // 403, not 401: the session is fine, the confirmation was wrong. A 401
     // would make the client's interceptor refresh the token and retry.
-    if (!password) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
+    if (!password)
+      throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
   }
