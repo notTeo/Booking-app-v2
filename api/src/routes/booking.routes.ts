@@ -57,13 +57,6 @@ router.patch(
   validate,
   bookingController.updateBooking,
 );
-router.delete(
-  '/:bookingId',
-  authenticate,
-  bookingParamsValidation,
-  validate,
-  bookingController.deleteBooking,
-);
 router.patch(
   '/:bookingId/status',
   authenticate,

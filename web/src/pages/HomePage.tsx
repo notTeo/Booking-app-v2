@@ -25,7 +25,6 @@ import {
   faMagnifyingGlass,
   faArrowUp,
   faRightFromBracket,
-  faChevronDown,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -34,7 +33,6 @@ import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 import Switch from '../components/Switch';
 import { handleActivateKeyDown } from '../utils/a11y';
-import type { DayOfWeek, HourRange } from '../api/workingHours.api';
 import '../styles/pages/home.css';
 import '../styles/pages/sidebar.css';
 import Wordmark from '../components/Wordmark';
@@ -43,7 +41,7 @@ import BrandText from '../components/BrandText';
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
 // real app, matching components/Sidebar.tsx's link set and classes.
-type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'hours' | 'customers' | 'settings';
+type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'customers' | 'settings';
 
 type T = ReturnType<typeof useLang>['t'];
 
@@ -70,7 +68,6 @@ const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageI
   { label: t.sidebar.manageSection, items: [
     { id: 'team', label: t.sidebar.team, icon: faUsers },
     { id: 'invites', label: t.sidebar.invites, icon: faUserPlus },
-    { id: 'hours', label: t.sidebar.shopWorkingHours, icon: faClock },
     { id: 'customers', label: t.sidebar.customers, icon: faMagnifyingGlass },
   ]},
 ];
@@ -85,21 +82,6 @@ const PREVIEW_UPCOMING_COUNT = 4;
 
 const PREVIEW_SERVICE_PRICES = ['€25', '€12'];
 
-// ─── Working-hours mock demo data ──────────────────────────────────────────
-const WH_DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-type WhDayState = { isOpen: boolean; hours: HourRange[] };
-type WhDaysForm = Record<DayOfWeek, WhDayState>;
-
-const defaultWhDays = (): WhDaysForm => ({
-  MON: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  TUE: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  WED: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  THU: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  FRI: { isOpen: true, hours: [{ startTime: '09:00', endTime: '17:00' }] },
-  SAT: { isOpen: true, hours: [{ startTime: '10:00', endTime: '14:00' }] },
-  SUN: { isOpen: false, hours: [] },
-});
-
 // ─── Booking wizard mock demo data ─────────────────────────────────────────
 type WizardStep = 1 | 2 | 3 | 4;
 const WIZARD_DEMO_SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
@@ -112,7 +94,6 @@ const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle:
   services: { title: t.sidebar.services, subtitle: t.home.previewServicesSubtitle },
   team: { title: t.sidebar.team, subtitle: t.home.previewTeamPageSubtitle },
   invites: { title: t.sidebar.invites, subtitle: t.home.previewInvitesSubtitle },
-  hours: { title: t.sidebar.shopWorkingHours, subtitle: t.home.previewHoursSubtitle },
   customers: { title: t.sidebar.customers, subtitle: t.home.previewCustomersSubtitle },
   settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle },
 });
@@ -130,7 +111,6 @@ function PreviewMenuIcon() {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** How far (in px) the preview card overlaps up into the bottom of the giant pill. */
 const PREVIEW_OVERLAP = 380;
@@ -179,42 +159,6 @@ export default function HomePage() {
   const [settingsAddress, setSettingsAddress] = useState('123 Main St, Springfield');
   const [settingsTimezone, setSettingsTimezone] = useState('Europe/Athens');
   const [settingsActive, setSettingsActive] = useState(true);
-
-  // Working hours mock — interactive per-day toggles + real time-slot inputs
-  const [whExpanded, setWhExpanded] = useState(true);
-  const [whDays, setWhDays] = useState<WhDaysForm>(defaultWhDays);
-
-  const toggleWhDay = (day: DayOfWeek) => {
-    setWhDays(prev => {
-      const wasOpen = prev[day].isOpen;
-      const hours = !wasOpen && prev[day].hours.length === 0
-        ? [{ startTime: '09:00', endTime: '17:00' }]
-        : prev[day].hours;
-      return { ...prev, [day]: { isOpen: !wasOpen, hours } };
-    });
-  };
-
-  const updateWhSlot = (day: DayOfWeek, idx: number, field: 'startTime' | 'endTime', value: string) => {
-    setWhDays(prev => {
-      const hours = [...prev[day].hours];
-      hours[idx] = { ...hours[idx], [field]: value };
-      return { ...prev, [day]: { ...prev[day], hours } };
-    });
-  };
-
-  const addWhSlot = (day: DayOfWeek) => {
-    setWhDays(prev => ({
-      ...prev,
-      [day]: { ...prev[day], hours: [...prev[day].hours, { startTime: '09:00', endTime: '17:00' }] },
-    }));
-  };
-
-  const removeWhSlot = (day: DayOfWeek, idx: number) => {
-    setWhDays(prev => ({
-      ...prev,
-      [day]: { ...prev[day], hours: prev[day].hours.filter((_, i) => i !== idx) },
-    }));
-  };
 
   // New-booking wizard mock — click-through 4-step flow, local state only
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
@@ -288,6 +232,8 @@ export default function HomePage() {
         previewRef.current.style.paddingTop = `${topPad}px`;
       }
 
+      if (navWrapperRef.current) navWrapperRef.current.style.height = `${giantHeight}px`;
+
       applyFrame();
     };
 
@@ -298,7 +244,13 @@ export default function HomePage() {
 
       const progress = Math.min(Math.max(window.scrollY / metrics.triggerDistance, 0), 1);
 
-      wrapper.style.height = `${lerp(metrics.giantHeight, metrics.slimHeight, progress)}px`;
+      // The pill keeps its full (giant) size and slides up instead of changing
+      // height, so scrolling only moves a composited layer — no per-frame
+      // layout or backdrop-blur repaint. The hero is counter-translated so it
+      // stays put while the pill's overflow clips it, exactly as before.
+      const shift = (metrics.giantHeight - metrics.slimHeight) * progress;
+      wrapper.style.transform = `translate(-50%, ${-shift}px)`;
+      if (navHeroRef.current) navHeroRef.current.style.transform = `translateY(${shift}px)`;
       glow.style.opacity = `${1 - progress}`;
 
       // The preview card overlaps on top of the pill body while it's tall,
@@ -554,8 +506,8 @@ export default function HomePage() {
                     <div className="home-preview-overview-header">
                       <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
                       <div className="home-preview-badges">
-                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
-                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                        <span className="badge badge--accent">{t.team.roles.owner}</span>
+                        <span className="badge badge--success">{t.shops.active}</span>
                       </div>
                     </div>
 
@@ -696,12 +648,12 @@ export default function HomePage() {
                       <tbody>
                         <tr>
                           <td>marcus@demo.shop</td>
-                          <td><span className="home-preview-role-badge home-preview-role-badge--owner">{t.team.roles.owner}</span></td>
+                          <td><span className="badge badge--accent">{t.team.roles.owner}</span></td>
                           <td>2024</td>
                         </tr>
                         <tr>
                           <td>sofia@demo.shop</td>
-                          <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.team.roles.staff}</span></td>
+                          <td><span className="badge badge--neutral">{t.team.roles.staff}</span></td>
                           <td>2025</td>
                         </tr>
                       </tbody>
@@ -759,13 +711,13 @@ export default function HomePage() {
                         <tbody>
                           <tr>
                             <td>{t.home.previewInviteRowName1}</td>
-                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
-                            <td><span className="home-preview-status-badge home-preview-status-badge--pending">{t.invites.status.pending}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.roles.staff}</span></td>
+                            <td><span className="badge badge--warning">{t.invites.status.pending}</span></td>
                           </tr>
                           <tr>
                             <td>{t.home.previewInviteRowName2}</td>
-                            <td><span className="home-preview-role-badge home-preview-role-badge--staff">{t.invites.roles.staff}</span></td>
-                            <td><span className="home-preview-status-badge home-preview-status-badge--expired">{t.invites.notSentYet}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.roles.staff}</span></td>
+                            <td><span className="badge badge--neutral">{t.invites.notSentYet}</span></td>
                           </tr>
                         </tbody>
                       </table>
@@ -778,8 +730,8 @@ export default function HomePage() {
                     <div className="home-preview-overview-header">
                       <h4 className="home-preview-overview-name">{PREVIEW_SHOP_NAME}</h4>
                       <div className="home-preview-badges">
-                        <span className="home-preview-badge home-preview-badge--role">{t.team.roles.owner}</span>
-                        <span className="home-preview-badge home-preview-badge--active">{t.shops.active}</span>
+                        <span className="badge badge--accent">{t.team.roles.owner}</span>
+                        <span className="badge badge--success">{t.shops.active}</span>
                       </div>
                     </div>
 
@@ -870,7 +822,7 @@ export default function HomePage() {
                     <div className="home-preview-service-row">
                       <div className="home-preview-service-row-top">
                         <h4>{t.home.previewService1Name}</h4>
-                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                        <span className="badge badge--success">{t.services.active}</span>
                       </div>
                       <p className="home-preview-service-desc">{t.home.previewService1Desc}</p>
                       <p className="home-preview-service-meta">{t.home.previewService1Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[0]}</p>
@@ -878,7 +830,7 @@ export default function HomePage() {
                     <div className="home-preview-service-row">
                       <div className="home-preview-service-row-top">
                         <h4>{t.home.previewService2Name}</h4>
-                        <span className="home-preview-service-status-badge home-preview-service-status-badge--active">{t.services.active}</span>
+                        <span className="badge badge--success">{t.services.active}</span>
                       </div>
                       <p className="home-preview-service-desc">{t.home.previewService2Desc}</p>
                       <p className="home-preview-service-meta">{t.home.previewService2Duration}<span className="home-preview-service-sep">·</span>{PREVIEW_SERVICE_PRICES[1]}</p>
@@ -887,78 +839,6 @@ export default function HomePage() {
                       <FontAwesomeIcon icon={faPlus} />
                       <span>{t.services.addService}</span>
                     </div>
-                  </div>
-                ) : previewPage === 'hours' ? (
-                  // Mirrors WorkingHoursPanel.tsx: a collapsible schedule card with
-                  // per-day Switch toggles and real time-slot inputs — same
-                  // interactions and demo data, but everything stays local (no
-                  // save/API calls).
-                  <div className="home-preview-wh-schedule-card">
-                    <div
-                      className="home-preview-wh-header"
-                      role="button"
-                      tabIndex={0}
-                      aria-expanded={whExpanded}
-                      onClick={() => setWhExpanded(v => !v)}
-                      onKeyDown={handleActivateKeyDown(() => setWhExpanded(v => !v))}
-                    >
-                      <span className="home-preview-wh-date-range">{t.workingHours.from} Jan 1 — {t.workingHours.ongoing}</span>
-                      <span className="home-preview-wh-badge home-preview-wh-badge--active">{t.shops.active}</span>
-                      <FontAwesomeIcon
-                        icon={faChevronDown}
-                        className={`home-preview-wh-chevron${whExpanded ? ' home-preview-wh-chevron--open' : ''}`}
-                      />
-                    </div>
-                    {whExpanded && (
-                      <div className="home-preview-wh-body">
-                        {WH_DAY_ORDER.map((day) => {
-                          const dayState = whDays[day];
-                          return (
-                            <div key={day} className="home-preview-wh-row home-preview-wh-row--full">
-                              <div className="home-preview-wh-row-top">
-                                <span className="home-preview-wh-day">{t.workingHours.days[day]}</span>
-                                <Switch checked={dayState.isOpen} onChange={() => toggleWhDay(day)} />
-                                <span className={`home-preview-wh-status home-preview-wh-status--${dayState.isOpen ? 'open' : 'closed'}`}>
-                                  {dayState.isOpen ? t.workingHours.open : t.workingHours.closed}
-                                </span>
-                              </div>
-                              {dayState.isOpen && (
-                                <div className="home-preview-wh-slots">
-                                  {dayState.hours.map((slot, idx) => (
-                                    <div key={idx} className="home-preview-wh-slot-row">
-                                      <input
-                                        type="time"
-                                        className="home-preview-input home-preview-time-input"
-                                        value={slot.startTime}
-                                        onChange={(e) => updateWhSlot(day, idx, 'startTime', e.target.value)}
-                                      />
-                                      <span className="home-preview-wh-slot-sep">–</span>
-                                      <input
-                                        type="time"
-                                        className="home-preview-input home-preview-time-input"
-                                        value={slot.endTime}
-                                        onChange={(e) => updateWhSlot(day, idx, 'endTime', e.target.value)}
-                                      />
-                                      <button
-                                        type="button"
-                                        className="home-preview-wh-slot-remove"
-                                        onClick={() => removeWhSlot(day, idx)}
-                                        aria-label={t.workingHours.removeSlot}
-                                      >
-                                        <FontAwesomeIcon icon={faXmark} />
-                                      </button>
-                                    </div>
-                                  ))}
-                                  <button type="button" className="home-preview-wh-add-slot" onClick={() => addWhSlot(day)}>
-                                    {t.workingHours.addSlot}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
                 ) : previewPage === 'newBooking' ? (
                   // Mirrors OwnerBookingWizard.tsx: a real click-through 4-step flow
@@ -1035,7 +915,7 @@ export default function HomePage() {
                           </button>
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(1)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(1)}>{t.public.back}</button>
                         </div>
                       </div>
                     )}
@@ -1076,9 +956,9 @@ export default function HomePage() {
                           })}
                         </div>
                         <div className="home-preview-wizard-actions">
-                          <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(2)}>{t.public.back}</button>
+                          <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(2)}>{t.public.back}</button>
                           {wizardDate && wizardTime && (
-                            <button type="button" className="btn btn-primary" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
+                            <button type="button" className="btn" onClick={() => setWizardStep(4)}>{t.public.continue}</button>
                           )}
                         </div>
                       </div>
@@ -1089,7 +969,7 @@ export default function HomePage() {
                         <div className="home-preview-wizard-success">
                           <span className="home-preview-wizard-success-icon"><FontAwesomeIcon icon={faCheck} /></span>
                           <p>{t.public.bookingConfirmed}</p>
-                          <button type="button" className="btn btn-primary" onClick={resetWizard}>{t.bookings.newBookingTitle}</button>
+                          <button type="button" className="btn" onClick={resetWizard}>{t.bookings.newBookingTitle}</button>
                         </div>
                       ) : (
                         <div className="home-preview-wizard-panel">
@@ -1143,10 +1023,10 @@ export default function HomePage() {
                             />
                           </div>
                           <div className="home-preview-wizard-actions">
-                            <button type="button" className="btn btn-ghost" onClick={() => setWizardStep(3)}>{t.public.back}</button>
+                            <button type="button" className="btn btn--secondary" onClick={() => setWizardStep(3)}>{t.public.back}</button>
                             <button
                               type="button"
-                              className="btn btn-primary"
+                              className="btn"
                               disabled={wizardName.trim() === '' || wizardPhone.trim() === ''}
                               onClick={() => setWizardDone(true)}
                             >

@@ -18,6 +18,7 @@ import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -226,21 +227,21 @@ export default function ShopServicesPage() {
     formError: string,
     onCancel: () => void,
   ) => (
-    <form className="service-form card" onSubmit={onSubmit}>
-      {formError && <div className="alert alert-error">{formError}</div>}
+    <form className="card service-form" onSubmit={onSubmit}>
+      {formError && <Alert variant="danger">{formError}</Alert>}
       <div className="service-form-grid">
-        <div className="form-group">
-          <label>{t.services.name}</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.name}</label>
+          <input className="input"
             value={form.name}
             onChange={(e) => onChange('name', e.target.value)}
             required
             placeholder={t.services.name}
           />
         </div>
-        <div className="form-group">
-          <label>{t.services.duration} (min)</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.duration} (min)</label>
+          <input className="input"
             type="number"
             min="1"
             value={form.duration}
@@ -249,9 +250,9 @@ export default function ShopServicesPage() {
             placeholder="30"
           />
         </div>
-        <div className="form-group">
-          <label>{t.services.price} (€)</label>
-          <input
+        <div className="field">
+          <label className="field__label">{t.services.price} (€)</label>
+          <input className="input"
             type="number"
             min="0"
             step="0.01"
@@ -261,16 +262,16 @@ export default function ShopServicesPage() {
             placeholder="0.00"
           />
         </div>
-        <div className="form-group service-form-active">
-          <label>
+        <div className="field service-form-active">
+          <div className="service-form-active-label">
             <Switch checked={form.isActive} onChange={(v) => onChange('isActive', v)} label={t.services.isActive} />
-            {' '}{t.services.isActive}
-          </label>
+            <span className="field__label">{t.services.isActive}</span>
+          </div>
         </div>
       </div>
-      <div className="form-group">
-        <label>{t.services.description}</label>
-        <textarea
+      <div className="field">
+        <label className="field__label">{t.services.description}</label>
+        <textarea className="textarea"
           value={form.description}
           onChange={(e) => onChange('description', e.target.value)}
           placeholder={t.services.description}
@@ -278,10 +279,10 @@ export default function ShopServicesPage() {
         />
       </div>
       <div className="service-form-actions">
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
+        <button className="btn" type="submit" disabled={submitting}>
           {submitting ? t.services.saving : submitLabel}
         </button>
-        <button className="btn btn-ghost" type="button" onClick={onCancel}>
+        <button className="btn btn--secondary" type="button" onClick={onCancel}>
           {t.services.cancel}
         </button>
       </div>
@@ -308,7 +309,7 @@ export default function ShopServicesPage() {
         <h1>{t.services.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Create form */}
       {showCreate &&
@@ -331,7 +332,7 @@ export default function ShopServicesPage() {
       {(services.length > 0 || (isOwner && !showCreate && !editingId)) && (
         <div className="services-list">
           {services.map((service) => (
-            <div key={service.id} className="service-card">
+            <div key={service.id} className="card card--flush">
               {editingId === service.id ? (
                 renderServiceForm(
                   editForm,
@@ -349,7 +350,7 @@ export default function ShopServicesPage() {
                       <div className="service-card-name">
                         {service.name}
                         <span
-                          className={`service-status-badge service-status-${service.isActive ? 'active' : 'inactive'}`}
+                          className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
                         >
                           {service.isActive ? t.services.active : t.services.inactive}
                         </span>
@@ -369,7 +370,7 @@ export default function ShopServicesPage() {
                   {isOwner && (
                     <div className="service-card-actions">
                       <button
-                        className="btn btn-ghost service-action-btn"
+                        className="btn btn--secondary btn--sm service-action-btn"
                         onClick={() => {
                           closeStaffPanel();
                           setEditingId(service.id);
@@ -381,7 +382,7 @@ export default function ShopServicesPage() {
                       </button>
 
                       <button
-                        className={`btn btn-ghost service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
+                        className={`btn btn--secondary btn--sm service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
                         onClick={() => {
                           if (staffServiceId === service.id) {
                             closeStaffPanel();
@@ -396,14 +397,14 @@ export default function ShopServicesPage() {
                       {confirmDeleteId === service.id ? (
                         <div className="service-confirm-delete">
                           <button
-                            className="btn btn-danger service-action-btn"
+                            className="btn btn--danger btn--sm service-action-btn"
                             onClick={() => handleDelete(service.id)}
                             disabled={deleting}
                           >
                             {deleting ? t.services.deleting : t.services.confirmDelete}
                           </button>
                           <button
-                            className="btn btn-ghost service-action-btn"
+                            className="btn btn--secondary btn--sm service-action-btn"
                             onClick={() => setConfirmDeleteId(null)}
                           >
                             {t.services.cancel}
@@ -411,7 +412,7 @@ export default function ShopServicesPage() {
                         </div>
                       ) : (
                         <button
-                          className="btn btn-ghost service-action-btn service-delete-btn"
+                          className="btn btn--secondary btn--sm service-action-btn service-delete-btn"
                           onClick={() => setConfirmDeleteId(service.id)}
                         >
                           <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
@@ -429,7 +430,7 @@ export default function ShopServicesPage() {
                         </div>
                       ) : (
                         <>
-                          {staffError && <div className="alert alert-error">{staffError}</div>}
+                          {staffError && <Alert variant="danger">{staffError}</Alert>}
 
                           <div className="service-staff-title">{t.services.assignedStaff}</div>
 
@@ -441,7 +442,7 @@ export default function ShopServicesPage() {
                                 <li key={ss.userShopId} className="service-staff-item">
                                   <span>{ss.userShop.name}</span>
                                   <button
-                                    className="btn btn-ghost service-action-btn"
+                                    className="btn btn--secondary btn--sm service-action-btn"
                                     onClick={() => handleUnassign(ss.userShopId)}
                                     disabled={unassigningId === ss.userShopId}
                                   >
@@ -461,10 +462,10 @@ export default function ShopServicesPage() {
                             if (available.length === 0) return null;
                             return (
                               <div className="service-staff-add">
-                                <select
+                                <div className="select-wrap select-wrap--sm service-staff-select"><select
                                   value={selectedUserShopId}
                                   onChange={(e) => setSelectedUserShopId(e.target.value)}
-                                  className="service-staff-select"
+                                  className="select select--sm"
                                 >
                                   <option value="">{t.services.selectStaff}</option>
                                   {available.map((m) => (
@@ -472,9 +473,9 @@ export default function ShopServicesPage() {
                                       {m.name}
                                     </option>
                                   ))}
-                                </select>
+                                </select></div>
                                 <button
-                                  className="btn btn-primary service-action-btn"
+                                  className="btn btn--sm service-action-btn"
                                   onClick={handleAssign}
                                   disabled={!selectedUserShopId || assigning}
                                 >
@@ -493,8 +494,8 @@ export default function ShopServicesPage() {
           ))}
 
           {isOwner && !showCreate && !editingId && (
-            <button type="button" className="service-card service-card--add" onClick={() => setShowCreate(true)}>
-              <FontAwesomeIcon icon={faPlus} className="service-card--add-icon" />
+            <button type="button" className="card card--interactive card--dashed" onClick={() => setShowCreate(true)}>
+              <FontAwesomeIcon icon={faPlus} />
               <span>{t.services.addService}</span>
             </button>
           )}

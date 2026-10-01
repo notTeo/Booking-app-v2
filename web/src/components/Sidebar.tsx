@@ -16,7 +16,6 @@ import {
   faUsers,
   faUserPlus,
   faMagnifyingGlass,
-  faClock,
   faEnvelopeOpen,
   faPlusCircle,
   faChevronLeft,
@@ -188,11 +187,6 @@ function ShopNav({ isOpen, onClose, width, startResize, slug }: ShopNavProps) {
           <NavLink to={`${base}/invites`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.invites} onClick={onClose}>
             <FontAwesomeIcon icon={faUserPlus} />
             <span className="sidebar-link-label">{t.sidebar.invites}</span>
-          </NavLink>
-
-          <NavLink to={`${base}/working-hours`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.shopWorkingHours} onClick={onClose}>
-            <FontAwesomeIcon icon={faClock} />
-            <span className="sidebar-link-label">{t.sidebar.shopWorkingHours}</span>
           </NavLink>
 
           <NavLink to={`${base}/customers`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.customers} onClick={onClose}>

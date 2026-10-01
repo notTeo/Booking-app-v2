@@ -6,6 +6,7 @@ import {
   addWeeklySchedule,
   authHeader,
   createBookingRow,
+  createStaffMember,
   createTenant,
   type Tenant,
 } from './helpers';
@@ -240,14 +241,24 @@ describe('includeOutsideHours=true on a closed day / a provider day off', () => 
     ).toBe(true);
   });
 
-  it("uses the shop-wide hours for that weekday when the provider's own day is off", async () => {
+  // A second team member who performs the service, with their own schedules.
+  async function colleague(t: Tenant) {
+    const q = await createStaffMember(t, 'Colleague');
+    await prisma.staffService.create({
+      data: { userShopId: q.staff.id, serviceId: t.service.id },
+    });
+    return q.staff;
+  }
+
+  it("uses the team's hours for that weekday when the provider's own day is off", async () => {
     const t = await createTenant('Ooh');
+    const q = await colleague(t);
     await addSchedule(t, {
       staffId: t.staff.id,
       ranges: { MON: [['09:00', '17:00']] }, // provider: only Mondays
     });
     await addSchedule(t, {
-      staffId: null,
+      staffId: q.id,
       ranges: { SUN: [['10:00', '14:00']] },
     });
     const slots: Slot[] = (await withFlag(t, SUN)).body.data.slots;
@@ -256,26 +267,27 @@ describe('includeOutsideHours=true on a closed day / a provider day off', () => 
     expect(slots.every((s) => s.reason === 'CLOSED_DAY')).toBe(true);
   });
 
-  it('takes the latest-starting shop schedule that is open that weekday, even one not yet active on the date', async () => {
+  it("takes each member's latest-starting schedule that is open that weekday, even one not yet active on the date", async () => {
     const t = await createTenant('Ooh');
+    const q = await colleague(t);
     await addSchedule(t, {
       staffId: t.staff.id,
       ranges: { MON: [['09:00', '17:00']] },
     });
     await addSchedule(t, {
-      staffId: null,
+      staffId: q.id,
       startDate: '2026-01-01',
       endDate: '2027-06-01', // active schedules can't overlap (DB constraint)
       ranges: { SUN: [['10:00', '14:00']] },
     });
     await addSchedule(t, {
-      staffId: null,
+      staffId: q.id,
       startDate: '2027-06-01', // starts after the requested date
       endDate: '2028-01-01',
       ranges: { SUN: [['11:00', '15:00']] },
     });
     await addSchedule(t, {
-      staffId: null,
+      staffId: q.id,
       startDate: '2028-01-01', // latest, but closed on Sunday: skipped
       ranges: { MON: [['09:00', '17:00']] },
     });

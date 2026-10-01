@@ -158,7 +158,6 @@ export interface Translations {
     previewServicesSubtitle: string;
     previewTeamPageSubtitle: string;
     previewInvitesSubtitle: string;
-    previewHoursSubtitle: string;
     previewCustomersSubtitle: string;
     previewSettingsSubtitle: string;
     previewCalStaff1: string;
@@ -597,10 +596,6 @@ export interface Translations {
     overlapOpenEnded: string;
     openEndedNotice: string;
     setEndDate: string;
-    bookingWindowTitle: string;
-    bookingWindowNote: string;
-    bookingWindowSaved: string;
-    bookingWindowError: string;
     days: {
       MON: string;
       TUE: string;
@@ -666,6 +661,7 @@ export interface Translations {
     staff: string;
     dateTime: string;
     yourDetails: string;
+    stepOf: string;
     noServices: string;
     noStaff: string;
     noPreference: string;
@@ -839,6 +835,11 @@ export interface Translations {
     yourText: string;
     appointmentAt: string;
     hasCancelled: string;
+    confirmTitle: string;
+    confirmText: string;
+    confirmButton: string;
+    keepButton: string;
+    kept: string;
   };
 }
 
@@ -990,7 +991,6 @@ home: {
     previewServicesSubtitle: 'Τι προσφέρει το κατάστημά σου.',
     previewTeamPageSubtitle: '5 μέλη προσωπικού ενεργά.',
     previewInvitesSubtitle: 'Φέρε την ομάδα σου στο BeBooked.',
-    previewHoursSubtitle: 'Πότε είναι ανοιχτό το κατάστημά σου.',
     previewCustomersSubtitle: '312 πελάτες καταχωρημένοι.',
     previewSettingsSubtitle: 'Στοιχεία καταστήματος & προτιμήσεις.',
     previewCalStaff1: 'Μάρκος',
@@ -1414,7 +1414,7 @@ home: {
       to: 'έως',
       saveDays: 'Αποθήκευση',
       saveDates: 'Αποθήκευση Ημερομηνιών',
-      noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα.',
+      noSchedules: 'Δεν υπάρχουν προγράμματα ακόμα. Χωρίς πρόγραμμα, το μέλος δεν είναι διαθέσιμο για κρατήσεις.',
       errorDelete: 'Αποτυχία διαγραφής προγράμματος.',
       errorCreate: 'Αποτυχία δημιουργίας προγράμματος.',
       slotEndBeforeStart: 'Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.',
@@ -1429,10 +1429,6 @@ home: {
       overlapOpenEnded: "Το ενεργό πρόγραμμα που ξεκινά {date} δεν έχει ημερομηνία λήξης. Βάλε του λήξη (ή απενεργοποίησέ το) πριν προσθέσεις άλλο.",
       openEndedNotice: "Το πρόγραμμα «{range}» δεν έχει ημερομηνία λήξης, οπότε δεν μπορεί να προστεθεί άλλο ενεργό πρόγραμμα. Βάλε του πρώτα ημερομηνία λήξης.",
       setEndDate: "Ορισμός λήξης",
-      bookingWindowTitle: "Παράθυρο κρατήσεων",
-      bookingWindowNote: "Ισχύει για όλα τα προγράμματα και για όλο το κατάστημα. Οι πελάτες δεν μπορούν να κλείσουν πέρα από αυτό το όριο, ακόμη κι αν υπάρχει πρόγραμμα.",
-      bookingWindowSaved: "Το παράθυρο κρατήσεων αποθηκεύτηκε.",
-      bookingWindowError: "Αποτυχία αποθήκευσης παραθύρου κρατήσεων.",
       days: {
         MON: 'Δευτέρα',
         TUE: 'Τρίτη',
@@ -1498,6 +1494,7 @@ home: {
       staff: 'Προσωπικό',
       dateTime: 'Ημερομηνία & Ώρα',
       yourDetails: 'Τα Στοιχεία σας',
+      stepOf: 'Βήμα {n} από {total}',
       noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
       noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
       noPreference: 'Χωρίς προτίμηση',
@@ -1690,6 +1687,11 @@ home: {
       yourText: 'Το',
       appointmentAt: 'ραντεβού σας στο',
       hasCancelled: 'ακυρώθηκε.',
+      confirmTitle: 'Ακύρωση ραντεβού;',
+      confirmText: 'Θέλετε σίγουρα να ακυρώσετε το ραντεβού σας; Αυτή η ενέργεια δεν αναιρείται.',
+      confirmButton: 'Ναι, ακύρωση',
+      keepButton: 'Διατήρηση ραντεβού',
+      kept: 'Το ραντεβού σας διατηρήθηκε. Μπορείτε να κλείσετε αυτή τη σελίδα.',
     },
   },
 
@@ -1840,7 +1842,6 @@ home: {
     previewServicesSubtitle: 'What your shop offers.',
     previewTeamPageSubtitle: '5 staff members active.',
     previewInvitesSubtitle: 'Bring your team onto BeBooked.',
-    previewHoursSubtitle: 'When your shop is open.',
     previewCustomersSubtitle: '312 clients on file.',
     previewSettingsSubtitle: 'Shop details & preferences.',
     previewCalStaff1: 'Marcus',
@@ -2264,7 +2265,7 @@ home: {
       to: 'to',
       saveDays: 'Save',
       saveDates: 'Save Dates',
-      noSchedules: 'No schedules yet.',
+      noSchedules: 'No schedules yet. Without a schedule this team member can’t be booked.',
       errorDelete: 'Failed to delete schedule.',
       errorCreate: 'Failed to create schedule.',
       slotEndBeforeStart: 'End time must be after start time.',
@@ -2279,10 +2280,6 @@ home: {
       overlapOpenEnded: "The active schedule starting {date} has no end date. Set an end date on it (or turn it off) before adding another.",
       openEndedNotice: "The schedule \"{range}\" has no end date, so no other active schedule can be added. Set an end date on it first.",
       setEndDate: "Set end date",
-      bookingWindowTitle: "Booking window",
-      bookingWindowNote: "Applies to all schedules and to the whole shop. Customers can't book beyond this limit, even if a schedule exists.",
-      bookingWindowSaved: "Booking window saved.",
-      bookingWindowError: "Failed to save the booking window.",
       days: {
         MON: 'Monday',
         TUE: 'Tuesday',
@@ -2348,6 +2345,7 @@ home: {
       staff: 'Staff',
       dateTime: 'Date & Time',
       yourDetails: 'Your Details',
+      stepOf: 'Step {n} of {total}',
       noServices: 'No services available.',
       noStaff: 'No staff available for this service.',
       noPreference: 'No preference',
@@ -2540,6 +2538,11 @@ home: {
       yourText: 'Your',
       appointmentAt: 'appointment at',
       hasCancelled: 'has been cancelled.',
+      confirmTitle: 'Cancel your booking?',
+      confirmText: 'Are you sure you want to cancel your appointment? This cannot be undone.',
+      confirmButton: 'Yes, cancel booking',
+      keepButton: 'Keep booking',
+      kept: 'Your booking is kept. You can close this page.',
     },
   },
 };

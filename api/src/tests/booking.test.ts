@@ -182,19 +182,24 @@ describe('updateBooking overlap protection (reschedule)', () => {
 const MONDAY = '2027-02-01';
 
 describe('getAvailableSlots', () => {
-  it('falls back to the shop-wide schedule when no staff is requested', async () => {
-    const { owner, shop, service } = await setupShop();
+  it('uses the team hours when no staff is requested', async () => {
+    const { owner, shop, staff, service } = await setupShop();
 
-    await createSchedule(owner.id, shop.id, {
-      startDate: MONDAY,
-      days: [
-        {
-          day: 'MON',
-          isOpen: true,
-          hours: [{ startTime: '09:00', endTime: '11:00' }],
-        },
-      ],
-    });
+    await createSchedule(
+      owner.id,
+      shop.id,
+      {
+        startDate: MONDAY,
+        days: [
+          {
+            day: 'MON',
+            isOpen: true,
+            hours: [{ startTime: '09:00', endTime: '11:00' }],
+          },
+        ],
+      },
+      staff.id,
+    );
 
     const result = await getAvailableSlots(shop.id, MONDAY, null, service.id);
 
@@ -205,20 +210,25 @@ describe('getAvailableSlots', () => {
     }
   });
 
-  it("honors a staff member's own schedule over the shop-wide one", async () => {
-    const { owner, shop, service } = await setupShop();
+  it("honors a staff member's own schedule, not a colleague's", async () => {
+    const { owner, shop, staff, service } = await setupShop();
     const staffMember = await addStaffMember(shop.id);
 
-    await createSchedule(owner.id, shop.id, {
-      startDate: MONDAY,
-      days: [
-        {
-          day: 'MON',
-          isOpen: true,
-          hours: [{ startTime: '09:00', endTime: '11:00' }],
-        },
-      ],
-    });
+    await createSchedule(
+      owner.id,
+      shop.id,
+      {
+        startDate: MONDAY,
+        days: [
+          {
+            day: 'MON',
+            isOpen: true,
+            hours: [{ startTime: '09:00', endTime: '11:00' }],
+          },
+        ],
+      },
+      staff.id,
+    );
     await createSchedule(
       owner.id,
       shop.id,
@@ -250,20 +260,25 @@ describe('getAvailableSlots', () => {
     }
   });
 
-  it('reports closed for a staff member with no schedule of their own, even though the shop is open', async () => {
-    const { owner, shop, service } = await setupShop();
+  it('reports closed for a staff member with no schedule of their own, even though a colleague is working', async () => {
+    const { owner, shop, staff, service } = await setupShop();
     const staffMember = await addStaffMember(shop.id);
 
-    await createSchedule(owner.id, shop.id, {
-      startDate: MONDAY,
-      days: [
-        {
-          day: 'MON',
-          isOpen: true,
-          hours: [{ startTime: '09:00', endTime: '11:00' }],
-        },
-      ],
-    });
+    await createSchedule(
+      owner.id,
+      shop.id,
+      {
+        startDate: MONDAY,
+        days: [
+          {
+            day: 'MON',
+            isOpen: true,
+            hours: [{ startTime: '09:00', endTime: '11:00' }],
+          },
+        ],
+      },
+      staff.id,
+    );
 
     const result = await getAvailableSlots(
       shop.id,
@@ -286,16 +301,21 @@ describe('getAvailableSlots', () => {
   it('includes a booked time in the slot list as unavailable rather than omitting it', async () => {
     const { owner, shop, staff, service } = await setupShop();
 
-    await createSchedule(owner.id, shop.id, {
-      startDate: MONDAY,
-      days: [
-        {
-          day: 'MON',
-          isOpen: true,
-          hours: [{ startTime: '09:00', endTime: '11:00' }],
-        },
-      ],
-    });
+    await createSchedule(
+      owner.id,
+      shop.id,
+      {
+        startDate: MONDAY,
+        days: [
+          {
+            day: 'MON',
+            isOpen: true,
+            hours: [{ startTime: '09:00', endTime: '11:00' }],
+          },
+        ],
+      },
+      staff.id,
+    );
 
     // 10:00 Athens wall-clock on 2027-02-01 (EET, +02:00), as an explicit
     // instant so the test doesn't depend on the process timezone.

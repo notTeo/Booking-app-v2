@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { handleRowClick } from '../utils/a11y';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getCustomers, type Customer } from '../api/customer.api';
-import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/team.css';
+import Alert from '../components/Alert';
 
 const PAGE_SIZE = 20;
 
@@ -64,7 +65,7 @@ export default function ShopCustomersPage() {
         <label htmlFor="customer-search" className="visually-hidden">
           {t.customers.searchPlaceholder}
         </label>
-        <input
+        <input className="input"
           id="customer-search"
           type="text"
           placeholder={t.customers.searchPlaceholder}
@@ -74,103 +75,74 @@ export default function ShopCustomersPage() {
         />
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {loading ? (
         <div className="shops-spinner-wrap">
           <div className="spinner" />
         </div>
-      ) : customers.length === 0 ? (
-        <p className="team-empty">
-          {search ? t.customers.noResults : t.customers.noCustomers}
-        </p>
       ) : (
         <>
-          {/* Desktop / tablet: table (hidden below 640px) */}
-          <div className="data-table-card table-view">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>{t.customers.nameCol}</th>
-                  <th>{t.customers.phoneCol}</th>
-                  <th>{t.customers.emailCol}</th>
-                  <th>{t.customers.addedCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="data-table-row data-table-row--clickable"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => navigate(c.id)}
-                    onKeyDown={handleActivateKeyDown(() => navigate(c.id))}
-                  >
-                    <td>{c.contactHidden ? t.customers.hiddenLabel : c.name}</td>
-                    <td>{c.contactHidden ? '—' : c.phone}</td>
-                    <td className="team-date">{c.contactHidden ? '—' : c.email ?? '—'}</td>
-                    <td className="team-date">
-                      {new Date(c.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="table-wrap">
+            <div className="table-surface">
+              {customers.length === 0 ? (
+                <div className="empty empty--sm">
+                  <p className="empty__text">
+                    {search ? t.customers.noResults : t.customers.noCustomers}
+                  </p>
+                </div>
+              ) : (
+                <table className="data-table" role="table">
+                  <thead>
+                    <tr role="row">
+                      <th scope="col" role="columnheader">{t.customers.nameCol}</th>
+                      <th scope="col" role="columnheader">{t.customers.phoneCol}</th>
+                      <th scope="col" role="columnheader">{t.customers.emailCol}</th>
+                      <th scope="col" role="columnheader">{t.customers.addedCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customers.map((c) => (
+                      <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
+                        <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
+                          <Link to={c.id} className="data-table__link">
+                            {c.contactHidden ? t.customers.hiddenLabel : c.name}
+                          </Link>
+                        </td>
+                        <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
+                        <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>
+                        <td role="cell" data-label={t.customers.addedCol}>
+                          {new Date(c.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
 
-          {/* Mobile: stacked cards (hidden at 640px and above) */}
-          <div className="row-cards card-view">
-            {customers.map((c) => (
-              <div
-                key={c.id}
-                className="row-card"
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(c.id)}
-                onKeyDown={handleActivateKeyDown(() => navigate(c.id))}
+          {customers.length > 0 && (
+            <div className="pagination-controls">
+              <button
+                className="bookings-date-nav-btn "
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
               >
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.customers.nameCol}</span>
-                  <span className="row-card__value">{c.contactHidden ? t.customers.hiddenLabel : c.name}</span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.customers.phoneCol}</span>
-                  <span className="row-card__value">{c.contactHidden ? '—' : c.phone}</span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.customers.emailCol}</span>
-                  <span className="row-card__value">{c.contactHidden ? '—' : c.email ?? '—'}</span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.customers.addedCol}</span>
-                  <span className="row-card__value">
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="pagination-controls">
-            <button
-              className="bookings-date-nav-btn "
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              {t.customers.prevPage}
-            </button>
-            <span className="pagination-status">
-              {t.customers.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
-            </span>
-            <button
-              className="bookings-date-nav-btn"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-            >
-              {t.customers.nextPage}
-            </button>
-          </div>
+                {t.customers.prevPage}
+              </button>
+              <span className="pagination-status">
+                {t.customers.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
+              </span>
+              <button
+                className="bookings-date-nav-btn"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                {t.customers.nextPage}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

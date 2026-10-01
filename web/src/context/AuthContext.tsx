@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const data = await loginApi(email, password);
+  const login = async (email: string, password: string, rememberMe: boolean) => {
+    const data = await loginApi(email, password, rememberMe);
     authStore.setToken(data.data.accessToken);
     setUser(data.data.user);
   };

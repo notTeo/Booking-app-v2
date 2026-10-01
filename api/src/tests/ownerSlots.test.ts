@@ -46,9 +46,8 @@ describe('the public slots endpoint never honours `internal`', () => {
     expect(res.body.data).toEqual({ status: 'closed' });
   });
 
-  it('...nor via "no preference" (shop-wide schedule exists, provider is internal-only)', async () => {
+  it('...nor via "no preference" (the provider works but is internal-only)', async () => {
     const t = await internalOnlyShop();
-    await addWeeklySchedule(t, { staffId: null });
     const res = await publicSlots(t, 'internal=true');
     expect(res.body.data).toEqual({ status: 'closed' });
   });

@@ -1,11 +1,10 @@
 import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Alert from '../Alert';
 
 export interface OwnerCustomerFormValues {
   name: string;
@@ -117,13 +116,13 @@ export default function OwnerCustomerFormStep({
 
       <div className="public-booking-form">
         {/* Phone first — with customer search dropdown */}
-        <div className="public-field-group" style={{ position: 'relative' }}>
-          <label className="public-field-label" htmlFor="b-phone">
+        <div className="field" style={{ position: 'relative' }}>
+          <label className="field__label" htmlFor="b-phone">
             {t.public.phoneLabel} <span className="public-field-required">*</span>
           </label>
           <input
             id="b-phone"
-            className="public-field-input"
+            className="input"
             type="tel"
             placeholder={t.bookings.phoneSearchHint}
             value={phone}
@@ -147,17 +146,17 @@ export default function OwnerCustomerFormStep({
             </ul>
           )}
           {phone.trim().length >= 2 && customerResults.length === 0 && (
-            <p className="public-field-hint">{t.bookings.newCustomerHint}</p>
+            <p className="field__hint">{t.bookings.newCustomerHint}</p>
           )}
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-name">
+        <div className="field">
+          <label className="field__label" htmlFor="b-name">
             {t.public.nameLabel} <span className="public-field-required">*</span>
           </label>
           <input
             id="b-name"
-            className="public-field-input"
+            className="input"
             type="text"
             placeholder={t.public.namePlaceholder}
             value={name}
@@ -165,13 +164,13 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-email">
-            {t.public.emailLabel} <span className="public-field-optional">{t.public.emailOptional}</span>
+        <div className="field">
+          <label className="field__label" htmlFor="b-email">
+            {t.public.emailLabel} <span className="field__optional">{t.public.emailOptional}</span>
           </label>
           <input
             id="b-email"
-            className="public-field-input"
+            className="input"
             type="email"
             placeholder={t.public.emailPlaceholder}
             value={email}
@@ -180,13 +179,13 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
-        <div className="public-field-group">
-          <label className="public-field-label" htmlFor="b-notes">
-            {t.public.notesLabel} <span className="public-field-optional">{t.public.notesOptional}</span>
+        <div className="field">
+          <label className="field__label" htmlFor="b-notes">
+            {t.public.notesLabel} <span className="field__optional">{t.public.notesOptional}</span>
           </label>
           <textarea
             id="b-notes"
-            className="public-field-input public-field-textarea"
+            className="textarea"
             placeholder={t.public.notesPlaceholder}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -195,26 +194,25 @@ export default function OwnerCustomerFormStep({
         </div>
 
         {outsideRules.length > 0 && (
-          <div className="ooh-panel" role="note">
-            <p className="ooh-panel-title">
-              <><FontAwesomeIcon icon={faClock} /> </>
-              {onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
-            </p>
+          <Alert
+            variant="warning"
+            title={onlyOffGrid ? t.bookings.intervalPicker.panelTitle : t.bookings.outsideHours.panelTitle}
+          >
             <p>{outsideRules.map((c) => t.bookings.override[c]).join(' ')}</p>
             <p>{t.bookings.outsideHours.panelBody}</p>
-          </div>
+          </Alert>
         )}
 
-        {notice && <p className="public-submit-notice" role="status">{notice}</p>}
-        {error && <p className="public-submit-error">{error}</p>}
+        {notice && <Alert variant="info">{notice}</Alert>}
+        {error && <Alert variant="danger">{error}</Alert>}
       </div>
 
       <div className="public-wizard-actions">
-        <button className="btn btn-ghost wizard-btn" onClick={onBack} disabled={submitting}>
+        <button className="btn btn--secondary wizard-btn" onClick={onBack} disabled={submitting}>
           {t.public.back}
         </button>
         <button
-          className="btn btn-primary wizard-btn"
+          className="btn wizard-btn"
           onClick={handleSubmit}
           disabled={submitting || name.trim() === '' || phone.trim() === ''}
         >

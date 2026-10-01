@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { cancelBooking, type CancelBookingResult } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
@@ -10,22 +10,13 @@ export default function CancelBookingPage() {
   const token = params.get('token') ?? '';
   const { t, language } = useLang();
 
-  const called = useRef(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [kept, setKept] = useState(false);
   const [result, setResult] = useState<CancelBookingResult | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(token ? '' : t.cancelBooking.invalidLink);
 
-  useEffect(() => {
-    if (called.current) return;
-    called.current = true;
-
-    if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time token call on mount; the ref guard must stay in the effect (StrictMode double-run would spend the token twice)
-      setError(t.cancelBooking.invalidLink);
-      setLoading(false);
-      return;
-    }
-
+  const confirmCancel = () => {
+    setLoading(true);
     cancelBooking(token)
       .then((data) => {
         setResult(data);
@@ -37,12 +28,12 @@ export default function CancelBookingPage() {
         else setError(t.cancelBooking.errorCancel);
       })
       .finally(() => setLoading(false));
-  }, [token]);
+  };
 
   if (loading) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <div className="spinner" />
           <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             {t.cancelBooking.cancelling}
@@ -55,14 +46,41 @@ export default function CancelBookingPage() {
   if (error) {
     return (
       <div className="accept-invite-page">
-        <div className="accept-invite-card">
+        <div className="card card--auth accept-invite-card">
           <p className="accept-invite-error">{error}</p>
         </div>
       </div>
     );
   }
 
-  if (!result) return null;
+  if (kept) {
+    return (
+      <div className="accept-invite-page">
+        <div className="card card--auth accept-invite-card">
+          <p style={{ textAlign: 'center' }}>{t.cancelBooking.kept}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!result) {
+    return (
+      <div className="accept-invite-page">
+        <div className="card card--auth accept-invite-card">
+          <h1 className="t-heading">{t.cancelBooking.confirmTitle}</h1>
+          <p className="accept-invite-meta">{t.cancelBooking.confirmText}</p>
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
+              {t.cancelBooking.confirmButton}
+            </button>
+            <button type="button" className="btn btn--secondary btn--block" onClick={() => setKept(true)}>
+              {t.cancelBooking.keepButton}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const locale = language === 'el' ? 'el-GR' : 'en-US';
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -77,8 +95,8 @@ export default function CancelBookingPage() {
 
   return (
     <div className="accept-invite-page">
-      <div className="accept-invite-card">
-        <h1 style={{ marginBottom: '0.5rem' }}>{t.cancelBooking.cancelled}</h1>
+      <div className="card card--auth accept-invite-card">
+        <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <div className="accept-invite-meta">
           <p>
             {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}

@@ -54,22 +54,25 @@ export const seedHairology = async (input: SeedHairologyInput) => {
     ),
   });
 
-  // One shop-level schedule (staffId null) — what the public page reads.
-  await prisma.shopWorkingSchedule.create({
-    data: {
-      shopId,
-      staffId: null,
-      startDate: new Date(Date.UTC(2026, 0, 1)),
-      days: {
-        create: DAYS.map((day) => {
-          const ranges = data.hours[day];
-          return ranges && ranges.length > 0
-            ? { day, isOpen: true, hours: { create: ranges } }
-            : { day, isOpen: false };
-        }),
+  // Everyone works the shop's hours until the owner edits them per person —
+  // team members' schedules are the only source of working hours.
+  for (const m of staffMembers) {
+    await prisma.shopWorkingSchedule.create({
+      data: {
+        shopId,
+        staffId: m.id,
+        startDate: new Date(Date.UTC(2026, 0, 1)),
+        days: {
+          create: DAYS.map((day) => {
+            const ranges = data.hours[day];
+            return ranges && ranges.length > 0
+              ? { day, isOpen: true, hours: { create: ranges } }
+              : { day, isOpen: false };
+          }),
+        },
       },
-    },
-  });
+    });
+  }
 
   return { ...tenant, services, staffCount: staffMembers.length };
 };

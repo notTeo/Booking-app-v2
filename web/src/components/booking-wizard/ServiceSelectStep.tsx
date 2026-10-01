@@ -18,21 +18,24 @@ export default function ServiceSelectStep({
       {services.length === 0 ? (
         <p>{t.public.noServices}</p>
       ) : (
-        <div className="public-services-grid">
+        <div className="public-options" role="radiogroup" aria-label={t.public.service}>
           {services.map((s) => (
             <button
               key={s.id}
-              className="public-service-card public-service-card--selectable"
+              type="button"
+              role="radio"
+              aria-checked="false"
+              className="service-card"
               onClick={() => onSelect(s.id)}
             >
-              <div className="public-service-header">
-                <h3>{s.name}</h3>
-                <span className="public-service-price">{formatPrice(s.price)}</span>
-              </div>
-              {s.description && <p className="public-service-desc">{s.description}</p>}
-              <div className="public-service-duration">
-                <FontAwesomeIcon icon={faClock} /> {formatDuration(s.duration)}
-              </div>
+              <span className="service-card__main">
+                <span className="service-card__name">{s.name}</span>
+                {s.description && <span className="service-card__desc">{s.description}</span>}
+                <span className="service-card__meta">
+                  <FontAwesomeIcon icon={faClock} aria-hidden="true" /> {formatDuration(s.duration)}
+                </span>
+              </span>
+              <span className="service-card__price">{formatPrice(s.price)}</span>
             </button>
           ))}
         </div>

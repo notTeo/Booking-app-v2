@@ -13,7 +13,6 @@ import {
   updateShop,
   deleteShop,
 } from '../controllers/shop.controller';
-import workingHoursRouter from './workingHours.routes';
 import { dayScheduleValidation } from '../validators/workingHours.validator';
 import { getDaySchedule } from '../controllers/workingHours.controller';
 import teamRouter from './team.routes';
@@ -35,7 +34,8 @@ router.delete(
   deleteShop,
 );
 
-// Declared before the schedules router so 'day' is never read as a :scheduleId.
+// Working hours are per team member (/:shopId/team/:memberId/schedules); this
+// is the one shop-level read, giving every member's hours for a date.
 router.get(
   '/:shopId/schedules/day',
   authenticate,
@@ -43,7 +43,6 @@ router.get(
   validate,
   getDaySchedule,
 );
-router.use('/:shopId/schedules', workingHoursRouter);
 router.use('/:shopId/team', teamRouter);
 router.use('/:shopId/services', serviceRouter);
 router.use('/:shopId/bookings', bookingRouter);

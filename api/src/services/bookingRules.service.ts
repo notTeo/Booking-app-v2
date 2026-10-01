@@ -40,7 +40,7 @@ export const OVERRIDABLE_RULE_CODES = [
   'OFF_SLOT_GRID',
 ] as const satisfies readonly BookingRuleCode[];
 
-const isOverridable = (code: BookingRuleCode) =>
+export const isOverridable = (code: BookingRuleCode) =>
   (OVERRIDABLE_RULE_CODES as readonly string[]).includes(code);
 
 export interface RuleViolation {
@@ -54,15 +54,14 @@ export interface DayHours {
 }
 
 /**
- * Opening ranges for a calendar date, or null if there is no active schedule
- * or the day is closed. `scheduleStaffId` null = the shop-wide schedule;
- * otherwise that staff member's own — a staff member with no schedule of
- * their own is closed (never silently given the shop-wide hours).
+ * Opening ranges for a calendar date, or null if the team member has no active
+ * schedule or the day is closed. Team members' own schedules are the only
+ * source of working hours; a member with no schedule is simply not working.
  */
 export const loadDayHours = async (
   db: Prisma.TransactionClient,
   shopId: string,
-  scheduleStaffId: string | null,
+  scheduleStaffId: string,
   date: string,
 ): Promise<DayHours[] | null> => {
   const requestedDate = dateOnlyToUtc(date);
@@ -91,8 +90,8 @@ interface RuleParams {
   timezone: string;
   maxAdvanceDays: number;
   slotIntervalMinutes: number;
-  // null = shop-wide schedule (customer expressed no staff preference)
-  scheduleStaffId: string | null;
+  // The team member whose schedule applies (always the one the booking is for)
+  scheduleStaffId: string;
   startTime: Date;
   endTime: Date;
   now?: Date;
@@ -160,39 +159,48 @@ export const findBookingViolations = async (
 };
 
 /**
- * Throws a 422 unless every violation is overridable AND was accepted by code.
- * Returns the codes that were violated and accepted — exactly what is stored on
- * the booking (codes accepted but not violated are dropped, so a booking is
- * never tagged with something it did not need). The public path passes no
- * `overrideRules`, so any violation blocks.
- */
-/**
- * The shop's regular hours for a weekday, used to size the out-of-hours grid on
+ * The team's regular hours for a weekday, used to size the out-of-hours grid on
  * a closed day or a provider's day off (there is no opening to measure from).
- * The shop-wide schedule (never the provider's own) that starts latest and has
- * an open range that weekday — regardless of whether it is active on the
- * requested date — or null if none.
+ * For each given team member, the schedule that starts latest and has an open
+ * range that weekday — regardless of whether it is active on the requested
+ * date — all ranges pooled. Null if nobody has any.
  */
-export const loadShopRegularHours = async (
+export const loadTeamRegularHours = async (
   db: Prisma.TransactionClient | typeof import('../utils/prisma').prisma,
   shopId: string,
   date: string,
+  staffIds: string[],
 ): Promise<DayHours[] | null> => {
+  if (staffIds.length === 0) return null;
   const day = weekdayOf(date);
-  const schedule = await db.shopWorkingSchedule.findFirst({
+  const schedules = await db.shopWorkingSchedule.findMany({
     where: {
       shopId,
-      staffId: null,
+      staffId: { in: staffIds },
       isActive: true,
       days: { some: { day, isOpen: true, hours: { some: {} } } },
     },
     include: { days: { where: { day }, include: { hours: true } } },
     orderBy: { startDate: 'desc' },
   });
-  const hours = schedule?.days[0]?.hours;
-  return hours && hours.length > 0 ? hours : null;
+  const latestPerStaff = new Map<string, (typeof schedules)[number]>();
+  for (const s of schedules) {
+    if (s.staffId && !latestPerStaff.has(s.staffId))
+      latestPerStaff.set(s.staffId, s);
+  }
+  const hours = [...latestPerStaff.values()].flatMap(
+    (s) => s.days[0]?.hours ?? [],
+  );
+  return hours.length > 0 ? hours : null;
 };
 
+/**
+ * Throws a 422 unless every violation is overridable AND was accepted by code.
+ * Returns the codes that were violated and accepted — exactly what is stored on
+ * the booking (codes accepted but not violated are dropped, so a booking is
+ * never tagged with something it did not need). The public path passes no
+ * `overrideRules`, so any violation blocks.
+ */
 export const assertBookingRules = async (
   params: RuleParams & { overrideRules?: readonly string[] },
 ): Promise<BookingRuleCode[]> => {

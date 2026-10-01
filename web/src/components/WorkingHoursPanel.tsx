@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
@@ -15,6 +15,7 @@ import { apiErrorMessage } from '../utils/apiError';
 import { findOverlap, scheduleStatus } from '../utils/scheduleOverlap';
 import Switch from './Switch';
 import '../styles/pages/working-hours.css';
+import Alert from './Alert';
 
 // API bundle — callers build this with the correct shopId / memberId baked in
 export interface WorkingHoursApi {
@@ -29,7 +30,6 @@ export interface WorkingHoursPanelProps {
   api: WorkingHoursApi;
   isOwner: boolean;
   /** Shop-wide content rendered above the schedules (e.g. the booking window). */
-  beforeSchedules?: ReactNode;
 }
 
 const DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -89,7 +89,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
   };
 }
 
-export default function WorkingHoursPanel({ api, isOwner, beforeSchedules }: WorkingHoursPanelProps) {
+export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
   const { t } = useLang();
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -334,7 +334,7 @@ const created = await api.createSchedule(dto);
         <h1>{t.workingHours.title}</h1>
         {isOwner && (
           <button
-            className="btn btn-primary"
+            className="btn"
             onClick={() => {
               setShowCreate((v) => !v);
               setCreateError('');
@@ -345,46 +345,47 @@ const created = await api.createSchedule(dto);
         )}
       </div>
 
-      {pageError && <div className="alert alert-error">{pageError}</div>}
+      {pageError && <Alert variant="danger">{pageError}</Alert>}
 
-      {beforeSchedules}
 
       <p className="wh-rule-note">{t.workingHours.ruleNote}</p>
 
       {isOwner && openEnded && (
-        <div className="alert wh-open-ended-notice">
-          <span>
-            {t.workingHours.openEndedNotice.replace(
-              '{range}',
-              `${t.workingHours.from} ${formatDate(openEnded.startDate)} — ${t.workingHours.ongoing}`,
-            )}
-          </span>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => setExpandedId(openEnded.id)}
-          >
-            {t.workingHours.setEndDate}
-          </button>
-        </div>
+        <Alert
+          variant="warning"
+          actions={
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              onClick={() => setExpandedId(openEnded.id)}
+            >
+              {t.workingHours.setEndDate}
+            </button>
+          }
+        >
+          {t.workingHours.openEndedNotice.replace(
+            '{range}',
+            `${t.workingHours.from} ${formatDate(openEnded.startDate)} — ${t.workingHours.ongoing}`,
+          )}
+        </Alert>
       )}
 
       {/* Create form */}
       {showCreate && (
-        <div className="wh-create-form">
+        <div className="card wh-create-form">
           <h3>{t.workingHours.newSchedule}</h3>
           <div className="wh-create-fields">
-            <div className="form-group">
-              <label>{t.workingHours.startDate}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.workingHours.startDate}</label>
+              <input className="input"
                 type="date"
                 value={createStart}
                 onChange={(e) => setCreateStart(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label>{t.workingHours.endDate}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.workingHours.endDate}</label>
+              <input className="input"
                 type="date"
                 value={createEnd}
                 onChange={(e) => setCreateEnd(e.target.value)}
@@ -392,19 +393,19 @@ const created = await api.createSchedule(dto);
             </div>
           </div>
           {createConflict && (
-            <div className="alert alert-error">{conflictText(createConflict)}</div>
+            <Alert variant="danger">{conflictText(createConflict)}</Alert>
           )}
-          {createError && <div className="alert alert-error">{createError}</div>}
+          {createError && <Alert variant="danger">{createError}</Alert>}
           <div className="wh-create-actions">
             <button
-              className="btn btn-primary"
+              className="btn"
               onClick={handleCreate}
               disabled={creating || !createStart || !!createConflict}
             >
               {creating ? t.workingHours.creating : t.workingHours.createSchedule}
             </button>
             <button
-              className="btn btn-ghost"
+              className="btn btn--secondary"
               onClick={() => {
                 setShowCreate(false);
                 setCreateError('');
@@ -429,7 +430,7 @@ const created = await api.createSchedule(dto);
         const hasErrors = Object.keys(state.slotErrors).length > 0;
 
         return (
-          <div key={schedule.id} className="wh-schedule-card">
+          <div key={schedule.id} className="card card--flush wh-schedule-card">
             {/* Header — role="button" (not a real <button>) since it wraps the
                 nested active/inactive toggle button; buttons can't contain buttons. */}
             <div
@@ -476,7 +477,7 @@ const created = await api.createSchedule(dto);
                   />
                 </span>
               ) : (
-                <span className={`wh-active-badge ${schedule.isActive ? 'active' : 'inactive'}`}>
+                <span className={`badge ${schedule.isActive ? 'badge--success' : 'badge--neutral'}`}>
                   {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
                 </span>
               )}
@@ -492,7 +493,7 @@ const created = await api.createSchedule(dto);
                 {isOwner && (
                   <div className="wh-schedule-actions">
                     <button
-                      className="btn btn-primary"
+                      className="btn"
                       onClick={() => handleSaveSchedule(schedule.id)}
                       disabled={state.saving || hasErrors}
                     >
@@ -502,7 +503,7 @@ const created = await api.createSchedule(dto);
                     <div>
                       {!state.confirmDelete ? (
                         <button
-                          className="btn btn-danger"
+                          className="btn btn--danger"
                           onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
                           disabled={state.deleting}
                         >
@@ -516,7 +517,7 @@ const created = await api.createSchedule(dto);
                             {t.workingHours.confirmDelete}
                           </span>
                           <button
-                            className="btn btn-danger"
+                            className="btn btn--danger"
                             onClick={() => handleDelete(schedule.id)}
                             disabled={state.deleting}
                           >
@@ -525,7 +526,7 @@ const created = await api.createSchedule(dto);
                               : t.workingHours.deleteSchedule}
                           </button>
                           <button
-                            className="btn btn-ghost"
+                            className="btn btn--secondary"
                             onClick={() => updateEdit(schedule.id, { confirmDelete: false })}
                           >
                             {t.workingHours.cancel}
@@ -537,26 +538,26 @@ const created = await api.createSchedule(dto);
                   </div>
                 )}
 
-                {state.error && (
-                  <div className="alert alert-error wh-schedule-alert">{state.error}</div>
-                )}
-                {state.success && (
-                  <div className="alert alert-success wh-schedule-alert">{state.success}</div>
+                {(state.error || state.success) && (
+                  <div className="wh-schedule-alerts">
+                    {state.error && <Alert variant="danger">{state.error}</Alert>}
+                    {state.success && <Alert variant="success">{state.success}</Alert>}
+                  </div>
                 )}
                 {isOwner && (
                   <div className="wh-dates-section">
                     <div className="wh-create-fields">
-                      <div className="form-group">
-                        <label>{t.workingHours.startDate}</label>
-                        <input
+                      <div className="field">
+                        <label className="field__label">{t.workingHours.startDate}</label>
+                        <input className="input"
                           type="date"
                           value={state.startDate}
                           onChange={(e) => updateEdit(schedule.id, { startDate: e.target.value })}
                         />
                       </div>
-                      <div className="form-group">
-                        <label>{t.workingHours.endDate}</label>
-                        <input
+                      <div className="field">
+                        <label className="field__label">{t.workingHours.endDate}</label>
+                        <input className="input"
                           type="date"
                           value={state.endDate}
                           onChange={(e) => updateEdit(schedule.id, { endDate: e.target.value })}
@@ -568,7 +569,7 @@ const created = await api.createSchedule(dto);
 
                 {/* Day rows */}
                 <div
-                  className="working-hours-card"
+                  className="card card--flush working-hours-card"
                   style={{ borderRadius: 0, border: 'none', marginBottom: 0 }}
                 >
                   {DAY_ORDER.map((day) => {
@@ -596,7 +597,7 @@ const created = await api.createSchedule(dto);
                           <div className="working-hours-slots">
                             {dayState.hours.map((slot, idx) => (
                               <div key={idx} className="working-hours-slot">
-                                <input
+                                <input className="input"
                                   type="time"
                                   value={slot.startTime}
                                   onChange={(e) =>
@@ -605,7 +606,7 @@ const created = await api.createSchedule(dto);
                                   disabled={!isOwner}
                                 />
                                 <span className="working-hours-sep">–</span>
-                                <input
+                                <input className="input"
                                   type="time"
                                   value={slot.endTime}
                                   onChange={(e) =>

@@ -104,14 +104,15 @@ async function main() {
     });
   }
 
-  const existingSchedule = await prisma.shopWorkingSchedule.findFirst({
-    where: { shopId: shop.id, staffId: null },
-  });
-  if (!existingSchedule) {
+  for (const member of [owner, staff]) {
+    const existingSchedule = await prisma.shopWorkingSchedule.findFirst({
+      where: { shopId: shop.id, staffId: member.id },
+    });
+    if (existingSchedule) continue;
     await prisma.shopWorkingSchedule.create({
       data: {
         shopId: shop.id,
-        staffId: null,
+        staffId: member.id,
         startDate: new Date('2027-01-01T00:00:00.000Z'),
         isActive: true,
         days: {

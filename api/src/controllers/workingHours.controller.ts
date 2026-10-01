@@ -24,7 +24,7 @@ export const createSchedule = async (
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const dto: CreateScheduleDto = req.body;
     const schedule = await createScheduleService(userId, shopId, dto, staffId);
     successResponse(res, schedule, 201);
@@ -41,7 +41,7 @@ export const getSchedules = async (
   try {
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const schedules = await getSchedulesService(userId, shopId, staffId);
     successResponse(res, schedules);
   } catch (err) {
@@ -58,7 +58,7 @@ export const getSchedule = async (
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
     const scheduleId = req.params.scheduleId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const schedule = await getScheduleService(
       userId,
       shopId,
@@ -80,7 +80,7 @@ export const updateSchedule = async (
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
     const scheduleId = req.params.scheduleId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const dto: UpdateScheduleDto = req.body;
     const schedule = await updateScheduleService(
       userId,
@@ -104,7 +104,7 @@ export const deleteSchedule = async (
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
     const scheduleId = req.params.scheduleId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     await deleteScheduleService(userId, shopId, scheduleId, staffId);
     successResponse(res, { message: 'Schedule deleted successfully' });
   } catch (err) {
@@ -121,7 +121,7 @@ export const upsertDays = async (
     const userId = req.user!.userId!;
     const shopId = req.params.shopId as string;
     const scheduleId = req.params.scheduleId as string;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const dto: UpsertDaysDto = req.body;
     const schedule = await upsertDaysService(
       userId,
@@ -146,7 +146,7 @@ export const updateDay = async (
     const shopId = req.params.shopId as string;
     const scheduleId = req.params.scheduleId as string;
     const day = req.params.day as DayOfWeek;
-    const staffId = (req.params.memberId as string | undefined) ?? null;
+    const staffId = req.params.memberId as string;
     const dto: UpdateDayDto = req.body;
     const result = await updateDayService(
       userId,

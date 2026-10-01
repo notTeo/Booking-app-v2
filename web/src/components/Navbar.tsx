@@ -36,14 +36,14 @@ export default function Navbar() {
       <div className="navbar-actions">
         {!isLoading && (
           isAuthenticated ? (
-            <button className="btn btn-ghost" onClick={handleLogout}>{t.nav.logout}</button>
+            <button className="btn btn--secondary btn--sm" onClick={handleLogout}>{t.nav.logout}</button>
           ) : (
             <>
               <Link to="/login">
-                <button className="btn btn-ghost">{t.nav.login}</button>
+                <button className="btn btn--secondary btn--sm">{t.nav.login}</button>
               </Link>
               <Link to="/register">
-                <button className="btn btn-primary">{t.nav.register}</button>
+                <button className="btn btn--sm">{t.nav.register}</button>
               </Link>
             </>
           )
@@ -69,14 +69,14 @@ export default function Navbar() {
           <div className="navbar-mobile-divider" />
           {!isLoading && (
             isAuthenticated ? (
-              <button className="btn btn-ghost" onClick={handleLogout}>{t.nav.logout}</button>
+              <button className="btn btn--secondary btn--block" onClick={handleLogout}>{t.nav.logout}</button>
             ) : (
               <>
                 <Link to="/login" onClick={closeMenu}>
-                  <button className="btn btn-ghost">{t.nav.login}</button>
+                  <button className="btn btn--secondary btn--block">{t.nav.login}</button>
                 </Link>
                 <Link to="/register" onClick={closeMenu}>
-                  <button className="btn btn-primary">{t.nav.register}</button>
+                  <button className="btn btn--block">{t.nav.register}</button>
                 </Link>
               </>
             )

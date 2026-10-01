@@ -12,6 +12,7 @@ import {
 import Switch from '../components/Switch';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function ShopInvitesPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -147,16 +148,16 @@ export default function ShopInvitesPage() {
         <h1>{t.invites.title}</h1>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Add team member form */}
-      <div className="invites-form-card">
-        <h2>{t.invites.addMember}</h2>
+      <div className="card">
+        <h2 className="card__title">{t.invites.addMember}</h2>
         <form onSubmit={handleSend}>
           <div className="invites-form-row">
-            <div className="form-group">
-              <label>{t.invites.nameLabel}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.invites.nameLabel}</label>
+              <input className="input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -165,9 +166,9 @@ export default function ShopInvitesPage() {
                 disabled={sending}
               />
             </div>
-            <div className="form-group">
-              <label>{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
-              <input
+            <div className="field">
+              <label className="field__label">{t.invites.emailLabel}{!sendEmail && ` (${t.invites.optional})`}</label>
+              <input className="input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -176,16 +177,16 @@ export default function ShopInvitesPage() {
                 disabled={sending}
               />
             </div>
-            <div className="form-group">
-              <label>{t.invites.roleLabel}</label>
-              <select
+            <div className="field">
+              <label className="field__label">{t.invites.roleLabel}</label>
+              <div className="select-wrap"><select className="select"
                 value={role}
                 onChange={(e) => { setRole(e.target.value as ShopRole); setConfirmOwner(false); }}
                 disabled={sending}
               >
                 <option value="staff">{t.invites.roles.staff}</option>
                 <option value="owner">{t.invites.roles.owner}</option>
-              </select>
+              </select></div>
             </div>
           </div>
 
@@ -213,15 +214,15 @@ export default function ShopInvitesPage() {
           </div>
 
           {confirmOwner && (
-            <div className="alert alert-error">{t.invites.confirmOwnerInvite}</div>
+            <Alert variant="warning">{t.invites.confirmOwnerInvite}</Alert>
           )}
 
           <div className="invites-form-row">
-            <button type="submit" className="btn btn-primary" disabled={sending}>
+            <button type="submit" className="btn btn--block" disabled={sending}>
               {sending ? t.invites.sending : confirmOwner ? t.team.confirmContinue : t.invites.addMember}
             </button>
             {confirmOwner && (
-              <button type="button" className="btn btn-ghost" onClick={() => setConfirmOwner(false)}>
+              <button type="button" className="btn btn--secondary btn--block" onClick={() => setConfirmOwner(false)}>
                 {t.team.cancel}
               </button>
             )}
@@ -236,42 +237,43 @@ export default function ShopInvitesPage() {
 
       {/* Members without a login yet */}
       <h2 className="invites-subheading">{t.invites.pendingLogins}</h2>
-      {pendingMembers.length === 0 ? (
-        <p className="invites-empty">{t.invites.noPendingLogins}</p>
-      ) : (
-        <>
-          {actionError && <div className="alert alert-error">{actionError}</div>}
-          {/* Desktop / tablet: table (hidden below 640px) */}
-          <div className="data-table-card table-view">
-            <table className="data-table">
+      {actionError && <Alert variant="danger">{actionError}</Alert>}
+      <div className="table-wrap">
+        <div className="table-surface">
+          {pendingMembers.length === 0 ? (
+            <div className="empty empty--sm">
+              <p className="empty__text">{t.invites.noPendingLogins}</p>
+            </div>
+          ) : (
+            <table className="data-table" role="table">
               <thead>
-                <tr>
-                  <th>{t.invites.nameLabel}</th>
-                  <th>{t.invites.emailLabel}</th>
-                  <th>{t.invites.roleLabel}</th>
-                  <th>{t.invites.statusLabel}</th>
-                  <th></th>
+                <tr role="row">
+                  <th scope="col" role="columnheader">{t.invites.nameLabel}</th>
+                  <th scope="col" role="columnheader">{t.invites.emailLabel}</th>
+                  <th scope="col" role="columnheader">{t.invites.roleLabel}</th>
+                  <th scope="col" role="columnheader">{t.invites.statusLabel}</th>
+                  <th scope="col" role="columnheader"><span className="visually-hidden">{t.team.actions}</span></th>
                 </tr>
               </thead>
               <tbody>
                 {pendingMembers.map((m) => (
-                  <tr key={m.id} className="data-table-row">
-                    <td>{m.name}</td>
-                    <td>{m.email ?? '—'}</td>
-                    <td>
-                      <span className={`invite-role-badge ${m.role === 'owner' ? 'invite-role-owner' : ''}`}>
+                  <tr key={m.id} role="row">
+                    <td role="cell" data-label={t.invites.nameLabel} className="data-table__title">{m.name}</td>
+                    <td role="cell" data-label={t.invites.emailLabel}>{m.email ?? '—'}</td>
+                    <td role="cell" data-label={t.invites.roleLabel}>
+                      <span className={`badge ${m.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
                         {t.invites.roles[m.role]}
                       </span>
                     </td>
-                    <td>
-                      <span className={`invite-status-badge invite-status-${m.hasPendingInvite ? 'pending' : 'expired'}`}>
+                    <td role="cell" data-label={t.invites.statusLabel}>
+                      <span className={`badge ${m.hasPendingInvite ? 'badge--warning' : 'badge--neutral'}`}>
                         {m.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
                       </span>
                     </td>
-                    <td>
+                    <td role="cell" data-label="" className="data-table__actions">
                       <div className="invite-actions">
                         <button
-                          className="btn btn-ghost"
+                          className="btn btn--sm btn--secondary"
                           onClick={() => handleResend(m.id)}
                           disabled={actionPendingId === m.id}
                         >
@@ -281,18 +283,18 @@ export default function ShopInvitesPage() {
                           confirmCancel === m.id ? (
                             <>
                               <button
-                                className="btn btn-danger"
+                                className="btn btn--sm btn--danger"
                                 onClick={() => handleCancelInvite(m.id)}
                                 disabled={actionPendingId === m.id}
                               >
                                 {t.invites.confirmCancel}
                               </button>
-                              <button className="btn btn-ghost" onClick={() => setConfirmCancel(null)}>
+                              <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(null)}>
                                 {t.team.cancel}
                               </button>
                             </>
                           ) : (
-                            <button className="btn btn-ghost" onClick={() => setConfirmCancel(m.id)}>
+                            <button className="btn btn--sm btn--secondary" onClick={() => setConfirmCancel(m.id)}>
                               {t.invites.cancelInvite}
                             </button>
                           )
@@ -303,66 +305,9 @@ export default function ShopInvitesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          {/* Mobile: stacked cards (hidden at 640px and above) */}
-          <div className="row-cards card-view">
-            {pendingMembers.map((m) => (
-              <div key={m.id} className="row-card row-card--static">
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.invites.nameLabel}</span>
-                  <span className="row-card__value">{m.name}</span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.invites.emailLabel}</span>
-                  <span className="row-card__value">{m.email ?? '—'}</span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.invites.roleLabel}</span>
-                  <span className={`invite-role-badge ${m.role === 'owner' ? 'invite-role-owner' : ''}`}>
-                    {t.invites.roles[m.role]}
-                  </span>
-                </div>
-                <div className="row-card__field">
-                  <span className="row-card__label">{t.invites.statusLabel}</span>
-                  <span className={`invite-status-badge invite-status-${m.hasPendingInvite ? 'pending' : 'expired'}`}>
-                    {m.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
-                  </span>
-                </div>
-                <div className="row-card__actions">
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => handleResend(m.id)}
-                    disabled={actionPendingId === m.id}
-                  >
-                    {actionPendingId === m.id ? t.invites.sending : m.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
-                  </button>
-                  {m.hasPendingInvite && (
-                    confirmCancel === m.id ? (
-                      <>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleCancelInvite(m.id)}
-                          disabled={actionPendingId === m.id}
-                        >
-                          {t.invites.confirmCancel}
-                        </button>
-                        <button className="btn btn-ghost" onClick={() => setConfirmCancel(null)}>
-                          {t.team.cancel}
-                        </button>
-                      </>
-                    ) : (
-                      <button className="btn btn-ghost" onClick={() => setConfirmCancel(m.id)}>
-                        {t.invites.cancelInvite}
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+          )}
+        </div>
+      </div>
     </div>
   );
 }

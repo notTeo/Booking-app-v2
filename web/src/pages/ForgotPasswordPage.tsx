@@ -4,6 +4,7 @@ import { forgotPassword } from '../api/auth.api';
 import '../styles/pages/forgot-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -28,13 +29,13 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Forgot Password</h1>
+        <h1 className="t-heading">Forgot Password</h1>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="email">Email</label>
+            <input className="input"
               id="email"
               type="email"
               value={email}
@@ -42,9 +43,9 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
-          <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
+          <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>

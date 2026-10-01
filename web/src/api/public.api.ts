@@ -1,27 +1,13 @@
 import client from './client';
 
-export interface ShopHour {
-  id: string;
-  openTime: string;
-  closeTime: string;
+export interface OpeningRange {
   startTime: string;
   endTime: string;
 }
 
-export interface ShopDay {
-  id: string;
-  dayOfWeek: number;
-  day: string;
-  hours: ShopHour[];
-  isOpen: boolean;
-}
-
-export interface ShopWorkingSchedule {
-  id: string;
-  isActive: boolean;
-  staffId: string | null;
-  days: ShopDay[];
-  startDate: string;
+export interface OpeningDay {
+  day: 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
+  hours: OpeningRange[];
 }
 
 export interface Service {
@@ -64,7 +50,8 @@ export interface ShopInfo {
   createdAt: string;
   updatedAt: string;
   services: Service[];
-  shopWorkingSchedules: ShopWorkingSchedule[];
+  /** Derived from the team's own schedules: per weekday, merged ranges (empty = closed). */
+  openingHours: OpeningDay[];
   members: ShopMember[];
 }
 

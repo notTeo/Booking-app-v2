@@ -1,10 +1,13 @@
-/* ── Public Shop Page ────────────────────────────────────────────────────── */
+/* ── Public booking page: layout only ─────────────────────────────────────
+   Cards, slots, steps, alerts and badges come from components.css. This file
+   positions them. Shared with the owner booking wizard (ShopNewBookingPage,
+   OwnerBookingWizard). ──────────────────────────────────────────────────── */
 
 .public-page {
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
-  font-family: var(--font);
+  font-family: var(--font-body);
   color: var(--text);
 }
 
@@ -18,415 +21,92 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   background: var(--bg);
   color: var(--text-muted);
-  font-family: var(--font);
+  font-family: var(--font-body);
 }
 
 .public-error p {
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
 }
 
 /* ── Header / Hero ───────────────────────────────────────────────────────── */
 
 .public-header {
-  background: var(--bg-card);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 2rem 1.25rem 1.75rem;
+  padding: var(--space-8) var(--space-5) var(--space-6);
 }
 
 @media (min-width: 640px) {
   .public-header {
-    padding: 3rem 1.5rem 2.5rem;
+    padding: var(--space-12) var(--space-6) var(--space-10);
   }
 }
 
 .public-header-inner {
-  max-width: 720px;
+  max-width: 45rem;
   margin: 0 auto;
 }
 
 .public-shop-name {
-  font-size: 1.5rem;
-  font-weight: 700;
+  margin: 0 0 var(--space-2);
+  font: var(--fw-bold) var(--fs-xl) / var(--lh-xl) var(--font-display);
   color: var(--text);
-  margin: 0 0 0.5rem;
-  line-height: 1.2;
 }
 
 @media (min-width: 640px) {
   .public-shop-name {
-    font-size: 2rem;
+    font-size: var(--fs-2xl);
+    line-height: var(--lh-2xl);
   }
 }
 
 .public-shop-desc {
-  font-size: 1rem;
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
   color: var(--text-muted);
-  margin: 0 0 1.25rem;
-  line-height: 1.6;
 }
 
 .public-shop-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
-@media (min-width: 640px) {
-  .public-shop-meta {
-    gap: 1rem;
-  }
-}
-
-.public-shop-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.3rem 0.75rem;
-  font-weight: 500;
-}
-
-/* ── Main Content ────────────────────────────────────────────────────────── */
+/* ── Main content ────────────────────────────────────────────────────────── */
 
 .public-main {
-  max-width: 720px;
+  max-width: 45rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
+  padding: var(--space-8) var(--space-5) var(--space-12);
 }
 
 @media (min-width: 640px) {
   .public-main {
-    padding: 2.5rem 1.5rem 4rem;
+    padding: var(--space-10) var(--space-6) var(--space-16);
   }
 }
 
-/* ── Sections ────────────────────────────────────────────────────────────── */
-
 .public-section {
-  margin-bottom: 3rem;
+  margin-bottom: var(--space-12);
 }
 
 .public-section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  margin: 0 0 var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--border);
+  font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display);
   color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0 0 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--border);
 }
 
-/* ── Services Grid ───────────────────────────────────────────────────────── */
-
-.public-services-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 640px) {
-  .public-services-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.public-service-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: border-color 0.2s;
-}
-
-.public-service-card:hover {
-  border-color: var(--accent);
-}
-
-.public-service-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.public-service-header h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-  line-height: 1.3;
-}
-
-.public-service-price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.public-service-desc {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 0;
-  line-height: 1.5;
-  flex: 1;
-}
-
-.public-service-duration {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  background: var(--bg-input);
-  border-radius: 6px;
-  padding: 0.2rem 0.5rem;
-  font-weight: 500;
-  width: fit-content;
-  margin-top: 0.25rem;
-}
-
-/* ── Working Hours ───────────────────────────────────────────────────────── */
-
-.public-hours-list {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.public-hours-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-  gap: 1rem;
-}
-
-.public-hours-row:last-child {
-  border-bottom: none;
-}
-
-.public-hours-day {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text);
-  min-width: 100px;
-}
-
-.public-hours-time {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-align: right;
-}
-
-.public-hours-closed {
-  font-size: 0.875rem;
-  color: var(--error);
-  font-weight: 500;
-  text-align: right;
-}
-
-/* ── Team Grid ───────────────────────────────────────────────────────────── */
-
-.public-team-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 640px) {
-  .public-team-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.public-team-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  transition: border-color 0.2s;
-}
-
-.public-team-card:hover {
-  border-color: var(--accent);
-}
-
-.public-team-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.public-team-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 0;
-}
-
-.public-team-info h3 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.public-team-role {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.15rem 0.5rem;
-  width: fit-content;
-}
-
-.public-team-services {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.25rem;
-}
-
-.public-team-service-tag {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 0.15rem 0.6rem;
-  white-space: nowrap;
-}
-
-/* ── Wizard steps ────────────────────────────────────────────────────────── */
-
-.public-wizard-steps {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-}
-
-/*
- * Each step is a column: circle on top, label below.
- * The ::after connector sits at top: 14px (circle center) and runs
- * from the right edge of this step's circle to the left edge of the next.
- * Because content is centered (align-items: center), 50% == circle center.
- *   left:  50% + 14px  →  just past this circle's right edge
- *   right: -50% + 14px →  stops just before next circle's left edge
- */
-.public-wizard-step {
-  flex: 1;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text-muted);
-}
-
-.public-wizard-step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 14px; /* vertical center of the 28px circle */
-  left: calc(50% + 14px);
-  right: calc(-50% + 14px);
-  height: 1px;
-  background: var(--border);
-  z-index: 0;
-}
-
-.public-wizard-step--completed:not(:last-child)::after {
-  background: var(--accent);
-}
-
-.public-wizard-step-number {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--bg-card);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1; /* sits above the ::after line */
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
-}
-
-.public-wizard-step--active .public-wizard-step-number {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-
-.public-wizard-step--completed .public-wizard-step-number {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.7rem;
-}
-
-/* label sits below the circle — hidden on mobile to save space */
-.public-wizard-step-label {
-  display: none;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  text-align: center;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-@media (min-width: 480px) {
-  .public-wizard-step-label {
-    display: block;
-  }
-}
-
-.public-wizard-step--active .public-wizard-step-label {
-  color: var(--text);
-}
-
-.public-wizard-step--completed .public-wizard-step-label {
-  color: var(--accent);
+.public-section .steps-wrap {
+  margin-bottom: var(--space-8);
 }
 
 /* ── Wizard panel ────────────────────────────────────────────────────────── */
@@ -434,93 +114,57 @@
 .public-wizard-panel {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-5);
+}
+
+.public-wizard-panel .field {
+  margin-bottom: 0; /* the panel already spaces its children with a gap */
 }
 
 .public-wizard-context {
-  font-size: 0.875rem;
-  color: var(--text-muted);
   margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-muted);
 }
 
 .public-wizard-context strong {
   color: var(--text);
 }
 
-/* ── Selectable card overrides ───────────────────────────────────────────── */
-
-.public-service-card--selectable,
-.public-team-card--selectable {
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  font: inherit;
-  color: inherit;
+/* Service / staff radiogroup: one column on phones, two from 640px. */
+.public-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
 }
 
-.public-service-card--selectable:hover,
-.public-team-card--selectable:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent);
+@media (min-width: 640px) {
+  .public-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.public-service-card--selectable:focus-visible,
-.public-team-card--selectable:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* ── Available hours chips ───────────────────────────────────────────────── */
-
-.public-available-hours {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.public-available-hours span {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.35rem 0.85rem;
-}
-
-.public-available-hours p {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-/* ── Wizard buttons ──────────────────────────────────────────────────────── */
-/* The wizard's Back/Continue/Confirm buttons use the shared .btn / .btn-ghost /
-   .btn-primary system (components.css) — this just un-stretches them (.btn
-   defaults to width:100%) the same way other inline buttons do elsewhere in
-   the app (e.g. .service-action-btn in services.css). */
-
-.wizard-btn {
-  width: auto;
-  align-self: flex-start;
-}
-
-/* ── Wizard action row (Back + Continue/Submit side by side) ─────────────── */
+/* Back / Continue / Confirm: side by side, full width on phones. */
+.wizard-btn { align-self: flex-start; }
 
 .public-wizard-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-/* ── Date + Time rows ────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .public-wizard-actions .btn {
+    flex: 1;
+  }
+}
 
 .public-datetime-row {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 /* ── Booking form (step 4) ───────────────────────────────────────────────── */
@@ -528,193 +172,34 @@
 .public-booking-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.public-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.public-field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
+  gap: var(--space-4);
 }
 
 .public-field-required {
   color: var(--accent);
-  margin-left: 0.15rem;
+  margin-left: var(--space-1);
 }
 
-.public-field-hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin: 0.25rem 0 0;
-  line-height: 1.4;
-}
-
-.public-field-optional {
-  font-weight: 400;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.public-field-input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.55rem 0.85rem;
-  font-size: 0.9rem;
-  font-family: var(--font);
-  color: var(--text);
-  transition: border-color 0.2s;
-  appearance: none;
-}
-
-.public-field-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.public-field-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-.public-field-textarea {
-  resize: vertical;
-  min-height: 72px;
-}
-
-/* ── Submission error ────────────────────────────────────────────────────── */
-
-.public-submit-error {
-  font-size: 0.875rem;
-  color: var(--error);
-  margin: 0;
-  padding: 0.6rem 0.9rem;
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
-  border-radius: var(--radius);
-}
-
-/* A genuinely neutral notice (e.g. "the system is busy, try again") — never
-   the red error style, since it isn't a rejection of what the customer entered. */
-.public-submit-notice {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin: 0;
-  padding: 0.6rem 0.9rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-/* ── Booking confirmed panel ─────────────────────────────────────────────── */
+/* ── Booking confirmed ───────────────────────────────────────────────────── */
 
 .public-booking-confirmed {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 3rem 1.5rem;
+  padding: var(--space-12) var(--space-6);
   text-align: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 
-.public-booking-confirmed-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  flex-shrink: 0;
+.public-booking-confirmed .card__text {
+  max-width: 60ch;
 }
 
-.public-booking-confirmed-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-}
+/* ── Owner booking: out-of-hours, interval, slot groups ─────────────────── */
 
-.public-booking-confirmed-message {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 480px;
-}
-
-.public-booking-confirmed-contact {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.public-slots-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.public-slot-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
-  color: var(--text);
-  cursor: pointer;
-  font-family: var(--font);
-  font-size: 0.875rem;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.public-slot-btn:hover {
-  border-color: var(--accent);
-}
-
-.public-slot-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.public-slot-btn--selected {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-.public-slot-btn--disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  text-decoration: line-through;
-}
-
-.public-slot-btn--disabled:hover {
-  border-color: var(--border);
-}
-
-/* ── Out-of-hours slots (owner/staff booking form) ─────────────────────── */
-/* Never colour alone: dashed border + clock icon + a text heading per section. */
 .ooh-toggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 12px;
-  font-size: 0.875rem;
+  gap: var(--space-2);
+  min-height: var(--control-md);
+  font-size: var(--fs-sm);
 }
 
 .ooh-toggle .switch {
@@ -727,108 +212,55 @@
 
 .interval-picker {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-/* Off the shop's own grid (a finer step was picked): dashed, and named in the aria-label. */
-.public-slot-btn--offgrid {
-  border-style: dashed;
+.ooh-other-time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.slot-section {
-  margin-top: 12px;
-}
-
-.slot-section-title {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary, var(--text));
-}
-
-/* Out-of-hours sections are collapsible (<details>/<summary>): a native
-   disclosure widget, no JS needed. Working hours stays a plain <section>. */
-.slot-section--collapsible > summary {
+/* Out-of-hours groups collapse (<details>/<summary>, no JS); working hours
+   stays a plain <section>. */
+.slot-group--collapsible > summary {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
   cursor: pointer;
   list-style: none;
 }
 
-.slot-section--collapsible > summary .slot-section-title {
+.slot-group--collapsible > summary .slot-group__label {
   margin: 0;
 }
 
-.slot-section--collapsible > summary::-webkit-details-marker {
+.slot-group--collapsible > summary::-webkit-details-marker {
   display: none;
 }
 
-.slot-section--collapsible > summary::before {
+.slot-group--collapsible > summary::before {
   content: '▸';
   display: inline-block;
   width: 0.8em;
-  transition: transform 0.15s;
+  color: var(--text-muted);
+  transition: transform var(--motion-fast) var(--ease-standard);
 }
 
-.slot-section--collapsible[open] > summary::before {
+.slot-group--collapsible[open] > summary::before {
   transform: rotate(90deg);
 }
 
-.slot-section-count {
-  font-weight: 400;
-  color: var(--text-muted);
-}
-
-.public-slot-btn--outside {
-  border-style: dashed;
+.slot-group__count {
+  font-weight: var(--fw-regular);
 }
 
 .slot-tag {
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   opacity: 0.8;
   text-decoration: none;
-}
-
-.ooh-other-time {
-  margin-top: 16px;
-}
-
-.ooh-panel {
-  margin-top: 12px;
-  padding: 0.75rem 1rem;
-  border: 1px dashed var(--accent);
-  border-radius: var(--radius);
-  background: var(--bg-input);
-  font-size: 0.875rem;
-}
-
-.ooh-panel p {
-  margin: 0 0 0.25rem;
-}
-
-.ooh-panel-title {
-  font-weight: 600;
-}
-
-/* ── Closed / no-schedule message ─────────────────────────────────────── */
-.public-closed-message {
-  margin-top: 12px;
-  padding: 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-input);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.public-closed-hint {
-  margin: 0.5rem 0 0;
-  font-size: 0.85rem;
 }
 
 /* ── Customer search dropdown (owner booking) ────────────────────────────── */
@@ -838,15 +270,15 @@
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: var(--z-nav);
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--bg-card);
+  background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 200px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  max-height: calc(var(--control-md) * 4.5);
   overflow-y: auto;
 }
 
@@ -855,52 +287,29 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0.625rem 0.875rem;
+  min-height: var(--control-md);
+  padding: var(--space-2) var(--space-4);
   border: none;
   background: none;
   cursor: pointer;
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--fs-sm);
   color: var(--text);
   text-align: left;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .customer-search-item:hover,
 .customer-search-item:focus-visible {
-  background: var(--bg-input);
+  background: var(--surface-sunken);
 }
 
 .customer-search-item:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: -2px;
 }
 
 .customer-search-phone {
   color: var(--text-muted);
-  font-size: 0.8125rem;
-}
-
-/* ── Mobile: bigger tap targets, a 3-column slot grid (docs/plan-out-of-hours.md D2) ── */
-
-@media (max-width: 640px) {
-  .public-slots-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
-
-  .public-slot-btn {
-    min-height: 44px;
-    padding: 0.4rem 0.25rem;
-  }
-
-  .ooh-toggle {
-    min-height: 44px;
-    padding: 0.25rem 0;
-  }
-
-  .public-field-input[type='time'] {
-    min-height: 44px;
-  }
+  font-size: var(--fs-sm);
 }

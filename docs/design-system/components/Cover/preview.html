@@ -1,0 +1,33 @@
+<!-- @dsCard height=288 -->
+<style>
+body{margin:0;background:var(--bg)}
+svg{display:block;width:960px;height:288px}
+.ground{fill:var(--bg)}
+.accent{fill:var(--accent)} .brand{fill:var(--brand-accent)} .ink{fill:var(--text)} .deep{fill:var(--accent-hover)} .soft{fill:var(--accent-soft)}
+.slab{rx:var(--radius-lg)} .block{rx:var(--radius-lg)}
+.name{font-family:var(--font-logo);font-size:64px;fill:var(--text)}
+.be{fill:var(--brand-accent)}
+.tag{font-family:var(--font-body);font-size:14px;fill:var(--text-muted)}
+</style>
+<!--
+ derivation:
+ blocks: accent 288x256 slab (x496 y16), brand-accent pill 144x72, text(ink) 144x96 block, accent-hover pill 88x56 (all at identity weight; sides are spacing multiples)
+ arrangement: one tall slab with satellites stacked in a right column, flush to the top-right
+ pattern: soft, friendly, large radii -> discs and one pill cut from the slab in accent-soft, pitch 72 (space-16 + space-2)
+ scales: radius-lg 20 on slab and ink block, pills use half the short side (36, 28), discs r=22
+-->
+<svg viewBox="0 0 960 288" role="img" aria-label="BeBooked">
+ <rect class="ground" width="960" height="288"/>
+ <rect class="accent slab" x="496" y="16" width="288" height="256"/>
+ <g class="soft">
+  <circle cx="540" cy="72" r="22"/><circle cx="612" cy="72" r="22"/><circle cx="684" cy="72" r="22"/><circle cx="740" cy="72" r="0"/>
+  <circle cx="540" cy="144" r="22"/><circle cx="612" cy="144" r="22"/>
+  <rect x="660" y="122" width="88" height="44" rx="22"/>
+  <rect x="520" y="194" width="88" height="44" rx="22"/><circle cx="672" cy="216" r="22"/><circle cx="744" cy="216" r="22"/>
+ </g>
+ <rect class="brand" x="800" y="16" width="144" height="72" rx="36"/>
+ <rect class="ink block" x="800" y="104" width="144" height="96"/>
+ <rect class="deep" x="800" y="216" width="88" height="56" rx="28"/>
+ <text class="name" x="32" y="216"><tspan class="be">Be</tspan>Booked</text>
+ <text class="tag" x="32" y="248">Calm, friendly booking for the shops people love.</text>
+</svg>

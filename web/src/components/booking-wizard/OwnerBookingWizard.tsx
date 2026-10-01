@@ -168,7 +168,7 @@ export default function OwnerBookingWizard({
           closedLinkTo={
             wizard.selectedMemberId
               ? `/shops/${slug}/team/${wizard.selectedMemberId}`
-              : `/shops/${slug}/working-hours`
+              : `/shops/${slug}/team`
           }
           onDateChange={wizard.handleDateChange}
           onSelectTime={wizard.setTime}
@@ -199,6 +199,7 @@ export default function OwnerBookingWizard({
           message={pendingOverride.codes.map((c) => t.bookings.override[c]).join(' ')}
           confirmLabel={t.bookings.override.confirm}
           cancelLabel={t.bookings.override.cancel}
+          tone="warning"
           busy={submitting}
           onConfirm={() => handleSubmit(pendingOverride.values, pendingOverride.codes)}
           onCancel={() => setPendingOverride(null)}

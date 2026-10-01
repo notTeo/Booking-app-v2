@@ -5,6 +5,7 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/reset-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
+import Alert from '../components/Alert';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -43,13 +44,13 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="page">
-      <div className="card">
+      <div className="card card--auth">
         <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1>Reset Password</h1>
+        <h1 className="t-heading">Reset Password</h1>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="password">New Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="password">New Password</label>
+            <input className="input"
               id="password"
               type="password"
               value={password}
@@ -65,9 +66,9 @@ export default function ResetPasswordPage() {
               </ul>
             )}
           </div>
-          <div className="form-group">
-            <label htmlFor="confirm">Confirm Password</label>
-            <input
+          <div className="field">
+            <label className="field__label" htmlFor="confirm">Confirm Password</label>
+            <input className="input"
               id="confirm"
               type="password"
               value={confirm}
@@ -75,8 +76,8 @@ export default function ResetPasswordPage() {
               required
             />
           </div>
-          {error && <div className="alert alert-error">{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          {error && <Alert variant="danger">{error}</Alert>}
+          <button className="btn btn--block" type="submit" disabled={isLoading}>
             {isLoading ? 'Resetting...' : 'Reset Password'}
           </button>
         </form>

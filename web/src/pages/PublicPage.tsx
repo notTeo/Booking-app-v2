@@ -15,6 +15,7 @@ import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
+import Alert from '../components/Alert';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
@@ -124,9 +125,9 @@ function PublicBookingPage({ slug }: { slug: string }) {
           <h1 className="public-shop-name">{shop.name}</h1>
           {shop.description && <p className="public-shop-desc">{shop.description}</p>}
           <div className="public-shop-meta">
-            {shop.phone && <span><FontAwesomeIcon icon={faPhone} /> {shop.phone}</span>}
-            {shop.formattedAddress && <span><FontAwesomeIcon icon={faLocationDot} /> {shop.formattedAddress}</span>}
-            <span><FontAwesomeIcon icon={faClock} /> {shop.timezone}</span>
+            {shop.phone && <span className="badge badge--neutral"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
+            {shop.formattedAddress && <span className="badge badge--neutral"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
+            <span className="badge badge--neutral"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
           </div>
         </div>
       </header>
@@ -134,12 +135,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
       <main className="public-main">
         {confirmed ? (
           <section className="public-section">
-            <div className="public-booking-confirmed">
-              <div className="public-booking-confirmed-icon">
+            <div className="card public-booking-confirmed">
+              <div className="avatar avatar--xl" aria-hidden="true">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>
-              <h2 className="public-booking-confirmed-title">{t.public.bookingConfirmed}</h2>
-              <p className="public-booking-confirmed-message">
+              <h2 className="card__title">{t.public.bookingConfirmed}</h2>
+              <p className="card__text">
                 {t.public.bookingConfirmedMsg
                   .replace('{name}', name)
                   .replace('{service}', wizard.selectedService?.name ?? '')
@@ -147,7 +148,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   .replace('{time}', wizard.time)}
               </p>
               {(phone || email) && (
-                <p className="public-booking-confirmed-contact">
+                <p className="card__text">
                   {phone && <strong>{phone}</strong>}
                   {phone && email && ' / '}
                   {email && <strong>{email}</strong>}
@@ -204,13 +205,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 )}
 
                 <div className="public-booking-form">
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-name">
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-name">
                       {t.public.nameLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-name"
-                      className="public-field-input"
+                      className="input"
                       type="text"
                       placeholder={t.public.namePlaceholder}
                       value={name}
@@ -219,13 +220,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-phone">
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-phone">
                       {t.public.phoneLabel} <span className="public-field-required">*</span>
                     </label>
                     <input
                       id="b-phone"
-                      className="public-field-input"
+                      className="input"
                       type="tel"
                       placeholder={t.public.phonePlaceholder}
                       value={phone}
@@ -234,29 +235,29 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-email">
-                      {t.public.emailLabel} <span className="public-field-optional">{t.public.emailOptional}</span>
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-email">
+                      {t.public.emailLabel} <span className="field__optional">{t.public.emailOptional}</span>
                     </label>
                     <input
                       id="b-email"
-                      className="public-field-input"
+                      className="input"
                       type="email"
                       placeholder={t.public.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoComplete="email"
                     />
-                    <p className="public-field-hint">{t.public.emailHint}</p>
+                    <p className="field__hint">{t.public.emailHint}</p>
                   </div>
 
-                  <div className="public-field-group">
-                    <label className="public-field-label" htmlFor="b-notes">
-                      {t.public.notesLabel} <span className="public-field-optional">{t.public.notesOptional}</span>
+                  <div className="field">
+                    <label className="field__label" htmlFor="b-notes">
+                      {t.public.notesLabel} <span className="field__optional">{t.public.notesOptional}</span>
                     </label>
                     <textarea
                       id="b-notes"
-                      className="public-field-input public-field-textarea"
+                      className="textarea"
                       placeholder={t.public.notesPlaceholder}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
@@ -264,26 +265,26 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <p className="public-field-hint">
+                  <p className="field__hint">
                     {t.public.privacyNoticeBefore}{' '}
                     <Link to="/privacy" target="_blank" rel="noopener">{t.public.privacyNoticeLink}</Link>
                     {t.public.privacyNoticeAfter}
                   </p>
 
-                  {busyNotice && <p className="public-submit-notice" role="status">{busyNotice}</p>}
-                  {submitError && <p className="public-submit-error">{submitError}</p>}
+                  {busyNotice && <Alert variant="info">{busyNotice}</Alert>}
+                  {submitError && <Alert variant="danger">{submitError}</Alert>}
                 </div>
 
                 <div className="public-wizard-actions">
                   <button
-                    className="btn btn-ghost wizard-btn"
+                    className="btn btn--secondary wizard-btn"
                     onClick={handleBackFromForm}
                     disabled={submitting}
                   >
                     {t.public.back}
                   </button>
                   <button
-                    className="btn btn-primary wizard-btn"
+                    className="btn wizard-btn"
                     onClick={handleSubmit}
                     disabled={submitting || name.trim() === '' || phone.trim() === ''}
                   >

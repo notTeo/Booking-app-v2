@@ -31,7 +31,7 @@ async function shopWithHours(opts: {
   await prisma.shopWorkingSchedule.create({
     data: {
       shopId: t.shop.id,
-      staffId: null,
+      staffId: t.staff.id,
       startDate: new Date(Date.UTC(2027, 0, 1)),
       days: {
         create: [

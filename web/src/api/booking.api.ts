@@ -85,9 +85,6 @@ export const updateBookingStatus = (shopId: string, bookingId: string, status: B
     .patch(`${base(shopId)}/${bookingId}/status`, { status })
     .then((r) => r.data.data as Booking);
 
-export const deleteBooking = (shopId: string, bookingId: string) =>
-  client.delete(`${base(shopId)}/${bookingId}`).then((r) => r.data);
-
 export interface OwnerCreateBookingPayload {
   name: string;
   phone: string;

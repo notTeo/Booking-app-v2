@@ -25,8 +25,14 @@ export const verifyRefreshToken = (token: string): { userId: string } => {
   return jwt.verify(token, env.jwt.refreshSecret) as { userId: string };
 };
 
-export const getRefreshTokenExpiry = (): Date => {
-  return new Date(Date.now() + env.jwt.refreshExpiresInSeconds * 1000);
+// Without "remember me" the cookie is session-only; the DB row still expires after a day
+const SESSION_REFRESH_SECONDS = 24 * 60 * 60;
+
+export const getRefreshTokenExpiry = (rememberMe = true): Date => {
+  const seconds = rememberMe
+    ? env.jwt.refreshExpiresInSeconds
+    : Math.min(SESSION_REFRESH_SECONDS, env.jwt.refreshExpiresInSeconds);
+  return new Date(Date.now() + seconds * 1000);
 };
 
 export const generateRandomToken = (): string => {
