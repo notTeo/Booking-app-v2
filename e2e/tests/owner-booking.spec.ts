@@ -37,10 +37,10 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
 
   // wizard: service -> team member -> date -> in-hours slot
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.locator('.public-service-card--selectable').first().click();
-  await page.locator('.public-team-card--selectable').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
-  await page.locator('.public-slot-btn', { hasText: /^10:00$/ }).click();
+  await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
 
   // customer form: type the NAME first, then the phone. Changing the phone
