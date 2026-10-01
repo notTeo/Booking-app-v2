@@ -245,7 +245,7 @@ describe('day ranges are the shop-local day (half-open)', () => {
     const outBefore = await bookAt(t, '2027-01-31T23:59:00+02:00', 1);
     const outAfter = await bookAt(t, '2027-02-02T00:00:00+02:00', 30);
 
-    const got = (await listBookings(t.shop.id, { date: '2027-02-01' })).map(
+    const got = (await listBookings(t.user.id, t.shop.id, { date: '2027-02-01' })).map(
       (b) => b.id,
     );
 
@@ -260,7 +260,7 @@ describe('day ranges are the shop-local day (half-open)', () => {
     const last = await bookAt(t, '2027-03-28T23:30:00+03:00', 30);
     const next = await bookAt(t, '2027-03-29T00:00:00+03:00', 30); // 21:00Z
 
-    const got = (await listBookings(t.shop.id, { date: '2027-03-28' })).map(
+    const got = (await listBookings(t.user.id, t.shop.id, { date: '2027-03-28' })).map(
       (b) => b.id,
     );
 
@@ -281,7 +281,7 @@ describe('"today" in stats is the shop-local day', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2027-02-01T22:30:00Z'));
 
-    const stats = await getBookingStats(t.shop.id);
+    const stats = await getBookingStats(t.user.id, t.shop.id);
 
     expect(stats.todayCount).toBe(2);
   });

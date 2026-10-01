@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { requireShopAccess } from '../utils/shopAccess';
 
 export interface CreateShopDto {
   name: string;
@@ -96,14 +97,10 @@ export const getMyShops = async (userId: string) => {
 };
 
 export const getShopById = async (userId: string, shopId: string) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
-    include: { shop: true },
-  });
+  const membership = await requireShopAccess(userId, shopId);
+  const shop = await prisma.shop.findUniqueOrThrow({ where: { id: shopId } });
 
-  if (!membership) throw new AppError(404, 'Shop not found');
-
-  return { ...membership.shop, role: membership.role };
+  return { ...shop, role: membership.role };
 };
 
 export const updateShop = async (
@@ -111,13 +108,10 @@ export const updateShop = async (
   shopId: string,
   dto: UpdateShopDto,
 ) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
+  const membership = await requireShopAccess(userId, shopId, {
+    role: 'owner',
+    ownerMessage: 'Only the shop owner can update this shop',
   });
-
-  if (!membership) throw new AppError(404, 'Shop not found');
-  if (membership.role !== 'owner')
-    throw new AppError(403, 'Only the shop owner can update this shop');
 
   const shop = await prisma.shop.update({
     where: { id: shopId },
@@ -129,13 +123,10 @@ export const updateShop = async (
 };
 
 export const deleteShop = async (userId: string, shopId: string) => {
-  const membership = await prisma.userShop.findUnique({
-    where: { userId_shopId: { userId, shopId } },
+  await requireShopAccess(userId, shopId, {
+    role: 'owner',
+    ownerMessage: 'Only the shop owner can delete this shop',
   });
-
-  if (!membership) throw new AppError(404, 'Shop not found');
-  if (membership.role !== 'owner')
-    throw new AppError(403, 'Only the shop owner can delete this shop');
 
   await prisma.shop.delete({ where: { id: shopId } });
 

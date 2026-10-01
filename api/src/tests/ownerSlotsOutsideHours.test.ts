@@ -3,6 +3,7 @@ import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
+  addSecondOwner,
   addWeeklySchedule,
   authHeader,
   createBookingRow,
@@ -367,11 +368,17 @@ describe('access, scope and the public endpoint', () => {
       status: 'closed',
       slots: [],
     });
+    // The provider is deactivated; a second owner makes the call (the
+    // deactivated provider would have no access to the shop at all).
+    const caller = await addSecondOwner(t);
     await prisma.userShop.update({
       where: { id: t.staff.id },
       data: { bookableInternally: true, active: false },
     });
-    expect((await withFlag(t)).body.data).toEqual({
+    expect(
+      (await slotsReq(t, TUE, 'includeOutsideHours=true', caller.token)).body
+        .data,
+    ).toEqual({
       status: 'closed',
       slots: [],
     });

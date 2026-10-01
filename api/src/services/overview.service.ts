@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { Prisma, type BookingStatus } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { addDays, dayBoundsUtc, todayInZone } from '../utils/shopTime';
-import { requireMembership } from './booking.service';
+import { requireShopAccess } from '../utils/shopAccess';
 import { redactCustomer } from '../utils/customerVisibility';
 import { AppError } from '../middleware/errorHandler';
 
@@ -258,7 +258,7 @@ export const getOverview = async (
   range: OverviewRange,
   now: Date = new Date(),
 ): Promise<Overview> => {
-  await requireMembership(userId, shopId);
+  await requireShopAccess(userId, shopId);
   const shop = await prisma.shop.findUnique({
     where: { id: shopId },
     select: { id: true, name: true, slug: true, timezone: true },
