@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { createTenant } from '../admin/createTenant';
 import { seedHairology } from '../admin/seedHairology';
 import { assertDevEnvironment } from '../admin/devGuard';
 import { HAIROLOGY } from '../admin/hairologyData';
+
+const api = await serve(app);
 
 const base = {
   ownerName: 'Maria K',
@@ -38,12 +40,12 @@ describe('createTenant', () => {
   it('the created owner can actually log in and sees the shop', async () => {
     await createTenant({ ...base, password: 'Sup3r-Secret!' });
 
-    const login = await request(app)
+    const login = await api
       .post('/auth/login')
       .send({ email: 'maria@example.com', password: 'Sup3r-Secret!' });
     expect(login.status).toBe(200);
 
-    const shops = await request(app)
+    const shops = await api
       .get('/api/shops')
       .set('Authorization', `Bearer ${login.body.data.accessToken}`);
     expect(shops.body.data.map((s: { slug: string }) => s.slug)).toEqual([
@@ -59,7 +61,7 @@ describe('createTenant', () => {
     expect(pw).toMatch(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/);
     expect(pw.length).toBeGreaterThanOrEqual(8);
 
-    const login = await request(app)
+    const login = await api
       .post('/auth/login')
       .send({ email: 'maria@example.com', password: pw });
     expect(login.status).toBe(200);
@@ -167,7 +169,7 @@ describe('seedHairology', () => {
   it('produces a shop the public booking page can actually serve', async () => {
     await seedHairology({ ...owner, data, confirmed: true });
 
-    const res = await request(app).get('/public/hairology');
+    const res = await api.get('/public/hairology');
     expect(res.status).toBe(200);
     expect(
       res.body.data.services.map((s: { name: string }) => s.name).sort(),

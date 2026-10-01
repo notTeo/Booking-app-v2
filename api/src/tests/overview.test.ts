@@ -1,5 +1,5 @@
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { signAccessToken } from '../utils/jwt';
 import { prisma } from '../utils/prisma';
 import type { BookingStatus } from '../../dist/generated/prisma';
@@ -12,11 +12,13 @@ import {
 } from './helpers';
 import { overviewWindow } from '../services/overview.service';
 
+const api = await serve(app);
+
 // TEST_NOW is Tue 2026-12-01 09:00Z: 2026-12-01 in Athens, UTC and New York.
 // Week = Mon 30 Nov - Sun 6 Dec; month = Dec 2026; quarter = Oct - Dec 2026.
 // Minted per call: some tests move the fake clock, which would age a token.
 const get = (t: Tenant, range?: string, token = signAccessToken(t.user.id)) =>
-  request(app)
+  api
     .get(`/api/shops/${t.shop.id}/overview${range ? `?range=${range}` : ''}`)
     .set(authHeader(token));
 
@@ -137,7 +139,7 @@ describe('GET /api/shops/:shopId/overview', () => {
 
     it('rejects a malformed shopId', async () => {
       const t = await createTenant('Ovv');
-      const res = await request(app)
+      const res = await api
         .get('/api/shops/bad%20id!/overview?range=week')
         .set(authHeader(t.token));
       expect(res.status).toBe(400);
@@ -147,9 +149,7 @@ describe('GET /api/shops/:shopId/overview', () => {
   describe('auth', () => {
     it('401 without a token', async () => {
       const t = await createTenant('Ovv');
-      const res = await request(app).get(
-        `/api/shops/${t.shop.id}/overview?range=week`,
-      );
+      const res = await api.get(`/api/shops/${t.shop.id}/overview?range=week`);
       expect(res.status).toBe(401);
     });
 

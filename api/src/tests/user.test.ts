@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+
+const api = await serve(app);
 
 // Mock email sending so tests don't hit Resend
 vi.mock('../services/email.service', () => ({
@@ -25,7 +27,7 @@ async function createVerifiedUser(
 }
 
 async function loginUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
-  const res = await request(app).post('/auth/login').send({ email, password });
+  const res = await api.post('/auth/login').send({ email, password });
   return res.body.data?.accessToken as string;
 }
 
@@ -36,7 +38,7 @@ describe('GET /user/me', () => {
 
   it('returns current user profile', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .get('/user/me')
       .set('Authorization', `Bearer ${token}`);
 
@@ -47,10 +49,10 @@ describe('GET /user/me', () => {
   });
 
   it('returns the same user shape as login', async () => {
-    const login = await request(app)
+    const login = await api
       .post('/auth/login')
       .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
-    const me = await request(app)
+    const me = await api
       .get('/user/me')
       .set('Authorization', `Bearer ${login.body.data.accessToken}`);
 
@@ -68,7 +70,7 @@ describe('GET /user/me', () => {
   });
 
   it('returns 401 without token', async () => {
-    const res = await request(app).get('/user/me');
+    const res = await api.get('/user/me');
     expect(res.status).toBe(401);
   });
 });
@@ -80,7 +82,7 @@ describe('PATCH /user/me', () => {
 
   it('sends verification email to new address and does not change email immediately', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ email: 'new@example.com' });
@@ -102,7 +104,7 @@ describe('PATCH /user/me', () => {
 
   it('updates password and revokes all sessions', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: 'Newpassword456!' });
@@ -120,7 +122,7 @@ describe('PATCH /user/me', () => {
   it('returns 409 if new email is already taken', async () => {
     await createVerifiedUser('other@example.com');
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ email: 'other@example.com' });
@@ -130,7 +132,7 @@ describe('PATCH /user/me', () => {
 
   it('returns 400 for invalid email', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ email: 'not-valid' });
@@ -160,7 +162,7 @@ describe('GET /auth/verify-email-change', () => {
       },
     });
 
-    const res = await request(app).get(
+    const res = await api.get(
       '/auth/verify-email-change?token=valid-token-abc123',
     );
 
@@ -191,7 +193,7 @@ describe('GET /auth/verify-email-change', () => {
       },
     });
 
-    const res = await request(app).get(
+    const res = await api.get(
       '/auth/verify-email-change?token=expired-token-xyz',
     );
 
@@ -199,14 +201,12 @@ describe('GET /auth/verify-email-change', () => {
   });
 
   it('returns 400 for an invalid token', async () => {
-    const res = await request(app).get(
-      '/auth/verify-email-change?token=bogus-token',
-    );
+    const res = await api.get('/auth/verify-email-change?token=bogus-token');
     expect(res.status).toBe(400);
   });
 
   it('returns 400 when no token is provided', async () => {
-    const res = await request(app).get('/auth/verify-email-change');
+    const res = await api.get('/auth/verify-email-change');
     expect(res.status).toBe(400);
   });
 });
@@ -218,7 +218,7 @@ describe('DELETE /user/me', () => {
 
   it('deletes account when correct password provided', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: TEST_PASSWORD });
@@ -231,7 +231,7 @@ describe('DELETE /user/me', () => {
 
   it('returns 403 INVALID_PASSWORD for a wrong password (not 401, which triggers a token refresh)', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: 'wrongpassword' });
@@ -245,7 +245,7 @@ describe('DELETE /user/me', () => {
 
   it('returns 403 INVALID_PASSWORD without password field', async () => {
     const token = await loginUser();
-    const res = await request(app)
+    const res = await api
       .delete('/user/me')
       .set('Authorization', `Bearer ${token}`)
       .send({});
@@ -255,9 +255,7 @@ describe('DELETE /user/me', () => {
   });
 
   it('still returns 401 without a token', async () => {
-    const res = await request(app)
-      .delete('/user/me')
-      .send({ password: TEST_PASSWORD });
+    const res = await api.delete('/user/me').send({ password: TEST_PASSWORD });
     expect(res.status).toBe(401);
   });
 });

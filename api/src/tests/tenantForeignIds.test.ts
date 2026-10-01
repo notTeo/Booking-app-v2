@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   authHeader,
@@ -8,6 +8,8 @@ import {
   createTenant,
   ALL_OVERRIDABLE_RULES,
 } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -19,7 +21,7 @@ describe('booking references must belong to the same shop', () => {
     const B = await createTenant('Beta');
     const aBooking = await createBookingRow(A);
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
       .send({ staffId: B.staff.id });
@@ -36,7 +38,7 @@ describe('booking references must belong to the same shop', () => {
     const B = await createTenant('Beta');
     const aBooking = await createBookingRow(A);
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
       .send({ serviceId: B.service.id });
@@ -53,7 +55,7 @@ describe('booking references must belong to the same shop', () => {
     const B = await createTenant('Beta');
     const aBooking = await createBookingRow(A);
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
       .send({ serviceId: B.service.id, startTime: START });
@@ -65,7 +67,7 @@ describe('booking references must belong to the same shop', () => {
     const A = await createTenant('Alpha');
     const B = await createTenant('Beta');
 
-    const res = await request(app).post(`/public/${A.shop.slug}/book`).send({
+    const res = await api.post(`/public/${A.shop.slug}/book`).send({
       name: 'X',
       phone: '6900000001',
       serviceId: B.service.id,
@@ -83,7 +85,7 @@ describe('booking references must belong to the same shop', () => {
     const A = await createTenant('Alpha');
     const B = await createTenant('Beta');
 
-    const res = await request(app)
+    const res = await api
       .post(`/api/shops/${A.shop.id}/bookings`)
       .set(authHeader(A.token))
       .send({
@@ -111,10 +113,8 @@ describe('booking references must belong to the same shop', () => {
       startTime: START,
     };
 
-    const pub = await request(app)
-      .post(`/public/${A.shop.slug}/book`)
-      .send(body);
-    const owner = await request(app)
+    const pub = await api.post(`/public/${A.shop.slug}/book`).send(body);
+    const owner = await api
       .post(`/api/shops/${A.shop.id}/bookings`)
       .set(authHeader(A.token))
       .send(body);
@@ -130,7 +130,7 @@ describe('booking references must belong to the same shop', () => {
     const A = await createTenant('Alpha');
     const B = await createTenant('Beta');
 
-    const res = await request(app).get(
+    const res = await api.get(
       `/public/${A.shop.slug}/slots?date=2027-02-01&serviceId=${B.service.id}`,
     );
 
@@ -150,7 +150,7 @@ describe('booking references must belong to the same shop', () => {
       data: { shopId: A.shop.id, name: 'Beard', duration: 15, price: 1000 },
     });
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}/bookings/${aBooking.id}`)
       .set(authHeader(A.token))
       .send({

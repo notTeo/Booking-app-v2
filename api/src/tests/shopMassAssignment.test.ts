@@ -1,8 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { authHeader, createTenant, unique } from './helpers';
+
+const api = await serve(app);
 
 vi.mock('../services/email.service');
 
@@ -11,7 +13,7 @@ describe('POST /api/shops — only whitelisted fields are accepted', () => {
     const A = await createTenant('Alpha');
     const slug = `mass-${unique()}`;
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set(authHeader(A.token))
       .send({
@@ -37,7 +39,7 @@ describe('POST /api/shops — only whitelisted fields are accepted', () => {
   it('accepts validated-but-unstored fields (lat/lng/placeId) without erroring', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set(authHeader(A.token))
       .send({
@@ -54,7 +56,7 @@ describe('POST /api/shops — only whitelisted fields are accepted', () => {
   it('stores every whitelisted field', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .post('/api/shops')
       .set(authHeader(A.token))
       .send({
@@ -81,7 +83,7 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
   it('rejects a slug change with 400 and changes nothing', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({ name: 'Renamed', slug: `hijack-${unique()}` });
@@ -95,7 +97,7 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
   it('ignores id and createdAt', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({
@@ -115,7 +117,7 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
   it('cannot smuggle nested relation writes (members/services deleteMany)', async () => {
     const A = await createTenant('Alpha');
 
-    await request(app)
+    await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({
@@ -135,7 +137,7 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
   it('ignores lat/lng/placeId instead of failing with a 500', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({ name: 'Geo', lat: 1, lng: 2, placeId: 'x' });
@@ -146,7 +148,7 @@ describe('PATCH /api/shops/:id — only whitelisted fields are accepted', () => 
   it('still lets the owner update every whitelisted field, including isActive', async () => {
     const A = await createTenant('Alpha');
 
-    const res = await request(app)
+    const res = await api
       .patch(`/api/shops/${A.shop.id}`)
       .set(authHeader(A.token))
       .send({

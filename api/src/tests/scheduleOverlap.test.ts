@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import request from 'supertest';
 import app from '../app';
+import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
   createSchedule,
@@ -12,6 +12,8 @@ import {
   createTenant,
   type Tenant,
 } from './helpers';
+
+const api = await serve(app);
 
 // Rule under test: for each team member no two ACTIVE schedules may share a
 // date — whichever path changes a schedule. Team members' schedules are the
@@ -284,7 +286,7 @@ describe('team-member schedule routes', () => {
     const other = await createStaffMember(t);
     const base = `/api/shops/${t.shop.id}/team`;
     const post = (memberId: string, body: object) =>
-      request(app)
+      api
         .post(`${base}/${memberId}/schedules`)
         .set(authHeader(t.token))
         .send(body);
@@ -317,7 +319,7 @@ describe('team-member schedule routes', () => {
 describe('days routes cannot change overlap state', () => {
   it('PUT days keeps dates and active flag untouched', async () => {
     const { t, a } = await pair('http-days');
-    const res = await request(app)
+    const res = await api
       .put(`/api/shops/${t.shop.id}/team/${t.staff.id}/schedules/${a.id}/days`)
       .set(authHeader(t.token))
       .send({
@@ -346,7 +348,7 @@ describe('HTTP routes (validators + error body)', () => {
   it('PATCH accepts endDate: null to clear the end date', async () => {
     const t = await createTenant('http-null');
     const a = await make(t, { startDate: '2027-01-01', endDate: '2027-03-31' });
-    const res = await request(app)
+    const res = await api
       .patch(url(t, a.id))
       .set(authHeader(t.token))
       .send({ startDate: '2027-01-01', endDate: null });
@@ -357,7 +359,7 @@ describe('HTTP routes (validators + error body)', () => {
   it('PATCH still rejects a malformed endDate', async () => {
     const t = await createTenant('http-bad-date');
     const a = await make(t, { startDate: '2027-01-01', endDate: '2027-03-31' });
-    const res = await request(app)
+    const res = await api
       .patch(url(t, a.id))
       .set(authHeader(t.token))
       .send({ endDate: 'not-a-date' });
@@ -366,7 +368,7 @@ describe('HTTP routes (validators + error body)', () => {
 
   it('POST overlap returns 409 with a readable message field', async () => {
     const { t } = await pair('http-create');
-    const res = await request(app)
+    const res = await api
       .post(url(t))
       .set(authHeader(t.token))
       .send({ startDate: '2027-03-01', endDate: '2027-05-01' });
@@ -378,7 +380,7 @@ describe('HTTP routes (validators + error body)', () => {
     const t = await createTenant('http-patch');
     await make(t, { startDate: '2027-01-01', endDate: '2027-03-31' });
     const b = await make(t, { startDate: '2027-04-01', endDate: '2027-06-30' });
-    const res = await request(app)
+    const res = await api
       .patch(url(t, b.id))
       .set(authHeader(t.token))
       .send({ startDate: '2027-03-01', endDate: '2027-06-30' });
