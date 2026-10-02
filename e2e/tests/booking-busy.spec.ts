@@ -5,7 +5,7 @@ import { addDays, athensDate } from '../support/dates';
 
 /**
  * BOOKING_BUSY (503, out-of-retry-budget) must never look like a rejection of
- * what the customer entered (docs/plan-phase2.md, group 3 remainder): a
+ * what the customer entered: a
  * neutral notice, the typed values kept, and the submit button re-enabled
  * after the server's Retry-After window — never the red error style used for
  * real rejections (409 slot taken, 422 rule violations).

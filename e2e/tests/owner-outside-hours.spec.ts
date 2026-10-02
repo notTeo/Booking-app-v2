@@ -4,7 +4,7 @@ import { bookingCount, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
 /**
- * Owner/staff booking outside working hours (docs/plan-out-of-hours.md).
+ * Owner/staff booking outside working hours.
  *
  * The seeded provider works 00:00–23:30, so for this spec her hours are
  * narrowed to 09:00–17:00 (and restored afterwards). Phone-size viewport.
