@@ -1,6 +1,6 @@
 # Implementation guide
 
-For the developer (Claude Code) building this in React 19 + Vite with plain CSS.
+For developers building this in React 19 + Vite with plain CSS.
 
 ## 1. Files
 

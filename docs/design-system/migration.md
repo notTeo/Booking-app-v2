@@ -15,7 +15,7 @@ Left:
 
 - **Page CSS cleanup** (steps 5-6): duplicates and raw sizes/gaps in `home.css`, `public.css`, `bookings.css` and the other page files. `home.css` keeps its fake-preview `clamp()` values. The landing page still has its own `.home-btn-primary` / `.home-btn-ghost` buttons, and a few `rgba()` shadows and scrims remain in `home.css`, `public.css`, `bookings.css` and `sidebar.css` (no shadow or scrim token covers them yet).
 - **New components** (step 7): toast, tabs, empty and skeleton states, avatar, sidebar and booking-flow pieces, as pages need them. Tooltip is not designed.
-- **CLAUDE.md TODOs:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
+- **Open UI work:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
 
 ## Decisions on the section 5 issues
 
