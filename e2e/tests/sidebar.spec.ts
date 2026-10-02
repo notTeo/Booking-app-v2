@@ -137,6 +137,14 @@ test.describe('mobile', () => {
     await expect(page.getByRole('separator', { name: 'Resize sidebar' })).toHaveCount(0);
   });
 
+  test('top bar stays slim on a short page, even on a tall screen', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 1000 });
+    await login(page);
+    await page.goto('/shops');
+    await expect(page.getByRole('heading', { name: /shops/i }).first()).toBeVisible();
+    expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);
+  });
+
   test('top bar stays slim and the drawer fits the visible viewport, footer items reachable', async ({ page }) => {
     await login(page);
     expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);

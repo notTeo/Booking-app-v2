@@ -487,7 +487,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 
 /* ---------- 17. Sidebar + app shell ---------- */
 .app-shell { --drawer-width: min(16rem, 75vw); display: grid; grid-template-columns: var(--sidebar-width, 16rem) minmax(0, 1fr); min-height: 100dvh; background: var(--bg); }
-.app-shell.is-compact { grid-template-columns: minmax(0, 1fr); }
+.app-shell.is-compact { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: var(--space-6) var(--space-4); }
 @media (min-width: 640px) { .page { padding: var(--space-8) var(--space-6); } }
 .sidebar {
