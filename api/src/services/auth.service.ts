@@ -470,6 +470,35 @@ export const deleteUser = async (userId: string, password?: string) => {
     if (!valid) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
   }
 
+  // A shop must keep an owner who can sign in. Deleting the account removes
+  // the user's memberships, so the only such owner of a shop has to delete the
+  // shop or hand it over first, instead of leaving it live with nobody able
+  // to manage it.
+  const owned = await prisma.userShop.findMany({
+    where: { userId, role: 'owner', active: true },
+    select: { shop: { select: { id: true, name: true, slug: true } } },
+  });
+  const stranded = [];
+  for (const { shop } of owned) {
+    const otherOwners = await prisma.userShop.count({
+      where: {
+        shopId: shop.id,
+        role: 'owner',
+        active: true,
+        AND: [{ userId: { not: null } }, { userId: { not: userId } }],
+      },
+    });
+    if (otherOwners === 0) stranded.push(shop);
+  }
+  if (stranded.length > 0)
+    throw new AppError(
+      409,
+      `You are the only owner of ${stranded.map((s) => s.name).join(', ')}. Delete the shop or make someone else an owner first.`,
+      'SOLE_OWNER_OF_SHOP',
+      undefined,
+      { shops: stranded },
+    );
+
   // Delete related records first to avoid FK constraint violations
   await prisma.refreshToken.deleteMany({ where: { userId } });
   await prisma.passwordResetToken.deleteMany({ where: { userId } });
