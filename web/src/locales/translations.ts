@@ -879,6 +879,9 @@ export interface Translations {
     invalidLink: string;
     cancelling: string;
     alreadyCancelled: string;
+    alreadyCompleted: string;
+    markedNoShow: string;
+    pastBooking: string;
     notFound: string;
     errorCancel: string;
     cancelled: string;
@@ -1795,6 +1798,9 @@ home: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
       cancelling: 'Ακύρωση ραντεβού...',
       alreadyCancelled: 'Αυτό το ραντεβού έχει ήδη ακυρωθεί.',
+      alreadyCompleted: 'Αυτό το ραντεβού έχει ήδη ολοκληρωθεί και δεν μπορεί να ακυρωθεί.',
+      markedNoShow: 'Αυτό το ραντεβού έχει καταχωρηθεί ως απουσία και δεν μπορεί να ακυρωθεί.',
+      pastBooking: 'Αυτό το ραντεβού έχει ήδη ξεκινήσει ή περάσει και δεν μπορεί να ακυρωθεί. Επικοινωνήστε με το κατάστημα.',
       notFound: 'Το ραντεβού δεν βρέθηκε. Ο σύνδεσμος μπορεί να είναι άκυρος ή ληγμένος.',
       errorCancel: 'Αδυναμία ακύρωσης ραντεβού. Δοκιμάστε ξανά ή επικοινωνήστε με το κατάστημα.',
       cancelled: 'Ραντεβού Ακυρώθηκε',
@@ -2710,6 +2716,9 @@ home: {
       invalidLink: 'Invalid cancellation link.',
       cancelling: 'Cancelling your booking...',
       alreadyCancelled: 'This booking has already been cancelled.',
+      alreadyCompleted: 'This booking has already been completed and can no longer be cancelled.',
+      markedNoShow: 'This booking was marked as a no-show and can no longer be cancelled.',
+      pastBooking: 'This booking has already started or passed and can no longer be cancelled. Please contact the shop.',
       notFound: 'Booking not found. The link may be invalid or expired.',
       errorCancel: 'Could not cancel booking. Please try again or contact the shop.',
       cancelled: 'Booking Cancelled',

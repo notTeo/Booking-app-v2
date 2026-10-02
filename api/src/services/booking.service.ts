@@ -1004,9 +1004,33 @@ export const cancelBookingByToken = async (token: string) => {
     include: { customer: true, service: true, shop: true },
   });
 
-  if (!booking) throw new AppError(404, 'Booking not found');
+  if (!booking)
+    throw new AppError(404, 'Booking not found', 'BOOKING_NOT_FOUND');
   if (booking.status === BookingStatus.CANCELED)
-    throw new AppError(409, 'Booking is already cancelled');
+    throw new AppError(
+      409,
+      'Booking is already cancelled',
+      'BOOKING_ALREADY_CANCELED',
+    );
+  if (booking.status === BookingStatus.COMPLETED)
+    throw new AppError(
+      409,
+      'Booking is already completed',
+      'BOOKING_COMPLETED',
+    );
+  if (booking.status === BookingStatus.NO_SHOW)
+    throw new AppError(
+      409,
+      'Booking was marked as a no-show',
+      'BOOKING_NO_SHOW',
+    );
+  // No grace window: once the booking has started it can't be cancelled here.
+  if (booking.startTime.getTime() <= Date.now())
+    throw new AppError(
+      409,
+      'Booking has already started or passed',
+      'BOOKING_IN_PAST',
+    );
 
   return prisma.booking.update({
     where: { id: booking.id },

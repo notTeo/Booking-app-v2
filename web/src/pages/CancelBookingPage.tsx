@@ -22,10 +22,14 @@ export default function CancelBookingPage() {
         setResult(data);
       })
       .catch((err: unknown) => {
-        const msg: string = apiErrorField(err, 'error');
-        if (msg.includes('already')) setError(t.cancelBooking.alreadyCancelled);
-        else if (msg.includes('not found')) setError(t.cancelBooking.notFound);
-        else setError(t.cancelBooking.errorCancel);
+        const messages: Record<string, string> = {
+          BOOKING_ALREADY_CANCELED: t.cancelBooking.alreadyCancelled,
+          BOOKING_COMPLETED: t.cancelBooking.alreadyCompleted,
+          BOOKING_NO_SHOW: t.cancelBooking.markedNoShow,
+          BOOKING_IN_PAST: t.cancelBooking.pastBooking,
+          BOOKING_NOT_FOUND: t.cancelBooking.notFound,
+        };
+        setError(messages[apiErrorField(err, 'code')] ?? t.cancelBooking.errorCancel);
       })
       .finally(() => setLoading(false));
   };
