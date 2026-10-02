@@ -91,7 +91,7 @@ function GlobalNav({ isOpen, onClose, width, startResize }: NavProps) {
 
       <span className="sidebar-section-label">{t.sidebar.account}</span>
 
-      <NavLink to="/settings" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.settings} onClick={onClose}>
+      <NavLink to="/account" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.settings} onClick={onClose}>
         <FontAwesomeIcon icon={faGear} />
         <span className="sidebar-link-label">{t.sidebar.settings}</span>
       </NavLink>

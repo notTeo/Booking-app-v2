@@ -53,7 +53,7 @@ export default function VerifyEmailChangePage() {
         {status === 'error' && (
           <>
             <Alert variant="danger">{message}</Alert>
-            <Link to="/settings"><button className="btn btn--secondary btn--block">Back to Settings</button></Link>
+            <Link to="/account"><button className="btn btn--secondary btn--block">Back to Account</button></Link>
           </>
         )}
       </div>

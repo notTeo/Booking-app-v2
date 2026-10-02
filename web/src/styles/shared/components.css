@@ -101,7 +101,7 @@
 }
 
 /* --- Password requirements checklist ---
-   Shared by RegisterPage, ResetPasswordPage, and SettingsPage (previously
+   Shared by RegisterPage, ResetPasswordPage, and AccountPage (previously
    duplicated verbatim in register.css / reset-password.css / settings.css).
    Rendered with <PasswordRequirement> (components/PasswordRequirement.tsx),
    which puts a real FontAwesome check/x icon before the label. */
