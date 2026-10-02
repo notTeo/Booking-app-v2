@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import { sendBookingConfirmationEmail } from '../services/email.service';
 import * as bookingService from '../services/booking.service';
 import { requireShopAccess } from '../utils/shopAccess';
+import { redactCustomer } from '../utils/customerVisibility';
 
 export const createBooking = async (
   req: Request,
@@ -14,12 +15,18 @@ export const createBooking = async (
   try {
     const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
-    const booking = await bookingService.createBookingForShop(
-      userId,
-      shopId,
-      req.body,
+    const { callerCanViewCustomer, ...booking } =
+      await bookingService.createBookingForShop(userId, shopId, req.body);
+    // Redact here, not in the service: the confirmation email below needs the
+    // customer's real name and email.
+    successResponse(
+      res,
+      {
+        ...booking,
+        customer: redactCustomer(booking.customer, callerCanViewCustomer),
+      },
+      201,
     );
-    successResponse(res, booking, 201);
 
     // Owner/staff created this booking themselves, so only the customer needs
     // a confirmation email — no "new booking" notification back to the owner.

@@ -1,9 +1,10 @@
-import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
+import { fillIfEmpty, isExactPhoneMatch, shouldLookUpCustomer } from './customerAutofill';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
 
 export interface OwnerCustomerFormValues {
@@ -44,6 +45,9 @@ export default function OwnerCustomerFormStep({
   notice?: string | null;
 }) {
   const { t } = useLang();
+  const { shop } = useShop();
+  // Until the shop has loaded, behave as before; the API enforces the rule anyway.
+  const canViewCustomerDetails = shop?.canViewCustomerDetails !== false;
 
   // A time that is only off the shop's slot grid is a "custom time", not an
   // out-of-hours one, so the panel and button say that instead.
@@ -76,7 +80,7 @@ export default function OwnerCustomerFormStep({
     setSearchedNoMatch(false);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (val.trim().length < 2) return;
+    if (!shouldLookUpCustomer(canViewCustomerDetails, val)) return;
 
     debounceRef.current = setTimeout(() => {
       getCustomers(shopId, val.trim())
