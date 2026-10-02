@@ -64,17 +64,13 @@ function AccountLevel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useLang();
   const { data } = useMyInvites();
   const received = data?.received.length ?? 0;
-  // Sent invites keep the inbox reachable even with nothing pending.
-  const hasInvites = received + (data?.sent.length ?? 0) > 0;
 
   return (
     <>
       <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
         <Item to="/dashboard" end icon={faTableCells} label={t.sidebar.dashboard} onNavigate={onNavigate} />
         <Item to="/shops" icon={faStore} label={t.sidebar.shops} onNavigate={onNavigate} />
-        {hasInvites && (
-          <Item to="/invites" icon={faEnvelopeOpen} label={t.sidebar.myInvites} badge={received} onNavigate={onNavigate} />
-        )}
+        <Item to="/invites" icon={faEnvelopeOpen} label={t.sidebar.myInvites} badge={received} onNavigate={onNavigate} />
       </nav>
       <div className="sidebar__footer sidebar__nav">
         <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />

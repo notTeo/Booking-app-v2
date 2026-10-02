@@ -34,7 +34,9 @@ describe('Sidebar', () => {
   it('level 1: dashboard, shops, account, logout and no "App" label', () => {
     const html = render('/dashboard');
     for (const label of [t.dashboard, t.shops, t.account, t.logout]) expect(html).toContain(label);
-    expect(html).not.toContain(t.myInvites);
+    expect(html).toContain(t.myInvites);
+    expect(html).toContain('href="/invites"');
+    expect(html).not.toContain('badge');
     expect(html).not.toContain(t.backToShops);
     expect(html).toContain('href="/account"');
   });
@@ -44,14 +46,14 @@ describe('Sidebar', () => {
     expect(render('/shops/new')).not.toContain(t.backToShops);
   });
 
-  it('shows My invites with a received-count badge when invites exist', () => {
+  it('shows a received-count badge on My invites when invites are pending', () => {
     const html = render('/dashboard', { received: [{}, {}], sent: [] });
     expect(html).toContain(t.myInvites);
     expect(html).toContain('href="/invites"');
     expect(html).toContain('>2</span>');
   });
 
-  it('keeps My invites reachable with only sent invites, without a badge', () => {
+  it('shows My invites without a badge when only sent invites exist', () => {
     const html = render('/dashboard', { received: [], sent: [{}] });
     expect(html).toContain(t.myInvites);
     expect(html).not.toContain('badge');

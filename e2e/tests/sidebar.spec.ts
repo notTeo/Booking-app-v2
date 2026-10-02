@@ -21,6 +21,7 @@ test('level 1 -> shop (level 2) -> account returns to level 1', async ({ page })
   await login(page);
   await expect(item(page, 'Dashboard')).toBeVisible();
   await expect(item(page, 'Shops')).toBeVisible();
+  await expect(item(page, 'My invites')).toBeVisible();
   await expect(item(page, 'Account')).toBeVisible();
   await expect(sidebar(page).getByRole('button', { name: 'Logout' })).toBeVisible();
   await expect(sidebar(page).getByText('App', { exact: true })).toHaveCount(0);
