@@ -58,3 +58,17 @@ test('a failed shop lookup shows an error with Retry, and Retry recovers', async
   await expect(page.getByRole('heading', { name: 'Team' })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
+
+test('a deactivated member sees the gate state on the overview and settings pages too', async ({ page }) => {
+  await login(page);
+  await query(`update "UserShop" set active = false where id = 'us1'`);
+  try {
+    for (const path of ['', '/settings', '/invites']) {
+      await page.goto(`/shops/${E2E.shop.slug}${path}`);
+      await expect(notAvailable(page), path || 'overview').toBeVisible();
+      await expect(page.locator('.spinner'), path || 'overview').toHaveCount(0);
+    }
+  } finally {
+    await query(`update "UserShop" set active = true where id = 'us1'`);
+  }
+});

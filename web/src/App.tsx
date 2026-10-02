@@ -94,8 +94,8 @@ export default function App() {
                     <Route path="/invites" element={<InvitesPage />} />
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
-                      <Route index element={<ShopOverviewPage />} />
                       <Route element={<ShopGate />}>
+                        <Route index element={<ShopOverviewPage />} />
                         <Route path="bookings/new" element={<ShopNewBookingPage />} />
                         <Route path="bookings" element={<ShopBookingsPage />} />
                         <Route path="services" element={<ShopServicesPage />} />
@@ -103,9 +103,9 @@ export default function App() {
                         <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
                         <Route path="customers" element={<ShopCustomersPage />} />
                         <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
+                        <Route path="invites" element={<ShopInvitesPage />} />
+                        <Route path="settings" element={<ShopSettingsPage />} />
                       </Route>
-                      <Route path="invites" element={<ShopInvitesPage />} />
-                      <Route path="settings" element={<ShopSettingsPage />} />
                     </Route>
                   </Route>
                 </Route>
