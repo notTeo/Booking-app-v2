@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { MY_INVITES_KEY } from '../hooks/useMyInvites';
 import { useLang } from '../context/LanguageContext';
 import {
   getMyInvites,
@@ -23,6 +25,7 @@ export default function InvitesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('received');
+  const queryClient = useQueryClient();
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
@@ -46,6 +49,7 @@ export default function InvitesPage() {
     try {
       const result = await acceptInvite(inviteId);
       setReceived((prev) => prev.filter((i) => i.id !== inviteId));
+      queryClient.invalidateQueries({ queryKey: MY_INVITES_KEY });
       navigate(`/shops/${result.shopSlug}`);
     } catch (err: unknown) {
       setActionError(apiErrorMessage(err, t.invites.errorAccept));
@@ -60,6 +64,7 @@ export default function InvitesPage() {
     try {
       await declineInvite(inviteId);
       setReceived((prev) => prev.filter((i) => i.id !== inviteId));
+      queryClient.invalidateQueries({ queryKey: MY_INVITES_KEY });
       setConfirmDecline(null);
     } catch {
       setConfirmDecline(null);

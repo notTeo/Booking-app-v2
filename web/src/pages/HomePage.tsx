@@ -34,7 +34,6 @@ import Footer from '../components/Footer';
 import Switch from '../components/Switch';
 import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/home.css';
-import '../styles/pages/sidebar.css';
 import Wordmark from '../components/Wordmark';
 import BrandText from '../components/BrandText';
 

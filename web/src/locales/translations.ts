@@ -18,7 +18,11 @@ export interface Translations {
     logout: string;
   };
   sidebar: {
-    app: string;
+    dashboard: string;
+    myInvites: string;
+    openMenu: string;
+    closeMenu: string;
+    mainNav: string;
     account: string;
     overview: string;
     shops: string;
@@ -916,7 +920,11 @@ export const translations: Record<Language, Translations> = {
       logout: 'Αποσύνδεση',
     },
     sidebar: {
-      app: 'Εφαρμογή',
+      dashboard: 'Πίνακας ελέγχου',
+      myInvites: 'Οι προσκλήσεις μου',
+      openMenu: 'Άνοιγμα μενού',
+      closeMenu: 'Κλείσιμο μενού',
+      mainNav: 'Κύρια πλοήγηση',
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
       shops: 'Καταστήματα',
@@ -1846,7 +1854,11 @@ home: {
       logout: 'Logout',
     },
     sidebar: {
-      app: 'App',
+      dashboard: 'Dashboard',
+      myInvites: 'My invites',
+      openMenu: 'Open menu',
+      closeMenu: 'Close menu',
+      mainNav: 'Main navigation',
       account: 'Account',
       overview: 'Overview',
       shops: 'Shops',
