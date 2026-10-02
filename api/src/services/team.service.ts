@@ -181,16 +181,24 @@ export const updateMemberRole = async (
 
   // Deactivating a member turns off both bookable toggles too — they should
   // never be selectable anywhere while inactive, regardless of what was sent.
-  const bookableByCustomers = active
-    ? dto.bookableByCustomers !== undefined
-      ? dto.bookableByCustomers
-      : member.bookableByCustomers
-    : false;
-  const bookableInternally = active
-    ? dto.bookableInternally !== undefined
-      ? dto.bookableInternally
-      : member.bookableInternally
-    : false;
+  // Reactivating turns both back on, again regardless of what was sent: the
+  // member form submits every field on each save, so the stale `false` values
+  // it loaded for the inactive member would otherwise win.
+  const reactivating = active && !member.active;
+  const bookableByCustomers = !active
+    ? false
+    : reactivating
+      ? true
+      : dto.bookableByCustomers !== undefined
+        ? dto.bookableByCustomers
+        : member.bookableByCustomers;
+  const bookableInternally = !active
+    ? false
+    : reactivating
+      ? true
+      : dto.bookableInternally !== undefined
+        ? dto.bookableInternally
+        : member.bookableInternally;
 
   const updated = await prisma.userShop.update({
     where: { id: memberId },

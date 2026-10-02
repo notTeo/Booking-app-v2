@@ -109,8 +109,8 @@ export default function ShopTeamMemberPage() {
   const isOwnerChange = !!member && editRole !== member.role && (editRole === 'owner' || member.role === 'owner');
 
   // Turning Active off also turns off both bookable toggles — an inactive
-  // member should never be selectable anywhere. Turning it back on doesn't
-  // restore them; the owner re-enables bookability explicitly.
+  // member should never be selectable anywhere. Turning it back on is
+  // restored by the server on save, and the form resyncs from its response.
   const handleActiveChange = (checked: boolean) => {
     setEditActive(checked);
     if (!checked) {
@@ -150,6 +150,14 @@ export default function ShopTeamMemberPage() {
       if (editEmail !== (member.email ?? '')) dto.email = editEmail;
       const updated = await updateMemberRole(shop.id, memberId, dto);
       setMember(updated);
+      // Show what the server stored, not the local toggles — e.g. reactivating
+      // turns both bookable flags back on server-side.
+      setEditRole(updated.role);
+      setEditCanView(updated.canViewCustomerDetails);
+      setEditEmail(updated.email ?? '');
+      setEditActive(updated.active);
+      setEditBookableByCustomers(updated.bookableByCustomers);
+      setEditBookableInternally(updated.bookableInternally);
       setMemberSuccess(t.team.roleUpdated);
       setConfirmRoleChange(false);
     } catch (err: unknown) {
