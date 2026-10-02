@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+import { REFRESH_RACE_WINDOW_MS } from '../services/auth.service';
 
 const api = await serve(app);
 
@@ -249,7 +250,9 @@ describe('POST /auth/refresh', () => {
     // Use the token once (rotates it)
     await api.post('/auth/refresh').set('Cookie', cookieHeader);
 
-    // Use the original token again — reuse attack
+    // Use the original token again once the refresh-race window has passed
+    // (a replay inside it is a retryable REFRESH_RACE, see refreshRace.test.ts)
+    vi.setSystemTime(new Date(Date.now() + REFRESH_RACE_WINDOW_MS + 1000));
     const res = await api.post('/auth/refresh').set('Cookie', cookieHeader);
 
     expect(res.status).toBe(401);
