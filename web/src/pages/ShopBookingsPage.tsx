@@ -8,6 +8,7 @@ import { useLang } from '../context/LanguageContext';
 import {
   listBookings,
   updateBookingStatus,
+  getApiError,
   type Booking,
   type BookingStatus,
 } from '../api/booking.api';
@@ -81,6 +82,7 @@ export default function ShopBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [creatingSlot, setCreatingSlot]       = useState<CreatingSlot | null>(null);
   const [updatingId, setUpdatingId]           = useState<string | null>(null);
+  const [statusError, setStatusError]         = useState('');
 
   // Filter bar. Status/service hide blocks, staff hides columns. The service is
   // stored with its name so it stays selectable after moving to a day where no
@@ -141,11 +143,14 @@ export default function ShopBookingsPage() {
   const handleStatusUpdate = async (bookingId: string, status: BookingStatus) => {
     if (!shop) return;
     setUpdatingId(bookingId);
+    setStatusError('');
     try {
       const updated = await updateBookingStatus(shop.id, bookingId, status);
       setBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
-    } catch {
-      // leave state unchanged on error
+    } catch (err) {
+      // State stays as it was; tell the user why. A 409 is the slot being
+      // taken meanwhile (e.g. re-opening a canceled booking).
+      setStatusError(getApiError(err).status === 409 ? t.bookings.statusConflict : t.bookings.statusError);
     } finally {
       setUpdatingId(null);
     }
@@ -154,6 +159,7 @@ export default function ShopBookingsPage() {
   const openBookingDetail = (b: Booking, isSelected: boolean) => {
     setSelectedBooking(isSelected ? null : b);
     setCreatingSlot(null);
+    setStatusError('');
   };
 
   const openCreateSlot = (staffId: string, timeHint: string, showOutside: boolean) => {
@@ -457,6 +463,7 @@ export default function ShopBookingsPage() {
               </button>
             ))}
           </div>
+          {statusError && <Alert variant="danger">{statusError}</Alert>}
         </div>
       )}
 

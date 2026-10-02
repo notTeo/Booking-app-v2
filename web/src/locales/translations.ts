@@ -820,6 +820,8 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    statusConflict: string;
+    statusError: string;
     title: string;
     viewDateLabel: string;
     errorLoad: string;
@@ -1735,6 +1737,8 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      statusConflict: 'Αυτή η ώρα δεν είναι πλέον διαθέσιμη, οπότε η κατάσταση της κράτησης δεν μπορεί να αλλάξει.',
+      statusError: 'Δεν ήταν δυνατή η ενημέρωση της κατάστασης της κράτησης. Δοκιμάστε ξανά.',
       title: 'Ραντεβού',
       viewDateLabel: 'Προβολή ημερομηνίας',
       errorLoad: 'Αποτυχία φόρτωσης ραντεβού.',
@@ -2661,6 +2665,8 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      statusConflict: "That time is no longer free, so the booking status can't be changed.",
+      statusError: "Couldn't update the booking status. Please try again.",
       title: 'Bookings',
       viewDateLabel: 'View date',
       errorLoad: 'Failed to load bookings.',
