@@ -23,7 +23,7 @@ export default function ShopCustomersPage() {
 
   useEffect(() => {
     if (!shop) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query (see docs/plan-phase2.md LATER)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query
     setLoading(true);
     setError('');
     // search is applied server-side against every customer in the shop

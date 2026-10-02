@@ -2,7 +2,7 @@
 
 Express + TypeScript + Prisma + PostgreSQL backend for the booking app: email/password auth, multi-tenant shops (team, services, working hours, customers, bookings), and a public booking API. Free scheduling only — no payments, no OAuth.
 
-Local dev: `http://localhost:3000`. Docker (root `docker-compose.yml`): `http://localhost:5001`.
+Local dev: `http://localhost:3000`. The included `Dockerfile` (used for the Railway deploy) also listens on port 3000.
 
 ## Stack
 
@@ -50,10 +50,13 @@ Validated at startup by `src/config/parseEnv.ts`; the process exits with the ful
 | `CLIENT_URLS` | yes* | Comma-separated frontend origins. All are allowed by CORS; the **first** is used in email links. *`CLIENT_URL` (single origin) still works if `CLIENT_URLS` is unset. |
 | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | yes | e.g. `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
 | `JWT_ACCESS_EXPIRES_IN` | no | Default `15m`. Format: number + `s`/`m`/`h`/`d`/`w`. |
-| `JWT_REFRESH_EXPIRES_IN` | no | Default `30d`. Same format; also sets the refresh cookie lifetime. A bare number is rejected. |
+| `JWT_REFRESH_EXPIRES_IN` | no | Default `30d`. Same format; sets the refresh token lifetime, and the cookie lifetime when the user chose "remember me" (otherwise the cookie is a session cookie). A bare number is rejected. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | yes | |
 | `PORT` | no | Default `3000`. |
 | `INVITE_EMAIL_OVERRIDE` | no | Dev only: send all invite emails to this address. |
+| `RATE_LIMIT_DISABLED` | no | `true` disables rate limiting. Ignored when `NODE_ENV=production`. Used by the e2e suite. |
+
+Test and script variables (not read by the running server): `TEST_DATABASE_URL` overrides the database in `.env.test` for `npm test`; `TENANT_PASSWORD` and `HAIROLOGY_OWNER_PASSWORD` set the owner password for the tenant scripts below; the e2e suite has its own variables, see [e2e/README.md](../e2e/README.md).
 
 ## Operations
 
@@ -71,9 +74,9 @@ Validated at startup by `src/config/parseEnv.ts`; the process exits with the ful
 npm run tenant:create -- --owner-name "Maria K" --owner-email maria@example.com \
   --shop-name "Maria's Salon" --slug marias-salon [--timezone Europe/Athens]
 
-# Hairology tenant (no demo data; refuses if it exists). Edit
+# Pilot tenant (no demo data; refuses if it exists). Edit
 # src/admin/hairologyData.ts and set HAIROLOGY_DATA_CONFIRMED = true first.
-HAIROLOGY_OWNER_NAME=... HAIROLOGY_OWNER_EMAIL=... npm run seed:hairology
+HAIROLOGY_OWNER_NAME=... HAIROLOGY_OWNER_EMAIL=... HAIROLOGY_OWNER_PASSWORD=... npm run seed:hairology
 
 # Local dev demo data only — refuses unless NODE_ENV is development/test.
 npm run seed:dev-visual-check
@@ -100,8 +103,22 @@ Interactive docs at `/docs` (non-production only, from `src/docs/openapi.yaml`).
 npm run dev        # ts-node-dev with reload
 npm run build      # compile to dist/
 npm start          # run dist/app.js
-npm test           # Vitest (needs a Postgres test DB, see .env.test / TEST_DATABASE_URL)
+npm test           # Vitest (needs a Postgres test DB, see Testing below)
+npm run test:watch
 npm run test:tz    # suite under UTC, Europe/Athens, America/New_York
-npm run lint
+npm run lint       # lint:fix to autofix, format to run Prettier
+npm run audit:schedule-overlaps   # report overlapping working-hour rows (read-only)
 npx prisma studio
 ```
+
+## Testing
+
+`npm test` needs a PostgreSQL database named `booking_app_test` (the name must contain `test`; the suite refuses anything else). `.env.test` points at `postgresql://postgres@localhost:5432/booking_app_test`. If your local role is not `postgres`, override it for your shell:
+
+```bash
+createdb booking_app_test
+export TEST_DATABASE_URL=postgresql://YOUR_USER@localhost:5432/booking_app_test
+npm test
+```
+
+Migrations are applied automatically before the suite runs. Browser tests live in `../e2e`.

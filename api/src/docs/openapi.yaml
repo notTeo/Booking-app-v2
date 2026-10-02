@@ -1,13 +1,14 @@
 openapi: 3.0.3
 info:
-  title: Auth Boilerplate API
+  title: BeBooked API
   description: |
-    A production-ready authentication API with JWT access tokens, refresh token rotation,
-    reuse detection, email verification, and session management.
+    BeBooked backend API: email/password authentication (JWT access tokens, refresh token
+    rotation with reuse detection, email verification, sessions), multi-tenant shops, and
+    the public booking endpoints. Only a subset of routes is described in this file.
   version: 1.0.0
 
 servers:
-  - url: http://localhost:4000
+  - url: http://localhost:3000
     description: Local development
 
 tags:

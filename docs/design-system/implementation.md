@@ -1,13 +1,13 @@
 # Implementation guide
 
-For the developer (Claude Code) building this in React 19 + Vite with plain CSS.
+For developers building this in React 19 + Vite with plain CSS.
 
 ## 1. Files
 
 ```
 src/styles/
-  tokens.css          # copied from this system's tokens.css (generated from tokens.json)
-  components.css      # copied from components/bundle.css
+  tokens.css          # design tokens (light + dark). Mirrors docs/design-system/tokens.json
+  components.css      # shared component classes (BEM). Edit here; do not restyle in page CSS
   pages/*.css         # page layout only: grids, page-specific spacing. No component restyling.
 ```
 
