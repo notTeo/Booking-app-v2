@@ -710,6 +710,13 @@ export interface Translations {
     staffContext: string;
     atLabel: string;
   };
+  shopGate: {
+    notFoundTitle: string;
+    notFoundText: string;
+    backToShops: string;
+    errorLoad: string;
+    retry: string;
+  };
   overview: {
     greeting: string;
     title: string;
@@ -1609,6 +1616,13 @@ home: {
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Το κατάστημα δεν είναι διαθέσιμο',
+      notFoundText: 'Αυτό το κατάστημα δεν υπάρχει ή δεν έχετε πλέον πρόσβαση σε αυτό.',
+      backToShops: 'Πίσω στα καταστήματά μου',
+      errorLoad: 'Δεν ήταν δυνατή η φόρτωση του καταστήματος. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.',
+      retry: 'Δοκιμάστε ξανά',
     },
     overview: {
       greeting: 'Γεια σου, {name}!',
@@ -2528,6 +2542,13 @@ home: {
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Shop not available',
+      notFoundText: "This shop doesn't exist, or you no longer have access to it.",
+      backToShops: 'Back to my shops',
+      errorLoad: 'Could not load this shop. Check your connection and try again.',
+      retry: 'Retry',
     },
     overview: {
       greeting: 'Hello, {name}!',

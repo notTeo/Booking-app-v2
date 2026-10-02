@@ -4,6 +4,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './context/AuthContext';
 import { ShopContextProvider } from './context/ShopContext';
 import { ShopRouteProvider } from './context/ShopContext';
+import ShopGate from './components/ShopGate';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -94,14 +95,16 @@ export default function App() {
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route index element={<ShopOverviewPage />} />
-                      <Route path="bookings/new" element={<ShopNewBookingPage />} />
-                      <Route path="bookings" element={<ShopBookingsPage />} />
-                      <Route path="services" element={<ShopServicesPage />} />
-                      <Route path="team" element={<ShopTeamPage />} />
-                      <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
+                      <Route element={<ShopGate />}>
+                        <Route path="bookings/new" element={<ShopNewBookingPage />} />
+                        <Route path="bookings" element={<ShopBookingsPage />} />
+                        <Route path="services" element={<ShopServicesPage />} />
+                        <Route path="team" element={<ShopTeamPage />} />
+                        <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
+                        <Route path="customers" element={<ShopCustomersPage />} />
+                        <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
+                      </Route>
                       <Route path="invites" element={<ShopInvitesPage />} />
-                      <Route path="customers" element={<ShopCustomersPage />} />
-                      <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
                       <Route path="settings" element={<ShopSettingsPage />} />
                     </Route>
                   </Route>
