@@ -13,7 +13,7 @@ const ShopContext = createContext<ShopContextType | null>(null);
 
 export function ShopContextProvider({ children }: { children: React.ReactNode }) {
   const [shop, setShop] = useState<Shop | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <ShopContext.Provider value={{ shop, isLoading, setShop, setIsLoading }}>
