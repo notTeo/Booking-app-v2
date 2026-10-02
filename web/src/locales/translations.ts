@@ -417,6 +417,7 @@ export interface Translations {
     notFound: string;
     errorLoad: string;
     errorRemove: string;
+    errorRemoveHasBookings: string;
     backToTeam: string;
     editRole: string;
     saveRole: string;
@@ -1309,6 +1310,7 @@ home: {
       notFound: 'Το μέλος δεν βρέθηκε.',
       errorLoad: 'Αποτυχία φόρτωσης μελών.',
       errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
+      errorRemoveHasBookings: 'Αυτό το μέλος έχει κρατήσεις. Απενεργοποιήστε το αντί να το αφαιρέσετε.',
       backToTeam: '← Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
@@ -2227,6 +2229,7 @@ home: {
       notFound: 'Member not found.',
       errorLoad: 'Failed to load team members.',
       errorRemove: 'Failed to remove member.',
+      errorRemoveHasBookings: 'This member has bookings. Deactivate them instead.',
       backToTeam: '← Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',

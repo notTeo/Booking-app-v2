@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { apiErrorField, apiErrorMessage } from './apiError';
+import { apiErrorField, apiErrorMessage, isReferencedConflict } from './apiError';
 
 const axiosLike = (data: unknown) => ({ response: { data } });
 
@@ -29,5 +29,16 @@ describe('apiErrorField', () => {
     expect(apiErrorField(axiosLike({ error: 'already cancelled' }), 'error')).toBe('already cancelled');
     expect(apiErrorField(axiosLike({}), 'error')).toBe('');
     expect(apiErrorField(null, 'error')).toBe('');
+  });
+});
+
+describe('isReferencedConflict', () => {
+  it('is true only for a 409 CONFLICT_REFERENCED', () => {
+    expect(isReferencedConflict({ response: { status: 409, data: { code: 'CONFLICT_REFERENCED' } } })).toBe(true);
+    expect(isReferencedConflict({ response: { status: 409, data: { code: 'OTHER' } } })).toBe(false);
+    expect(isReferencedConflict({ response: { status: 500, data: { code: 'CONFLICT_REFERENCED' } } })).toBe(false);
+    for (const err of [new Error('network down'), null, undefined, { response: {} }]) {
+      expect(isReferencedConflict(err)).toBe(false);
+    }
   });
 });

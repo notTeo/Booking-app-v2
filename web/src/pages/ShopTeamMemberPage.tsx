@@ -1,5 +1,6 @@
 import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { isReferencedConflict } from '../utils/apiError';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -185,9 +186,9 @@ export default function ShopTeamMemberPage() {
     try {
       await removeMember(shop.id, memberId);
       navigate(`/shops/${slug}/team`);
-    } catch {
+    } catch (err) {
       setConfirmRemove(false);
-      setRemoveError(t.team.errorRemove);
+      setRemoveError(isReferencedConflict(err) ? t.team.errorRemoveHasBookings : t.team.errorRemove);
       setRemoving(false);
     }
   };
