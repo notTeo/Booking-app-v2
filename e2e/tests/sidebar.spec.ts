@@ -137,6 +137,22 @@ test.describe('mobile', () => {
     await expect(page.getByRole('separator', { name: 'Resize sidebar' })).toHaveCount(0);
   });
 
+  test('top bar stays slim and the drawer fits the visible viewport, footer items reachable', async ({ page }) => {
+    await login(page);
+    expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);
+
+    // A short phone screen (browser bars showing): footer must stay on screen.
+    await page.setViewportSize({ width: 360, height: 480 });
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    await page.waitForTimeout(400);
+    const rail = (await sidebar(page).boundingBox())!;
+    expect(rail.y).toBe(0);
+    expect(Math.round(rail.height)).toBe(480);
+    await sidebar(page).getByRole('button', { name: 'Logout' }).scrollIntoViewIfNeeded();
+    const logout = (await sidebar(page).getByRole('button', { name: 'Logout' }).boundingBox())!;
+    expect(logout.y + logout.height).toBeLessThanOrEqual(480);
+  });
+
   test('account-level pages show the logo in the top bar', async ({ page }) => {
     await login(page);
     await expect(page.locator('.topbar .wordmark')).toBeVisible();

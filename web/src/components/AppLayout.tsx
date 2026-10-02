@@ -30,7 +30,7 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
       <button
         ref={menuRef}
         type="button"
-        className="btn btn--ghost btn--icon"
+        className="btn btn--ghost btn--icon btn--sm"
         onClick={onMenu}
         aria-label={t.sidebar.openMenu}
       >

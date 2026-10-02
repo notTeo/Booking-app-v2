@@ -520,7 +520,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .sidebar--collapsed .nav-item__label, .sidebar--collapsed .nav-item .badge, .sidebar--collapsed .sidebar__label, .sidebar--collapsed .sidebar__shop-name { display: none; }
 .sidebar--collapsed .sidebar__shop { width: auto; padding: var(--space-1); }
 .sidebar.is-drawer {
-  position: fixed; inset: 0 auto 0 0; z-index: var(--z-drawer); width: var(--drawer-width, min(16rem, 75vw));
+  position: fixed; inset: 0 auto auto 0; height: 100dvh; max-height: 100dvh; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: var(--z-drawer); width: var(--drawer-width, min(16rem, 75vw));
   box-shadow: var(--shadow-lg); transform: translateX(-100%); visibility: hidden;
   transition: transform var(--motion-base) var(--ease-standard), visibility 0s linear var(--motion-base);
 }
@@ -547,9 +547,10 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .nav-item--danger:hover { color: var(--danger); }
 .topbar {
   position: sticky; top: 0; z-index: var(--z-nav); display: flex; align-items: center; gap: var(--space-3);
-  width: var(--drawer-width); padding: var(--space-2) var(--space-4); background: var(--surface);
+  width: var(--drawer-width); padding: var(--space-1) var(--space-4); background: var(--surface);
   border: 1px solid var(--border); border-width: 0 1px 1px 0; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
+.topbar__title.wordmark { font-family: var(--font-logo); font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: var(--fw-regular); }
 .topbar__title {
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--text); font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body);
