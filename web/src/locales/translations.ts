@@ -706,6 +706,7 @@ export interface Translations {
     closedOrNoSchedule: string;
     manageWorkingHours: string;
     failedSlots: string;
+    retry: string;
     serviceContext: string;
     staffContext: string;
     atLabel: string;
@@ -1606,6 +1607,7 @@ home: {
       closedOrNoSchedule: 'Κλειστό ή δεν υπάρχει πρόγραμμα για αυτή την ημέρα.',
       manageWorkingHours: 'Μετάβαση στο ωράριο εργασίας για διόρθωση',
       failedSlots: 'Αποτυχία φόρτωσης διαθέσιμων ωρών',
+      retry: 'Δοκιμάστε ξανά',
       serviceContext: 'Υπηρεσία:',
       staffContext: 'Προσωπικό:',
       atLabel: 'στις',
@@ -2534,6 +2536,7 @@ home: {
       closedOrNoSchedule: 'Closed, or there is no schedule for this day.',
       manageWorkingHours: 'Go to working hours to fix this',
       failedSlots: 'Failed to load available slots',
+      retry: 'Retry',
       serviceContext: 'Service:',
       staffContext: 'Staff:',
       atLabel: 'at',

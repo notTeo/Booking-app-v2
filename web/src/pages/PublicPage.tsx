@@ -186,6 +186,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 date={wizard.date}
                 time={wizard.time}
                 slots={wizard.slots}
+                slotsError={wizard.slotsError}
+                onRetrySlots={wizard.retrySlots}
                 selectedService={wizard.selectedService}
                 selectedMember={selectedMember}
                 minDate={todayInZone(shop.timezone)}
