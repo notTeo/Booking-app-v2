@@ -126,4 +126,10 @@ describe('POST /public/cancel', () => {
     const res = await cancel(token);
     expect(res.status).toBe(400);
   });
+
+  it('gives a malformed token the INVALID_CANCEL_LINK code', async () => {
+    const res = await cancel('not-a-uuid');
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('INVALID_CANCEL_LINK');
+  });
 });

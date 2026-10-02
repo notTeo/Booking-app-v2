@@ -28,6 +28,7 @@ export default function CancelBookingPage() {
           BOOKING_NO_SHOW: t.cancelBooking.markedNoShow,
           BOOKING_IN_PAST: t.cancelBooking.pastBooking,
           BOOKING_NOT_FOUND: t.cancelBooking.notFound,
+          INVALID_CANCEL_LINK: t.cancelBooking.notFound,
         };
         setError(messages[apiErrorField(err, 'code')] ?? t.cancelBooking.errorCancel);
       })
