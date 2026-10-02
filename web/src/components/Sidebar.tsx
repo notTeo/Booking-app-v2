@@ -1,11 +1,6 @@
-import { NavLink, useNavigate, useMatch } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useShop } from '../context/ShopContext';
-import { useLang } from '../context/LanguageContext';
-import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import '../styles/pages/sidebar.css';
+import { useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Wordmark from './Wordmark';
 import {
   faTableCells,
   faStore,
@@ -14,221 +9,171 @@ import {
   faCalendar,
   faScissors,
   faUsers,
-  faUserPlus,
   faMagnifyingGlass,
   faEnvelopeOpen,
-  faPlusCircle,
   faChevronLeft,
-  faXmark,
+  faUser,
 } from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { useAuth } from '../context/AuthContext';
+import { useShop } from '../context/ShopContext';
+import { useLang } from '../context/LanguageContext';
+import { useMyInvites } from '../hooks/useMyInvites';
+import { useShopSlug } from '../hooks/useShopSlug';
+import type { useSidebarWidth } from '../hooks/useSidebarWidth';
+import Wordmark from './Wordmark';
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+interface ItemProps {
+  to: string;
+  icon: IconDefinition;
+  label: string;
+  end?: boolean;
+  badge?: number;
+  onNavigate: () => void;
+}
 
-function ResizeHandle({ onMouseDown }: { onMouseDown: (e: React.MouseEvent) => void }) {
+// NavLink sets aria-current="page" itself, which is what .nav-item styles.
+function Item({ to, icon, label, end, badge, onNavigate }: ItemProps) {
   return (
-    <div
-      className="sidebar-resize-handle"
-      onMouseDown={onMouseDown}
-      role="separator"
-      aria-orientation="vertical"
-    />
+    <NavLink to={to} end={end} className="nav-item" onClick={onNavigate}>
+      <FontAwesomeIcon icon={icon} aria-hidden="true" />
+      <span className="nav-item__label">{label}</span>
+      {badge ? <span className="badge badge--info">{badge}</span> : null}
+    </NavLink>
   );
 }
 
-// Mobile-only (hidden on desktop via CSS) — the drawer's own way to close
-// itself without navigating anywhere, since tapping the backdrop isn't a
-// very discoverable affordance on its own.
-function CloseButton({ onClose }: { onClose: () => void }) {
+function LogoutItem({ onNavigate }: { onNavigate: () => void }) {
+  const { logout } = useAuth();
+  const { t } = useLang();
+  const navigate = useNavigate();
+
   return (
-    <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
-      <FontAwesomeIcon icon={faXmark} />
+    <button
+      type="button"
+      className="nav-item nav-item--danger"
+      onClick={async () => { await logout(); navigate('/login'); onNavigate(); }}
+    >
+      <FontAwesomeIcon icon={faRightFromBracket} aria-hidden="true" />
+      <span className="nav-item__label">{t.sidebar.logout}</span>
     </button>
   );
 }
 
-interface NavProps {
-  isOpen: boolean;
-  onClose: () => void;
-  width: number;
-  startResize: (e: React.MouseEvent) => void;
-}
-
-function GlobalNav({ isOpen, onClose, width, startResize }: NavProps) {
-  const { logout } = useAuth();
+// Level 1: account level.
+function AccountLevel({ onNavigate }: { onNavigate: () => void }) {
   const { t } = useLang();
-  const navigate = useNavigate();
+  const { data } = useMyInvites();
+  const received = data?.received.length ?? 0;
 
   return (
-    <aside
-      className={`sidebar${isOpen ? ' drawer-open' : ''}`}
-      style={{ '--sidebar-width': `${width}px` } as React.CSSProperties}
-    >
-    <CloseButton onClose={onClose} />
-    <div className="sidebar-header">
-      {/* No button here (nothing to go "back" to) — logo sits flush left on
-          desktop. On mobile this spacer reappears (see sidebar.css) to hold
-          the logo clear of the fixed close-X overlaid on top of it. */}
-      <span className="sidebar-header-spacer" aria-hidden="true" />
-      <h4 className="sidebar-link-label"><Wordmark /></h4>
-    </div>
-
-      <span className="sidebar-section-label">{t.sidebar.app}</span>
-
-      <NavLink to="/dashboard" end className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.overview} onClick={onClose}>
-        <FontAwesomeIcon icon={faTableCells} />
-        <span className="sidebar-link-label">{t.sidebar.overview}</span>
-      </NavLink>
-
-      <NavLink to="/shops" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.shops} onClick={onClose}>
-        <FontAwesomeIcon icon={faStore} />
-        <span className="sidebar-link-label">{t.sidebar.shops}</span>
-      </NavLink>
-
-      <NavLink to="/invites" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.invites} onClick={onClose}>
-        <FontAwesomeIcon icon={faEnvelopeOpen} />
-        <span className="sidebar-link-label">{t.sidebar.invites}</span>
-      </NavLink>
-
-      <span className="sidebar-section-label">{t.sidebar.account}</span>
-
-      <NavLink to="/settings" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.settings} onClick={onClose}>
-        <FontAwesomeIcon icon={faGear} />
-        <span className="sidebar-link-label">{t.sidebar.settings}</span>
-      </NavLink>
-
-      <button
-        className="sidebar-logout sidebar-link"
-        aria-label={t.sidebar.logout}
-        onClick={async () => { await logout(); navigate('/login'); onClose(); }}
-      >
-        <FontAwesomeIcon icon={faRightFromBracket} />
-        <span className="sidebar-link-label">{t.sidebar.logout}</span>
-      </button>
-
-      <ResizeHandle onMouseDown={startResize} />
-    </aside>
+    <>
+      <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
+        <Item to="/dashboard" end icon={faTableCells} label={t.sidebar.dashboard} onNavigate={onNavigate} />
+        <Item to="/shops" icon={faStore} label={t.sidebar.shops} onNavigate={onNavigate} />
+        <Item to="/invites" icon={faEnvelopeOpen} label={t.sidebar.myInvites} badge={received} onNavigate={onNavigate} />
+      </nav>
+      <div className="sidebar__footer sidebar__nav">
+        <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />
+        <LogoutItem onNavigate={onNavigate} />
+      </div>
+    </>
   );
 }
 
-interface ShopNavProps extends NavProps {
-  slug: string;
-}
-
-function ShopNav({ isOpen, onClose, width, startResize, slug }: ShopNavProps) {
-  const { logout } = useAuth();
+// Level 2: shop level. Owners see Team, Customers and Shop settings on top of
+// what staff see.
+function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void }) {
   const { shop, isLoading } = useShop();
   const { t } = useLang();
-  const navigate = useNavigate();
-
-  const isOwner = shop?.role === 'owner';
   const base = `/shops/${slug}`;
+  const isOwner = shop?.role === 'owner';
 
   return (
-    <aside
-      className={`sidebar${isOpen ? ' drawer-open' : ''}`}
-      style={{ '--sidebar-width': `${width}px` } as React.CSSProperties}
-    >
-    <CloseButton onClose={onClose} />
-    <div className="sidebar-header">
-      {/* Mobile-only spacer, holds the logo clear of the fixed close-X
-          (mirrors GlobalNav's header — see sidebar.css). */}
-      <span className="sidebar-header-spacer" aria-hidden="true" />
-      <h4 className="sidebar-link-label"><Wordmark /></h4>
-      <NavLink to="/shops" className="sidebar-back-link" aria-label={t.sidebar.backToShops} title={t.sidebar.backToShops} onClick={onClose}>
-        <FontAwesomeIcon icon={faChevronLeft} />
+    <>
+      <NavLink to="/shops" end className="nav-item" onClick={onNavigate}>
+        <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+        <span className="nav-item__label">{t.sidebar.backToShops}</span>
       </NavLink>
-    </div>
-
-      <div className="sidebar-shop-name">
-        {isLoading ? (
-          <span className="sidebar-link-label">...</span>
-        ) : (
-          <span className="sidebar-link-label">{shop?.name ?? slug}</span>
+      <div className="sidebar__title">{isLoading ? '…' : (shop?.name ?? slug)}</div>
+      <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
+        <Item to={base} end icon={faTableCells} label={t.sidebar.overview} onNavigate={onNavigate} />
+        <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} onNavigate={onNavigate} />
+        <Item to={`${base}/services`} icon={faScissors} label={t.sidebar.services} onNavigate={onNavigate} />
+        {isOwner && (
+          <>
+            <Item to={`${base}/team`} icon={faUsers} label={t.sidebar.team} onNavigate={onNavigate} />
+            <Item to={`${base}/customers`} icon={faMagnifyingGlass} label={t.sidebar.customers} onNavigate={onNavigate} />
+            <Item to={`${base}/settings`} icon={faGear} label={t.sidebar.shopSettings} onNavigate={onNavigate} />
+          </>
         )}
+      </nav>
+      <div className="sidebar__footer sidebar__nav">
+        <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />
+        <LogoutItem onNavigate={onNavigate} />
       </div>
-
-      {/* "Shop" section — day-to-day, available to every team member:
-          check the calendar, take a new booking, see what's on offer. */}
-      <span className="sidebar-section-label">{t.sidebar.shopSection}</span>
-
-      <NavLink to={base} end className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.overview} onClick={onClose}>
-        <FontAwesomeIcon icon={faTableCells} />
-        <span className="sidebar-link-label">{t.sidebar.overview}</span>
-      </NavLink>
-
-      <NavLink to={`${base}/bookings`} end className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.bookings} onClick={onClose}>
-        <FontAwesomeIcon icon={faCalendar} />
-        <span className="sidebar-link-label">{t.sidebar.bookings}</span>
-      </NavLink>
-
-      <NavLink to={`${base}/bookings/new`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.bookAppointment} onClick={onClose}>
-        <FontAwesomeIcon icon={faPlusCircle} />
-        <span className="sidebar-link-label">{t.sidebar.bookAppointment}</span>
-      </NavLink>
-
-      <NavLink to={`${base}/services`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.services} onClick={onClose}>
-        <FontAwesomeIcon icon={faScissors} />
-        <span className="sidebar-link-label">{t.sidebar.services}</span>
-      </NavLink>
-
-      {isOwner && (
-        <>
-          {/* "Manage" section — owner-only setup/config, ordered the way
-              you'd actually stand up a shop: build the team, invite them
-              in, set when everyone works, then the ongoing customer list
-              and shop-wide settings. */}
-          <span className="sidebar-section-label">{t.sidebar.manageSection}</span>
-
-          <NavLink to={`${base}/team`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.team} onClick={onClose}>
-            <FontAwesomeIcon icon={faUsers} />
-            <span className="sidebar-link-label">{t.sidebar.team}</span>
-          </NavLink>
-
-          <NavLink to={`${base}/invites`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.invites} onClick={onClose}>
-            <FontAwesomeIcon icon={faUserPlus} />
-            <span className="sidebar-link-label">{t.sidebar.invites}</span>
-          </NavLink>
-
-          <NavLink to={`${base}/customers`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`} aria-label={t.sidebar.customers} onClick={onClose}>
-            <FontAwesomeIcon icon={faMagnifyingGlass} />
-            <span className="sidebar-link-label">{t.sidebar.customers}</span>
-          </NavLink>
-
-           <NavLink to={`${base}/settings`} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''} sidebar-bottom`} aria-label={t.sidebar.shopSettings} onClick={onClose}>
-            <FontAwesomeIcon icon={faGear} />
-            <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
-          </NavLink>
-        </>
-      )}
-
-      <button
-        className="sidebar-logout sidebar-link"
-        aria-label={t.sidebar.logout}
-        onClick={async () => { await logout(); navigate('/login'); onClose(); }}
-      >
-        <FontAwesomeIcon icon={faRightFromBracket} />
-        <span className="sidebar-link-label">{t.sidebar.logout}</span>
-      </button>
-
-      <ResizeHandle onMouseDown={startResize} />
-    </aside>
+    </>
   );
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-
 interface SidebarProps {
+  compact: boolean;
+  /** Desktop only: drag handle state from useSidebarWidth. */
+  resize?: ReturnType<typeof useSidebarWidth>;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const shopMatch = useMatch('/shops/:slug/*');
-  const { width, startResize } = useSidebarWidth();
+export default function Sidebar({ compact, isOpen, onClose, resize }: SidebarProps) {
+  const { t } = useLang();
+  const slug = useShopSlug();
+  const ref = useRef<HTMLElement>(null);
+  const drawerOpen = compact && isOpen;
 
-  if (shopMatch) {
-    return <ShopNav isOpen={isOpen} onClose={onClose} width={width} startResize={startResize} slug={shopMatch.params.slug!} />;
-  }
+  // Drawer behaviour from the DS Sidebar README: Esc closes, focus moves in
+  // on open and stays inside while open.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const el = ref.current;
+    el?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab' || !el) return;
+      const focusable = el.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === el)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [drawerOpen, onClose]);
 
-  return <GlobalNav isOpen={isOpen} onClose={onClose} width={width} startResize={startResize} />;
+  const classes = ['sidebar'];
+  if (compact) classes.push('is-drawer');
+  if (drawerOpen) classes.push('is-open');
+
+  return (
+    <aside ref={ref} tabIndex={-1} className={classes.join(' ')}>
+      <div className="sidebar__brand">
+        <span className="wordmark"><Wordmark /></span>
+      </div>
+      {slug
+        ? <ShopLevel slug={slug} onNavigate={onClose} />
+        : <AccountLevel onNavigate={onClose} />}
+      {resize && (
+        <div
+          className={`sidebar__resize${resize.dragging ? ' is-dragging' : ''}`}
+          aria-label={t.sidebar.resize}
+          {...resize.handleProps}
+        />
+      )}
+    </aside>
+  );
 }

@@ -18,11 +18,14 @@ export interface Translations {
     logout: string;
   };
   sidebar: {
-    app: string;
+    dashboard: string;
+    myInvites: string;
+    openMenu: string;
+    mainNav: string;
+    resize: string;
     account: string;
     overview: string;
     shops: string;
-    settings: string;
     logout: string;
     backToShops: string;
     shopSection: string;
@@ -33,7 +36,6 @@ export interface Translations {
     invites: string;
     customers: string;
     shopSettings: string;
-    shopWorkingHours: string;
     bookAppointment: string;
   };
   dashboard: {
@@ -916,11 +918,14 @@ export const translations: Record<Language, Translations> = {
       logout: 'Αποσύνδεση',
     },
     sidebar: {
-      app: 'Εφαρμογή',
+      dashboard: 'Πίνακας ελέγχου',
+      myInvites: 'Οι προσκλήσεις μου',
+      openMenu: 'Άνοιγμα μενού',
+      mainNav: 'Κύρια πλοήγηση',
+      resize: 'Αλλαγή πλάτους μενού',
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
       shops: 'Καταστήματα',
-      settings: 'Ρυθμίσεις',
       logout: 'Αποσύνδεση',
       backToShops: 'Τα Καταστήματά μου',
       shopSection: 'Κατάστημα',
@@ -931,7 +936,6 @@ export const translations: Record<Language, Translations> = {
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
       shopSettings: 'Ρυθμίσεις',
-      shopWorkingHours: "'Ωρες",
       bookAppointment: 'Νέο Ραντεβού',
     },
     dashboard: {
@@ -1846,11 +1850,14 @@ home: {
       logout: 'Logout',
     },
     sidebar: {
-      app: 'App',
+      dashboard: 'Dashboard',
+      myInvites: 'My invites',
+      openMenu: 'Open menu',
+      mainNav: 'Main navigation',
+      resize: 'Resize sidebar',
       account: 'Account',
       overview: 'Overview',
       shops: 'Shops',
-      settings: 'Settings',
       logout: 'Logout',
       backToShops: 'My Shops',
       shopSection: 'Shop',
@@ -1861,7 +1868,6 @@ home: {
       invites: 'Invites',
       customers: 'Customers',
       shopSettings: 'Settings',
-      shopWorkingHours: "Hours",
       bookAppointment: 'New Booking',
     },
     dashboard: {

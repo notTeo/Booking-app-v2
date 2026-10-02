@@ -4,10 +4,12 @@ import { handleRowClick } from '../utils/a11y';
 import { isReferencedConflict } from '../utils/apiError';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getMembers, removeMember, type TeamMember } from '../api/team.api';
+import { getMembers, removeMember, sendLoginInvite, cancelLoginInvite, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
+import '../styles/pages/invites.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import AddMemberModal from '../components/AddMemberModal';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -20,6 +22,12 @@ export default function ShopTeamPage() {
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
+
+  const [showAdd, setShowAdd] = useState(false);
+  const [addFeedback, setAddFeedback] = useState('');
+  const [invitePendingId, setInvitePendingId] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState('');
+  const [confirmCancelInvite, setConfirmCancelInvite] = useState<string | null>(null);
 
   const isOwner = shop?.role === 'owner';
 
@@ -48,19 +56,71 @@ export default function ShopTeamPage() {
     }
   };
 
+  const handleResend = async (memberId: string) => {
+    if (!shop || invitePendingId === memberId) return;
+    setInvitePendingId(memberId);
+    setInviteError('');
+    try {
+      const updated = await sendLoginInvite(shop.id, memberId);
+      setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
+    } catch (err: unknown) {
+      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+      setInviteError(code === 'MEMBER_INACTIVE' ? t.team.errorInviteInactive : t.invites.errorResend);
+    } finally {
+      setInvitePendingId(null);
+    }
+  };
+
+  const handleCancelInvite = async (memberId: string) => {
+    if (!shop) return;
+    setInvitePendingId(memberId);
+    setInviteError('');
+    try {
+      const updated = await cancelLoginInvite(shop.id, memberId);
+      setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
+      setConfirmCancelInvite(null);
+    } catch {
+      setConfirmCancelInvite(null);
+      setInviteError(t.invites.errorCancel);
+    } finally {
+      setInvitePendingId(null);
+    }
+  };
+
   // Shared between the table row's actions cell and the mobile card's
   // actions row. The confirm dialog is rendered once, at the bottom.
-  const renderActions = (member: TeamMember) => (
-    <button
-      className="btn btn--secondary btn--sm team-remove-btn"
-      onClick={() => {
-        setConfirmRemove(member.id);
-        setRemoveError('');
-      }}
-    >
-      {t.team.remove}
-    </button>
-  );
+  const renderActions = (member: TeamMember) => {
+    const resending = invitePendingId === member.id && confirmCancelInvite !== member.id;
+    return (
+      <div className="invite-actions">
+        {!member.userId && (
+          <>
+            <button
+              className={`btn btn--secondary btn--sm${resending ? ' is-loading' : ''}`}
+              onClick={() => handleResend(member.id)}
+              aria-busy={resending}
+            >
+              {member.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
+            </button>
+            {member.hasPendingInvite && (
+              <button className="btn btn--secondary btn--sm" onClick={() => setConfirmCancelInvite(member.id)}>
+                {t.invites.cancelInvite}
+              </button>
+            )}
+          </>
+        )}
+        <button
+          className="btn btn--secondary btn--sm team-remove-btn"
+          onClick={() => {
+            setConfirmRemove(member.id);
+            setRemoveError('');
+          }}
+        >
+          {t.team.remove}
+        </button>
+      </div>
+    );
+  };
 
   if (shopLoading || loading) {
     return (
@@ -76,9 +136,16 @@ export default function ShopTeamPage() {
     <div className="team-page">
       <div className="team-header">
         <h1>{t.team.title}</h1>
+        {isOwner && (
+          <button type="button" className="btn" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
+            {t.invites.addMember}
+          </button>
+        )}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
+      {addFeedback && <Alert variant="success">{addFeedback}</Alert>}
+      {inviteError && <Alert variant="danger">{inviteError}</Alert>}
 
       <div className="table-wrap">
         <div className="table-surface">
@@ -100,9 +167,14 @@ export default function ShopTeamPage() {
                 {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
-                      <Link to={member.id} className="data-table__link">{member.email}</Link>
+                      <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
                       {!member.userId && (
-                        <span className="badge badge--warning">{t.team.noLoginYet}</span>
+                        <>
+                          <span className="badge badge--warning">{t.team.noLoginYet}</span>
+                          <span className="badge badge--neutral">
+                            {member.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
+                          </span>
+                        </>
                       )}
                     </td>
                     <td role="cell" data-label={t.team.role}>
@@ -134,6 +206,31 @@ export default function ShopTeamPage() {
         </div>
       </div>
       {removeError && <Alert variant="danger">{removeError}</Alert>}
+
+      {showAdd && shop && (
+        <AddMemberModal
+          shopId={shop.id}
+          onCreated={(member, emailSent) => {
+            setMembers((prev) => [member, ...prev]);
+            setAddFeedback(emailSent ? t.invites.sentOk : t.invites.createdNoEmail);
+            setShowAdd(false);
+          }}
+          onClose={() => setShowAdd(false)}
+        />
+      )}
+
+      {confirmCancelInvite && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.invites.cancelInviteTitle.replace('{name}', members.find((m) => m.id === confirmCancelInvite)?.name ?? '')}
+          message={t.invites.cancelInviteMessage}
+          confirmLabel={t.invites.cancelInviteConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={invitePendingId === confirmCancelInvite}
+          onConfirm={() => handleCancelInvite(confirmCancelInvite)}
+          onCancel={() => setConfirmCancelInvite(null)}
+        />
+      )}
 
       {confirmRemove && (
         <ConfirmDialog

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ShopContextProvider } from './context/ShopContext';
 import { ShopRouteProvider } from './context/ShopContext';
 import ShopGate from './components/ShopGate';
+import OwnerRoute from './components/OwnerRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -18,7 +19,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
-import SettingsPage from './pages/SettingsPage';
+import AccountPage from './pages/AccountPage';
 import ShopsPage from './pages/ShopsPage';
 import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
@@ -27,7 +28,6 @@ import ShopNewBookingPage from './pages/ShopNewBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
-import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
@@ -90,21 +90,22 @@ export default function App() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/shops" element={<ShopsPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/account" element={<AccountPage />} />
                     <Route path="/invites" element={<InvitesPage />} />
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route element={<ShopGate />}>
                         <Route index element={<ShopOverviewPage />} />
-                        <Route path="bookings/new" element={<ShopNewBookingPage />} />
                         <Route path="bookings" element={<ShopBookingsPage />} />
                         <Route path="services" element={<ShopServicesPage />} />
-                        <Route path="team" element={<ShopTeamPage />} />
-                        <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
-                        <Route path="customers" element={<ShopCustomersPage />} />
-                        <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
-                        <Route path="invites" element={<ShopInvitesPage />} />
-                        <Route path="settings" element={<ShopSettingsPage />} />
+                        <Route element={<OwnerRoute />}>
+                          <Route path="bookings/new" element={<ShopNewBookingPage />} />
+                          <Route path="team" element={<ShopTeamPage />} />
+                          <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
+                          <Route path="customers" element={<ShopCustomersPage />} />
+                          <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
+                          <Route path="settings" element={<ShopSettingsPage />} />
+                        </Route>
                       </Route>
                     </Route>
                   </Route>

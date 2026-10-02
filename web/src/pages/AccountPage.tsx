@@ -41,7 +41,7 @@ function formatSessionDate(iso: string, lang: string) {
   return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function SettingsPage() {
+export default function AccountPage() {
   const { user, setUser, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useLang();

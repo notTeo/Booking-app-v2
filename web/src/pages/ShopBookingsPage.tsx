@@ -1,8 +1,8 @@
 import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -314,6 +314,12 @@ export default function ShopBookingsPage() {
             <FontAwesomeIcon icon={faChevronRight} />
           </button>
         </div>
+        {isOwner && shop && (
+          <Link className="btn btn--sm" to={`/shops/${shop.slug}/bookings/new`}>
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+            {t.sidebar.bookAppointment}
+          </Link>
+        )}
       </div>
 
       {/* ── Filter bar ── */}
