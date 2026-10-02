@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
+import { fillIfEmpty, isExactPhoneMatch, shouldLookUpCustomer } from './customerAutofill';
 
 describe('fillIfEmpty', () => {
   it('fills an empty (or whitespace-only) field', () => {
@@ -32,5 +32,16 @@ describe('isExactPhoneMatch', () => {
     expect(isExactPhoneMatch('', '6911223344')).toBe(false);
     expect(isExactPhoneMatch('6911223344', '')).toBe(false);
     expect(isExactPhoneMatch('', '')).toBe(false);
+  });
+});
+
+describe('shouldLookUpCustomer', () => {
+  it('looks up once two characters are typed', () => {
+    expect(shouldLookUpCustomer(true, '6')).toBe(false);
+    expect(shouldLookUpCustomer(true, ' 6 ')).toBe(false);
+    expect(shouldLookUpCustomer(true, '69')).toBe(true);
+  });
+  it('never looks up for a member who may not see customer details', () => {
+    expect(shouldLookUpCustomer(false, '6900000000')).toBe(false);
   });
 });

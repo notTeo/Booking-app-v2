@@ -15,6 +15,7 @@ import {
 import {
   forgotPasswordValidation,
   loginValidation,
+  refreshCookieValidation,
   registerValidation,
   resendVerificationValidation,
   resetPasswordValidation,
@@ -32,8 +33,14 @@ const router = Router();
 
 router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
-router.post('/refresh', refreshLimiter, refresh);
-router.post('/logout', logout);
+router.post(
+  '/refresh',
+  refreshLimiter,
+  refreshCookieValidation,
+  validate,
+  refresh,
+);
+router.post('/logout', refreshCookieValidation, validate, logout);
 router.get(
   '/verify-email',
   verifyEmailTokenValidation,

@@ -127,6 +127,7 @@ export const registerUserWithInvite = async (
         family,
         userId: user.id,
         expiresAt: getRefreshTokenExpiry(),
+        createdAt: new Date(),
       },
     });
 
@@ -183,6 +184,7 @@ export const loginUser = async ({
       userId: user.id,
       expiresAt: getRefreshTokenExpiry(rememberMe),
       rememberMe,
+      createdAt: new Date(),
     },
   });
 
@@ -194,6 +196,38 @@ export const loginUser = async ({
     refreshToken,
     rememberMe,
   };
+};
+
+// A second refresh carrying a just-rotated token is two tabs (or a page load
+// plus an interceptor) racing, not theft. Inside this window it is a retryable
+// 401 that leaves the winner's session alone; outside it, reuse still revokes.
+export const REFRESH_RACE_WINDOW_MS = 10_000;
+
+// The presented token is not in the table: it was rotated or never existed.
+// Compares against createdAt, which every refreshToken.create sets from the
+// app clock, so the window is measured on one clock.
+const rejectRotatedToken = async (userId: string): Promise<never> => {
+  const successor = await prisma.refreshToken.findFirst({
+    where: {
+      userId,
+      createdAt: { gt: new Date(Date.now() - REFRESH_RACE_WINDOW_MS) },
+    },
+    select: { id: true },
+  });
+  if (successor)
+    throw new AppError(
+      401,
+      'This session was just refreshed by another request. Retry.',
+      'REFRESH_RACE',
+    );
+
+  // Valid JWT, no row, no recent successor: reuse attack detected.
+  // Invalidate every session for the user to protect the account.
+  logger.warn(
+    `Refresh token reuse detected for userId: ${userId}. Invalidating all sessions.`,
+  );
+  await prisma.refreshToken.deleteMany({ where: { userId } });
+  throw new AppError(401, 'Session invalidated. Please log in again.');
 };
 
 export const refreshAccessToken = async (token: string) => {
@@ -208,36 +242,33 @@ export const refreshAccessToken = async (token: string) => {
     where: { token },
   });
 
-  if (!stored) {
-    // Valid JWT but token not in DB — it was already rotated: reuse attack detected.
-    // Invalidate the entire token family to protect the account.
-    logger.warn(
-      `Refresh token reuse detected for userId: ${payload.userId}. Invalidating all sessions.`,
-    );
-    await prisma.refreshToken.deleteMany({
-      where: { userId: payload.userId },
-    });
-    throw new AppError(401, 'Session invalidated. Please log in again.');
-  }
+  if (!stored) return rejectRotatedToken(payload.userId);
 
   if (stored.expiresAt < new Date()) {
-    await prisma.refreshToken.delete({ where: { token } });
+    await prisma.refreshToken.deleteMany({ where: { token } });
     throw new AppError(401, 'Refresh token expired');
   }
 
-  await prisma.refreshToken.delete({ where: { token } });
-
   const newRefreshToken = signRefreshToken(payload.userId);
 
-  await prisma.refreshToken.create({
-    data: {
-      token: newRefreshToken,
-      family: stored.family,
-      userId: payload.userId,
-      expiresAt: getRefreshTokenExpiry(stored.rememberMe),
-      rememberMe: stored.rememberMe,
-    },
+  // Claim and replace in one transaction: only one concurrent request can
+  // delete the row, and a loser waits on its lock until the successor exists.
+  const rotated = await prisma.$transaction(async (tx) => {
+    const { count } = await tx.refreshToken.deleteMany({ where: { token } });
+    if (count !== 1) return false;
+    await tx.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        family: stored.family,
+        userId: payload.userId,
+        expiresAt: getRefreshTokenExpiry(stored.rememberMe),
+        rememberMe: stored.rememberMe,
+        createdAt: new Date(),
+      },
+    });
+    return true;
   });
+  if (!rotated) return rejectRotatedToken(payload.userId);
 
   const accessToken = signAccessToken(payload.userId);
 
@@ -438,6 +469,35 @@ export const deleteUser = async (userId: string, password?: string) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
   }
+
+  // A shop must keep an owner who can sign in. Deleting the account removes
+  // the user's memberships, so the only such owner of a shop has to delete the
+  // shop or hand it over first, instead of leaving it live with nobody able
+  // to manage it.
+  const owned = await prisma.userShop.findMany({
+    where: { userId, role: 'owner', active: true },
+    select: { shop: { select: { id: true, name: true, slug: true } } },
+  });
+  const stranded = [];
+  for (const { shop } of owned) {
+    const otherOwners = await prisma.userShop.count({
+      where: {
+        shopId: shop.id,
+        role: 'owner',
+        active: true,
+        AND: [{ userId: { not: null } }, { userId: { not: userId } }],
+      },
+    });
+    if (otherOwners === 0) stranded.push(shop);
+  }
+  if (stranded.length > 0)
+    throw new AppError(
+      409,
+      `You are the only owner of ${stranded.map((s) => s.name).join(', ')}. Delete the shop or make someone else an owner first.`,
+      'SOLE_OWNER_OF_SHOP',
+      undefined,
+      { shops: stranded },
+    );
 
   // Delete related records first to avoid FK constraint violations
   await prisma.refreshToken.deleteMany({ where: { userId } });

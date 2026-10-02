@@ -16,6 +16,8 @@ export interface Shop {
   createdAt: string;
   updatedAt: string;
   role: ShopRole;
+  /** Whether the signed-in member may see customer names, phones and emails here. */
+  canViewCustomerDetails: boolean;
 }
 
 export interface CreateShopDto {

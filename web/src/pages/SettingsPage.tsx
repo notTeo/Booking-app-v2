@@ -140,8 +140,14 @@ export default function SettingsPage() {
       await logout();
       navigate('/');
     } catch (err: unknown) {
-      const wrongPassword = apiErrorField(err, 'code') === 'INVALID_PASSWORD';
-      setDeleteError(wrongPassword ? t.settings.wrongPassword : apiErrorMessage(err, 'Failed to delete account.'));
+      const code = apiErrorField(err, 'code');
+      setDeleteError(
+        code === 'INVALID_PASSWORD'
+          ? t.settings.wrongPassword
+          : code === 'SOLE_OWNER_OF_SHOP'
+            ? t.settings.soleOwnerOfShop
+            : apiErrorMessage(err, 'Failed to delete account.'),
+      );
       setDeletePassword('');
       setDeleteLoading(false);
     }

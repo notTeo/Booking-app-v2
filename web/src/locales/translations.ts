@@ -337,6 +337,7 @@ export interface Translations {
   };
   settings: {
     wrongPassword: string;
+    soleOwnerOfShop: string;
     deleteAccountMessage: string;
     deleteAccountConfirmButton: string;
     deleteAccountTitle: string;
@@ -1240,6 +1241,7 @@ home: {
     },
     settings: {
       wrongPassword: 'Λάθος κωδικός.',
+      soleOwnerOfShop: 'Είστε ο μοναδικός ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή ορίστε πρώτα άλλον ιδιοκτήτη.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
       deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
@@ -2169,6 +2171,7 @@ home: {
     },
     settings: {
       wrongPassword: 'Incorrect password.',
+      soleOwnerOfShop: 'You are the only owner of a shop. Delete the shop or make someone else an owner first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
       deleteAccountConfirmButton: 'Delete account',
       deleteAccountTitle: 'Delete your account?',

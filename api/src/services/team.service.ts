@@ -65,6 +65,20 @@ async function requireMemberInShop(memberId: string, shopId: string) {
   return member;
 }
 
+// Owners who can actually manage the shop, other than `memberId`: the owner
+// role alone is not enough, they must be active and have a login. A shop must
+// always keep at least one.
+const countOtherManagingOwners = (shopId: string, memberId: string) =>
+  prisma.userShop.count({
+    where: {
+      shopId,
+      role: 'owner',
+      active: true,
+      userId: { not: null },
+      id: { not: memberId },
+    },
+  });
+
 export const getMembers = async (userId: string, shopId: string) => {
   await requireShopAccess(userId, shopId);
   const members = await prisma.userShop.findMany({
@@ -138,11 +152,8 @@ export const updateMemberRole = async (
   const member = await requireMemberInShop(memberId, shopId);
 
   // Prevent demoting the only owner
-  if (dto.role === 'staff' && member.userId === userId) {
-    const ownerCount = await prisma.userShop.count({
-      where: { shopId, role: 'owner' },
-    });
-    if (ownerCount <= 1)
+  if (dto.role === 'staff' && member.role === 'owner') {
+    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
       throw new AppError(400, 'Cannot demote the only owner');
   }
 
@@ -231,10 +242,7 @@ export const removeMember = async (
 
   // Prevent removing the last owner
   if (member.role === 'owner') {
-    const ownerCount = await prisma.userShop.count({
-      where: { shopId, role: 'owner' },
-    });
-    if (ownerCount <= 1)
+    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
       throw new AppError(400, 'Cannot remove the only owner');
   }
 
