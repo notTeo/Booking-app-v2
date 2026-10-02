@@ -1,4 +1,4 @@
-# Deploy runbook and rollback plan
+# Deployment and rollback
 
 Frontend on **Vercel**, API + PostgreSQL on **Railway**, email via **Resend**.
 Section 6 is the first deploy, section 8 is every deploy after it. Steps that depend on a dashboard's current UI say **(verify)**:
