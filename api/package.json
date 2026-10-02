@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "The Express + TypeScript backend for the auth boilerplate. Handles all authentication logic, token management, and email sending.",
+  "description": "BeBooked API: Express + TypeScript + Prisma backend for multi-tenant shop booking, auth and email.",
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
@@ -20,7 +20,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "type": "commonjs",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
