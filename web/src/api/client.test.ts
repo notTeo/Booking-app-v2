@@ -18,7 +18,11 @@ const ok = (accessToken: string) => ({ data: { data: { accessToken } } });
 const failure = (code?: string) =>
   Object.assign(new Error('Request failed'), { response: { status: 401, data: { code } } });
 
-beforeEach(() => post.mockReset());
+// Block body on purpose: `() => post.mockReset()` returns the mock, and vitest
+// would call a returned function as teardown, re-invoking post() after the test.
+beforeEach(() => {
+  post.mockReset();
+});
 
 describe('refreshTokens (single-flight refresh)', () => {
   it('shares one request between parallel callers', async () => {
