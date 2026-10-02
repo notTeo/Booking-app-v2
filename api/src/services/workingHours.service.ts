@@ -196,6 +196,13 @@ export const getSchedules = async (
 ) => {
   await requireShopAccess(userId, shopId);
 
+  // Same 404 as every other member route for a member who is not in this shop.
+  const staffMembership = await prisma.userShop.findFirst({
+    where: { id: staffId, shopId },
+  });
+  if (!staffMembership)
+    throw new AppError(404, 'Staff member not found in this shop');
+
   return prisma.shopWorkingSchedule.findMany({
     where: {
       shopId,

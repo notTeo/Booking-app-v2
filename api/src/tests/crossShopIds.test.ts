@@ -94,14 +94,6 @@ const send = (
   return fx.body ? req.send(fx.body(swapped)) : req;
 };
 
-// Known, harmless exception: the schedules list filters by shopId AND staffId,
-// so a member from another shop yields an empty list (never Shop B's rows)
-// instead of the 404 every other route gives. Remove once the service checks
-// the member with requireMemberInShop.
-const EMPTY_LIST_INSTEAD_OF_404: Record<string, string[]> = {
-  'GET /api/shops/:shopId/team/:memberId/schedules': ['member'],
-};
-
 // Routes that name a sub-resource in the path, plus the one whose body does.
 const targets = Object.entries(SHOP_SCOPED).filter(
   ([key]) =>
@@ -152,11 +144,6 @@ describe.each(targets)('%s', (routeKey, fx) => {
       for (const [who, token] of callers) {
         const label = `${who} of A, ${swap} from B`;
         const res = await send(method, fx, path, swapped, token);
-        if (EMPTY_LIST_INSTEAD_OF_404[routeKey]?.includes(swap)) {
-          expect(res.status, label).toBe(200);
-          expect(res.body.data, label).toEqual([]);
-          continue;
-        }
         expect(res.status, `${label}: ${JSON.stringify(res.body)}`).toBe(404);
         for (const id of bIds)
           expect(JSON.stringify(res.body), label).not.toContain(id);
