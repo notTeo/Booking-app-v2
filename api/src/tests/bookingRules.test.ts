@@ -141,7 +141,10 @@ describe('public path: strict rules, 422 with a code', () => {
       startTime: OK,
     });
     expect(res.status).toBe(201);
-    expect(res.body.data.staffId ?? res.body.data.staff?.id).toBe(t.staff.id);
+    const row = await prisma.booking.findUniqueOrThrow({
+      where: { id: res.body.data.id },
+    });
+    expect(row.staffId).toBe(t.staff.id);
   });
 
   it('no staff preference with nobody working is closed', async () => {
