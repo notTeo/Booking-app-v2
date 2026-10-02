@@ -70,10 +70,9 @@ export interface CreateBookingPayload {
 
 export interface BookingConfirmation {
   id: string;
-  date: string;
   status: string;
-  customer: { id: string; name: string; phone: string; email: string | null };
-  service: { id: string; name: string; duration: number; price: number };
+  startTime: string;
+  endTime: string;
 }
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>

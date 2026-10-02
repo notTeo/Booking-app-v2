@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getOwnerSlots } from '../api/booking.api';
 import { getShopInfo, getPublicSlots, type ShopInfo, type Service, type ShopMember, type SlotsResponse } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
@@ -42,6 +42,9 @@ export interface UseBookingWizardResult {
   time: string;
   setTime: (t: string) => void;
   slots: SlotsResponse;
+  /** The last slot fetch failed — distinct from a successful 'closed' response. */
+  slotsError: boolean;
+  retrySlots: () => void;
   selectedService: Service | null;
   eligibleMembers: ShopMember[];
   handleSelectService: (serviceId: string) => void;
@@ -73,6 +76,10 @@ export function useBookingWizard({
   const [date, setDate] = useState(initialDate ?? '');
   const [time, setTime] = useState('');
   const [slots, setSlots] = useState<SlotsResponse>(NO_SLOTS);
+  const [slotsError, setSlotsError] = useState(false);
+  // Latest-wins: a slow reply for an earlier date must not overwrite a newer one.
+  const slotsSeq = useRef(0);
+  const lastSlotsRequest = useRef<(() => void) | null>(null);
   const [intervalMinutes, setIntervalMinutes] = useState<number | null>(null);
 
   useEffect(() => {
@@ -104,9 +111,20 @@ export function useBookingWizard({
       internal && shopId
         ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined)
         : getPublicSlots(slug, targetDate, memberId, serviceId);
+    const seq = ++slotsSeq.current;
+    lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceId, interval);
+    setSlotsError(false);
     request
-      .then(setSlots)
-      .catch(() => setSlots({ status: 'closed' }));
+      .then((r) => {
+        if (seq === slotsSeq.current) setSlots(r);
+      })
+      .catch(() => {
+        if (seq === slotsSeq.current) setSlotsError(true);
+      });
+  }
+
+  function retrySlots() {
+    lastSlotsRequest.current?.();
   }
 
   function handleSelectService(serviceId: string) {
@@ -176,6 +194,8 @@ export function useBookingWizard({
     time,
     setTime,
     slots,
+    slotsError,
+    retrySlots,
     selectedService,
     eligibleMembers,
     handleSelectService,

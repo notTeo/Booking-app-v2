@@ -65,6 +65,20 @@ async function requireMemberInShop(memberId: string, shopId: string) {
   return member;
 }
 
+// Owners who can actually manage the shop, other than `memberId`: the owner
+// role alone is not enough, they must be active and have a login. A shop must
+// always keep at least one.
+const countOtherManagingOwners = (shopId: string, memberId: string) =>
+  prisma.userShop.count({
+    where: {
+      shopId,
+      role: 'owner',
+      active: true,
+      userId: { not: null },
+      id: { not: memberId },
+    },
+  });
+
 export const getMembers = async (userId: string, shopId: string) => {
   await requireShopAccess(userId, shopId);
   const members = await prisma.userShop.findMany({
@@ -138,11 +152,8 @@ export const updateMemberRole = async (
   const member = await requireMemberInShop(memberId, shopId);
 
   // Prevent demoting the only owner
-  if (dto.role === 'staff' && member.userId === userId) {
-    const ownerCount = await prisma.userShop.count({
-      where: { shopId, role: 'owner' },
-    });
-    if (ownerCount <= 1)
+  if (dto.role === 'staff' && member.role === 'owner') {
+    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
       throw new AppError(400, 'Cannot demote the only owner');
   }
 
@@ -181,16 +192,24 @@ export const updateMemberRole = async (
 
   // Deactivating a member turns off both bookable toggles too — they should
   // never be selectable anywhere while inactive, regardless of what was sent.
-  const bookableByCustomers = active
-    ? dto.bookableByCustomers !== undefined
-      ? dto.bookableByCustomers
-      : member.bookableByCustomers
-    : false;
-  const bookableInternally = active
-    ? dto.bookableInternally !== undefined
-      ? dto.bookableInternally
-      : member.bookableInternally
-    : false;
+  // Reactivating turns both back on, again regardless of what was sent: the
+  // member form submits every field on each save, so the stale `false` values
+  // it loaded for the inactive member would otherwise win.
+  const reactivating = active && !member.active;
+  const bookableByCustomers = !active
+    ? false
+    : reactivating
+      ? true
+      : dto.bookableByCustomers !== undefined
+        ? dto.bookableByCustomers
+        : member.bookableByCustomers;
+  const bookableInternally = !active
+    ? false
+    : reactivating
+      ? true
+      : dto.bookableInternally !== undefined
+        ? dto.bookableInternally
+        : member.bookableInternally;
 
   const updated = await prisma.userShop.update({
     where: { id: memberId },
@@ -223,10 +242,7 @@ export const removeMember = async (
 
   // Prevent removing the last owner
   if (member.role === 'owner') {
-    const ownerCount = await prisma.userShop.count({
-      where: { shopId, role: 'owner' },
-    });
-    if (ownerCount <= 1)
+    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
       throw new AppError(400, 'Cannot remove the only owner');
   }
 

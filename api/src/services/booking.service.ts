@@ -406,7 +406,9 @@ export const createBookingForShop = async (
 
   return serializableTransaction(async (tx) => {
     // Verify caller is an active member of the shop
-    await requireShopAccess(userId, shopId, { db: tx });
+    const callerCanViewCustomer = canViewCustomerDetails(
+      await requireShopAccess(userId, shopId, { db: tx }),
+    );
 
     const service = await tx.service.findFirst({
       where: { id: data.serviceId, shopId, isActive: true },
@@ -456,7 +458,7 @@ export const createBookingForShop = async (
       overrideRules: data.overrideRules,
     });
 
-    return claimSlotAndCreate(tx, {
+    const booking = await claimSlotAndCreate(tx, {
       shopId,
       serviceId: data.serviceId,
       staffId: staff.id,
@@ -464,13 +466,19 @@ export const createBookingForShop = async (
       endTime,
       customer: { name: data.name, phone: data.phone, email: data.email },
       // Owner/staff may correct a customer's details on the way (matches the
-      // wizard's autofill UI); the public path never may (see claimSlotAndCreate).
-      overwriteCustomer: true,
+      // wizard's autofill UI); the public path never may (see
+      // claimSlotAndCreate), and neither may a member who is not allowed to
+      // see or edit customer details: their booking attaches to the existing
+      // customer unchanged.
+      overwriteCustomer: callerCanViewCustomer,
       notes: data.notes,
       cancelToken,
       overriddenRules,
       createdById: userId,
     });
+    // The full row, for the confirmation email. The controller redacts the
+    // customer in the response using callerCanViewCustomer.
+    return { ...booking, callerCanViewCustomer };
   });
 };
 
@@ -1004,9 +1012,33 @@ export const cancelBookingByToken = async (token: string) => {
     include: { customer: true, service: true, shop: true },
   });
 
-  if (!booking) throw new AppError(404, 'Booking not found');
+  if (!booking)
+    throw new AppError(404, 'Booking not found', 'BOOKING_NOT_FOUND');
   if (booking.status === BookingStatus.CANCELED)
-    throw new AppError(409, 'Booking is already cancelled');
+    throw new AppError(
+      409,
+      'Booking is already cancelled',
+      'BOOKING_ALREADY_CANCELED',
+    );
+  if (booking.status === BookingStatus.COMPLETED)
+    throw new AppError(
+      409,
+      'Booking is already completed',
+      'BOOKING_COMPLETED',
+    );
+  if (booking.status === BookingStatus.NO_SHOW)
+    throw new AppError(
+      409,
+      'Booking was marked as a no-show',
+      'BOOKING_NO_SHOW',
+    );
+  // No grace window: once the booking has started it can't be cancelled here.
+  if (booking.startTime.getTime() <= Date.now())
+    throw new AppError(
+      409,
+      'Booking has already started or passed',
+      'BOOKING_IN_PAST',
+    );
 
   return prisma.booking.update({
     where: { id: booking.id },

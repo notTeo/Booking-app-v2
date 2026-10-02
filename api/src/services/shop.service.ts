@@ -1,7 +1,7 @@
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
-import { requireShopAccess } from '../utils/shopAccess';
+import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 
 export interface CreateShopDto {
   name: string;
@@ -61,6 +61,13 @@ const pick = <T extends object, K extends keyof T>(
   return out;
 };
 
+// What a shop response says about the caller's own membership: their role,
+// and whether they may see customer contact details (owners always may).
+const memberView = (m: { role: string; canViewCustomerDetails: boolean }) => ({
+  role: m.role,
+  canViewCustomerDetails: canViewCustomerDetails(m),
+});
+
 export const createShop = async (userId: string, dto: CreateShopDto) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -84,7 +91,7 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
   });
 
   logger.info(`Shop created: ${shop.id} by user ${userId}`);
-  return { ...shop, role: shop.members[0].role };
+  return { ...shop, ...memberView(shop.members[0]) };
 };
 
 export const getMyShops = async (userId: string) => {
@@ -93,14 +100,14 @@ export const getMyShops = async (userId: string) => {
     include: { shop: true },
   });
 
-  return memberships.map(({ shop, role }) => ({ ...shop, role }));
+  return memberships.map(({ shop, ...m }) => ({ ...shop, ...memberView(m) }));
 };
 
 export const getShopById = async (userId: string, shopId: string) => {
   const membership = await requireShopAccess(userId, shopId);
   const shop = await prisma.shop.findUniqueOrThrow({ where: { id: shopId } });
 
-  return { ...shop, role: membership.role };
+  return { ...shop, ...memberView(membership) };
 };
 
 export const updateShop = async (
@@ -119,7 +126,7 @@ export const updateShop = async (
   });
 
   logger.info(`Shop updated: ${shop.id} by user ${userId}`);
-  return { ...shop, role: membership.role };
+  return { ...shop, ...memberView(membership) };
 };
 
 export const deleteShop = async (userId: string, shopId: string) => {

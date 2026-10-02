@@ -161,6 +161,8 @@ export default function OwnerBookingWizard({
           date={wizard.date}
           time={wizard.time}
           slots={wizard.slots}
+          slotsError={wizard.slotsError}
+          onRetrySlots={wizard.retrySlots}
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           timeHint={timeHint}

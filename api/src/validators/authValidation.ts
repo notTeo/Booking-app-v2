@@ -1,4 +1,4 @@
-import { body, query } from 'express-validator';
+import { body, cookie, query } from 'express-validator';
 
 export const registerValidation = [
   body('email')
@@ -77,4 +77,14 @@ export const resetPasswordValidation = [
     .withMessage('Password must contain at least one number')
     .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
+];
+
+// A missing or empty cookie is left to the controller (401 on refresh, a no-op
+// on logout); a cookie that is present but is not even shaped like a JWT is a
+// malformed request.
+export const refreshCookieValidation = [
+  cookie('refreshToken')
+    .optional({ values: 'falsy' })
+    .isJWT()
+    .withMessage('Malformed refresh token'),
 ];

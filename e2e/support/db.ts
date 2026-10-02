@@ -25,3 +25,12 @@ export async function latestBookingStart(): Promise<string> {
 export async function bookingCount(): Promise<number> {
   return Number((await query('select count(*)::int as n from "Booking"'))[0].n);
 }
+
+/** The customer's cancel token for a booking (never returned by the public API). */
+export async function cancelTokenOf(bookingId: string): Promise<string> {
+  const rows = await query<{ cancelToken: string }>(
+    'select "cancelToken" from "Booking" where id = $1',
+    [bookingId],
+  );
+  return rows[0].cancelToken;
+}

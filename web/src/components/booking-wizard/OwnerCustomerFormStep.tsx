@@ -1,9 +1,10 @@
-import { fillIfEmpty, isExactPhoneMatch } from './customerAutofill';
+import { fillIfEmpty, isExactPhoneMatch, shouldLookUpCustomer } from './customerAutofill';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
 
 export interface OwnerCustomerFormValues {
@@ -44,6 +45,9 @@ export default function OwnerCustomerFormStep({
   notice?: string | null;
 }) {
   const { t } = useLang();
+  const { shop } = useShop();
+  // Until the shop has loaded, behave as before; the API enforces the rule anyway.
+  const canViewCustomerDetails = shop?.canViewCustomerDetails !== false;
 
   // A time that is only off the shop's slot grid is a "custom time", not an
   // out-of-hours one, so the panel and button say that instead.
@@ -56,6 +60,9 @@ export default function OwnerCustomerFormStep({
 
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  // True only once a look-up for the phone now shown has completed and found
+  // nobody — not while typing, in flight, failed, or after an exact match.
+  const [searchedNoMatch, setSearchedNoMatch] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // The latest phone text, so a slow look-up that returns after the user kept
@@ -70,9 +77,10 @@ export default function OwnerCustomerFormStep({
     // cleared just because the phone changed.
     setShowDropdown(false);
     setCustomerResults([]);
+    setSearchedNoMatch(false);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (val.trim().length < 2) return;
+    if (!shouldLookUpCustomer(canViewCustomerDetails, val)) return;
 
     debounceRef.current = setTimeout(() => {
       getCustomers(shopId, val.trim())
@@ -87,6 +95,7 @@ export default function OwnerCustomerFormStep({
           }
           setCustomerResults(result.items);
           setShowDropdown(result.items.length > 0);
+          setSearchedNoMatch(result.items.length === 0);
         })
         .catch(() => {});
     }, 300);
@@ -149,7 +158,7 @@ export default function OwnerCustomerFormStep({
               ))}
             </ul>
           )}
-          {phone.trim().length >= 2 && customerResults.length === 0 && (
+          {searchedNoMatch && (
             <p className="field__hint">{t.bookings.newCustomerHint}</p>
           )}
         </div>

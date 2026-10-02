@@ -61,19 +61,22 @@ export default function ShopCustomersPage() {
         <h1>{t.customers.title}</h1>
       </div>
 
-      <div style={{ marginBottom: '1.25rem' }}>
-        <label htmlFor="customer-search" className="visually-hidden">
-          {t.customers.searchPlaceholder}
-        </label>
-        <input className="input"
-          id="customer-search"
-          type="text"
-          placeholder={t.customers.searchPlaceholder}
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          style={{ maxWidth: 320 }}
-        />
-      </div>
+      {/* Search matches names and phones, so it is only offered to members who may see them. */}
+      {shop?.canViewCustomerDetails !== false && (
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label htmlFor="customer-search" className="visually-hidden">
+            {t.customers.searchPlaceholder}
+          </label>
+          <input className="input"
+            id="customer-search"
+            type="text"
+            placeholder={t.customers.searchPlaceholder}
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            style={{ maxWidth: 320 }}
+          />
+        </div>
+      )}
 
       {error && <Alert variant="danger">{error}</Alert>}
 

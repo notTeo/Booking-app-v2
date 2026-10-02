@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { handleRowClick } from '../utils/a11y';
+import { isReferencedConflict } from '../utils/apiError';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, type TeamMember } from '../api/team.api';
@@ -39,9 +40,9 @@ export default function ShopTeamPage() {
       await removeMember(shop.id, memberId);
       setMembers((prev) => prev.filter((m) => m.id !== memberId));
       setConfirmRemove(null);
-    } catch {
+    } catch (err) {
       setConfirmRemove(null);
-      setRemoveError(t.team.errorRemove);
+      setRemoveError(isReferencedConflict(err) ? t.team.errorRemoveHasBookings : t.team.errorRemove);
     } finally {
       setRemoving(false);
     }

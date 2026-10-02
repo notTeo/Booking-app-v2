@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { randomUUID } from 'crypto';
 import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
@@ -179,13 +180,12 @@ describe('existing bookings on an inactive service stay manageable', () => {
   it("the customer's cancel link still works", async () => {
     const t = await shopWithInactiveService();
     const booking = await createBookingRow(t, START);
+    const cancelToken = randomUUID();
     await prisma.booking.update({
       where: { id: booking.id },
-      data: { cancelToken: 'tok-inactive-1' },
+      data: { cancelToken },
     });
-    const res = await api
-      .post('/public/cancel')
-      .send({ token: 'tok-inactive-1' });
+    const res = await api.post('/public/cancel').send({ token: cancelToken });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(
       (await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } }))

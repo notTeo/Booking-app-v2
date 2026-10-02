@@ -1,29 +1,106 @@
 name: CI
 
+# Two depths from one workflow:
+#   fast  push to a feat/** or fix/** branch: static checks, web, API tests in UTC
+#   full  pull request into dev/main, or a push to dev/main: fast plus the other
+#         two timezones, the schema check and the browser end-to-end suite
+# `ci-ok` is the single check branch protection requires.
 on:
   push:
+    branches: [dev, main, 'feat/**', 'fix/**']
   pull_request:
     branches: [dev, main]
 
-# A newer push to the same branch makes the older run pointless.
+# A newer push to a feature branch or pull request makes the older run
+# pointless. Runs on dev and main are never cancelled: every commit there gets
+# a verdict, and a deploy may be waiting on it.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') }}
 
-permissions:
-  contents: read
+# Nothing by default; each job asks for what it needs.
+permissions: {}
 
 jobs:
-  api:
-    name: API (TZ=${{ matrix.tz }})
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    outputs:
+      full: ${{ steps.plan.outputs.full }}
+      timezones: ${{ steps.plan.outputs.timezones }}
+    steps:
+      - id: plan
+        env:
+          FULL: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' }}
+        run: |
+          echo "full=$FULL" >> "$GITHUB_OUTPUT"
+          if [ "$FULL" = "true" ]; then
+            echo 'timezones=["UTC","Europe/Athens","America/New_York"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'timezones=["UTC"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      # Lists the pull request's commits to know what to scan.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Findings fail the job and show in its summary; no PR comments or
+          # uploaded reports, so the job needs no write permission.
+          GITLEAKS_ENABLE_COMMENTS: 'false'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+
+  api-static:
+    name: API (lint, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Lint
+        run: npm run lint
+      # `npm run build` is `tsc`, so it is also the typecheck, and it is what
+      # the Docker image runs.
+      - name: Build
+        run: npm run build
+
+  api-tests:
+    name: API tests (TZ=${{ matrix.tz }})
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       # The suite must pass under a UTC, an east-of-UTC and a west-of-UTC
-      # machine: server-local-time bugs used to hide here.
+      # machine: server-local-time bugs used to hide here. A fast run checks
+      # UTC only, which is what production runs in.
       matrix:
-        tz: [UTC, Europe/Athens, America/New_York]
+        tz: ${{ fromJSON(needs.plan.outputs.timezones) }}
     services:
       postgres:
         image: postgres:16
@@ -45,30 +122,65 @@ jobs:
       run:
         working-directory: api
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: api/package-lock.json
       - run: npm ci
       - run: npx prisma generate
+      - name: Tests
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          # Slashes are not allowed in artifact names (Europe/Athens).
+          name: api-test-report-${{ strategy.job-index }}
+          path: api/test-results
+          retention-days: 7
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      # The app refuses to start without it; nothing here talks to it.
+      VITE_API_URL: http://localhost:3000
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: npx tsc -b
       - name: Lint
         run: npm run lint
-      - name: Build (what the Docker image runs)
-        run: npm run build
       - name: Tests
         run: npm test
+      - name: Build
+        run: npm run build
 
   schema:
     # Migrations and prisma/schema.prisma must agree, and the hand-written
-    # Booking_no_overlap exclusion constraint (which Prisma cannot model) must
-    # survive: `migrate diff` proposing to drop it would show up here.
+    # exclusion constraints (which Prisma cannot model) must survive:
+    # `migrate diff` proposing to drop one would show up here.
     name: Schema matches migrations
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16
@@ -88,8 +200,8 @@ jobs:
       run:
         working-directory: api
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
           cache: npm
@@ -99,37 +211,16 @@ jobs:
         run: npx prisma migrate deploy
       - name: No difference between the migrated database and schema.prisma
         run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
-      - name: The overlap guard exists
+      - name: The overlap guards exist
         run: |
           sudo apt-get install -y --no-install-recommends postgresql-client >/dev/null
-          test "$(psql "$DATABASE_URL" -tAc "select count(*) from pg_constraint where conname = 'Booking_no_overlap'")" = "1"
-
-  web:
-    name: Web
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      # The app refuses to start without it; nothing here talks to it.
-      VITE_API_URL: http://localhost:3000
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
-      - name: Typecheck
-        run: npx tsc -b
-      - name: Lint
-        run: npm run lint
-      - name: Tests
-        run: npm test
-      - name: Build
-        run: npm run build
+          for constraint in Booking_no_overlap ShopWorkingSchedule_no_overlap; do
+            found="$(psql "$DATABASE_URL" -tAc "select count(*) from pg_constraint where conname = '$constraint'")"
+            if [ "$found" != "1" ]; then
+              echo "::error::exclusion constraint $constraint is missing"
+              exit 1
+            fi
+          done
 
   e2e:
     # Real browser, real API, real Postgres: the booking flows end to end.
@@ -137,8 +228,12 @@ jobs:
     # e2e/playwright.config.ts); prepare-db.mjs drops/recreates booking_e2e,
     # applies the real migrations and seeds one shop + owner.
     name: E2E (Playwright)
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16
@@ -160,8 +255,8 @@ jobs:
       # Playwright's own Chromium instead of the locally installed Chrome.
       E2E_BROWSER_CHANNEL: chromium
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
           cache: npm
@@ -185,8 +280,28 @@ jobs:
         working-directory: e2e
       - name: Upload traces on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-traces
           path: e2e/test-results
           retention-days: 7
+
+  ci-ok:
+    # The one required status check. Passes when nothing it depends on failed
+    # or was cancelled; a job skipped on a fast run counts as fine.
+    name: ci-ok
+    needs: [plan, secrets, api-static, api-tests, web, schema, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - env:
+          RESULTS: ${{ toJSON(needs) }}
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "$RESULTS"
+          if [ "$FAILED" = "true" ]; then
+            echo "::error::a required job failed or was cancelled"
+            exit 1
+          fi

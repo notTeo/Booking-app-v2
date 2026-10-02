@@ -23,6 +23,11 @@ export const listCustomers = async (
 ) => {
   const membership = await requireShopAccess(userId, shopId);
 
+  // Search matches on name and phone. For a member who may not see those,
+  // a hit would confirm the term character by character, so it finds nothing.
+  if (search && !canViewCustomerDetails(membership))
+    return { items: [], total: 0, page, limit };
+
   const where = {
     shopId,
     ...(search && {
@@ -118,7 +123,7 @@ export const updateCustomer = async (
     );
   }
 
-  return prisma.customer.update({
+  const updated = await prisma.customer.update({
     where: { id: customerId },
     data: {
       ...(data.name !== undefined && { name: data.name }),
@@ -127,6 +132,7 @@ export const updateCustomer = async (
       ...(data.notes !== undefined && { notes: data.notes }),
     },
   });
+  return redactCustomer(updated, canViewCustomerDetails(membership));
 };
 
 // GDPR access/erasure requests are handled by the shop (the data controller),

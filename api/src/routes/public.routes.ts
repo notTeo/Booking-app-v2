@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { validate } from '../middleware/validate';
+import { validate, validateAs } from '../middleware/validate';
 import {
   getShopInfoValidation,
   cancelBookingValidation,
@@ -25,7 +25,7 @@ router.post(
   '/cancel',
   publicWriteLimiter,
   cancelBookingValidation,
-  validate,
+  validateAs('INVALID_CANCEL_LINK'),
   cancelBooking,
 );
 router.get(

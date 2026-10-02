@@ -337,6 +337,7 @@ export interface Translations {
   };
   settings: {
     wrongPassword: string;
+    soleOwnerOfShop: string;
     deleteAccountMessage: string;
     deleteAccountConfirmButton: string;
     deleteAccountTitle: string;
@@ -417,6 +418,7 @@ export interface Translations {
     notFound: string;
     errorLoad: string;
     errorRemove: string;
+    errorRemoveHasBookings: string;
     backToTeam: string;
     editRole: string;
     saveRole: string;
@@ -705,9 +707,17 @@ export interface Translations {
     closedOrNoSchedule: string;
     manageWorkingHours: string;
     failedSlots: string;
+    retry: string;
     serviceContext: string;
     staffContext: string;
     atLabel: string;
+  };
+  shopGate: {
+    notFoundTitle: string;
+    notFoundText: string;
+    backToShops: string;
+    errorLoad: string;
+    retry: string;
   };
   overview: {
     greeting: string;
@@ -812,6 +822,8 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    statusConflict: string;
+    statusError: string;
     title: string;
     viewDateLabel: string;
     errorLoad: string;
@@ -879,6 +891,9 @@ export interface Translations {
     invalidLink: string;
     cancelling: string;
     alreadyCancelled: string;
+    alreadyCompleted: string;
+    markedNoShow: string;
+    pastBooking: string;
     notFound: string;
     errorCancel: string;
     cancelled: string;
@@ -1004,22 +1019,22 @@ home: {
     faqHeading: 'Συχνές Ερωτήσεις',
     faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
     faqContact: 'Επικοινώνησε μαζί μας',
-    faq1Q: 'Πώς λειτουργεί η δωρεάν δοκιμή;',
-    faq1A: 'Δημιούργησε τον λογαριασμό σου και χρησιμοποίησε κάθε δυνατότητα δωρεάν για 14 ημέρες — χωρίς πιστωτική κάρτα. Μπορείς να καλέσεις την ομάδα σου και να ξεκινήσεις να δέχεσαι πραγματικά ραντεβού αμέσως.',
+    faq1Q: 'Είναι πραγματικά δωρεάν;',
+    faq1A: 'Ναι. Όσο βρισκόμαστε σε beta, κάθε δυνατότητα είναι δωρεάν — χωρίς πιστωτική κάρτα. Μπορείς να καλέσεις την ομάδα σου και να ξεκινήσεις να δέχεσαι πραγματικά ραντεβού αμέσως.',
     faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
     faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
-    faq3Q: 'Πώς ακυρώνω τη συνδρομή μου;',
-    faq3A: 'Ακύρωσε ανά πάσα στιγμή από τις ρυθμίσεις του λογαριασμού σου. Θα διατηρήσεις πρόσβαση μέχρι το τέλος της τρέχουσας περιόδου χρέωσης και τα δεδομένα σου παραμένουν εξαγώγιμα.',
-    faq4Q: 'Τι συμβαίνει μετά το όριο του δωρεάν πλάνου;',
-    faq4A: 'Θα ενημερωθείς πριν φτάσεις στο όριο. Αναβάθμισε για να συνεχίσεις να δέχεσαι κρατήσεις χωρίς διακοπή, ή μείνε στο δωρεάν πλάνο και συνέχισε τον επόμενο μήνα.',
+    faq3Q: 'Πώς διαγράφω τον λογαριασμό μου;',
+    faq3A: 'Πήγαινε στις Ρυθμίσεις και επίλεξε Διαγραφή Λογαριασμού. Θα χρειαστεί να επιβεβαιώσεις με τον κωδικό σου. Η διαγραφή είναι οριστική και δεν μπορεί να αναιρεθεί.',
+    faq4Q: 'Μπορώ να προσθέσω την ομάδα μου;',
+    faq4A: 'Ναι. Καλείς μέλη με email από τη σελίδα Ομάδα του καταστήματός σου και κάθε μέλος έχει δικό του λογαριασμό.',
     featureAlertsIncoming: 'Η Σάρα Μ. ζήτησε ραντεβού για Κούρεμα, σήμερα στις 3:00 μμ.',
     featureAlertsIncomingSubject: 'Νέα αίτηση κράτησης',
     featureAlertsConfirmed: 'Το ραντεβού της Σάρα Μ. επιβεβαιώθηκε για τις 3:00 μμ 👋',
     featureAlertsConfirmedSubject: 'Το ραντεβού επιβεβαιώθηκε',
     featureAlertsTimeNow: 'μόλις τώρα',
     featureAlertsTimeAgo: 'πριν 1 λεπτό',
-    featureAlertsTitle: 'Ειδοποιήσεις κρατήσεων σε πραγματικό χρόνο',
-    featureAlertsDesc: 'Ενημερώσου τη στιγμή που ένας πελάτης κλείνει, αλλάζει ή ακυρώνει ραντεβού — χωρίς να χρειάζεται ανανέωση σελίδας.',
+    featureAlertsTitle: 'Email για κάθε νέα κράτηση',
+    featureAlertsDesc: 'Λάβε email όταν ένας πελάτης κλείνει ραντεβού.',
     featureChip1: 'Κούρεμα',
     featureChip2: 'Βαφή',
     featureChip3: 'Φορμάρισμα Γενειάδας',
@@ -1226,6 +1241,7 @@ home: {
     },
     settings: {
       wrongPassword: 'Λάθος κωδικός.',
+      soleOwnerOfShop: 'Είστε ο μοναδικός ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή ορίστε πρώτα άλλον ιδιοκτήτη.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
       deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
@@ -1306,6 +1322,7 @@ home: {
       notFound: 'Το μέλος δεν βρέθηκε.',
       errorLoad: 'Αποτυχία φόρτωσης μελών.',
       errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
+      errorRemoveHasBookings: 'Αυτό το μέλος έχει κρατήσεις. Απενεργοποιήστε το αντί να το αφαιρέσετε.',
       backToTeam: '← Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
@@ -1592,6 +1609,7 @@ home: {
       closedOrNoSchedule: 'Κλειστό ή δεν υπάρχει πρόγραμμα για αυτή την ημέρα.',
       manageWorkingHours: 'Μετάβαση στο ωράριο εργασίας για διόρθωση',
       failedSlots: 'Αποτυχία φόρτωσης διαθέσιμων ωρών',
+      retry: 'Δοκιμάστε ξανά',
       serviceContext: 'Υπηρεσία:',
       staffContext: 'Προσωπικό:',
       atLabel: 'στις',
@@ -1604,6 +1622,13 @@ home: {
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Το κατάστημα δεν είναι διαθέσιμο',
+      notFoundText: 'Αυτό το κατάστημα δεν υπάρχει ή δεν έχετε πλέον πρόσβαση σε αυτό.',
+      backToShops: 'Πίσω στα καταστήματά μου',
+      errorLoad: 'Δεν ήταν δυνατή η φόρτωση του καταστήματος. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.',
+      retry: 'Δοκιμάστε ξανά',
     },
     overview: {
       greeting: 'Γεια σου, {name}!',
@@ -1716,6 +1741,8 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      statusConflict: 'Αυτή η ώρα δεν είναι πλέον διαθέσιμη, οπότε η κατάσταση της κράτησης δεν μπορεί να αλλάξει.',
+      statusError: 'Δεν ήταν δυνατή η ενημέρωση της κατάστασης της κράτησης. Δοκιμάστε ξανά.',
       title: 'Ραντεβού',
       viewDateLabel: 'Προβολή ημερομηνίας',
       errorLoad: 'Αποτυχία φόρτωσης ραντεβού.',
@@ -1795,6 +1822,9 @@ home: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
       cancelling: 'Ακύρωση ραντεβού...',
       alreadyCancelled: 'Αυτό το ραντεβού έχει ήδη ακυρωθεί.',
+      alreadyCompleted: 'Αυτό το ραντεβού έχει ήδη ολοκληρωθεί και δεν μπορεί να ακυρωθεί.',
+      markedNoShow: 'Αυτό το ραντεβού έχει καταχωρηθεί ως απουσία και δεν μπορεί να ακυρωθεί.',
+      pastBooking: 'Αυτό το ραντεβού έχει ήδη ξεκινήσει ή περάσει και δεν μπορεί να ακυρωθεί. Επικοινωνήστε με το κατάστημα.',
       notFound: 'Το ραντεβού δεν βρέθηκε. Ο σύνδεσμος μπορεί να είναι άκυρος ή ληγμένος.',
       errorCancel: 'Αδυναμία ακύρωσης ραντεβού. Δοκιμάστε ξανά ή επικοινωνήστε με το κατάστημα.',
       cancelled: 'Ραντεβού Ακυρώθηκε',
@@ -1919,22 +1949,22 @@ home: {
     faqHeading: 'Frequently Asked Questions',
     faqSub: 'Find answers to frequently asked questions.',
     faqContact: 'Contact us',
-    faq1Q: 'How does the free trial work?',
-    faq1A: 'Create your account and use every feature free for 14 days — no credit card required. You can invite your team and start taking real bookings right away.',
+    faq1Q: 'Is BeBooked really free?',
+    faq1A: 'Yes. While we are in beta, every feature is free — no credit card required. You can invite your team and start taking real bookings right away.',
     faq2Q: 'Can my clients book without creating an account?',
     faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
-    faq3Q: 'How do I cancel my subscription?',
-    faq3A: "Cancel any time from your account settings. You'll keep access through the end of your current billing period, and your data stays exportable.",
-    faq4Q: 'What happens after the free plan limit?',
-    faq4A: "You'll get a heads-up before you hit the limit. Upgrade to keep accepting bookings without interruption, or stay on the free plan and pick up next month.",
+    faq3Q: 'How do I delete my account?',
+    faq3A: 'Go to Settings and choose Delete Account. You will confirm with your password. Deleting is permanent and cannot be undone.',
+    faq4Q: 'Can I add my team?',
+    faq4A: 'Yes. Invite members by email from your shop\'s Team page, and each member gets their own account.',
     featureAlertsIncoming: 'Sarah M. requested a Haircut, today at 3:00 PM.',
     featureAlertsIncomingSubject: 'New booking request',
     featureAlertsConfirmed: "Sarah M.'s booking is confirmed for 3:00 PM 👋",
     featureAlertsConfirmedSubject: 'Booking confirmed',
     featureAlertsTimeNow: 'just now',
     featureAlertsTimeAgo: '1 min ago',
-    featureAlertsTitle: 'Real-time booking alerts',
-    featureAlertsDesc: 'Get notified the moment a client books, reschedules, or cancels — no refreshing required.',
+    featureAlertsTitle: 'Email for every new booking',
+    featureAlertsDesc: 'Get an email when a client books an appointment.',
     featureChip1: 'Haircut',
     featureChip2: 'Color',
     featureChip3: 'Beard Trim',
@@ -2141,6 +2171,7 @@ home: {
     },
     settings: {
       wrongPassword: 'Incorrect password.',
+      soleOwnerOfShop: 'You are the only owner of a shop. Delete the shop or make someone else an owner first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
       deleteAccountConfirmButton: 'Delete account',
       deleteAccountTitle: 'Delete your account?',
@@ -2221,6 +2252,7 @@ home: {
       notFound: 'Member not found.',
       errorLoad: 'Failed to load team members.',
       errorRemove: 'Failed to remove member.',
+      errorRemoveHasBookings: 'This member has bookings. Deactivate them instead.',
       backToTeam: '← Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',
@@ -2507,6 +2539,7 @@ home: {
       closedOrNoSchedule: 'Closed, or there is no schedule for this day.',
       manageWorkingHours: 'Go to working hours to fix this',
       failedSlots: 'Failed to load available slots',
+      retry: 'Retry',
       serviceContext: 'Service:',
       staffContext: 'Staff:',
       atLabel: 'at',
@@ -2519,6 +2552,13 @@ home: {
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Shop not available',
+      notFoundText: "This shop doesn't exist, or you no longer have access to it.",
+      backToShops: 'Back to my shops',
+      errorLoad: 'Could not load this shop. Check your connection and try again.',
+      retry: 'Retry',
     },
     overview: {
       greeting: 'Hello, {name}!',
@@ -2631,6 +2671,8 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      statusConflict: "That time is no longer free, so the booking status can't be changed.",
+      statusError: "Couldn't update the booking status. Please try again.",
       title: 'Bookings',
       viewDateLabel: 'View date',
       errorLoad: 'Failed to load bookings.',
@@ -2710,6 +2752,9 @@ home: {
       invalidLink: 'Invalid cancellation link.',
       cancelling: 'Cancelling your booking...',
       alreadyCancelled: 'This booking has already been cancelled.',
+      alreadyCompleted: 'This booking has already been completed and can no longer be cancelled.',
+      markedNoShow: 'This booking was marked as a no-show and can no longer be cancelled.',
+      pastBooking: 'This booking has already started or passed and can no longer be cancelled. Please contact the shop.',
       notFound: 'Booking not found. The link may be invalid or expired.',
       errorCancel: 'Could not cancel booking. Please try again or contact the shop.',
       cancelled: 'Booking Cancelled',
