@@ -63,7 +63,7 @@ test('a deactivated member sees the gate state on the overview and settings page
   await login(page);
   await query(`update "UserShop" set active = false where id = 'us1'`);
   try {
-    for (const path of ['', '/settings', '/invites']) {
+    for (const path of ['', '/settings']) {
       await page.goto(`/shops/${E2E.shop.slug}${path}`);
       await expect(notAvailable(page), path || 'overview').toBeVisible();
       await expect(page.locator('.spinner'), path || 'overview').toHaveCount(0);

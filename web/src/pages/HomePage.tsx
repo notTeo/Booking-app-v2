@@ -659,7 +659,7 @@ export default function HomePage() {
                     </table>
                   </div>
                 ) : previewPage === 'invites' ? (
-                  // Mirrors ShopInvitesPage.tsx: an "add member" form card above a
+                  // Mirrors the former ShopInvitesPage (now merged into Team): an "add member" form card above a
                   // pending-invites table with role + status pills.
                   <div className="home-preview-invites">
                     <div className="home-preview-invite-form-card">

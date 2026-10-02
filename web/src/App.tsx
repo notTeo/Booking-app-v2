@@ -28,7 +28,6 @@ import ShopNewBookingPage from './pages/ShopNewBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
-import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
@@ -105,7 +104,6 @@ export default function App() {
                           <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
                           <Route path="customers" element={<ShopCustomersPage />} />
                           <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
-                          <Route path="invites" element={<ShopInvitesPage />} />
                           <Route path="settings" element={<ShopSettingsPage />} />
                         </Route>
                       </Route>

@@ -58,7 +58,7 @@ test('staff see the trimmed menu and are redirected away from owner pages', asyn
     for (const name of ['Team', 'Customers', 'Settings']) {
       await expect(item(page, name), name).toHaveCount(0);
     }
-    for (const path of ['team', 'customers', 'settings', 'bookings/new', 'invites']) {
+    for (const path of ['team', 'customers', 'settings', 'bookings/new']) {
       await page.goto(`${SHOP}/${path}`);
       await expect(page, path).toHaveURL(new RegExp(`${SHOP}$`));
     }
