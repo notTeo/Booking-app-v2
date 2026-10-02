@@ -84,8 +84,11 @@ const publicBook = (t: Tenant, hhmm: string, extra: object = {}) =>
     ...extra,
   });
 
-const staffOf = (res: request.Response): string =>
-  res.body.data.staffId ?? res.body.data.staff?.id;
+// The public response is deliberately minimal (no staff), so read who got the
+// booking from the row itself.
+const staffOf = async (res: request.Response): Promise<string> =>
+  (await prisma.booking.findUniqueOrThrow({ where: { id: res.body.data.id } }))
+    .staffId;
 
 describe('slots with no staff preference', () => {
   it("is the union of everyone's hours", async () => {
@@ -155,7 +158,7 @@ describe('assignment with no staff preference', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const res = await publicBook(t, '13:00');
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[1].id);
+    expect(await staffOf(res)).toBe(members[1].id);
   });
 
   it('gives the booking to the member with the fewest booked minutes when service lengths match', async () => {
@@ -167,7 +170,7 @@ describe('assignment with no staff preference', () => {
     await book(t, members[1].id, '09:00');
     const res = await publicBook(t, '11:00');
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[1].id);
+    expect(await staffOf(res)).toBe(members[1].id);
   });
 
   it('picks randomly among members tied on booked minutes', async () => {
@@ -176,13 +179,13 @@ describe('assignment with no staff preference', () => {
     await work(t, members[1].id, '09:00', '17:00');
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const first = await publicBook(t, '11:00');
-    const firstId = staffOf(first);
+    const firstId = await staffOf(first);
     expect(members.map((m) => m.id)).toContain(firstId);
     // Reset to a tie, then the other end of the random range picks the other one.
     await prisma.booking.deleteMany({ where: { shopId: t.shop.id } });
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
     const second = await publicBook(t, '11:00');
-    expect(staffOf(second)).not.toBe(firstId);
+    expect(await staffOf(second)).not.toBe(firstId);
   });
 
   it('only considers members who work at that time', async () => {
@@ -191,7 +194,7 @@ describe('assignment with no staff preference', () => {
     await work(t, members[1].id, '12:00', '14:00');
     const res = await publicBook(t, '12:30');
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[1].id);
+    expect(await staffOf(res)).toBe(members[1].id);
   });
 
   it('skips a member who is already booked then, even with fewer bookings that day', async () => {
@@ -203,7 +206,7 @@ describe('assignment with no staff preference', () => {
     await book(t, members[1].id, '11:00'); // member 1 is busy exactly then
     const res = await publicBook(t, '11:00');
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[0].id);
+    expect(await staffOf(res)).toBe(members[0].id);
   });
 
   it('does not count canceled bookings as load', async () => {
@@ -219,7 +222,7 @@ describe('assignment with no staff preference', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
     // member 0 has 1 active booking, member 1 has 0: member 1 wins regardless of the roll
     const res = await publicBook(t, '11:00');
-    expect(staffOf(res)).toBe(members[1].id);
+    expect(await staffOf(res)).toBe(members[1].id);
   });
 
   it('409 when everyone working then is already booked', async () => {
@@ -249,7 +252,7 @@ describe('assignment with no staff preference', () => {
     await book(t, members[1].id, '09:00');
     const res = await publicBook(t, '11:00', { staffId: members[1].id });
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[1].id);
+    expect(await staffOf(res)).toBe(members[1].id);
   });
 
   it('owner/staff booking with no staff and an accepted override picks a free member', async () => {
@@ -268,7 +271,7 @@ describe('assignment with no staff preference', () => {
         overrideRules: ['OUTSIDE_OPENING_HOURS', 'SHOP_CLOSED'],
       });
     expect(res.status).toBe(201);
-    expect(staffOf(res)).toBe(members[1].id); // member 0 is busy at 15:00
+    expect(await staffOf(res)).toBe(members[1].id); // member 0 is busy at 15:00
   });
 });
 

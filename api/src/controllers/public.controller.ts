@@ -37,7 +37,18 @@ export const createBooking = async (
   try {
     const slug = req.params.slug as string;
     const booking = await createBookingService(slug, req.body);
-    successResponse(res, booking, 201);
+    // Anonymous caller: never echo the booking row (cancelToken, staff email,
+    // customer and shop data). The emails below use the full row server-side.
+    successResponse(
+      res,
+      {
+        id: booking.id,
+        status: booking.status,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+      },
+      201,
+    );
 
     if (booking.customer.email && booking.cancelToken) {
       sendBookingConfirmationEmail({
