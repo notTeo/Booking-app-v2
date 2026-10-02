@@ -54,7 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await logoutApi();
+    // Signing out locally must not depend on the request succeeding: a
+    // network error or a rejected cookie would otherwise keep the user in.
+    try {
+      await logoutApi();
+    } catch {
+      // Nothing to do: the session is dropped locally either way.
+    }
     authStore.clearToken();
     setUser(null);
   };
