@@ -8,10 +8,6 @@ Online booking for barbershops and salons. A shop owner manages staff, services 
 
 Small appointment-based shops often run on phone calls and paper notebooks. BeBooked gives each shop a booking page that only offers slots that are actually free, and a dashboard to see and manage what was booked. It is aimed at independent shops with a handful of staff.
 
-## Screenshots
-
-<!-- TODO(owner): add screenshots or a live demo URL. None exist in the repo, so none are shown. -->
-
 ## Features
 
 - Public booking page per shop at `/:slug` (old `/p/:slug` links redirect)
@@ -93,5 +89,3 @@ In development. A pilot deployment for a barbershop is in preparation. Deploymen
 ## License
 
 Source available for viewing. All rights reserved.
-
-<!-- TODO(owner): no LICENSE file exists (api/package.json says UNLICENSED). Choose one (e.g. MIT) or keep as is. -->

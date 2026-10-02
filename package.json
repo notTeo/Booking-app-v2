@@ -1,6 +1,9 @@
 {
   "name": "bebooked",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Monorepo root. api/, web/ and e2e/ are independent npm projects; this file only forwards convenience scripts.",
   "scripts": {
     "e2e": "npm --prefix e2e run e2e"
