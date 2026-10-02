@@ -1,8 +1,7 @@
 # Deploy runbook and rollback plan
 
 Frontend on **Vercel**, API + PostgreSQL on **Railway**, email via **Resend**.
-Nothing has been deployed yet: section 6 is the first deploy, section 8 is every
-deploy after it. Steps that depend on a dashboard's current UI say **(verify)**:
+Section 6 is the first deploy, section 8 is every deploy after it. Steps that depend on a dashboard's current UI say **(verify)**:
 those screens move, so check the label rather than trusting this file.
 
 Contents: 1 Launch blockers · 2 Architecture and domains · 3 Environment
@@ -15,7 +14,7 @@ variables · 4 Railway · 5 Vercel, Resend, DNS · 6 First deploy · 7 Smoke tes
 
 | # | Item | Why it blocks | Where |
 |---|---|---|---|
-| 1 | Replace the **Hairology placeholder data** and set `HAIROLOGY_DATA_CONFIRMED = true` | The seed refuses to run on placeholders; they would appear on the public page | `api/src/admin/hairologyData.ts` |
+| 1 | Replace the **pilot tenant's placeholder data** and set `HAIROLOGY_DATA_CONFIRMED = true` | The pilot seed refuses to run on placeholders; they would appear on the public page | `api/src/admin/hairologyData.ts` |
 | 2 | Real **Terms, Privacy and DPA text** | The DPA page is placeholder and says so. `/terms` and `/privacy` are drafts | `web/src/locales/translations.ts` |
 | 3 | Decide the **owner's reserved-slug list** | Only routes plus a guessed list (admin, www, support…) are reserved | `api/src/validators/slug.ts` |
 | 4 | **Same-site domains** for web and API (section 2) | Cross-site cookies are blocked by Safari and some browsers, which breaks staying logged in | DNS |
@@ -24,9 +23,9 @@ variables · 4 Railway · 5 Vercel, Resend, DNS · 6 First deploy · 7 Smoke tes
 | 7 | **`btree_gist` allowed on Railway's Postgres** | The overlap-guard migrations (bookings and working-hours schedules) run `CREATE EXTENSION btree_gist`. If the host refuses it, the first deploy fails at migration time. Check in 1 minute: create a throwaway Postgres on Railway and run `CREATE EXTENSION IF NOT EXISTS btree_gist;` in its query tab or `psql`. It should succeed (it is a trusted extension on PG13+). Delete the throwaway after. | Railway |
 
 Double booking is prevented twice: the application checks and retries inside
-serializable transactions, and the database itself refuses overlapping
+READ COMMITTED transactions, and the database itself refuses overlapping
 bookings for one provider (`Booking_no_overlap`, section 4). CI (GitHub Actions,
-`.github/workflows/ci.yml`) runs on every push; section 8 says what to check
+`.github/workflows/ci.yml`) runs on every push (feature branches get a fast run; pull requests and pushes to `dev`/`main` get the full run including e2e); section 8 says what to check
 before deploying.
 
 ---
@@ -48,7 +47,7 @@ treat the cookie as third-party, and Safari and privacy-focused browsers drop
 those. Symptom: login works, then the user is logged out on reload or after 15
 minutes when the access token expires. Same-site domains avoid it.
 
-- Public booking page: `https://example.gr/<slug>` (e.g. `/hairology`). Old `/p/<slug>` links redirect.
+- Public booking page: `https://example.gr/<slug>` (e.g. `/marias-salon`). Old `/p/<slug>` links redirect.
 - `https://` is mandatory on both: the cookie is `Secure`.
 - `www`: pick one canonical host and redirect the other to it in Vercel. Put **both** in `CLIENT_URLS` if both can serve the app.
 
@@ -144,7 +143,7 @@ Then:
 1. **Postgres** exists and is backed up (section 4).
 2. **Deploy the API** with all variables set. Watch the logs: migrations apply from scratch (a fresh database runs the whole history), then `Server running`. `GET https://<railway-url>/health` → `{"status":"ok","db":"up"}`.
 3. **Attach `api.example.gr`**, wait for DNS + TLS, re-check `/health` on it.
-4. **Create the first tenant**, either a generic one or Hairology (section 10). Do this **before** the site is public.
+4. **Create the first tenant**, either a generic one or the pilot tenant (section 10). Do this **before** the site is public.
 5. **Deploy the web app** on Vercel with `VITE_API_URL=https://api.example.gr`. Attach the domain.
 6. **Run the smoke test** (section 7) against the real domain.
 7. Only then announce the link.
@@ -173,7 +172,7 @@ Use a real browser, on the real domain, ideally also on an iPhone (Safari is the
 
 Deploys are triggered by pushing to the branch each service tracks (verify which). Before pushing:
 
-1. **CI green** on the commit (or run the pre-flight commands from section 6). The API suite has one known intermittent failure (`concurrency.test.ts`, logged in the plan): if it is the only failure, re-run that job once; a second failure is real. The e2e browser suite (`npm run e2e`) is *not* in CI: run it locally before deploys that touch the booking flow, routing or auth.
+1. **CI green** on the commit (or run the pre-flight commands from section 6). The API suite has one known intermittent failure (`concurrency.test.ts`): if it is the only failure, re-run that job once; a second failure is real. The e2e browser suite (Playwright) runs in CI on the full pipeline (pull requests and pushes to `dev`/`main`); run `npm run e2e` locally for fast feedback on booking-flow, routing or auth changes.
 2. **Does the change include a migration** (`api/prisma/migrations/`)?
    - **No** → deploy.
    - **Yes** → take a **manual database backup first**, and check the migration is **additive only** (new table, or new nullable/defaulted column). Anything that drops, renames, retypes or backfills is a one-way door: do it in two deploys (expand, then later contract) or accept that the only way back is a restore (section 9).
@@ -226,7 +225,7 @@ cd api
 # a customer:
 TENANT_PASSWORD='…' npm run tenant:create -- --owner-name "Maria K" \
   --owner-email maria@example.com --shop-name "Maria's Salon" --slug marias-salon
-# Hairology (only after blocker 1 is closed):
+# Pilot tenant seed (only after blocker 1 is closed):
 HAIROLOGY_OWNER_NAME='…' HAIROLOGY_OWNER_EMAIL='…' npm run seed:hairology
 ```
 
@@ -245,7 +244,7 @@ It is a floor, not a ceiling: GitHub's scheduler is best-effort (runs can be min
 ### Common incidents
 
 - **Everyone gets errors / `/health` is 503** → database. Check Railway Postgres status and connection count; the API reconnects by itself when it's back.
-- **Users blocked from one place** → limits are per IP address (shared wifi, a carrier's NAT and an office all look like one IP), and they count successful requests too: login **and** register share 10 per 15 min; password-reset requests 5 per hour; public booking and cancel 20 per 15 min; public page reads 100 per 15 min. A busy shop taking many bookings from its own wifi can hit the booking limit. Wait it out, or raise the number in `api/src/middleware/rateLimiter.ts` and deploy. They cannot be switched off in production.
+- **Users blocked from one place** → limits are per IP address (shared wifi, a carrier's NAT and an office all look like one IP), and they count successful requests too: login, register and reset-password share 10 per 15 min; token refresh 60 per 15 min; password-reset requests 5 per hour; public booking and cancel 20 per 15 min; public page reads 100 per 15 min. A busy shop taking many bookings from its own wifi can hit the booking limit. Wait it out, or raise the number in `api/src/middleware/rateLimiter.ts` and deploy. They cannot be switched off in production.
 - **Booking page says "busy, try again"** → the server hit its retry budget under simultaneous bookings (503 `BOOKING_BUSY` with `Retry-After`). It resolves itself within seconds; it is *not* an outage.
 - **Emails missing** → Resend dashboard first (bounces, domain status), then the API logs for `Failed to send … email`. Registration fails visibly when the verification email can't be sent.
 - **Deploy crash-loops on start** → read the first log line. `[env] Invalid environment configuration` lists what to fix; otherwise a migration error names the migration.
@@ -260,7 +259,7 @@ When the Terms or Privacy text changes materially, bump `TERMS_VERSION` in `api/
 
 ## 11. Known limits (accurate today, all deliberate or deferred)
 
-- **CI covers the API, schema and web, not the browser (e2e) suite**: run `npm run e2e` locally for booking-flow, routing or auth changes.
+- **The e2e suite only runs on the full CI pipeline** (pull requests and pushes to `dev`/`main`, not feature-branch pushes): run `npm run e2e` locally for booking-flow, routing or auth changes.
 - **Rate limiters are in-memory**: one API instance only.
 - **The overlap guard is per provider**: it stops one provider being double booked; it does not stop two different providers taking the same customer at the same time (that is allowed on purpose).
 - **Greek text uses a fallback font** for Greek glyphs: Poppins and League Spartan ship no Greek. Unchanged from before self-hosting.

@@ -6,8 +6,8 @@ For the developer (Claude Code) building this in React 19 + Vite with plain CSS.
 
 ```
 src/styles/
-  tokens.css          # copied from this system's tokens.css (generated from tokens.json)
-  components.css      # copied from components/bundle.css
+  tokens.css          # design tokens (light + dark). Mirrors docs/design-system/tokens.json
+  components.css      # shared component classes (BEM). Edit here; do not restyle in page CSS
   pages/*.css         # page layout only: grids, page-specific spacing. No component restyling.
 ```
 

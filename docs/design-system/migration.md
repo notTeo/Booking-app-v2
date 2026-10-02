@@ -72,7 +72,7 @@ Left:
 
 ## Order of work
 
-1. Add `tokens.css` and `bundle.css` (see `implementation.md`), keeping the old variables alongside for one pass.
+1. Add `tokens.css` and `components.css` (see `implementation.md`), keeping the old variables alongside for one pass.
 2. Replace old variable names with the new ones using the token map. Delete stray references (`--text-secondary`, `--gb-card`, `--font-mono`).
 3. Search for `#fff`, `#ffffff`, `white`, `#f87171`, `#fbbf24`, `#34d399` and replace with tokens.
 4. Migrate the shared components one at a time in this order: Button, form controls, Badge, Alert, Switch, Card, Table, ConfirmDialog.
