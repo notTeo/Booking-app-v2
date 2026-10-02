@@ -56,6 +56,9 @@ export default function OwnerCustomerFormStep({
 
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  // True only once a look-up for the phone now shown has completed and found
+  // nobody — not while typing, in flight, failed, or after an exact match.
+  const [searchedNoMatch, setSearchedNoMatch] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // The latest phone text, so a slow look-up that returns after the user kept
@@ -70,6 +73,7 @@ export default function OwnerCustomerFormStep({
     // cleared just because the phone changed.
     setShowDropdown(false);
     setCustomerResults([]);
+    setSearchedNoMatch(false);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (val.trim().length < 2) return;
@@ -87,6 +91,7 @@ export default function OwnerCustomerFormStep({
           }
           setCustomerResults(result.items);
           setShowDropdown(result.items.length > 0);
+          setSearchedNoMatch(result.items.length === 0);
         })
         .catch(() => {});
     }, 300);
@@ -149,7 +154,7 @@ export default function OwnerCustomerFormStep({
               ))}
             </ul>
           )}
-          {phone.trim().length >= 2 && customerResults.length === 0 && (
+          {searchedNoMatch && (
             <p className="field__hint">{t.bookings.newCustomerHint}</p>
           )}
         </div>

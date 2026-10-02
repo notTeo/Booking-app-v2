@@ -417,6 +417,7 @@ export interface Translations {
     notFound: string;
     errorLoad: string;
     errorRemove: string;
+    errorRemoveHasBookings: string;
     backToTeam: string;
     editRole: string;
     saveRole: string;
@@ -705,9 +706,17 @@ export interface Translations {
     closedOrNoSchedule: string;
     manageWorkingHours: string;
     failedSlots: string;
+    retry: string;
     serviceContext: string;
     staffContext: string;
     atLabel: string;
+  };
+  shopGate: {
+    notFoundTitle: string;
+    notFoundText: string;
+    backToShops: string;
+    errorLoad: string;
+    retry: string;
   };
   overview: {
     greeting: string;
@@ -812,6 +821,8 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    statusConflict: string;
+    statusError: string;
     title: string;
     viewDateLabel: string;
     errorLoad: string;
@@ -1309,6 +1320,7 @@ home: {
       notFound: 'Το μέλος δεν βρέθηκε.',
       errorLoad: 'Αποτυχία φόρτωσης μελών.',
       errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
+      errorRemoveHasBookings: 'Αυτό το μέλος έχει κρατήσεις. Απενεργοποιήστε το αντί να το αφαιρέσετε.',
       backToTeam: '← Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
@@ -1595,6 +1607,7 @@ home: {
       closedOrNoSchedule: 'Κλειστό ή δεν υπάρχει πρόγραμμα για αυτή την ημέρα.',
       manageWorkingHours: 'Μετάβαση στο ωράριο εργασίας για διόρθωση',
       failedSlots: 'Αποτυχία φόρτωσης διαθέσιμων ωρών',
+      retry: 'Δοκιμάστε ξανά',
       serviceContext: 'Υπηρεσία:',
       staffContext: 'Προσωπικό:',
       atLabel: 'στις',
@@ -1607,6 +1620,13 @@ home: {
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Το κατάστημα δεν είναι διαθέσιμο',
+      notFoundText: 'Αυτό το κατάστημα δεν υπάρχει ή δεν έχετε πλέον πρόσβαση σε αυτό.',
+      backToShops: 'Πίσω στα καταστήματά μου',
+      errorLoad: 'Δεν ήταν δυνατή η φόρτωση του καταστήματος. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.',
+      retry: 'Δοκιμάστε ξανά',
     },
     overview: {
       greeting: 'Γεια σου, {name}!',
@@ -1719,6 +1739,8 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      statusConflict: 'Αυτή η ώρα δεν είναι πλέον διαθέσιμη, οπότε η κατάσταση της κράτησης δεν μπορεί να αλλάξει.',
+      statusError: 'Δεν ήταν δυνατή η ενημέρωση της κατάστασης της κράτησης. Δοκιμάστε ξανά.',
       title: 'Ραντεβού',
       viewDateLabel: 'Προβολή ημερομηνίας',
       errorLoad: 'Αποτυχία φόρτωσης ραντεβού.',
@@ -2227,6 +2249,7 @@ home: {
       notFound: 'Member not found.',
       errorLoad: 'Failed to load team members.',
       errorRemove: 'Failed to remove member.',
+      errorRemoveHasBookings: 'This member has bookings. Deactivate them instead.',
       backToTeam: '← Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',
@@ -2513,6 +2536,7 @@ home: {
       closedOrNoSchedule: 'Closed, or there is no schedule for this day.',
       manageWorkingHours: 'Go to working hours to fix this',
       failedSlots: 'Failed to load available slots',
+      retry: 'Retry',
       serviceContext: 'Service:',
       staffContext: 'Staff:',
       atLabel: 'at',
@@ -2525,6 +2549,13 @@ home: {
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
+    },
+    shopGate: {
+      notFoundTitle: 'Shop not available',
+      notFoundText: "This shop doesn't exist, or you no longer have access to it.",
+      backToShops: 'Back to my shops',
+      errorLoad: 'Could not load this shop. Check your connection and try again.',
+      retry: 'Retry',
     },
     overview: {
       greeting: 'Hello, {name}!',
@@ -2637,6 +2668,8 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      statusConflict: "That time is no longer free, so the booking status can't be changed.",
+      statusError: "Couldn't update the booking status. Please try again.",
       title: 'Bookings',
       viewDateLabel: 'View date',
       errorLoad: 'Failed to load bookings.',

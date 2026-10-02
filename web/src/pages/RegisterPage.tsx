@@ -91,7 +91,7 @@ export default function RegisterPage() {
             <label className="field__label" htmlFor="name">{t.register.nameLabel}</label>
             <input className="input"
               id="name"
-              type="name"
+              type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required

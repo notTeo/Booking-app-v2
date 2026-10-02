@@ -77,3 +77,33 @@ test('clicking a suggestion fills only empty fields too', async ({ page }) => {
   await expect(page.locator('#b-email')).toHaveValue(KNOWN.email);
   await expect(page.locator('#b-name')).toHaveValue('Keep Me');
 });
+
+test('the "New customer" hint shows only after a completed search with no match', async ({ page }) => {
+  await openCustomerForm(page);
+  const hint = page.getByText('New customer', { exact: true });
+
+  // search in flight: no hint yet
+  let release!: () => void;
+  const gate = new Promise<void>((r) => (release = r));
+  await page.route(/\/api\/shops\/[^/]+\/customers\?/, async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await page.locator('#b-phone').fill('6999999991'); // no such customer
+  await page.waitForTimeout(500); // past the debounce, response still held
+  await expect(hint).toHaveCount(0);
+  release();
+  await expect(hint).toBeVisible();
+  await page.unroute(/\/api\/shops\/[^/]+\/customers\?/);
+
+  // changing the number hides it again until that search completes
+  await page.locator('#b-phone').fill('6999999992');
+  await expect(hint).toBeVisible(); // second search also finds nothing
+});
+
+test('a known customer found by exact phone never gets the "New customer" hint', async ({ page }) => {
+  await openCustomerForm(page);
+  await page.locator('#b-phone').fill(PHONE);
+  await expect(page.locator('#b-name')).toHaveValue(KNOWN.name); // search completed + autofilled
+  await expect(page.getByText('New customer', { exact: true })).toHaveCount(0);
+});

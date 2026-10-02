@@ -4,6 +4,7 @@ import { faCalendarXmark, faClock } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import type { Service, ShopMember, SlotInfo, SlotsResponse } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Alert from '../Alert';
 import Switch from '../Switch';
 import { groupSlotSections, type SlotSectionKey } from './wizardUtils';
 
@@ -21,6 +22,8 @@ export default function DateTimeStep({
   date,
   time,
   slots,
+  slotsError,
+  onRetrySlots,
   selectedService,
   selectedMember,
   minDate,
@@ -40,6 +43,9 @@ export default function DateTimeStep({
   date: string;
   time: string;
   slots: SlotsResponse;
+  /** The last slot fetch failed: show an error with Retry, never "closed". */
+  slotsError?: boolean;
+  onRetrySlots?: () => void;
   selectedService: Service | null;
   selectedMember: ShopMember | null;
   minDate?: string;
@@ -63,21 +69,22 @@ export default function DateTimeStep({
 }) {
   const { t } = useLang();
 
-  const isClosed = date !== '' && slots.status === 'closed';
+  const failed = date !== '' && !!slotsError;
+  const isClosed = date !== '' && !failed && slots.status === 'closed';
   // Owner/staff can also book outside working hours: the slot list carries the
   // out-of-hours grid, shown only when the toggle is on. (A closed day still
   // shows its "closed" note and can offer the grid too.)
   const [showOutside, setShowOutside] = useState(defaultShowOutside ?? false);
   const [customTime, setCustomTime] = useState('');
   const internal = mode === 'internal';
-  const allSlots: SlotInfo[] = slots.slots ?? [];
+  const allSlots: SlotInfo[] = failed ? [] : (slots.slots ?? []);
   const sections = internal ? groupSlotSections(allSlots, showOutside) : [];
   // Public view only ever offers free times (unchanged from before). Internal
   // view shows every slot in the day, with booked ones disabled rather than
   // hidden, so staff can see the whole working window.
   const visibleSlots = internal
     ? sections.flatMap((g) => g.slots)
-    : slots.status === 'ok'
+    : !failed && slots.status === 'ok'
       ? slots.slots.filter((s) => s.available)
       : [];
   const hasOutsideSlots = allSlots.some((s) => s.outsideHours);
@@ -207,6 +214,21 @@ export default function DateTimeStep({
         </div>
       )}
 
+      {failed && (
+        <Alert
+          variant="danger"
+          actions={
+            onRetrySlots && (
+              <button type="button" className="btn btn--secondary btn--sm" onClick={onRetrySlots}>
+                {t.public.retry}
+              </button>
+            )
+          }
+        >
+          {t.public.failedSlots}
+        </Alert>
+      )}
+
       {isClosed && (
         <div className="empty empty--sm" role="status">
           <span className="empty__icon"><FontAwesomeIcon icon={faCalendarXmark} aria-hidden="true" /></span>
@@ -219,7 +241,7 @@ export default function DateTimeStep({
         </div>
       )}
 
-      {!internal && !isClosed && (
+      {!internal && !isClosed && !failed && (
         <div className="slots">{visibleSlots.map(renderSlot)}</div>
       )}
 
@@ -254,7 +276,7 @@ export default function DateTimeStep({
           );
         })}
 
-      {internal && showOutside && date !== '' && (
+      {internal && showOutside && date !== '' && !failed && (
         <div className="ooh-other-time">
           <label className="field__label" htmlFor="booking-other-time">{os.otherTime}</label>
           <input

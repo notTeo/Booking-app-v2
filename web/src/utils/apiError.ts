@@ -16,3 +16,8 @@ export const apiErrorMessage = (err: unknown, fallback: string): string =>
 /** Another body field (e.g. `error`), or '' when absent. */
 export const apiErrorField = (err: unknown, field: string): string =>
   readField(err, field) ?? '';
+
+/** A 409 CONFLICT_REFERENCED: the row is still referenced by other records (e.g. a member with bookings). */
+export const isReferencedConflict = (err: unknown): boolean =>
+  (err as { response?: { status?: number } } | null | undefined)?.response?.status === 409 &&
+  readField(err, 'code') === 'CONFLICT_REFERENCED';

@@ -367,6 +367,55 @@ describe('reactivation', () => {
     expect((await api.get(url).set(authHeader(staff.token))).status).toBe(200);
   });
 
+  it('deactivating clears both bookable flags; reactivating restores both to true', async () => {
+    const t = await createTenant('Flags');
+    const staff = await createStaffMember(t, 'Toggler');
+    const url = `/api/shops/${t.shop.id}/team/${staff.staff.id}`;
+    const flags = () =>
+      prisma.userShop.findUniqueOrThrow({
+        where: { id: staff.staff.id },
+        select: { bookableByCustomers: true, bookableInternally: true },
+      });
+
+    const off = await api
+      .patch(url)
+      .set(authHeader(t.token))
+      .send({ role: 'staff', active: false });
+    expect(off.status).toBe(200);
+    expect(await flags()).toEqual({
+      bookableByCustomers: false,
+      bookableInternally: false,
+    });
+
+    // The member page form sends every field on each save, so the stale
+    // `false` flags arrive alongside active: true. They must not win.
+    const on = await api.patch(url).set(authHeader(t.token)).send({
+      role: 'staff',
+      active: true,
+      bookableByCustomers: false,
+      bookableInternally: false,
+    });
+    expect(on.status).toBe(200);
+    expect(on.body.data.bookableByCustomers).toBe(true);
+    expect(on.body.data.bookableInternally).toBe(true);
+    expect(await flags()).toEqual({
+      bookableByCustomers: true,
+      bookableInternally: true,
+    });
+  });
+
+  it('saving an already-active member keeps the flags the owner chose', async () => {
+    const t = await createTenant('Keep');
+    const staff = await createStaffMember(t, 'Keeper');
+    const res = await api
+      .patch(`/api/shops/${t.shop.id}/team/${staff.staff.id}`)
+      .set(authHeader(t.token))
+      .send({ role: 'staff', active: true, bookableByCustomers: false });
+    expect(res.status).toBe(200);
+    expect(res.body.data.bookableByCustomers).toBe(false);
+    expect(res.body.data.bookableInternally).toBe(true);
+  });
+
   it('an inactive member is still manageable by the owner (listed, editable, removable)', async () => {
     const t = await createTenant('Manage');
     const staff = await createStaffMember(t, 'Parked');
