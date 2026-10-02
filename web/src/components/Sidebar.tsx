@@ -20,6 +20,7 @@ import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { useMyInvites } from '../hooks/useMyInvites';
 import { useShopSlug } from '../hooks/useShopSlug';
+import type { useSidebarWidth } from '../hooks/useSidebarWidth';
 import Wordmark from './Wordmark';
 
 interface ItemProps {
@@ -117,11 +118,14 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
 
 interface SidebarProps {
   compact: boolean;
+  /** Desktop only: drag handle state from useSidebarWidth. */
+  resize?: ReturnType<typeof useSidebarWidth>;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ compact, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ compact, isOpen, onClose, resize }: SidebarProps) {
+  const { t } = useLang();
   const slug = useShopSlug();
   const ref = useRef<HTMLElement>(null);
   const drawerOpen = compact && isOpen;
@@ -163,6 +167,13 @@ export default function Sidebar({ compact, isOpen, onClose }: SidebarProps) {
       {slug
         ? <ShopLevel slug={slug} onNavigate={onClose} />
         : <AccountLevel onNavigate={onClose} />}
+      {resize && (
+        <div
+          className={`sidebar__resize${resize.dragging ? ' is-dragging' : ''}`}
+          aria-label={t.sidebar.resize}
+          {...resize.handleProps}
+        />
+      )}
     </aside>
   );
 }

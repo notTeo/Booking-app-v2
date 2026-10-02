@@ -22,6 +22,7 @@ export interface Translations {
     myInvites: string;
     openMenu: string;
     mainNav: string;
+    resize: string;
     account: string;
     overview: string;
     shops: string;
@@ -921,6 +922,7 @@ export const translations: Record<Language, Translations> = {
       myInvites: 'Οι προσκλήσεις μου',
       openMenu: 'Άνοιγμα μενού',
       mainNav: 'Κύρια πλοήγηση',
+      resize: 'Αλλαγή πλάτους μενού',
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
       shops: 'Καταστήματα',
@@ -1852,6 +1854,7 @@ home: {
       myInvites: 'My invites',
       openMenu: 'Open menu',
       mainNav: 'Main navigation',
+      resize: 'Resize sidebar',
       account: 'Account',
       overview: 'Overview',
       shops: 'Shops',

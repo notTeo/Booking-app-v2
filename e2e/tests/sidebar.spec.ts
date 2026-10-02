@@ -68,6 +68,33 @@ test('staff see the trimmed menu and are redirected away from owner pages', asyn
   }
 });
 
+test('desktop rail has rounded right corners and can be resized by dragging its edge', async ({ page }) => {
+  await login(page);
+  const rail = sidebar(page);
+  const radius = await rail.evaluate((el) => getComputedStyle(el).borderTopRightRadius);
+  expect(parseFloat(radius)).toBeGreaterThan(0);
+
+  const handle = page.getByRole('separator', { name: 'Resize sidebar' });
+  expect(await handle.evaluate((el) => getComputedStyle(el).cursor)).toBe('col-resize');
+  const before = (await rail.boundingBox())!.width;
+  const box = (await handle.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, 300);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 80, 300, { steps: 5 });
+  await page.mouse.up();
+  expect((await rail.boundingBox())!.width).toBeGreaterThan(before + 60);
+
+  // Remembered across a reload, and the keyboard works too.
+  await page.reload();
+  expect((await rail.boundingBox())!.width).toBeGreaterThan(before + 60);
+  await handle.focus();
+  const wide = (await rail.boundingBox())!.width;
+  await page.keyboard.press('ArrowLeft');
+  expect((await rail.boundingBox())!.width).toBeLessThan(wide);
+  await handle.dblclick();
+  expect(Math.round((await rail.boundingBox())!.width)).toBe(256);
+});
+
 test.describe('mobile', () => {
   test.use({ viewport: { width: 390, height: 800 } });
 
@@ -93,6 +120,21 @@ test.describe('mobile', () => {
     await expect(sidebar(page)).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(sidebar(page)).toBeHidden();
+  });
+
+  test('closed top bar is as wide as the open drawer, with the same corner radius', async ({ page }) => {
+    await login(page);
+    const bar = page.locator('.topbar');
+    const barWidth = (await bar.boundingBox())!.width;
+    const barRadius = await bar.evaluate((el) => getComputedStyle(el).borderBottomRightRadius);
+    expect(parseFloat(barRadius)).toBeGreaterThan(0);
+
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    await expect(sidebar(page)).toBeVisible();
+    await page.waitForTimeout(400);
+    expect((await sidebar(page).boundingBox())!.width).toBeCloseTo(barWidth, 0);
+    expect(await sidebar(page).evaluate((el) => getComputedStyle(el).borderBottomRightRadius)).toBe(barRadius);
+    await expect(page.getByRole('separator', { name: 'Resize sidebar' })).toHaveCount(0);
   });
 
   test('account-level pages show the logo in the top bar', async ({ page }) => {
