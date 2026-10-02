@@ -37,7 +37,8 @@ const ownerBook = (t: Tenant, extra: object = {}) =>
     .set(authHeader(t.token))
     .send({
       name: 'C',
-      phone: String(Math.floor(Math.random() * 1e9)),
+      // Always 10 digits: a bare random number can come out under the validator's 7-digit minimum.
+      phone: String(Math.floor(1e9 + Math.random() * 9e9)),
       serviceId: t.service.id,
       staffId: t.staff.id,
       startTime: SLOT,
