@@ -15,6 +15,7 @@ import {
 import { getMembers, type TeamMember } from '../api/team.api';
 import { getDaySchedule, type DaySchedule } from '../api/workingHours.api';
 import BookingFiltersModal from '../components/BookingFiltersModal';
+import Modal from '../components/Modal';
 import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
 import {
   blockGeometry,
@@ -352,33 +353,7 @@ export default function ShopBookingsPage() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Detail panel ── */}
-      {creatingSlot ? (
-        <div className="card cal-detail-panel">
-          <div className="cal-detail-header">
-            <h2 className="t-subheading">{t.bookings.newBookingTitle}</h2>
-            <button
-              type="button"
-              className="btn btn--ghost btn--icon btn--sm"
-              onClick={() => setCreatingSlot(null)}
-              aria-label={t.bookings.close}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
-          </div>
-          {shop && slug && (
-            <OwnerBookingWizard
-              shopId={shop.id}
-              slug={slug}
-              initialMemberId={creatingSlot.staffId}
-              initialDate={date}
-              timeHint={creatingSlot.timeHint}
-              defaultShowOutside={creatingSlot.showOutside}
-              hideTitle
-              onDone={() => { setCreatingSlot(null); refetchBookings(); }}
-            />
-          )}
-        </div>
-      ) : selectedBooking && (
+      {!creatingSlot && selectedBooking && (
         <div className="card cal-detail-panel">
           <div className="cal-detail-header">
             <h2 className="t-subheading">
@@ -576,6 +551,35 @@ export default function ShopBookingsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Quick booking from a click on the calendar */}
+      {creatingSlot && shop && slug && (
+        <Modal onClose={() => setCreatingSlot(null)} labelledBy="quick-booking-title">
+          <div className="modal__header">
+            <h2 id="quick-booking-title" className="modal__title">{t.bookings.newBookingTitle}</h2>
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon btn--sm"
+              onClick={() => setCreatingSlot(null)}
+              aria-label={t.bookings.close}
+            >
+              <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="modal__body">
+            <OwnerBookingWizard
+              shopId={shop.id}
+              slug={slug}
+              initialMemberId={creatingSlot.staffId}
+              initialDate={date}
+              timeHint={creatingSlot.timeHint}
+              defaultShowOutside={creatingSlot.showOutside}
+              hideTitle
+              onDone={() => { setCreatingSlot(null); refetchBookings(); }}
+            />
+          </div>
+        </Modal>
       )}
 
       {showFilters && (
