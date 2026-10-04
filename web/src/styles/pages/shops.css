@@ -1,4 +1,4 @@
 /* Layout only — every visual comes from components.css. */
-.shops-page { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: 38.75rem; }
+.shops-page { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: 53.75rem; }
 .shops-page > .back-link { margin-bottom: 0; }
 .shop-detail-header { display: flex; flex-direction: column; gap: var(--space-2); }
