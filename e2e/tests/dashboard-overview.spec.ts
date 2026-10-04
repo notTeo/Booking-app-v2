@@ -14,9 +14,16 @@ import { addDays, athensDate } from '../support/dates';
  * New York, so period expectations don't depend on when the suite runs. The
  * one thing that does is each shop's own "today" (New York is behind Athens
  * for part of the day), so that count comes from an Intl oracle.
+ *
+ * The seeds are dated from the day this file loads. What the app calls
+ * "today" and "this week" is decided when the page loads, which can be the
+ * next day if the suite runs over midnight, so expectations are worked out
+ * from the dates the page was loaded under (`loaded`, set by login()).
  */
-const today = athensDate();
-const nyToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+const seedDay = athensDate();
+const nyDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+const clock = () => ({ athens: athensDate(), ny: nyDate() });
+let loaded = clock();
 
 type Status = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW';
 type Seed = { shop: 's1' | 's2'; offset: number; hour: number; status: Status };
@@ -36,8 +43,8 @@ const seeds: Seed[] = [
 ];
 const dated = seeds.map((b) => ({
   ...b,
-  date: addDays(today, b.offset),
-  at: Date.parse(`${addDays(today, b.offset)}T${String(b.hour).padStart(2, '0')}:00:00Z`),
+  date: addDays(seedDay, b.offset),
+  at: Date.parse(`${addDays(seedDay, b.offset)}T${String(b.hour).padStart(2, '0')}:00:00Z`),
 }));
 
 const SHOPS = {
@@ -49,12 +56,14 @@ const mondayOf = (d: string) => {
   const [y, m, day] = d.split('-').map(Number);
   return addDays(d, -((new Date(Date.UTC(y, m - 1, day)).getUTCDay() + 6) % 7));
 };
-const weekFrom = mondayOf(today);
-const weekTo = addDays(weekFrom, 6);
-const inWeek = dated.filter((b) => b.date >= weekFrom && b.date <= weekTo);
-const weekCount = (...statuses: Status[]) => inWeek.filter((b) => statuses.includes(b.status)).length;
+const inWeek = () => {
+  const weekFrom = mondayOf(loaded.athens);
+  const weekTo = addDays(weekFrom, 6);
+  return dated.filter((b) => b.date >= weekFrom && b.date <= weekTo);
+};
+const weekCount = (...statuses: Status[]) => inWeek().filter((b) => statuses.includes(b.status)).length;
 const shopWeek = (shop: 's1' | 's2') => {
-  const mine = inWeek.filter((b) => b.shop === shop);
+  const mine = inWeek().filter((b) => b.shop === shop);
   return {
     total: mine.filter((b) => b.status !== 'CANCELED').length,
     pending: mine.filter((b) => b.status === 'PENDING').length,
@@ -62,7 +71,7 @@ const shopWeek = (shop: 's1' | 's2') => {
 };
 const shopToday = (shop: 's1' | 's2') =>
   dated.filter(
-    (b) => b.shop === shop && b.status !== 'CANCELED' && b.date === (shop === 's1' ? today : nyToday),
+    (b) => b.shop === shop && b.status !== 'CANCELED' && b.date === (shop === 's1' ? loaded.athens : loaded.ny),
   ).length;
 
 const whenLabel = (at: number, zone: string) => {
@@ -138,10 +147,18 @@ async function login(page: Page) {
   await page.locator('button[type=submit]').click();
   await waitForLanding(page);
   // The owner's landing depends on how many shops the test left active.
-  await page.goto('/dashboard');
-  // Let the page finish its session refresh before anything navigates again:
-  // a reload that aborts the refresh in flight loses the rotated cookie.
-  await page.locator('.app-shell').waitFor();
+  // Load the dashboard within one calendar day in both zones: if midnight
+  // passes while it loads, its numbers could be from either side, so load again.
+  for (;;) {
+    const before = clock();
+    await page.goto('/dashboard');
+    // Let the page finish its session refresh before anything navigates again:
+    // a reload that aborts the refresh in flight loses the rotated cookie.
+    await page.locator('.app-shell').waitFor();
+    await page.waitForLoadState('networkidle');
+    loaded = clock();
+    if (loaded.athens === before.athens && loaded.ny === before.ny) break;
+  }
 }
 
 async function openDashboard(page: Page) {
@@ -162,10 +179,10 @@ test('stat cards and the chart are summed across all shops', async ({ page }) =>
   await expect(stat(page, 'Canceled / no-show')).toHaveText(String(weekCount('CANCELED', 'NO_SHOW')));
   await expect(page.locator('.bar-chart__col')).toHaveCount(7);
   // Both shops' bookings today land on today's bar.
-  const todayTotal = dated.filter((b) => b.date === today && b.status !== 'CANCELED').length;
+  const todayTotal = dated.filter((b) => b.date === loaded.athens && b.status !== 'CANCELED').length;
   await expect(page.locator('.bar-chart__col--current')).toHaveAttribute(
     'aria-label',
-    new RegExp(`: ${todayTotal} bookings$`),
+    new RegExp(`: ${todayTotal} bookings?$`),
   );
 
   await tab(page, '3 months').click();
