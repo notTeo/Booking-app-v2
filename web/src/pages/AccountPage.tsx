@@ -352,7 +352,7 @@ export default function AccountPage() {
         </p>
 
         <button
-          className="btn btn--danger btn--sm"
+          className="btn btn--danger-outline btn--sm"
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
         >

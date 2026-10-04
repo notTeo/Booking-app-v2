@@ -325,7 +325,7 @@ export default function ShopServicesPage() {
                   </button>
 
                   <button
-                    className="btn btn--secondary btn--sm service-action-btn service-delete-btn"
+                    className="btn btn--danger-outline btn--sm service-action-btn service-delete-btn"
                     onClick={() => setConfirmDeleteId(service.id)}
                   >
                     <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
@@ -354,7 +354,7 @@ export default function ShopServicesPage() {
                             <li key={ss.userShopId} className="service-staff-item">
                               <span>{ss.userShop.name}</span>
                               <button
-                                className="btn btn--secondary btn--sm service-action-btn"
+                                className="btn btn--danger-outline btn--sm service-action-btn"
                                 onClick={() => handleUnassign(ss.userShopId)}
                                 disabled={unassigningId === ss.userShopId}
                               >

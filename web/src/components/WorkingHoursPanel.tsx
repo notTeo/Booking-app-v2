@@ -507,7 +507,7 @@ const created = await api.createSchedule(dto);
 
                     <div>
                       <button
-                        className={`btn btn--danger${state.deleting ? ' is-loading' : ''}`}
+                        className={`btn btn--danger-outline${state.deleting ? ' is-loading' : ''}`}
                         onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
                         aria-busy={state.deleting}
                       >

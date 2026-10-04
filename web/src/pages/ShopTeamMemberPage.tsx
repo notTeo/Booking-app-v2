@@ -426,7 +426,7 @@ export default function ShopTeamMemberPage() {
                     {member.hasPendingInvite ? t.team.resendInvite : t.team.sendInvite}
                   </button>
                   {member.hasPendingInvite && (
-                    <button className="btn btn--secondary" onClick={handleCancelInvite} disabled={invitePending}>
+                    <button className="btn btn--danger-outline" onClick={handleCancelInvite} disabled={invitePending}>
                       {t.team.cancelInvite}
                     </button>
                   )}
@@ -514,7 +514,7 @@ export default function ShopTeamMemberPage() {
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>
           {removeError && <Alert variant="danger">{removeError}</Alert>}
-          <button className="btn btn--danger btn--block" onClick={() => setConfirmRemove(true)}>
+          <button className="btn btn--danger-outline btn--block" onClick={() => setConfirmRemove(true)}>
             {t.team.remove}
           </button>
         </div>

@@ -224,7 +224,7 @@ export default function ShopCustomerDetailPage() {
               {t.customers.exportData}
             </button>
             <button
-              className={`btn btn--danger${privacyBusy === 'delete' ? ' is-loading' : ''}`}
+              className={`btn btn--danger-outline${privacyBusy === 'delete' ? ' is-loading' : ''}`}
               onClick={() => setConfirmDelete(true)}
               aria-busy={privacyBusy === 'delete'}
               disabled={privacyBusy === 'export'}

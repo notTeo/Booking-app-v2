@@ -105,14 +105,14 @@ export default function ShopTeamPage() {
               {member.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
             </button>
             {member.hasPendingInvite && (
-              <button className="btn btn--secondary btn--sm" onClick={() => setConfirmCancelInvite(member.id)}>
+              <button className="btn btn--danger-outline btn--sm" onClick={() => setConfirmCancelInvite(member.id)}>
                 {t.invites.cancelInvite}
               </button>
             )}
           </>
         )}
         <button
-          className="btn btn--secondary btn--sm team-remove-btn"
+          className="btn btn--danger-outline btn--sm"
           onClick={() => {
             setConfirmRemove(member.id);
             setRemoveError('');
