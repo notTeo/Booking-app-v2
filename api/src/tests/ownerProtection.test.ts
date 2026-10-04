@@ -248,3 +248,124 @@ describe('staff cannot change roles', () => {
     );
   });
 });
+
+describe('a manager without the owner’s extra permissions', () => {
+  const plain = (t: Tenant, label = 'Plain') =>
+    addManager(t, label, {
+      canManageManagers: false,
+      canEditShopSettings: false,
+    });
+
+  it('is what a new manager is: both permissions off', async () => {
+    const t = await createTenant('Perms');
+    const res = await api
+      .post(`/api/shops/${t.shop.id}/team`)
+      .set(authHeader(t.token))
+      .send({ name: 'Fresh', role: 'manager', sendEmail: false });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.canManageManagers).toBe(false);
+    expect(res.body.data.canEditShopSettings).toBe(false);
+  });
+
+  it('cannot edit shop settings, and the shop says so', async () => {
+    const t = await createTenant('Perms');
+    const manager = await plain(t);
+
+    const res = await api
+      .patch(`/api/shops/${t.shop.id}`)
+      .set(authHeader(manager.token))
+      .send({ name: 'Renamed' });
+    expect(res.status).toBe(403);
+
+    const shop = await api
+      .get(`/api/shops/${t.shop.id}`)
+      .set(authHeader(manager.token));
+    expect(shop.body.data.canEditShopSettings).toBe(false);
+    expect(shop.body.data.canManageManagers).toBe(false);
+    expect(shop.body.data.name).toBe(t.shop.name);
+  });
+
+  it('manages staff, but cannot add, promote, demote, invite or remove a manager', async () => {
+    const t = await createTenant('Perms');
+    const manager = await plain(t);
+    const other = await plain(t, 'Other');
+    const staff = await createStaffMember(t, 'Climber');
+    const ghost = await prisma.userShop.create({
+      data: {
+        shopId: t.shop.id,
+        name: 'Ghost',
+        role: 'manager',
+        email: 'ghost-manager@example.com',
+      },
+    });
+
+    const refused = [
+      await api
+        .post(`/api/shops/${t.shop.id}/team`)
+        .set(authHeader(manager.token))
+        .send({ name: 'Deputy', role: 'manager', sendEmail: false }),
+      await setRole(t, staff.staff.id, 'manager', manager.token),
+      await setRole(t, other.staff.id, 'staff', manager.token),
+      await setRole(t, manager.staff.id, 'staff', manager.token),
+      await remove(t, other.staff.id, manager.token),
+      await api
+        .post(`${member(t, ghost.id)}/invite`)
+        .set(authHeader(manager.token)),
+    ];
+    for (const res of refused) expect(res.status).toBe(403);
+    expect(await roleOf(staff.staff.id)).toBe('staff');
+    expect(await roleOf(other.staff.id)).toBe('manager');
+
+    const added = await api
+      .post(`/api/shops/${t.shop.id}/team`)
+      .set(authHeader(manager.token))
+      .send({ name: 'Helper', role: 'staff', sendEmail: false });
+    expect(added.status).toBe(201);
+    expect((await remove(t, staff.staff.id, manager.token)).status).toBe(200);
+  });
+
+  it('only the owner switches a manager’s permissions; a manager cannot, even with both', async () => {
+    const t = await createTenant('Perms');
+    const trusted = await addManager(t, 'Trusted');
+    const target = await plain(t, 'Target');
+    const flags = async () => {
+      const m = await prisma.userShop.findUniqueOrThrow({
+        where: { id: target.staff.id },
+      });
+      return [m.canManageManagers, m.canEditShopSettings];
+    };
+    const send = (body: object, token: string) =>
+      api.patch(member(t, target.staff.id)).set(authHeader(token)).send(body);
+
+    const byManager = await send(
+      { role: 'manager', canManageManagers: true },
+      trusted.token,
+    );
+    expect(byManager.status).toBe(403);
+    expect(await flags()).toEqual([false, false]);
+
+    // Unchanged values, as the member form sends them, are not a change.
+    const same = await send(
+      { role: 'manager', canManageManagers: false, canEditShopSettings: false },
+      trusted.token,
+    );
+    expect(same.status).toBe(200);
+
+    const byOwner = await send(
+      { role: 'manager', canManageManagers: true, canEditShopSettings: true },
+      t.token,
+    );
+    expect(byOwner.status).toBe(200);
+    expect(await flags()).toEqual([true, true]);
+
+    // …and the permissions work, then go when the member is demoted.
+    const rename = await api
+      .patch(`/api/shops/${t.shop.id}`)
+      .set(authHeader(target.token))
+      .send({ name: 'Renamed By Target' });
+    expect(rename.status).toBe(200);
+    expect((await send({ role: 'staff' }, t.token)).status).toBe(200);
+    expect(await flags()).toEqual([false, false]);
+  });
+});

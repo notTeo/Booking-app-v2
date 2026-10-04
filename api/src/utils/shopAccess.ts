@@ -48,6 +48,20 @@ export const requireShopAccess = async (
   return membership;
 };
 
+// The two permissions the owner can switch on for a manager. The owner always
+// has both; staff never do, whatever their row says.
+type ManagerPermissions = {
+  role: string;
+  canManageManagers: boolean;
+  canEditShopSettings: boolean;
+};
+
+export const canManageManagers = (m: ManagerPermissions) =>
+  m.role === 'owner' || (m.role === 'manager' && m.canManageManagers);
+
+export const canEditShopSettings = (m: ManagerPermissions) =>
+  m.role === 'owner' || (m.role === 'manager' && m.canEditShopSettings);
+
 // Whether a member can see customer contact info — the owner and managers
 // always can; staff only when their own membership flag allows it.
 export const canViewCustomerDetails = (membership: {

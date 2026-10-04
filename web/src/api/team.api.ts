@@ -14,6 +14,9 @@ export interface TeamMember {
   name: string;
   email: string | null;
   canViewCustomerDetails: boolean;
+  /** Manager permissions, set by the owner. Always false for staff. */
+  canManageManagers: boolean;
+  canEditShopSettings: boolean;
   active: boolean;
   bookableByCustomers: boolean;
   bookableInternally: boolean;
@@ -32,6 +35,8 @@ export interface CreateTeamMemberDto {
 export interface UpdateMemberRoleDto {
   role: ShopRole;
   canViewCustomerDetails?: boolean;
+  canManageManagers?: boolean;
+  canEditShopSettings?: boolean;
   email?: string;
   active?: boolean;
   bookableByCustomers?: boolean;

@@ -1,7 +1,12 @@
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
-import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
+import {
+  canEditShopSettings,
+  canManageManagers,
+  canViewCustomerDetails,
+  requireShopAccess,
+} from '../utils/shopAccess';
 
 export interface CreateShopDto {
   name: string;
@@ -61,11 +66,18 @@ const pick = <T extends object, K extends keyof T>(
   return out;
 };
 
-// What a shop response says about the caller's own membership: their role,
-// and whether they may see customer contact details (owners always may).
-const memberView = (m: { role: string; canViewCustomerDetails: boolean }) => ({
+// What a shop response says about the caller's own membership: their role
+// and what it lets them do here (the owner always may do all of it).
+const memberView = (m: {
+  role: string;
+  canViewCustomerDetails: boolean;
+  canManageManagers: boolean;
+  canEditShopSettings: boolean;
+}) => ({
   role: m.role,
   canViewCustomerDetails: canViewCustomerDetails(m),
+  canManageManagers: canManageManagers(m),
+  canEditShopSettings: canEditShopSettings(m),
 });
 
 export const createShop = async (userId: string, dto: CreateShopDto) => {
@@ -119,6 +131,12 @@ export const updateShop = async (
     role: 'manager',
     forbiddenMessage: 'Only the shop owner or a manager can update this shop',
   });
+
+  if (!canEditShopSettings(membership))
+    throw new AppError(
+      403,
+      'The shop owner has not let you edit shop settings',
+    );
 
   // Taking the shop offline (or back online) is the owner's call. The settings
   // form sends isActive on every save, so only an actual change is refused.

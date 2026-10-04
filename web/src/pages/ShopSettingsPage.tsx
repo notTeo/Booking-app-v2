@@ -186,6 +186,8 @@ export default function ShopSettingsPage() {
       </div>
 
       <form onSubmit={handleSave}>
+        {/* Read-only for a manager the owner has not let edit settings. */}
+        <fieldset className="fieldset" disabled={!shop.canEditShopSettings}>
         {/* Shop Details + Configuration — one card, one Save */}
         <div className="card">
           <div className="card__header">
@@ -194,7 +196,9 @@ export default function ShopSettingsPage() {
                 <FontAwesomeIcon icon={faStore} className="card__icon" />
                 {t.shopSettings.shopDetails}
               </h2>
-              <p className="card__text">{t.shopSettings.saveHint}</p>
+              <p className="card__text">
+                {shop.canEditShopSettings ? t.shopSettings.saveHint : t.shopSettings.readOnlyHint}
+              </p>
             </div>
             <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
               {t.shopSettings.saveChanges}
@@ -296,6 +300,7 @@ export default function ShopSettingsPage() {
             />
           </div>
         </div>
+        </fieldset>
       </form>
 
       {/* Danger Zone */}

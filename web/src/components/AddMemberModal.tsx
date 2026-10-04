@@ -11,6 +11,8 @@ import Switch from './Switch';
 
 interface Props {
   shopId: string;
+  /** Whether the manager role is on offer (the owner, or a manager allowed to manage managers). */
+  canAddManager: boolean;
   /** Called with the new member and whether the invite email was sent. */
   onCreated: (member: TeamMember, emailSent: boolean) => void;
   onClose: () => void;
@@ -18,7 +20,7 @@ interface Props {
 
 // Add a team member (the form that used to live on the shop Invites page).
 // Giving someone the manager role goes through an extra confirmation.
-export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
+export default function AddMemberModal({ shopId, canAddManager, onCreated, onClose }: Props) {
   const uid = useId();
   const { t } = useLang();
 
@@ -121,7 +123,7 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
                   disabled={sending}
                 >
                   <option value="staff">{t.invites.roles.staff}</option>
-                  <option value="manager">{t.invites.roles.manager}</option>
+                  {canAddManager && <option value="manager">{t.invites.roles.manager}</option>}
                 </select>
               </div>
             </div>

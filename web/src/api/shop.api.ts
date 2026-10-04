@@ -18,6 +18,10 @@ export interface Shop {
   role: ShopRole;
   /** Whether the signed-in member may see customer names, phones and emails here. */
   canViewCustomerDetails: boolean;
+  /** The owner, or a manager the owner has let add, edit and remove managers. */
+  canManageManagers: boolean;
+  /** The owner, or a manager the owner has let edit the shop's settings. */
+  canEditShopSettings: boolean;
 }
 
 export interface CreateShopDto {

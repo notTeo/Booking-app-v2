@@ -474,6 +474,10 @@ export interface Translations {
     bookableInternally: string;
     bookableInternallyDesc: string;
     inactiveBadge: string;
+    canManageManagers: string;
+    canManageManagersDesc: string;
+    canEditShopSettings: string;
+    canEditShopSettingsDesc: string;
     confirmPromoteManager: string;
     confirmDemoteManager: string;
     transferOwnership: string;
@@ -660,6 +664,7 @@ export interface Translations {
     activeOwnerOnly: string;
     saveChanges: string;
     saveHint: string;
+    readOnlyHint: string;
     backToShop: string;
     created: string;
     updatedPrefix: string;
@@ -1401,7 +1406,11 @@ home: {
       bookableInternally: 'Διαθέσιμο για εσωτερική κράτηση',
       bookableInternallyDesc: 'Ελέγχει αν το μέλος εμφανίζεται ως επιλογή όταν δημιουργείτε ραντεβού μέσα από την εφαρμογή.',
       inactiveBadge: 'Ανενεργό',
-      confirmPromoteManager: 'Αυτό το άτομο θα γίνει διαχειριστής, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων. Μόνο ο ιδιοκτήτης μπορεί να διαγράψει το κατάστημα.',
+      canManageManagers: 'Διαχείριση διαχειριστών',
+      canManageManagersDesc: 'Όταν είναι ενεργό, μπορεί να προσθέτει, να αλλάζει και να αφαιρεί άλλους διαχειριστές. Αλλιώς διαχειρίζεται μόνο το προσωπικό.',
+      canEditShopSettings: 'Επεξεργασία ρυθμίσεων καταστήματος',
+      canEditShopSettingsDesc: 'Όταν είναι ενεργό, μπορεί να αλλάζει τα στοιχεία και τις ρυθμίσεις του καταστήματος. Αλλιώς τα βλέπει μόνο.',
+      confirmPromoteManager: 'Αυτό το άτομο θα γίνει διαχειριστής: θα διαχειρίζεται προσωπικό, υπηρεσίες, ωράρια, ραντεβού και πελάτες. Ο ιδιοκτήτης ορίζει αν μπορεί να διαχειρίζεται άλλους διαχειριστές ή τις ρυθμίσεις του καταστήματος.',
       confirmDemoteManager: 'Αυτό το άτομο θα χάσει την πρόσβαση διαχειριστή.',
       transferOwnership: 'Μεταβίβαση ιδιοκτησίας',
       transferDesc: 'Αυτό το άτομο γίνεται ιδιοκτήτης του καταστήματος και εσείς γίνεστε διαχειριστής.',
@@ -1464,7 +1473,7 @@ home: {
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, θα βλέπει μόνο τη λέξη «Πελάτης» στα ραντεβού, χωρίς όνομα, τηλέφωνο ή email. Μπορείτε να το αλλάξετε αργότερα.',
       sendEmailNow: 'Αποστολή πρόσκλησης σύνδεσης τώρα',
       sendEmailNowDesc: 'Το μέλος δημιουργείται άμεσα και μπορεί να δεχτεί ραντεβού ό,τι κι αν επιλέξετε εδώ. Αν είναι ανενεργό, μπορείτε να στείλετε την πρόσκληση αργότερα από τη σελίδα του μέλους.',
-      confirmManagerInvite: 'Αυτό το άτομο θα γίνει διαχειριστής, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων. Δεν μπορεί να διαγράψει το κατάστημα.',
+      confirmManagerInvite: 'Αυτό το άτομο θα γίνει διαχειριστής: θα διαχειρίζεται προσωπικό, υπηρεσίες, ωράρια, ραντεβού και πελάτες. Οι επιπλέον άδειες ορίζονται από τον ιδιοκτήτη στο προφίλ του.',
       createdNoEmail: 'Το μέλος δημιουργήθηκε. Δεν στάλθηκε πρόσκληση σύνδεσης.',
       pendingLogins: 'Μέλη χωρίς σύνδεση',
       noPendingLogins: 'Όλα τα μέλη έχουν σύνδεση.',
@@ -1587,6 +1596,7 @@ home: {
       activeOwnerOnly: 'Μόνο ο ιδιοκτήτης μπορεί να το αλλάξει.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
+      readOnlyHint: 'Μόνο για προβολή. Ο ιδιοκτήτης μπορεί να σου επιτρέψει την επεξεργασία των ρυθμίσεων.',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
       updatedPrefix: '· Ενημερώθηκε',
@@ -2354,7 +2364,11 @@ home: {
       bookableInternally: 'Bookable internally',
       bookableInternallyDesc: 'Controls whether this member shows up as an option when creating a booking from inside the app.',
       inactiveBadge: 'Inactive',
-      confirmPromoteManager: 'This person will become a manager, with full access to team, invites, customers, and settings. Only the owner can delete the shop.',
+      canManageManagers: 'Manage managers',
+      canManageManagersDesc: 'When on, they can add, change and remove other managers. When off, they manage staff only.',
+      canEditShopSettings: 'Edit shop settings',
+      canEditShopSettingsDesc: "When on, they can change the shop's details and settings. When off, they can only view them.",
+      confirmPromoteManager: 'This person will become a manager: they run staff, services, schedules, bookings and customers. The owner decides whether they can also manage other managers or edit shop settings.',
       confirmDemoteManager: 'This person will lose manager access.',
       transferOwnership: 'Transfer ownership',
       transferDesc: 'This person becomes the owner of the shop and you become a manager.',
@@ -2417,7 +2431,7 @@ home: {
       canViewCustomerDetailsDesc: "When off, they'll see just the word \"Customer\" on bookings — no name, phone, or email. You can change this later.",
       sendEmailNow: 'Send login invite now',
       sendEmailNowDesc: "The member is created right away and can be booked either way. If off, you can send the invite later from the member's page.",
-      confirmManagerInvite: 'This person will become a manager, with full access to team, invites, customers, and settings. They cannot delete the shop.',
+      confirmManagerInvite: 'This person will become a manager: they run staff, services, schedules, bookings and customers. The owner sets any extra permissions on their profile.',
       createdNoEmail: 'Team member created. No login invite was sent.',
       pendingLogins: 'Members Without a Login',
       noPendingLogins: 'Every member has a login.',
@@ -2540,6 +2554,7 @@ home: {
       activeOwnerOnly: 'Only the owner can change this.',
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
+      readOnlyHint: 'View only. The owner can let you edit these settings.',
       backToShop: '← Back to Shop',
       created: 'Created',
       updatedPrefix: '· Updated',

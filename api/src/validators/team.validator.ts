@@ -16,6 +16,8 @@ export const updateMemberRoleValidation = [
     .isIn(['owner', 'manager', 'staff'])
     .withMessage('role must be owner, manager or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
+  body('canManageManagers').optional().isBoolean(),
+  body('canEditShopSettings').optional().isBoolean(),
   body('email')
     .optional({ checkFalsy: true })
     .isEmail()

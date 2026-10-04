@@ -43,6 +43,8 @@ export default function ShopTeamMemberPage() {
   // Member & Access — name/role/email/permissions, saved together
   const [editRole, setEditRole] = useState<ShopRole>('staff');
   const [editCanView, setEditCanView] = useState(true);
+  const [editCanManageManagers, setEditCanManageManagers] = useState(false);
+  const [editCanEditSettings, setEditCanEditSettings] = useState(false);
   const [editEmail, setEditEmail] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editBookableByCustomers, setEditBookableByCustomers] = useState(true);
@@ -81,7 +83,11 @@ export default function ShopTeamMemberPage() {
   const memberIsOwner = member?.role === 'owner';
   // A shop has one owner, so an owner looking at the owner's row is looking at
   // their own. Managers see it read-only.
-  const canEdit = canManage && (!memberIsOwner || viewerIsOwner);
+  // …and so do managers looking at another manager, unless the owner lets
+  // them manage managers.
+  const memberIsManager = member?.role === 'manager';
+  const canEdit =
+    canManage && (!memberIsOwner || viewerIsOwner) && (!memberIsManager || !!shop?.canManageManagers);
   const canTransfer = viewerIsOwner && member?.role === 'manager' && member.active && !!member.userId;
 
   useEffect(() => {
@@ -92,6 +98,8 @@ export default function ShopTeamMemberPage() {
         setMember(m);
         setEditRole(m.role);
         setEditCanView(m.canViewCustomerDetails);
+        setEditCanManageManagers(m.canManageManagers);
+        setEditCanEditSettings(m.canEditShopSettings);
         setEditEmail(m.email ?? '');
         setEditActive(m.active);
         setEditBookableByCustomers(m.bookableByCustomers);
@@ -117,6 +125,8 @@ export default function ShopTeamMemberPage() {
     !!member &&
     (editRole !== member.role ||
       editCanView !== member.canViewCustomerDetails ||
+      editCanManageManagers !== member.canManageManagers ||
+      editCanEditSettings !== member.canEditShopSettings ||
       editEmail !== (member.email ?? '') ||
       editActive !== member.active ||
       editBookableByCustomers !== member.bookableByCustomers ||
@@ -148,6 +158,8 @@ export default function ShopTeamMemberPage() {
       const dto: {
         role: ShopRole;
         canViewCustomerDetails: boolean;
+        canManageManagers?: boolean;
+        canEditShopSettings?: boolean;
         email?: string;
         active: boolean;
         bookableByCustomers: boolean;
@@ -159,6 +171,11 @@ export default function ShopTeamMemberPage() {
         bookableByCustomers: editBookableByCustomers,
         bookableInternally: editBookableInternally,
       };
+      // A manager's permissions are the owner's to set.
+      if (viewerIsOwner && editRole === 'manager') {
+        dto.canManageManagers = editCanManageManagers;
+        dto.canEditShopSettings = editCanEditSettings;
+      }
       if (editEmail !== (member.email ?? '')) dto.email = editEmail;
       const updated = await updateMemberRole(shop.id, memberId, dto);
       setMember(updated);
@@ -166,6 +183,8 @@ export default function ShopTeamMemberPage() {
       // turns both bookable flags back on server-side.
       setEditRole(updated.role);
       setEditCanView(updated.canViewCustomerDetails);
+      setEditCanManageManagers(updated.canManageManagers);
+      setEditCanEditSettings(updated.canEditShopSettings);
       setEditEmail(updated.email ?? '');
       setEditActive(updated.active);
       setEditBookableByCustomers(updated.bookableByCustomers);
@@ -367,7 +386,7 @@ export default function ShopTeamMemberPage() {
                   onChange={(e) => handleRoleChange(e.target.value as ShopRole)}
                 >
                   <option value="staff">{t.team.roles.staff}</option>
-                  <option value="manager">{t.team.roles.manager}</option>
+                  {shop?.canManageManagers && <option value="manager">{t.team.roles.manager}</option>}
                 </select></div>
               </div>
             )}
@@ -421,6 +440,34 @@ export default function ShopTeamMemberPage() {
                 </div>
                 <Switch checked={editCanView} onChange={setEditCanView} label={t.team.canViewCustomerDetails} />
               </div>
+            )}
+
+            {/* What this manager may do beyond the day-to-day — the owner decides. */}
+            {viewerIsOwner && editRole === 'manager' && (
+              <>
+                <div className="setting-row">
+                  <div className="setting-row__label">
+                    <span className="setting-row__title">{t.team.canManageManagers}</span>
+                    <span className="setting-row__text">{t.team.canManageManagersDesc}</span>
+                  </div>
+                  <Switch
+                    checked={editCanManageManagers}
+                    onChange={setEditCanManageManagers}
+                    label={t.team.canManageManagers}
+                  />
+                </div>
+                <div className="setting-row">
+                  <div className="setting-row__label">
+                    <span className="setting-row__title">{t.team.canEditShopSettings}</span>
+                    <span className="setting-row__text">{t.team.canEditShopSettingsDesc}</span>
+                  </div>
+                  <Switch
+                    checked={editCanEditSettings}
+                    onChange={setEditCanEditSettings}
+                    label={t.team.canEditShopSettings}
+                  />
+                </div>
+              </>
             )}
 
             {memberError && <Alert variant="danger">{memberError}</Alert>}
@@ -551,7 +598,7 @@ export default function ShopTeamMemberPage() {
       )}
 
       {/* Danger zone — never for the owner, who transfers the shop or deletes it */}
-      {canManage && !memberIsOwner && (
+      {canEdit && !memberIsOwner && (
         <div className="card card--danger">
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>

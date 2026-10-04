@@ -92,6 +92,8 @@ export default function ShopTeamPage() {
   // Shared between the table row's actions cell and the mobile card's
   // actions row. The confirm dialog is rendered once, at the bottom.
   const renderActions = (member: TeamMember) => {
+    // Managers are managed by the owner, or by a manager the owner allows.
+    if (member.role === 'manager' && !shop?.canManageManagers) return null;
     const resending = invitePendingId === member.id && confirmCancelInvite !== member.id;
     return (
       <div className="cluster cluster--tight">
@@ -215,6 +217,7 @@ export default function ShopTeamPage() {
 
       {showAdd && shop && (
         <AddMemberModal
+          canAddManager={!!shop.canManageManagers}
           shopId={shop.id}
           onCreated={(member, emailSent) => {
             setMembers((prev) => [member, ...prev]);
