@@ -6,7 +6,6 @@ import { useLang } from '../context/LanguageContext';
 import { lookupInvite, acceptInvite, type InviteLookup } from '../api/invite.api';
 import { MY_INVITES_KEY } from '../hooks/useMyInvites';
 import { MY_SHOPS_KEY } from '../hooks/useMyShops';
-import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 
@@ -61,8 +60,8 @@ export default function AcceptInvitePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
+      <div className="page page--center">
+        <div className="card card--auth card--center">
           <div className="spinner spinner--lg" />
         </div>
       </div>
@@ -71,10 +70,10 @@ export default function AcceptInvitePage() {
 
   if (lookupError) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
-          <p className="accept-invite-error">{lookupError}</p>
-          <Link to="/dashboard" className="btn btn--secondary btn--block" style={{ marginTop: '1.5rem' }}>
+      <div className="page page--center">
+        <div className="card card--auth card--center">
+          <Alert variant="danger">{lookupError}</Alert>
+          <Link to="/dashboard" className="btn btn--secondary btn--block">
             Dashboard
           </Link>
         </div>
@@ -87,10 +86,10 @@ export default function AcceptInvitePage() {
   const emailMatches = user?.email.toLowerCase() === invite.email.toLowerCase();
 
   return (
-    <div className="accept-invite-page">
-      <div className="card card--auth accept-invite-card">
+    <div className="page page--center">
+      <div className="card card--auth card--center">
         <h1 className="t-heading">{t.invites.youreInvited}</h1>
-        <div className="accept-invite-meta">
+        <div className="card__text">
           <p>
             <strong>{invite.invitedBy}</strong> invited you to join{' '}
             <strong>{invite.shopName}</strong>
@@ -99,10 +98,10 @@ export default function AcceptInvitePage() {
             {t.invites.joinAs}{' '}
             <strong>{t.invites.roles[invite.role]}</strong>
           </p>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.82rem' }}>
-            {t.invites.inviteFor}: {invite.email}
-          </p>
         </div>
+        <p className="card__text">
+          {t.invites.inviteFor}: {invite.email}
+        </p>
 
         {acceptError && (
           <Alert variant="danger">
@@ -110,46 +109,44 @@ export default function AcceptInvitePage() {
           </Alert>
         )}
 
-        <div className="accept-invite-actions">
-          {isAuthenticated ? (
-            emailMatches ? (
-              <button
-                className="btn btn--block"
-                disabled={accepting}
-                onClick={handleAcceptNow}
-              >
-                {accepting ? t.invites.accepting2 : t.invites.acceptNow}
-              </button>
-            ) : (
-              <>
-                <div className="accept-invite-warning">
-                  {t.invites.emailMismatch} ({invite.email})
-                </div>
-                <Link
-                  to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
-                  className="btn btn--block"
-                >
-                  {t.invites.registerToAccept}
-                </Link>
-              </>
-            )
+        {isAuthenticated ? (
+          emailMatches ? (
+            <button
+              className="btn btn--block"
+              disabled={accepting}
+              onClick={handleAcceptNow}
+            >
+              {accepting ? t.invites.accepting2 : t.invites.acceptNow}
+            </button>
           ) : (
             <>
+              <Alert variant="warning">
+                {t.invites.emailMismatch} ({invite.email})
+              </Alert>
               <Link
                 to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
                 className="btn btn--block"
               >
                 {t.invites.registerToAccept}
               </Link>
-              <Link
-                to={`/login?redirect=${encodeURIComponent(`/invite?token=${token}`)}`}
-                className="btn btn--secondary btn--block"
-              >
-                {t.invites.loginToAccept}
-              </Link>
             </>
-          )}
-        </div>
+          )
+        ) : (
+          <>
+            <Link
+              to={`/register?inviteToken=${encodeURIComponent(token)}&email=${encodeURIComponent(invite.email)}`}
+              className="btn btn--block"
+            >
+              {t.invites.registerToAccept}
+            </Link>
+            <Link
+              to={`/login?redirect=${encodeURIComponent(`/invite?token=${token}`)}`}
+              className="btn btn--secondary btn--block"
+            >
+              {t.invites.loginToAccept}
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );

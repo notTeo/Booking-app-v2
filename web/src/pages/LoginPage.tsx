@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/pages/login.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';
@@ -56,17 +55,19 @@ export default function LoginPage() {
               required
             />
           </div>
-          <label className="checkbox remember-me">
-            <input
-              id="rememberMe"
-              className="checkbox__input"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <span className="checkbox__box" />
-            Remember me
-          </label>
+          <div className="field">
+            <label className="checkbox">
+              <input
+                id="rememberMe"
+                className="checkbox__input"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span className="checkbox__box" />
+              Remember me
+            </label>
+          </div>
           {error && <Alert variant="danger">{error}</Alert>}
           <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading}>
             Login

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
-import '../styles/pages/verify-email.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 
@@ -67,7 +66,7 @@ export default function VerifyEmailPage() {
       <div className="card card--auth">
         <h1 className="t-heading">Email Verification</h1>
 
-        {status === 'loading' && <p className="verify-email-status">Verifying...</p>}
+        {status === 'loading' && <p className="card__text">Verifying...</p>}
 
         {status === 'success' && (
           <>
@@ -81,12 +80,12 @@ export default function VerifyEmailPage() {
             <Alert variant="danger">{message}</Alert>
 
             {isExpired && (
-              <form onSubmit={handleResend} className="verify-resend-form">
-                <p id="verify-resend-label" className="verify-resend-label">Enter your email to get a new link:</p>
+              <form onSubmit={handleResend}>
                 <div className="field">
+                  <label className="field__label" htmlFor="verify-resend-email">Enter your email to get a new link:</label>
                   <input className="input"
+                    id="verify-resend-email"
                     type="email"
-                    aria-labelledby="verify-resend-label"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
                     placeholder="you@example.com"

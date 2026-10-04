@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { authStore } from '../store/authStore';
 import PasswordRequirement from '../components/PasswordRequirement';
-import '../styles/pages/register.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';
@@ -80,7 +79,7 @@ export default function RegisterPage() {
         <h1 className="t-heading">Register</h1>
 
         {inviteToken && (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1rem' }}>
+          <p className="card__text">
             {t.register.inviteNotice}
           </p>
         )}
@@ -98,14 +97,13 @@ export default function RegisterPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="email">Email</label>
-            <input className="input"
+            <input className={`input${inviteToken && emailFromInvite ? ' is-disabled' : ''}`}
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               readOnly={!!inviteToken && !!emailFromInvite}
-              style={inviteToken && emailFromInvite ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
             />
           </div>
           <div className="field">

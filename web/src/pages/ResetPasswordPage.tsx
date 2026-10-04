@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api/auth.api';
 import PasswordRequirement from '../components/PasswordRequirement';
-import '../styles/pages/reset-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';

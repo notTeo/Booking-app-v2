@@ -235,6 +235,7 @@ a { color: var(--accent); }
 .card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .card__title { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .card__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+.card__text strong { font-weight: var(--fw-semibold); color: var(--text); }
 .card__footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); }
 .card--flat { background: var(--surface-sunken); border-color: transparent; }
 .card--glow { box-shadow: var(--shadow-glow); }
@@ -251,6 +252,10 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card > :is(h1, h2, h3, h4, p, .field) { margin: 0; }
 .card > .btn:not(.btn--block) { align-self: flex-start; }
 .card > .alert + * { margin-top: 0; }
+/* A short message with its actions (accept an invite, cancel a booking): centred text, centred spinner. */
+.card--center { text-align: center; }
+.card--center > :is(.spinner, .btn:not(.btn--block)) { align-self: center; }
+.card--center > .alert { text-align: left; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
 /* icon, value and label on one line, never wrapped: in a .stat-grid a card that doesn't fit moves to the next row whole */
 .stat { display: flex; flex-direction: row; align-items: center; gap: var(--space-3); white-space: nowrap; }
@@ -407,6 +412,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .empty__icon { display: grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: var(--space-2); border-radius: var(--radius-full); font-size: var(--fs-xl); color: var(--accent); background: var(--accent-soft); }
 .empty__title { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .empty__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+/* The big status code of an error page ("404"), in place of the icon. */
+.empty__code { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); color: var(--accent); }
 .empty__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-4); }
 .empty--sm { padding: var(--space-6) var(--space-4); }
 .empty--sm .empty__icon { width: 3rem; height: 3rem; font-size: var(--fs-lg); }
