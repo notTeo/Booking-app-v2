@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 
 /** Invites are merged into Team: add a member from a modal, login-invite actions on the rows. */
@@ -11,7 +12,7 @@ async function login(page: Page) {
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
 }
 
 // The switch's input sits under its track, so click the label (as member-reactivate.spec does).

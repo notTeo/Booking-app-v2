@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
@@ -23,7 +24,7 @@ test('a 15-minute interval offers :15 starts, and the calendar filter bar hides 
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
 
   // Shop settings: every 15 minutes
   await page.goto(`/shops/${E2E.shop.slug}/settings`);
@@ -79,7 +80,7 @@ test('the "Time step" buttons in the staff wizard offer 10-minute starts for one
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
   await page.getByRole('radiogroup').getByRole('radio').first().click();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { register, resendVerification } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
@@ -12,7 +12,6 @@ import Alert from '../components/Alert';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
-  const navigate = useNavigate();
   const { t } = useLang();
   const [params] = useSearchParams();
 
@@ -43,11 +42,11 @@ export default function RegisterPage() {
     try {
       const data = await register(name, email, password, acceptTerms, inviteToken || undefined);
 
-      // Invite path: response contains accessToken + user — auto-login and redirect
+      // Invite path: response contains accessToken + user — auto-login; PublicRoute
+      // then picks the landing page (the invited shop, for a new user).
       if (data.data?.accessToken) {
         authStore.setToken(data.data.accessToken);
         setUser(data.data.user);
-        navigate(`/shops/${data.data.shopSlug}`);
         return;
       }
 

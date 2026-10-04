@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
 import { apiErrorMessage } from '../utils/apiError';
@@ -8,7 +8,6 @@ import Alert from '../components/Alert';
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,8 +21,8 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
+      // PublicRoute sees the new session and picks the landing page.
       await login(email, password, rememberMe);
-      navigate('/dashboard');
     } catch (err: unknown) {
       setError(apiErrorMessage(err, 'Login failed'));
     } finally {
