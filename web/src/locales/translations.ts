@@ -695,6 +695,8 @@ export interface Translations {
     notesLabel: string;
     notesOptional: string;
     notesPlaceholder: string;
+    rememberLabel: string;
+    rememberHint: string;
     confirmBooking: string;
     bookingConfirmed: string;
     bookingConfirmedMsg: string;
@@ -1091,14 +1093,14 @@ home: {
   privacy: {
     linkLabel: 'Πολιτική Απορρήτου',
     title: 'Πολιτική Απορρήτου',
-    lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
+    lastUpdated: 'Τελευταία ενημέρωση: Οκτώβριος 2026',
     intro: 'Η ιδιωτικότητά σου έχει σημασία. Αυτή η σελίδα εξηγεί, σε απλά λόγια, τι δεδομένα συλλέγει το BeBooked και πώς τα χρησιμοποιεί. Δεν αποτελεί νομική συμβουλή — βρισκόμαστε σε πρώιμο στάδιο και θα ενημερώνουμε αυτή τη σελίδα καθώς η υπηρεσία μεγαλώνει.',
     collectHeading: 'Ποια δεδομένα συλλέγουμε',
     collectBody: 'Συλλέγουμε τα στοιχεία που μας δίνεις όταν δημιουργείς λογαριασμό ή κλείνεις ραντεβού μέσω μιας δημόσιας σελίδας καταστήματος: όνομα, email, τηλέφωνο και βασικά στοιχεία του καταστήματός σου (όνομα, διεύθυνση, υπηρεσίες, ωράριο). Δεν συλλέγουμε στοιχεία πληρωμής, καθώς το BeBooked δεν επεξεργάζεται πληρωμές.',
     useHeading: 'Πώς τα χρησιμοποιούμε',
     useBody: 'Χρησιμοποιούμε τα δεδομένα σου για να λειτουργήσει η υπηρεσία: να δημιουργούμε και να διαχειριζόμαστε ραντεβού, να στέλνουμε emails επιβεβαίωσης ή ειδοποιήσεων και να σου παρέχουμε υποστήριξη όταν τη χρειάζεσαι. Δεν πουλάμε ούτε νοικιάζουμε τα δεδομένα σου σε τρίτους.',
     cookiesHeading: 'Cookies και τοπική αποθήκευση',
-    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
+    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Αν επιλέξεις «Αποθήκευση των στοιχείων μου» σε μια σελίδα κρατήσεων, το όνομα, το τηλέφωνο και το email σου αποθηκεύονται στην τοπική αποθήκευση του browser σου για να συμπληρωθούν στην επόμενη κράτηση· μένουν στη συσκευή σου για έως 12 μήνες και διαγράφονται μόλις αποεπιλέξεις το πεδίο ή καθαρίσεις τα δεδομένα του ιστότοπου. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
     sharingHeading: 'Κοινοποίηση δεδομένων',
     sharingBody: 'Δεν μοιραζόμαστε τα δεδομένα σου με τρίτους, εκτός από τους παρόχους υπηρεσιών που χρειαζόμαστε για να λειτουργήσει το BeBooked (π.χ. αποστολή email, φιλοξενία). Αυτοί οι πάροχοι έχουν πρόσβαση μόνο στα δεδομένα που χρειάζονται για να παρέχουν την υπηρεσία τους.',
     rightsHeading: 'Τα δικαιώματά σου',
@@ -1598,6 +1600,8 @@ home: {
       notesLabel: 'Σημειώσεις',
       notesOptional: '(προαιρετικό)',
       notesPlaceholder: 'Ειδικές απαιτήσεις...',
+      rememberLabel: 'Αποθήκευση των στοιχείων μου σε αυτή τη συσκευή',
+      rememberHint: 'Αποθηκεύονται μόνο σε αυτόν τον browser, για να συμπληρωθούν στην επόμενη κράτησή σας. Αποεπιλέξτε για να διαγραφούν.',
       confirmBooking: 'Επιβεβαίωση Κράτησης',
       bookingConfirmed: 'Κράτηση Επιβεβαιώθηκε!',
       bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
@@ -2020,14 +2024,14 @@ home: {
   privacy: {
     linkLabel: 'Privacy Policy',
     title: 'Privacy Policy',
-    lastUpdated: 'Last updated: September 2026',
+    lastUpdated: 'Last updated: October 2026',
     intro: "Your privacy matters. This page explains, in plain language, what data BeBooked collects and how it's used. It isn't legal advice — we're early-stage and will keep this page updated as the service grows.",
     collectHeading: 'What We Collect',
     collectBody: "We collect the information you give us when you create an account or book an appointment through a shop's public page: name, email, phone number, and basic shop details (name, address, services, hours). We don't collect payment information — BeBooked doesn't process payments.",
     useHeading: 'How We Use It',
     useBody: "We use your data to run the service: creating and managing bookings, sending confirmation or notification emails, and providing support when you need it. We don't sell or rent your data to third parties.",
     cookiesHeading: 'Cookies & Local Storage',
-    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. We don't use third-party cookies for advertising or tracking.",
+    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. If you tick \"Remember my details\" on a booking page, your name, phone number and email are kept in your browser's local storage to fill in your next booking; they stay on your device for up to 12 months and are removed as soon as you untick the box or clear the site's data. We don't use third-party cookies for advertising or tracking.",
     sharingHeading: 'Data Sharing',
     sharingBody: "We don't share your data with third parties, except the service providers we rely on to run BeBooked (e.g. email delivery, hosting). Those providers only get access to what they need to provide their service.",
     rightsHeading: 'Your Rights',
@@ -2527,6 +2531,8 @@ home: {
       notesLabel: 'Notes',
       notesOptional: '(optional)',
       notesPlaceholder: 'Any special requests...',
+      rememberLabel: 'Remember my details on this device',
+      rememberHint: 'Saved only in this browser, to fill in your next booking. Untick to delete them.',
       confirmBooking: 'Confirm Booking',
       bookingConfirmed: 'Booking Confirmed!',
       bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
