@@ -294,9 +294,15 @@ export default function ShopBookingsPage() {
       {/* ── Header ── */}
       <div className="bookings-header">
         <h1 className="t-title">{t.bookings.title}</h1>
+        {isOwner && shop && (
+          <Link className="btn btn--sm" to={`/shops/${shop.slug}/bookings/new`}>
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+            {t.sidebar.bookAppointment}
+          </Link>
+        )}
       </div>
 
-      {/* ── Toolbar: date, filters (controls live in BookingFiltersModal), new booking ── */}
+      {/* ── Toolbar: date, filters (controls live in BookingFiltersModal) ── */}
       <div className="bookings-toolbar">
         <div className="bookings-date-nav">
           <button
@@ -340,12 +346,6 @@ export default function ShopBookingsPage() {
               {t.bookings.filters.clear}
             </button>
           </>
-        )}
-        {isOwner && shop && (
-          <Link className="btn btn--sm bookings-toolbar-end" to={`/shops/${shop.slug}/bookings/new`}>
-            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-            {t.sidebar.bookAppointment}
-          </Link>
         )}
       </div>
 

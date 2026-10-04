@@ -9,6 +9,10 @@
 /* ── Header ──────────────────────────────────────────────────────────────── */
 
 .bookings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
 
@@ -32,7 +36,7 @@
   --btn-bg: var(--surface-sunken);
 }
 
-/* ── Toolbar under the title: date and filters on the left, new booking on the right ── */
+/* ── Toolbar under the title: date, then filters ── */
 
 .bookings-toolbar {
   display: flex;
@@ -40,10 +44,6 @@
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
-}
-
-.bookings-toolbar-end {
-  margin-left: auto;
 }
 
 /* Status chips inside the filters modal. */
