@@ -51,19 +51,9 @@ export interface Translations {
     };
     /** from: "{email} invited you as {role}" */
     invites: { title: string; from: string; empty: string };
-    /** Heading of the cross-shop analytics. */
-    analytics: string;
-    analyticsEmpty: string;
-    shops: {
-      title: string;
-      bookings: string;
-      today: string;
-      pending: string;
-      noPending: string;
-    };
+    shops: { title: string };
     /** text contains {email}. */
     empty: { title: string; text: string };
-    neverBooked: { title: string; text: string };
   };
   shops: {
     title: string;
@@ -979,22 +969,10 @@ export const translations: Record<Language, Translations> = {
         from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
         empty: 'Δεν έχεις προσκλήσεις σε αναμονή.',
       },
-      analytics: 'Σε όλα τα καταστήματά σου',
-      analyticsEmpty: 'Τα ραντεβού σου θα εμφανιστούν εδώ μόλις μπεις σε ένα κατάστημα.',
-      shops: {
-        title: 'Τα καταστήματά σου',
-        bookings: 'Ραντεβού',
-        today: 'Σήμερα',
-        pending: '{count} σε αναμονή',
-        noPending: 'Κανένα σε αναμονή',
-      },
+      shops: { title: 'Όλα τα καταστήματα' },
       empty: {
         title: 'Δεν ανήκεις ακόμα σε κάποιο κατάστημα',
         text: 'Ζήτησε από τον ιδιοκτήτη του καταστήματός σου να προσκαλέσει το {email}.',
-      },
-      neverBooked: {
-        title: 'Δεν υπάρχουν ακόμα ραντεβού',
-        text: 'Μοιράσου τη σελίδα κρατήσεων ενός καταστήματος και ο πρώτος σου πελάτης θα εμφανιστεί εδώ.',
       },
     },
     shops: {
@@ -1367,7 +1345,7 @@ home: {
       errorLoad: 'Αποτυχία φόρτωσης μελών.',
       errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
       errorRemoveHasBookings: 'Αυτό το μέλος έχει κρατήσεις. Απενεργοποιήστε το αντί να το αφαιρέσετε.',
-      backToTeam: '← Πίσω στην Ομάδα',
+      backToTeam: 'Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
       roleUpdated: 'Ο ρόλος ενημερώθηκε επιτυχώς.',
@@ -1759,7 +1737,7 @@ home: {
       phoneCol: 'Τηλέφωνο',
       emailCol: 'Email',
       addedCol: 'Προστέθηκε',
-      backToCustomers: '← Πίσω στους Πελάτες',
+      backToCustomers: 'Πίσω στους Πελάτες',
       notFound: 'Ο πελάτης δεν βρέθηκε',
       customerErrorLoad: 'Αποτυχία φόρτωσης πελάτη',
       customerSince: 'Πελάτης από',
@@ -1937,22 +1915,10 @@ home: {
         from: '{email} invited you as {role}',
         empty: 'You have no pending invitations.',
       },
-      analytics: 'Across your shops',
-      analyticsEmpty: 'Your bookings will appear here once you are part of a shop.',
-      shops: {
-        title: 'Your shops',
-        bookings: 'Bookings',
-        today: 'Today',
-        pending: '{count} pending',
-        noPending: 'None pending',
-      },
+      shops: { title: 'All shops' },
       empty: {
         title: "You're not part of a shop yet",
         text: 'Ask your shop owner to invite {email}.',
-      },
-      neverBooked: {
-        title: 'No bookings yet',
-        text: "Share a shop's booking page and your first customer will appear here.",
       },
     },
     shops: {
@@ -2325,7 +2291,7 @@ home: {
       errorLoad: 'Failed to load team members.',
       errorRemove: 'Failed to remove member.',
       errorRemoveHasBookings: 'This member has bookings. Deactivate them instead.',
-      backToTeam: '← Back to Team',
+      backToTeam: 'Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',
       roleUpdated: 'Role updated successfully.',
@@ -2717,7 +2683,7 @@ home: {
       phoneCol: 'Phone',
       emailCol: 'Email',
       addedCol: 'Added',
-      backToCustomers: '← Back to Customers',
+      backToCustomers: 'Back to Customers',
       notFound: 'Customer not found',
       customerErrorLoad: 'Failed to load customer',
       customerSince: 'Customer since',

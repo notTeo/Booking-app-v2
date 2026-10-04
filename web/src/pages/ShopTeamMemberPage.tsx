@@ -1,6 +1,8 @@
 import { useEffect, useState, useId } from 'react';
 import { canManageShop, ROLE_BADGE } from '../utils/roles';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage, isReferencedConflict } from '../utils/apiError';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -337,9 +339,12 @@ export default function ShopTeamMemberPage() {
   if (error || !member) {
     return (
       <div className="team-member-page">
-        <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
-          {t.team.backToTeam}
-        </button>
+        <div className="cluster">
+          <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/team`}>
+            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+            {t.team.backToTeam}
+          </Link>
+        </div>
         <Alert variant="danger">{error || t.team.notFound}</Alert>
       </div>
     );
@@ -348,9 +353,12 @@ export default function ShopTeamMemberPage() {
   return (
     <div className="team-member-page">
       {/* Back link */}
-      <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
-        {t.team.backToTeam}
-      </button>
+      <div className="cluster">
+        <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/team`}>
+          <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+          {t.team.backToTeam}
+        </Link>
+      </div>
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">

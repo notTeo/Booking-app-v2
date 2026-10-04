@@ -5,10 +5,10 @@ import { query } from '../support/db';
 import { addPendingInvite } from '../support/invites';
 
 /**
- * /dashboard, the one page outside a shop: the subscription, the invite
- * inbox, "Your shops" with the user's role and Create shop. Every section is
- * always shown, with an empty state when it has nothing in it. The analytics
- * are in dashboard-overview.spec.
+ * /dashboard, the one page outside a shop, in this order: "All shops" with
+ * the user's role, the subscription (one card wide) and the invite inbox,
+ * plus Create shop. Every section is always shown, with an empty state when
+ * it has nothing in it. A shop card is the name, my role and the address.
  * The seeded owner u1 is Pro and owns one shop (s1, membership us1). Shops
  * added here have ids starting "dash2-" and are deleted after each test.
  */
@@ -28,7 +28,7 @@ async function openDashboard(page: Page, theme: 'light' | 'dark' = 'light') {
 }
 
 const inbox = (page: Page) => page.getByRole('region', { name: 'Invitations' });
-const shops = (page: Page) => page.getByRole('region', { name: 'Your shops', exact: true });
+const shops = (page: Page) => page.getByRole('region', { name: 'All shops', exact: true });
 const subscription = (page: Page) => page.getByRole('region', { name: 'Subscription' });
 const createShop = (page: Page) => page.getByRole('link', { name: 'Create shop' });
 const createShopDisabled = (page: Page) => page.getByRole('button', { name: 'Create shop' });
@@ -38,9 +38,10 @@ test.afterEach(async () => {
   await query(`delete from "Shop" where id like 'dash2-%'`);
   await query(`update "UserShop" set active = true, role = 'owner' where id = 'us1'`);
   await query(`update "User" set "isPro" = true where id = 'u1'`);
+  await query(`update "Shop" set "formattedAddress" = null where id = 's1'`);
 });
 
-test('Your shops: a card with the shop name and my role, linking into the shop', async ({ page }) => {
+test('All shops: a card with the shop name and my role, linking into the shop', async ({ page }) => {
   await openDashboard(page);
   const card = shops(page).locator('.shop-card');
   await expect(card).toHaveCount(1);
@@ -48,6 +49,16 @@ test('Your shops: a card with the shop name and my role, linking into the shop',
   await expect(card).toContainText('Owner');
   await card.click();
   await expect(page).toHaveURL(new RegExp(`/shops/${E2E.shop.slug}$`));
+});
+
+test('a shop card shows the address and no numbers', async ({ page }) => {
+  await query(`update "Shop" set "formattedAddress" = 'Ermou 10, Athens' where id = 's1'`);
+  await openDashboard(page);
+  const card = shops(page).locator('.shop-card');
+  await expect(card).toContainText('Ermou 10, Athens');
+  await expect(card).not.toContainText('pending');
+  await expect(card).not.toContainText('Bookings');
+  await expect(card).not.toContainText('Today');
 });
 
 test('a staff member sees Staff on the card', async ({ page }) => {
@@ -84,6 +95,19 @@ test('Subscription: the plan and a billing button that is not usable yet', async
   await page.goto('/dashboard');
   await expect(subscription(page).locator('.badge')).toHaveText('Free');
   await expect(subscription(page).getByRole('button', { name: 'Upgrade' })).toBeDisabled();
+});
+
+test('sections come in order: All shops, Subscription, Invitations; the subscription is one card wide', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openDashboard(page);
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText(['All shops', 'Subscription', 'Invitations']);
+  await expect(page.getByRole('heading', { name: 'Across your shops' })).toHaveCount(0);
+
+  const card = (await subscription(page).locator('.card').boundingBox())!;
+  const section = (await subscription(page).boundingBox())!;
+  expect(card.width).toBeLessThan(section.width / 2);
+  const shopCard = (await shops(page).locator('.shop-card').first().boundingBox())!;
+  expect(Math.round(card.width)).toBe(Math.round(shopCard.width));
 });
 
 test('no pending invites: the inbox says so', async ({ page }) => {
@@ -139,9 +163,6 @@ test('no shops and no invites: ask your shop owner to invite my email', async ({
   await expect(shops(page).locator('.shop-card')).toHaveCount(0);
   await expect(inbox(page)).toContainText('You have no pending invitations.');
   await expect(subscription(page).locator('.badge')).toHaveText('Free');
-  await expect(page.getByRole('region', { name: 'Across your shops' })).toContainText(
-    'Your bookings will appear here once you are part of a shop.',
-  );
   await expect(createShopDisabled(page)).toBeDisabled();
 });
 

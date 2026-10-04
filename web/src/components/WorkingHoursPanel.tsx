@@ -1,6 +1,6 @@
 import { useEffect, useState, useId } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import {
   type DayOfWeek,
@@ -347,6 +347,7 @@ const created = await api.createSchedule(dto);
               setCreateError('');
             }}
           >
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.workingHours.newSchedule}
           </button>
         )}
