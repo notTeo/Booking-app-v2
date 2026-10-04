@@ -37,7 +37,7 @@
   --btn-bg: var(--surface-sunken);
 }
 
-/* ── Filter bar ──────────────────────────────────────────────────────────── */
+/* ── Filters row + the chips inside the filters modal ──────────────────────────────────────────────────────────── */
 
 .cal-filters {
   display: flex;
@@ -51,12 +51,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.cal-filter-select {
-  width: auto;
-  min-width: 10rem;
-  max-width: 100%;
 }
 
 .cal-filters-count {

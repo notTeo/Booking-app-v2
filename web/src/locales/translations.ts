@@ -880,6 +880,8 @@ export interface Translations {
       serviceLabel: string;
       allStaff: string;
       allServices: string;
+      button: string;
+      done: string;
       clear: string;
       showing: string;
       status: Record<'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW', string>;
@@ -1800,6 +1802,8 @@ home: {
         serviceLabel: 'Υπηρεσία',
         allStaff: 'Όλο το προσωπικό',
         allServices: 'Όλες οι υπηρεσίες',
+        button: 'Φίλτρα',
+        done: 'Τέλος',
         clear: 'Καθαρισμός φίλτρων',
         showing: '{shown} από {total} ραντεβού',
         status: {
@@ -2725,6 +2729,8 @@ home: {
         serviceLabel: 'Service',
         allStaff: 'All staff',
         allServices: 'All services',
+        button: 'Filters',
+        done: 'Done',
         clear: 'Clear filters',
         showing: '{shown} of {total} bookings',
         status: {

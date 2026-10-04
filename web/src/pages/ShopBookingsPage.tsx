@@ -2,7 +2,7 @@ import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '..
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -14,6 +14,7 @@ import {
 } from '../api/booking.api';
 import { getMembers, type TeamMember } from '../api/team.api';
 import { getDaySchedule, type DaySchedule } from '../api/workingHours.api';
+import BookingFiltersModal from '../components/BookingFiltersModal';
 import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
 import {
   blockGeometry,
@@ -90,6 +91,7 @@ export default function ShopBookingsPage() {
   const [statusFilter, setStatusFilter]       = useState<Set<BookingStatus>>(new Set());
   const [staffFilter, setStaffFilter]         = useState<string | null>(null);
   const [serviceFilter, setServiceFilter]     = useState<{ id: string; name: string } | null>(null);
+  const [showFilters, setShowFilters]         = useState(false);
 
   // Latest-request-wins: a slow response for a day the user has already left
   // (or the duplicate effect run in StrictMode) must never replace the bookings
@@ -180,6 +182,12 @@ export default function ShopBookingsPage() {
 
   const filters = { statuses: statusFilter, staffId: staffFilter, serviceId: serviceFilter?.id ?? null };
   const filtersActive = hasActiveFilters(filters);
+  const activeFilterCount = statusFilter.size + (staffFilter ? 1 : 0) + (serviceFilter ? 1 : 0);
+  const clearFilters = () => {
+    setStatusFilter(new Set());
+    setStaffFilter(null);
+    setServiceFilter(null);
+  };
   // Only blocks are filtered: the visible hour range and the "outside range"
   // banner below still use every booking, so the grid does not jump around.
   const shownBookings = filterBookings(bookings, filters);
@@ -322,72 +330,19 @@ export default function ShopBookingsPage() {
         )}
       </div>
 
-      {/* ── Filter bar ── */}
+      {/* ── Filters (the controls live in BookingFiltersModal) ── */}
       <div className="cal-filters">
-        <div className="cal-filters-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
-          {ALL_STATUSES.map(s => {
-            const active = statusFilter.has(s);
-            return (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={active}
-                className={`chip chip--${BOOKING_STATUS[s].cls}`}
-                onClick={() =>
-                  setStatusFilter(prev => {
-                    const next = new Set(prev);
-                    if (next.has(s)) next.delete(s); else next.add(s);
-                    return next;
-                  })
-                }
-              >
-                <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
-                <span className="chip__label">{t.bookings.filters.status[s]}</span>
-              </button>
-            );
-          })}
-        </div>
-        <label htmlFor="cal-filter-staff" className="visually-hidden">{t.bookings.filters.staffLabel}</label>
-        <div className="select-wrap select-wrap--sm cal-filter-select"><select
-          id="cal-filter-staff"
-          className="select select--sm"
-          value={staffFilter ?? ''}
-          onChange={e => setStaffFilter(e.target.value || null)}
-        >
-          <option value="">{t.bookings.filters.allStaff}</option>
-          {allColumns.map(c => (
-            <option key={c.id} value={c.id}>{c.label}</option>
-          ))}
-        </select></div>
-        <label htmlFor="cal-filter-service" className="visually-hidden">{t.bookings.filters.serviceLabel}</label>
-        <div className="select-wrap select-wrap--sm cal-filter-select"><select
-          id="cal-filter-service"
-          className="select select--sm"
-          value={serviceFilter?.id ?? ''}
-          onChange={e => {
-            const id = e.target.value;
-            setServiceFilter(id ? { id, name: serviceOptions.get(id) ?? '' } : null);
-          }}
-        >
-          <option value="">{t.bookings.filters.allServices}</option>
-          {[...serviceOptions].map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
-          ))}
-        </select></div>
+        <button type="button" className="btn btn--secondary btn--sm" onClick={() => setShowFilters(true)}>
+          <FontAwesomeIcon icon={faSliders} aria-hidden="true" />
+          {t.bookings.filters.button}
+          {activeFilterCount > 0 && <span className="badge badge--accent">{activeFilterCount}</span>}
+        </button>
         {filtersActive && (
           <>
             <span className="cal-filters-count t-body-sm">
               {t.bookings.filters.showing.replace('{shown}', String(shownCount)).replace('{total}', String(bookings.length))}
             </span>
-            <button
-              type="button"
-              className="btn btn--secondary btn--sm"
-              onClick={() => {
-                setStatusFilter(new Set());
-                setStaffFilter(null);
-                setServiceFilter(null);
-              }}
-            >
+            <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
               {t.bookings.filters.clear}
             </button>
           </>
@@ -621,6 +576,29 @@ export default function ShopBookingsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {showFilters && (
+        <BookingFiltersModal
+          statuses={ALL_STATUSES}
+          statusFilter={statusFilter}
+          onToggleStatus={(status) =>
+            setStatusFilter(prev => {
+              const next = new Set(prev);
+              if (next.has(status)) next.delete(status); else next.add(status);
+              return next;
+            })
+          }
+          staffOptions={allColumns}
+          staffFilter={staffFilter}
+          onStaffChange={setStaffFilter}
+          serviceOptions={serviceOptions}
+          serviceFilter={serviceFilter?.id ?? null}
+          onServiceChange={(id) => setServiceFilter(id ? { id, name: serviceOptions.get(id) ?? '' } : null)}
+          filtersActive={filtersActive}
+          onClear={clearFilters}
+          onClose={() => setShowFilters(false)}
+        />
       )}
 
     </div>
