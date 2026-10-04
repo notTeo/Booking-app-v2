@@ -289,3 +289,15 @@ test('a shop with no bookings ever shows the empty state with the booking link',
   // Nothing to list, so no empty "upcoming" table next to the call to action.
   await expect(page.getByRole('heading', { name: 'Upcoming bookings' })).toHaveCount(0);
 });
+
+test('on a 1280px laptop the upcoming bookings are a table, beside the stat tiles', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openOverview(page);
+  await expect(page.locator('.data-table').first()).toBeVisible();
+  // Row cards (under 640px of room) hide the header row off screen.
+  const header = page.locator('.data-table thead').first();
+  expect(await header.evaluate((el) => getComputedStyle(el).position)).not.toBe('absolute');
+  const tiles = (await page.locator('.overview-grid__stats').boundingBox())!;
+  const chart = (await page.locator('.overview-grid__chart').boundingBox())!;
+  expect(tiles.x).toBeGreaterThan(chart.x + chart.width);
+});
