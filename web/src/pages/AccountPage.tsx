@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLang } from '../context/LanguageContext';
@@ -46,6 +46,17 @@ function formatSessionDate(iso: string, lang: string) {
 
 export default function AccountPage() {
   const { user, setUser, logout } = useAuth();
+  const { hash } = useLocation();
+
+  // Arriving from the dashboard's plan button: bring the subscription card
+  // into view (the router does not follow #hash links on its own).
+  useEffect(() => {
+    if (hash !== '#subscription') return;
+    const frame = requestAnimationFrame(() =>
+      document.getElementById('subscription')?.scrollIntoView({ block: 'center' }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useLang();
   const navigate = useNavigate();

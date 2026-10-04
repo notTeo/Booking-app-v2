@@ -5,7 +5,8 @@ import { query } from '../support/db';
 import { addPendingInvite } from '../support/invites';
 
 /**
- * /dashboard, the one page outside a shop: the plan pill by the greeting,
+ * /dashboard, the one page outside a shop: the plan button by the greeting
+ * (it opens the subscription card on the Account page),
  * "All shops" with the user's role and Create shop after the last shop, then
  * the invite inbox. Both sections are always shown, with an empty state when
  * they have nothing in them. A shop card is the name, my role and the address.
@@ -29,7 +30,7 @@ async function openDashboard(page: Page, theme: 'light' | 'dark' = 'light') {
 
 const inbox = (page: Page) => page.getByRole('region', { name: 'Invitations' });
 const shops = (page: Page) => page.getByRole('region', { name: 'All shops', exact: true });
-const planPill = (page: Page) => page.locator('.overview-head .badge');
+const planPill = (page: Page) => page.locator('.overview-head').getByRole('link', { name: /^Subscription: / });
 const createShop = (page: Page) => shops(page).getByRole('link', { name: 'Create shop' });
 const createShopDisabled = (page: Page) => shops(page).getByRole('button', { name: 'Create shop' });
 const inviteShop = (n: number) => ({ shopId: `dash2-inv${n}`, slug: `dash2-invited-${n}`, name: `Invited Shop ${n}`, token: `dash2-token-${n}` });
@@ -88,7 +89,7 @@ test('Create shop: opens the form for Pro users, shown but disabled otherwise', 
 test('the plan is a pill where Create shop used to be; Create shop comes after the last shop', async ({ page }) => {
   await openDashboard(page);
   await expect(planPill(page)).toHaveText('Pro');
-  await expect(page.locator('.overview-head').getByRole('link')).toHaveCount(0);
+  await expect(page.locator('.overview-head').getByRole('link', { name: 'Create shop' })).toHaveCount(0);
   const cards = shops(page).locator('.shop-cards__grid > li');
   await expect(cards).toHaveCount(2);
   await expect(cards.last()).toHaveText('Create shop');
@@ -97,6 +98,14 @@ test('the plan is a pill where Create shop used to be; Create shop comes after t
   await page.goto('/dashboard');
   await expect(planPill(page)).toHaveText('Free');
   await expect(page.getByRole('region', { name: 'Subscription' })).toHaveCount(0);
+});
+
+test('the plan button opens the subscription card on the Account page, scrolled into view', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await openDashboard(page);
+  await planPill(page).click();
+  await expect(page).toHaveURL(/\/account#subscription$/);
+  await expect(page.locator('#subscription')).toBeInViewport({ ratio: 0.9 });
 });
 
 test('Account has the subscription: the plan and a billing button that is not usable yet', async ({ page }) => {

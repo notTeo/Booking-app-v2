@@ -47,15 +47,21 @@ export default function DashboardPage() {
   const invites = invitesQuery.data?.received ?? [];
 
   const isPro = !!user?.isPro;
-  // The plan, where a way to billing will go once there is one.
+  // The plan, linking to the subscription card on the Account page. A button,
+  // not a badge: badges are never interactive.
+  const plan = isPro ? t.dashboard.plan.pro : t.dashboard.plan.free;
   const header = (
     <OverviewHeader
       zone={BROWSER_ZONE}
       action={
-        <span className={`badge badge--lg ${isPro ? 'badge--accent' : 'badge--neutral'}`}>
+        <Link
+          to="/account#subscription"
+          className="btn btn--secondary btn--sm"
+          aria-label={`${t.settings.subscription.title}: ${plan}`}
+        >
           <FontAwesomeIcon icon={isPro ? faCrown : faUser} aria-hidden="true" />
-          {isPro ? t.dashboard.plan.pro : t.dashboard.plan.free}
-        </span>
+          {plan}
+        </Link>
       }
     />
   );
