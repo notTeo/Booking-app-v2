@@ -1,4 +1,5 @@
 import client from './client';
+import type { ShopRole } from './shop.api';
 
 export interface OpeningRange {
   startTime: string;
@@ -28,7 +29,7 @@ export interface StaffService {
 export interface ShopMember {
   id: string;
   shopId: string;
-  role: 'owner' | 'staff';
+  role: ShopRole;
   createdAt: string;
   name: string;
   bookableByCustomers: boolean;

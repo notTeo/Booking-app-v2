@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
-  addSecondOwner,
+  addManager,
   authHeader,
   createStaffMember,
   createTenant,
@@ -12,8 +12,9 @@ import { loadApp } from './routeRegistry';
 
 vi.mock('../services/email.service');
 
-// Deleting an account removes the user's memberships. The only owner who can
-// sign in must not be able to do that and leave a live shop nobody can manage.
+// Deleting an account removes the user's memberships. A shop's owner must not
+// be able to do that and leave a live shop with no owner: they delete the shop
+// or transfer it to a manager first.
 
 const { app } = await loadApp();
 const api = await serve(app);
@@ -39,7 +40,7 @@ const expectRefused = async (t: Tenant, shopIds = [t.shop.id]) => {
 };
 
 describe('DELETE /user/me as a shop owner', () => {
-  it('the only owner is refused, and told which shop is in the way', async () => {
+  it('the owner is refused, and told which shop is in the way', async () => {
     const t = await createTenant('OnlyOwner');
     await expectRefused(t);
 
@@ -58,54 +59,36 @@ describe('DELETE /user/me as a shop owner', () => {
     await expectRefused(t);
   });
 
-  it('an owner without a login does not count as someone to hand over to', async () => {
-    const t = await createTenant('GhostOwner');
-    await prisma.userShop.create({
-      data: { shopId: t.shop.id, name: 'Ghost', role: 'owner' },
-    });
+  it('a manager in the shop does not make it safe to leave either', async () => {
+    const t = await createTenant('OnlyOwner');
+    await addManager(t);
     await expectRefused(t);
   });
 
-  it('a deactivated owner does not count either', async () => {
-    const t = await createTenant('InactiveOwner');
-    const second = await addSecondOwner(t);
-    await prisma.userShop.update({
-      where: { id: second.staff.id },
-      data: { active: false },
-    });
-    await expectRefused(t);
-  });
-
-  it('with two shops, only the ones they solely own are listed', async () => {
+  it('with two shops, only the ones they own are listed', async () => {
     const t = await createTenant('TwoShops');
-    const shared = await prisma.shop.create({
-      data: { name: 'Shared', slug: `shared-${t.shop.slug}` },
-    });
-    await prisma.userShop.create({
-      data: { userId: t.user.id, shopId: shared.id, role: 'owner', name: 'Me' },
-    });
-    const partner = await prisma.user.create({
-      data: {
-        name: 'Partner',
-        email: `partner-${t.shop.slug}@example.com`,
-        isVerified: true,
-      },
-    });
+    const other = await createTenant('Partner');
     await prisma.userShop.create({
       data: {
-        userId: partner.id,
-        shopId: shared.id,
-        role: 'owner',
-        name: 'Partner',
+        userId: t.user.id,
+        shopId: other.shop.id,
+        role: 'manager',
+        name: 'Me',
       },
     });
 
     await expectRefused(t, [t.shop.id]);
   });
 
-  it('once another owner can sign in, the account can be deleted and the shop keeps that owner', async () => {
+  it('once ownership is transferred, the account can be deleted and the shop keeps its new owner', async () => {
     const t = await createTenant('HandedOver');
-    const second = await addSecondOwner(t);
+    const manager = await addManager(t);
+    const handed = await api
+      .post(
+        `/api/shops/${t.shop.id}/team/${manager.staff.id}/transfer-ownership`,
+      )
+      .set(authHeader(t.token));
+    expect(handed.status).toBe(200);
 
     const res = await deleteAccount(t.token);
 
@@ -114,7 +97,7 @@ describe('DELETE /user/me as a shop owner', () => {
     const owners = await prisma.userShop.findMany({
       where: { shopId: t.shop.id, role: 'owner' },
     });
-    expect(owners.map((o) => o.id)).toEqual([second.staff.id]);
+    expect(owners.map((o) => o.id)).toEqual([manager.staff.id]);
   });
 
   it('after deleting the shop, the account can be deleted', async () => {

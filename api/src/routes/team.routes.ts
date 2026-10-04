@@ -15,6 +15,7 @@ import {
   removeMember,
   sendLoginInvite,
   cancelLoginInvite,
+  transferOwnership,
 } from '../controllers/team.controller';
 import { getMemberServices } from '../controllers/service.controller';
 import workingHoursRouter from './workingHours.routes';
@@ -64,6 +65,13 @@ router.delete(
   memberIdParamValidation,
   validate,
   cancelLoginInvite,
+);
+router.post(
+  '/:memberId/transfer-ownership',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  transferOwnership,
 );
 
 // Staff services

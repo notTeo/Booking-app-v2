@@ -47,11 +47,53 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   await expect(page.locator('header.navbar')).toBeVisible();
 });
 
+test('Account opened from a shop has a Back to shop button; from the dashboard it does not', async ({ page }) => {
+  await login(page);
+  await item(page, 'Account').click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Account');
+  await page.getByRole('link', { name: 'Back to shop' }).click();
+  await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
+
+  await page.goto('/dashboard');
+  await page.locator('header.navbar').getByRole('link', { name: 'Account' }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole('link', { name: 'Back to shop' })).toHaveCount(0);
+});
+
 test('owner can still start a booking from the Bookings page', async ({ page }) => {
   await login(page);
   await page.goto(`${SHOP}/bookings`);
   await page.getByRole('link', { name: 'New Booking' }).click();
   await expect(page).toHaveURL(new RegExp(`${SHOP}/bookings/new$`));
+});
+
+test('a manager gets the owner menu and pages, but no way to delete the shop', async ({ page }) => {
+  await login(page);
+  await query(`update "UserShop" set role = 'manager' where id = 'us1'`);
+  try {
+    await page.goto(SHOP);
+    for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings']) {
+      await expect(item(page, name), name).toBeVisible();
+    }
+    await page.goto(`${SHOP}/settings`);
+    await expect(page).toHaveURL(new RegExp(`${SHOP}/settings$`));
+    await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
+    await expect(page.locator('.card--danger')).toHaveCount(0);
+    // Without the owner's permission the settings are view only.
+    await expect(page.getByText('View only. The owner can let you edit these settings.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+    await expect(page.locator('#detail-active')).toBeDisabled();
+
+    // With it they can save, but taking the shop offline stays with the owner.
+    await query(`update "UserShop" set "canEditShopSettings" = true where id = 'us1'`);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
+    await expect(page.locator('#detail-active')).toBeDisabled();
+    await expect(page.getByText('Only the owner can change this.')).toBeVisible();
+  } finally {
+    await query(`update "UserShop" set role = 'owner', "canEditShopSettings" = false where id = 'us1'`);
+  }
 });
 
 test('staff see the trimmed menu and are redirected away from owner pages', async ({ page }) => {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
+import AppPalette from './AppPalette';
 import Sidebar from './Sidebar';
 import Wordmark from './Wordmark';
 import { useLang } from '../context/LanguageContext';
@@ -70,6 +71,7 @@ export default function ShopSidebarLayout() {
       className={`app-shell${compact ? ' is-compact' : ''}`}
       style={compact ? undefined : ({ '--sidebar-width': `${resize.width}px` } as React.CSSProperties)}
     >
+      <AppPalette />
       {compact && <TopBar onMenu={() => setIsDrawerOpen(true)} menuRef={menuRef} />}
       {compact && isDrawerOpen && (
         <div className="scrim" onClick={closeDrawer} aria-hidden="true" />

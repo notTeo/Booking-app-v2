@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
+import AppPalette from './AppPalette';
 import Tooltip from './Tooltip';
 import Wordmark from './Wordmark';
 
@@ -40,6 +41,7 @@ export default function AppTopBarLayout() {
 
   return (
     <div className={`app-shell app-shell--topbar${compact ? ' is-compact' : ''}`}>
+      <AppPalette />
       <AppTopBar compact={compact} />
       <main className="app-shell__main">
         <Outlet />

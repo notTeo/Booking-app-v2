@@ -1,6 +1,8 @@
 import { formatDateTimeInZone } from '../utils/shopTime';
 import { useEffect, useState, useId } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
@@ -126,9 +128,12 @@ export default function ShopCustomerDetailPage() {
   if (error || !customer) {
     return (
       <div className="team-member-page">
-        <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
-          {t.customers.backToCustomers}
-        </button>
+        <div className="cluster">
+          <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
+            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+            {t.customers.backToCustomers}
+          </Link>
+        </div>
         <Alert variant="danger">{error || t.customers.notFound}</Alert>
       </div>
     );
@@ -136,9 +141,12 @@ export default function ShopCustomerDetailPage() {
 
   return (
     <div className="team-member-page">
-      <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
-        {t.customers.backToCustomers}
-      </button>
+      <div className="cluster">
+        <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
+          <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+          {t.customers.backToCustomers}
+        </Link>
+      </div>
 
       {/* Customer info */}
       <div className="card team-member-card">

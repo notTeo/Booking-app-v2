@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { canManageShop } from '../utils/roles';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -57,7 +58,7 @@ const formToDto = (f: FormData) => ({
 export default function ShopServicesPage() {
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
 
   // list
   const [services, setServices] = useState<Service[]>([]);
@@ -274,7 +275,7 @@ export default function ShopServicesPage() {
       )}
 
       {/* Services list (+ add card) */}
-      {(services.length > 0 || isOwner) && (
+      {(services.length > 0 || canManage) && (
         <div className="services-list">
           {services.map((service) => (
             <div key={service.id} className="card card--flush">
@@ -299,7 +300,7 @@ export default function ShopServicesPage() {
                 </div>
               </div>
 
-              {isOwner && (
+              {canManage && (
                 <div className="card__section">
                   <div className="cluster cluster--tight">
                     <button
@@ -408,7 +409,7 @@ export default function ShopServicesPage() {
             </div>
           ))}
 
-          {isOwner && (
+          {canManage && (
             <button type="button" className="card card--interactive card--dashed" onClick={() => { setCreateForm({ ...emptyForm }); setCreateError(''); setShowCreate(true); }}>
               <FontAwesomeIcon icon={faPlus} />
               <span>{t.services.addService}</span>

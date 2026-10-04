@@ -46,9 +46,9 @@ const WITH_DAYS = {
   },
 };
 
-const OWNER_ONLY = {
-  role: 'owner',
-  ownerMessage: 'Only the shop owner can manage working hours',
+const MANAGER_ONLY = {
+  role: 'manager',
+  forbiddenMessage: 'Only the shop owner or a manager can manage working hours',
 } as const;
 
 function assertValidRange(startDate: Date, endDate: Date | null) {
@@ -136,7 +136,7 @@ export const createSchedule = async (
   dto: CreateScheduleDto,
   staffId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   // Verify the member exists in the shop (staffId here is UserShop.id, not
   // User.id — a member may not have a login yet)
@@ -235,7 +235,7 @@ export const updateSchedule = async (
   dto: UpdateScheduleDto,
   staffId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   const target = await requireScheduleInShop(scheduleId, shopId, staffId);
 
   const newStart = dto.startDate ? new Date(dto.startDate) : target.startDate;
@@ -284,7 +284,7 @@ export const deleteSchedule = async (
   scheduleId: string,
   staffId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   await prisma.shopWorkingSchedule.delete({ where: { id: scheduleId } });
@@ -301,7 +301,7 @@ export const upsertDays = async (
   dto: UpsertDaysDto,
   staffId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   await prisma.$transaction(async (tx) => {
@@ -355,7 +355,7 @@ export const updateDay = async (
   dto: UpdateDayDto,
   staffId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   await requireScheduleInShop(scheduleId, shopId, staffId);
 
   const result = await prisma.$transaction(async (tx) => {

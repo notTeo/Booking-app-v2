@@ -11,7 +11,10 @@ import ConfirmDialog from '../ConfirmDialog';
 
 type InvitesData = { received: ShopInvite[]; sent: ShopInvite[] };
 
-/** The dashboard's pending invites. Accept goes into the shop; Decline removes the card. */
+/**
+ * The dashboard's pending invites, shown even when there are none. Accept goes
+ * into the shop; Decline removes the card.
+ */
 export default function InviteInbox({ invites }: { invites: ShopInvite[] }) {
   const { t } = useLang();
   const navigate = useNavigate();
@@ -57,6 +60,13 @@ export default function InviteInbox({ invites }: { invites: ShopInvite[] }) {
     <section className="shop-cards" aria-labelledby="dashboard-invites-title">
       <h2 className="t-subheading" id="dashboard-invites-title">{t.dashboard.invites.title}</h2>
       {error && <Alert variant="danger">{error}</Alert>}
+      {invites.length === 0 && (
+        <div className="card">
+          <div className="empty empty--sm">
+            <p className="empty__text">{t.dashboard.invites.empty}</p>
+          </div>
+        </div>
+      )}
       <ul className="shop-cards__grid">
         {invites.map((invite) => {
           const accepting = busyId === invite.id && confirmId !== invite.id;

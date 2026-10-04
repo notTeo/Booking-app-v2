@@ -17,17 +17,15 @@ interface Props {
   onRetry: () => void;
   /** The upcoming-bookings section (already wired to its own query). */
   upcoming: ReactNode;
-  /** Shown instead of the chart grid when nothing has ever been booked. */
+  /** Shown instead of the grid when nothing has ever been booked. */
   neverBooked: ReactNode;
-  /** Rendered below the grid once the overview has loaded (e.g. "Your shops"). */
-  footer?: ReactNode;
 }
 
 /**
- * Everything under the header, shared by the shop overview and the dashboard:
- * error / skeleton / stat cards / chart + upcoming + breakdown.
+ * Everything under the shop overview's header: error / skeleton / the grid
+ * (chart and upcoming on the left, stat tiles and breakdown on the right).
  */
-export default function OverviewBody({ range, overview, isError, onRetry, upcoming, neverBooked, footer }: Props) {
+export default function OverviewBody({ range, overview, isError, onRetry, upcoming, neverBooked }: Props) {
   const { t } = useLang();
   const periodIsEmpty = !!overview && overview.totals.all + overview.totals.canceled === 0;
 
@@ -48,28 +46,23 @@ export default function OverviewBody({ range, overview, isError, onRetry, upcomi
       ) : !overview ? (
         <OverviewSkeleton />
       ) : (
-        <>
-          <StatCards totals={overview.totals} />
-          {periodIsEmpty ? (
-            overview.hasAnyBookings ? (
-              <>
-                <PeriodEmpty range={overview.range} />
-                {upcoming}
-              </>
-            ) : (
-              neverBooked
-            )
-          ) : (
-            <div className="overview-grid">
-              <div className="overview-grid__chart">
-                <BookingsChart overview={overview} />
-              </div>
-              {upcoming}
-              <StatusDonut totals={overview.totals} />
+        periodIsEmpty && !overview.hasAnyBookings ? (
+          <>
+            <StatCards totals={overview.totals} />
+            {neverBooked}
+          </>
+        ) : (
+          <div className={`overview-grid${periodIsEmpty ? ' overview-grid--no-breakdown' : ''}`}>
+            <div className="overview-grid__stats">
+              <StatCards totals={overview.totals} tiles />
             </div>
-          )}
-          {footer}
-        </>
+            <div className="overview-grid__chart">
+              {periodIsEmpty ? <PeriodEmpty range={overview.range} /> : <BookingsChart overview={overview} />}
+            </div>
+            {upcoming}
+            {!periodIsEmpty && <StatusDonut totals={overview.totals} />}
+          </div>
+        )
       )}
     </div>
   );

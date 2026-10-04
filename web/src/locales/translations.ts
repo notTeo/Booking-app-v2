@@ -39,20 +39,12 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    /** "{email} invited you as {role}" */
-    invites: { title: string; from: string };
-    /** Heading of the cross-shop analytics (owners of 2+ shops). */
-    analytics: string;
-    shops: {
-      title: string;
-      bookings: string;
-      today: string;
-      pending: string;
-      noPending: string;
-    };
+    plan: { pro: string; free: string };
+    /** from: "{email} invited you as {role}" */
+    invites: { title: string; from: string; empty: string };
+    shops: { title: string };
     /** text contains {email}. */
     empty: { title: string; text: string };
-    neverBooked: { title: string; text: string };
   };
   shops: {
     title: string;
@@ -339,6 +331,15 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
+    backToShop: string;
+    subscription: {
+      title: string;
+      proText: string;
+      freeText: string;
+      manageBilling: string;
+      upgrade: string;
+      comingSoon: string;
+    };
     wrongPassword: string;
     soleOwnerOfShop: string;
     deleteAccountMessage: string;
@@ -372,6 +373,9 @@ export interface Translations {
     nameLabel: string;
     saveName: string;
     preferencesSection: string;
+    paletteLabel: string;
+    paletteDesc: string;
+    palettes: { original: string; mono: string; purple: string };
     themeLabel: string;
     themeDesc: string;
     lightTheme: string;
@@ -416,7 +420,7 @@ export interface Translations {
     role: string;
     joined: string;
     actions: string;
-    roles: { owner: string; staff: string };
+    roles: { owner: string; manager: string; staff: string };
     remove: string;
     cancel: string;
     noMembers: string;
@@ -463,8 +467,18 @@ export interface Translations {
     bookableInternally: string;
     bookableInternallyDesc: string;
     inactiveBadge: string;
-    confirmPromoteOwner: string;
-    confirmDemoteOwner: string;
+    canManageManagers: string;
+    canManageManagersDesc: string;
+    canEditShopSettings: string;
+    canEditShopSettingsDesc: string;
+    confirmPromoteManager: string;
+    confirmDemoteManager: string;
+    transferOwnership: string;
+    transferDesc: string;
+    transferTitle: string;
+    confirmTransfer: string;
+    transferConfirmButton: string;
+    errorTransfer: string;
     emailLabel: string;
     saveEmail: string;
     addEmailFirst: string;
@@ -478,8 +492,8 @@ export interface Translations {
     cancelInviteConfirmButton: string;
     cancelInviteMessage: string;
     cancelInviteTitle: string;
-    ownerInviteConfirmButton: string;
-    ownerInviteTitle: string;
+    managerInviteConfirmButton: string;
+    managerInviteTitle: string;
     title: string;
     received: string;
     sent: string;
@@ -491,7 +505,7 @@ export interface Translations {
     revoke: string;
     revoking: string;
     status: { pending: string; accepted: string; expired: string };
-    roles: { owner: string; staff: string };
+    roles: { owner: string; manager: string; staff: string };
     expiresAt: string;
     errorLoad: string;
     errorSend: string;
@@ -520,7 +534,7 @@ export interface Translations {
     canViewCustomerDetailsDesc: string;
     sendEmailNow: string;
     sendEmailNowDesc: string;
-    confirmOwnerInvite: string;
+    confirmManagerInvite: string;
     createdNoEmail: string;
     pendingLogins: string;
     noPendingLogins: string;
@@ -640,8 +654,10 @@ export interface Translations {
     configuration: string;
     activeLabel: string;
     activeDesc: string;
+    activeOwnerOnly: string;
     saveChanges: string;
     saveHint: string;
+    readOnlyHint: string;
     backToShop: string;
     created: string;
     updatedPrefix: string;
@@ -740,9 +756,9 @@ export interface Translations {
     range: { week: string; month: string; quarter: string };
     stats: {
       bookings: string;
-      pending: string;
       completed: string;
-      canceledNoShow: string;
+      canceled: string;
+      noShow: string;
     };
     chart: {
       title: string;
@@ -941,22 +957,16 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      invites: { title: 'Προσκλήσεις', from: 'Ο/Η {email} σε προσκάλεσε ως {role}' },
-      analytics: 'Σε όλα τα καταστήματά σου',
-      shops: {
-        title: 'Τα καταστήματά σου',
-        bookings: 'Ραντεβού',
-        today: 'Σήμερα',
-        pending: '{count} σε αναμονή',
-        noPending: 'Κανένα σε αναμονή',
+      plan: { pro: 'Pro', free: 'Δωρεάν' },
+      invites: {
+        title: 'Προσκλήσεις',
+        from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
+        empty: 'Δεν έχεις προσκλήσεις σε αναμονή.',
       },
+      shops: { title: 'Όλα τα καταστήματα' },
       empty: {
         title: 'Δεν ανήκεις ακόμα σε κάποιο κατάστημα',
         text: 'Ζήτησε από τον ιδιοκτήτη του καταστήματός σου να προσκαλέσει το {email}.',
-      },
-      neverBooked: {
-        title: 'Δεν υπάρχουν ακόμα ραντεβού',
-        text: 'Μοιράσου τη σελίδα κρατήσεων ενός καταστήματος και ο πρώτος σου πελάτης θα εμφανιστεί εδώ.',
       },
     },
     shops: {
@@ -1244,12 +1254,21 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
+      backToShop: 'Πίσω στο κατάστημα',
+      subscription: {
+        title: 'Συνδρομή',
+        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
+        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
+        manageBilling: 'Διαχείριση χρέωσης',
+        upgrade: 'Αναβάθμιση',
+        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
+      },
       wrongPassword: 'Λάθος κωδικός.',
-      soleOwnerOfShop: 'Είστε ο μοναδικός ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή ορίστε πρώτα άλλον ιδιοκτήτη.',
+      soleOwnerOfShop: 'Είστε ο ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή μεταβιβάστε το πρώτα σε έναν διαχειριστή.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
       deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
-      title: 'Ρυθμίσεις',
+      title: 'Λογαριασμός',
       profileSection: 'Προφίλ',
       saveProfile: 'Αποθήκευση Προφίλ',
       successProfile: 'Το προφίλ ενημερώθηκε επιτυχώς.',
@@ -1277,6 +1296,9 @@ home: {
       nameLabel: 'Όνομα Χρήστη',
       saveName: 'Αποθήκευση Ονόματος',
       preferencesSection: 'Προτιμήσεις',
+      paletteLabel: 'Χρώματα',
+      paletteDesc: 'Τα χρώματα της εφαρμογής σε αυτή τη συσκευή',
+      palettes: { original: 'Αρχικό', mono: 'Ασπρόμαυρο', purple: 'Μωβ' },
       themeLabel: 'Θέμα',
       themeDesc: 'Επιλέξτε το προτιμώμενο χρωματικό θέμα',
       lightTheme: 'Φωτεινό',
@@ -1310,10 +1332,10 @@ home: {
       goHome: 'Αρχική',
     },
     team: {
-      demoteConfirmButton: 'Αφαίρεση πρόσβασης ιδιοκτήτη',
-      demoteTitle: 'Αφαίρεση πρόσβασης ιδιοκτήτη από «{name}»;',
-      promoteConfirmButton: 'Ορισμός ιδιοκτήτη',
-      promoteTitle: 'Να γίνει ιδιοκτήτης ο/η «{name}»;',
+      demoteConfirmButton: 'Αφαίρεση πρόσβασης διαχειριστή',
+      demoteTitle: 'Αφαίρεση πρόσβασης διαχειριστή από «{name}»;',
+      promoteConfirmButton: 'Ορισμός διαχειριστή',
+      promoteTitle: 'Να γίνει διαχειριστής ο/η «{name}»;',
       removeConfirmButton: 'Αφαίρεση μέλους',
       removeTitle: 'Αφαίρεση «{name}»;',
       title: 'Μέλη Ομάδας',
@@ -1321,7 +1343,7 @@ home: {
       role: 'Ρόλος',
       joined: 'Εντάχθηκε',
       actions: 'Ενέργειες',
-      roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
+      roles: { owner: 'Ιδιοκτήτης', manager: 'Διαχειριστής', staff: 'Προσωπικό' },
       remove: 'Αφαίρεση',
       cancel: 'Ακύρωση',
       noMembers: 'Δεν υπάρχουν μέλη ακόμα.',
@@ -1329,7 +1351,7 @@ home: {
       errorLoad: 'Αποτυχία φόρτωσης μελών.',
       errorRemove: 'Αποτυχία αφαίρεσης μέλους.',
       errorRemoveHasBookings: 'Αυτό το μέλος έχει κρατήσεις. Απενεργοποιήστε το αντί να το αφαιρέσετε.',
-      backToTeam: '← Πίσω στην Ομάδα',
+      backToTeam: 'Πίσω στην Ομάδα',
       editRole: 'Επεξεργασία Ρόλου',
       saveRole: 'Αποθήκευση Ρόλου',
       roleUpdated: 'Ο ρόλος ενημερώθηκε επιτυχώς.',
@@ -1368,8 +1390,18 @@ home: {
       bookableInternally: 'Διαθέσιμο για εσωτερική κράτηση',
       bookableInternallyDesc: 'Ελέγχει αν το μέλος εμφανίζεται ως επιλογή όταν δημιουργείτε ραντεβού μέσα από την εφαρμογή.',
       inactiveBadge: 'Ανενεργό',
-      confirmPromoteOwner: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων, καθώς και δυνατότητα υποβιβασμού άλλων ιδιοκτητών.',
-      confirmDemoteOwner: 'Αυτό το άτομο θα χάσει την πρόσβαση ιδιοκτήτη.',
+      canManageManagers: 'Διαχείριση διαχειριστών',
+      canManageManagersDesc: 'Όταν είναι ενεργό, μπορεί να προσθέτει, να αλλάζει και να αφαιρεί άλλους διαχειριστές. Αλλιώς διαχειρίζεται μόνο το προσωπικό.',
+      canEditShopSettings: 'Επεξεργασία ρυθμίσεων καταστήματος',
+      canEditShopSettingsDesc: 'Όταν είναι ενεργό, μπορεί να αλλάζει τα στοιχεία και τις ρυθμίσεις του καταστήματος. Αλλιώς τα βλέπει μόνο.',
+      confirmPromoteManager: 'Αυτό το άτομο θα γίνει διαχειριστής: θα διαχειρίζεται προσωπικό, υπηρεσίες, ωράρια, ραντεβού και πελάτες. Ο ιδιοκτήτης ορίζει αν μπορεί να διαχειρίζεται άλλους διαχειριστές ή τις ρυθμίσεις του καταστήματος.',
+      confirmDemoteManager: 'Αυτό το άτομο θα χάσει την πρόσβαση διαχειριστή.',
+      transferOwnership: 'Μεταβίβαση ιδιοκτησίας',
+      transferDesc: 'Αυτό το άτομο γίνεται ιδιοκτήτης του καταστήματος και εσείς γίνεστε διαχειριστής.',
+      transferTitle: 'Μεταβίβαση του καταστήματος στον/στην «{name}»;',
+      confirmTransfer: 'Θα γίνει ο ιδιοκτήτης και μόνο αυτός θα μπορεί να διαγράψει το κατάστημα ή να το μεταβιβάσει ξανά. Εσείς θα παραμείνετε ως διαχειριστής.',
+      transferConfirmButton: 'Μεταβίβαση ιδιοκτησίας',
+      errorTransfer: 'Η μεταβίβαση ιδιοκτησίας απέτυχε.',
       emailLabel: 'Email',
       saveEmail: 'Αποθήκευση Email',
       addEmailFirst: 'Προσθέστε email πριν στείλετε πρόσκληση σύνδεσης',
@@ -1383,8 +1415,8 @@ home: {
       cancelInviteConfirmButton: 'Ακύρωση πρόσκλησης',
       cancelInviteMessage: 'Η εκκρεμής πρόσκληση θα ανακληθεί.',
       cancelInviteTitle: 'Ακύρωση πρόσκλησης για «{name}»;',
-      ownerInviteConfirmButton: 'Πρόσκληση ως ιδιοκτήτη',
-      ownerInviteTitle: 'Πρόσκληση «{name}» ως ιδιοκτήτη;',
+      managerInviteConfirmButton: 'Πρόσκληση ως διαχειριστή',
+      managerInviteTitle: 'Πρόσκληση «{name}» ως διαχειριστή;',
       title: 'Προσκλήσεις',
       received: 'Ληφθείσες',
       sent: 'Απεσταλμένες',
@@ -1396,7 +1428,7 @@ home: {
       revoke: 'Ανάκληση',
       revoking: 'Ανάκληση...',
       status: { pending: 'Εκκρεμής', accepted: 'Αποδεκτή', expired: 'Ληγμένη' },
-      roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
+      roles: { owner: 'Ιδιοκτήτης', manager: 'Διαχειριστής', staff: 'Προσωπικό' },
       expiresAt: 'Λήγει',
       errorLoad: 'Αποτυχία φόρτωσης προσκλήσεων.',
       errorSend: 'Αποτυχία αποστολής πρόσκλησης.',
@@ -1425,7 +1457,7 @@ home: {
       canViewCustomerDetailsDesc: 'Όταν είναι ανενεργό, θα βλέπει μόνο τη λέξη «Πελάτης» στα ραντεβού, χωρίς όνομα, τηλέφωνο ή email. Μπορείτε να το αλλάξετε αργότερα.',
       sendEmailNow: 'Αποστολή πρόσκλησης σύνδεσης τώρα',
       sendEmailNowDesc: 'Το μέλος δημιουργείται άμεσα και μπορεί να δεχτεί ραντεβού ό,τι κι αν επιλέξετε εδώ. Αν είναι ανενεργό, μπορείτε να στείλετε την πρόσκληση αργότερα από τη σελίδα του μέλους.',
-      confirmOwnerInvite: 'Αυτό το άτομο θα γίνει ιδιοκτήτης, με πλήρη πρόσβαση στη διαχείριση ομάδας, προσκλήσεων, πελατών και ρυθμίσεων.',
+      confirmManagerInvite: 'Αυτό το άτομο θα γίνει διαχειριστής: θα διαχειρίζεται προσωπικό, υπηρεσίες, ωράρια, ραντεβού και πελάτες. Οι επιπλέον άδειες ορίζονται από τον ιδιοκτήτη στο προφίλ του.',
       createdNoEmail: 'Το μέλος δημιουργήθηκε. Δεν στάλθηκε πρόσκληση σύνδεσης.',
       pendingLogins: 'Μέλη χωρίς σύνδεση',
       noPendingLogins: 'Όλα τα μέλη έχουν σύνδεση.',
@@ -1545,8 +1577,10 @@ home: {
       configuration: 'Διαμόρφωση',
       activeLabel: 'Ενεργό',
       activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
+      activeOwnerOnly: 'Μόνο ο ιδιοκτήτης μπορεί να το αλλάξει.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
+      readOnlyHint: 'Μόνο για προβολή. Ο ιδιοκτήτης μπορεί να σου επιτρέψει την επεξεργασία των ρυθμίσεων.',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
       updatedPrefix: '· Ενημερώθηκε',
@@ -1652,9 +1686,9 @@ home: {
       range: { week: 'Εβδομάδα', month: 'Μήνας', quarter: '3 μήνες' },
       stats: {
         bookings: 'Ραντεβού',
-        pending: 'Σε αναμονή',
         completed: 'Ολοκληρωμένα',
-        canceledNoShow: 'Ακυρωμένα / Δεν προσήλθαν',
+        canceled: 'Ακυρωμένα',
+        noShow: 'Δεν προσήλθαν',
       },
       chart: {
         title: 'Ραντεβού ανά περίοδο',
@@ -1709,7 +1743,7 @@ home: {
       phoneCol: 'Τηλέφωνο',
       emailCol: 'Email',
       addedCol: 'Προστέθηκε',
-      backToCustomers: '← Πίσω στους Πελάτες',
+      backToCustomers: 'Πίσω στους Πελάτες',
       notFound: 'Ο πελάτης δεν βρέθηκε',
       customerErrorLoad: 'Αποτυχία φόρτωσης πελάτη',
       customerSince: 'Πελάτης από',
@@ -1872,22 +1906,16 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      invites: { title: 'Invitations', from: '{email} invited you as {role}' },
-      analytics: 'Across your shops',
-      shops: {
-        title: 'Your shops',
-        bookings: 'Bookings',
-        today: 'Today',
-        pending: '{count} pending',
-        noPending: 'None pending',
+      plan: { pro: 'Pro', free: 'Free' },
+      invites: {
+        title: 'Invitations',
+        from: '{email} invited you as {role}',
+        empty: 'You have no pending invitations.',
       },
+      shops: { title: 'All shops' },
       empty: {
         title: "You're not part of a shop yet",
         text: 'Ask your shop owner to invite {email}.',
-      },
-      neverBooked: {
-        title: 'No bookings yet',
-        text: "Share a shop's booking page and your first customer will appear here.",
       },
     },
     shops: {
@@ -2175,12 +2203,21 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
+      backToShop: 'Back to shop',
+      subscription: {
+        title: 'Subscription',
+        proText: 'You are on the Pro plan and can create shops.',
+        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
+        manageBilling: 'Manage billing',
+        upgrade: 'Upgrade',
+        comingSoon: 'Billing is coming soon.',
+      },
       wrongPassword: 'Incorrect password.',
-      soleOwnerOfShop: 'You are the only owner of a shop. Delete the shop or make someone else an owner first.',
+      soleOwnerOfShop: 'You are the owner of a shop. Delete the shop or transfer it to a manager first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
       deleteAccountConfirmButton: 'Delete account',
       deleteAccountTitle: 'Delete your account?',
-      title: 'Settings',
+      title: 'Account',
       profileSection: 'Profile',
       saveProfile: 'Save Profile',
       successProfile: 'Profile updated successfully.',
@@ -2208,6 +2245,9 @@ home: {
       nameLabel: 'User Name',
       saveName: 'Save Name',
       preferencesSection: 'Preferences',
+      paletteLabel: 'Colours',
+      paletteDesc: 'The colours of the app on this device',
+      palettes: { original: 'Original', mono: 'Black & white', purple: 'Purple' },
       themeLabel: 'Theme',
       themeDesc: 'Choose your preferred color scheme',
       lightTheme: 'Light',
@@ -2241,10 +2281,10 @@ home: {
       goHome: 'Go Home',
     },
     team: {
-      demoteConfirmButton: 'Remove owner access',
-      demoteTitle: 'Remove owner access for {name}?',
-      promoteConfirmButton: 'Make owner',
-      promoteTitle: 'Make {name} an owner?',
+      demoteConfirmButton: 'Remove manager access',
+      demoteTitle: 'Remove manager access for {name}?',
+      promoteConfirmButton: 'Make manager',
+      promoteTitle: 'Make {name} a manager?',
       removeConfirmButton: 'Remove member',
       removeTitle: 'Remove {name}?',
       title: 'Team Members',
@@ -2252,7 +2292,7 @@ home: {
       role: 'Role',
       joined: 'Joined',
       actions: 'Actions',
-      roles: { owner: 'Owner', staff: 'Staff' },
+      roles: { owner: 'Owner', manager: 'Manager', staff: 'Staff' },
       remove: 'Remove',
       cancel: 'Cancel',
       noMembers: 'No team members yet.',
@@ -2260,7 +2300,7 @@ home: {
       errorLoad: 'Failed to load team members.',
       errorRemove: 'Failed to remove member.',
       errorRemoveHasBookings: 'This member has bookings. Deactivate them instead.',
-      backToTeam: '← Back to Team',
+      backToTeam: 'Back to Team',
       editRole: 'Edit Role',
       saveRole: 'Save Role',
       roleUpdated: 'Role updated successfully.',
@@ -2299,8 +2339,18 @@ home: {
       bookableInternally: 'Bookable internally',
       bookableInternallyDesc: 'Controls whether this member shows up as an option when creating a booking from inside the app.',
       inactiveBadge: 'Inactive',
-      confirmPromoteOwner: 'This person will become an owner, with full access to team, invites, customers, and settings — including the ability to demote other owners.',
-      confirmDemoteOwner: 'This person will lose owner access.',
+      canManageManagers: 'Manage managers',
+      canManageManagersDesc: 'When on, they can add, change and remove other managers. When off, they manage staff only.',
+      canEditShopSettings: 'Edit shop settings',
+      canEditShopSettingsDesc: "When on, they can change the shop's details and settings. When off, they can only view them.",
+      confirmPromoteManager: 'This person will become a manager: they run staff, services, schedules, bookings and customers. The owner decides whether they can also manage other managers or edit shop settings.',
+      confirmDemoteManager: 'This person will lose manager access.',
+      transferOwnership: 'Transfer ownership',
+      transferDesc: 'This person becomes the owner of the shop and you become a manager.',
+      transferTitle: 'Transfer the shop to {name}?',
+      confirmTransfer: 'They become the owner, and only they can delete the shop or transfer it again. You stay on as a manager.',
+      transferConfirmButton: 'Transfer ownership',
+      errorTransfer: 'Could not transfer ownership.',
       emailLabel: 'Email',
       saveEmail: 'Save Email',
       addEmailFirst: 'Add an email before sending a login invite',
@@ -2314,8 +2364,8 @@ home: {
       cancelInviteConfirmButton: 'Cancel invite',
       cancelInviteMessage: 'The pending invite will be revoked.',
       cancelInviteTitle: 'Cancel invite for {name}?',
-      ownerInviteConfirmButton: 'Invite as owner',
-      ownerInviteTitle: 'Invite {name} as an owner?',
+      managerInviteConfirmButton: 'Invite as manager',
+      managerInviteTitle: 'Invite {name} as a manager?',
       title: 'Invites',
       received: 'Received',
       sent: 'Sent',
@@ -2327,7 +2377,7 @@ home: {
       revoke: 'Revoke',
       revoking: 'Revoking...',
       status: { pending: 'Pending', accepted: 'Accepted', expired: 'Expired' },
-      roles: { owner: 'Owner', staff: 'Staff' },
+      roles: { owner: 'Owner', manager: 'Manager', staff: 'Staff' },
       expiresAt: 'Expires',
       errorLoad: 'Failed to load invites.',
       errorSend: 'Failed to send invite.',
@@ -2356,7 +2406,7 @@ home: {
       canViewCustomerDetailsDesc: "When off, they'll see just the word \"Customer\" on bookings — no name, phone, or email. You can change this later.",
       sendEmailNow: 'Send login invite now',
       sendEmailNowDesc: "The member is created right away and can be booked either way. If off, you can send the invite later from the member's page.",
-      confirmOwnerInvite: 'This person will become an owner, with full access to team, invites, customers, and settings.',
+      confirmManagerInvite: 'This person will become a manager: they run staff, services, schedules, bookings and customers. The owner sets any extra permissions on their profile.',
       createdNoEmail: 'Team member created. No login invite was sent.',
       pendingLogins: 'Members Without a Login',
       noPendingLogins: 'Every member has a login.',
@@ -2476,8 +2526,10 @@ home: {
       configuration: 'Configuration',
       activeLabel: 'Active',
       activeDesc: "When inactive, your shop won't accept new bookings.",
+      activeOwnerOnly: 'Only the owner can change this.',
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
+      readOnlyHint: 'View only. The owner can let you edit these settings.',
       backToShop: '← Back to Shop',
       created: 'Created',
       updatedPrefix: '· Updated',
@@ -2583,9 +2635,9 @@ home: {
       range: { week: 'Week', month: 'Month', quarter: '3 months' },
       stats: {
         bookings: 'Bookings',
-        pending: 'Pending',
         completed: 'Completed',
-        canceledNoShow: 'Canceled / no-show',
+        canceled: 'Canceled',
+        noShow: 'No-show',
       },
       chart: {
         title: 'Bookings over time',
@@ -2640,7 +2692,7 @@ home: {
       phoneCol: 'Phone',
       emailCol: 'Email',
       addedCol: 'Added',
-      backToCustomers: '← Back to Customers',
+      backToCustomers: 'Back to Customers',
       notFound: 'Customer not found',
       customerErrorLoad: 'Failed to load customer',
       customerSince: 'Customer since',

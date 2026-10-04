@@ -9,6 +9,7 @@ datasource db {
 
 enum ShopRole {
   owner
+  manager
   staff
 }
 
@@ -119,6 +120,11 @@ model UserShop {
   email String?
 
   canViewCustomerDetails Boolean @default(true)
+
+  // Extra permissions the owner can give a manager; they mean nothing for
+  // staff, and the owner always has both.
+  canManageManagers   Boolean @default(false)
+  canEditShopSettings Boolean @default(false)
 
   active              Boolean @default(true)
   bookableByCustomers Boolean @default(true)

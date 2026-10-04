@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { translations } from '../locales/translations';
 import Sidebar from './Sidebar';
 
-const shopState = vi.hoisted(() => ({ shop: null as null | { name: string; slug: string; role: 'owner' | 'staff' } }));
+const shopState = vi.hoisted(() => ({ shop: null as null | { name: string; slug: string; role: 'owner' | 'manager' | 'staff' } }));
 
 vi.mock('../context/ShopContext', () => ({
   useShop: () => ({ shop: shopState.shop, isLoading: false, error: null, refetch: () => {} }),
@@ -49,6 +49,14 @@ describe('Sidebar', () => {
     expect(html).not.toContain(t.logout);
     expect(html).not.toContain('/invites');
     expect(html).not.toContain(t.bookAppointment);
+  });
+
+  it('manager: the same shop items as the owner', () => {
+    shopState.shop = { name: 'Hairology', slug: 'hair', role: 'manager' };
+    const html = render('/shops/hair/bookings');
+    for (const label of [t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings]) {
+      expect(html).toContain(label);
+    }
   });
 
   it('staff: no Team, Customers or Shop settings', () => {

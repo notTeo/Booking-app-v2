@@ -136,7 +136,7 @@ describe.each(targets)('%s', (routeKey, fx) => {
 
     // Owner always; an active staff member too where staff may call the route.
     const callers = [['owner', a.t.token] as const].concat(
-      fx.ownerOnly ? [] : [['staff', staffA.token] as const],
+      fx.minRole ? [] : [['staff', staffA.token] as const],
     );
 
     for (const swap of swaps) {

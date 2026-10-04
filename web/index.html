@@ -39,6 +39,13 @@
         var m = document.cookie.match(/(?:^|; )theme=([^;]*)/);
         var t = m ? decodeURIComponent(m[1]) : 'light';
         document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+        // The colour set applies inside the app only (mirrors AppPalette and
+        // the "palette" cookie), so a reload there does not flash the original.
+        var p = document.cookie.match(/(?:^|; )palette=([^;]*)/);
+        var inApp = /^\/(dashboard|account|shops)(\/|$)/.test(location.pathname);
+        if (inApp && p && (p[1] === 'mono' || p[1] === 'purple')) {
+          document.documentElement.setAttribute('data-palette', p[1]);
+        }
       } catch (e) {}
     </script>
   </head>

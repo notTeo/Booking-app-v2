@@ -1,4 +1,5 @@
 import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
+import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -68,7 +69,7 @@ export default function ShopBookingsPage() {
   const [searchParams] = useSearchParams();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
   const slotStep = shop?.slotIntervalMinutes ?? 30;
 
   const [bookings, setBookings]               = useState<Booking[]>([]);
@@ -295,7 +296,7 @@ export default function ShopBookingsPage() {
       {/* ── Header ── */}
       <div className="page-header">
         <h1 className="t-title">{t.bookings.title}</h1>
-        {isOwner && shop && (
+        {canManage && shop && (
           <Link className="btn btn--sm" to={`/shops/${shop.slug}/bookings/new`}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.sidebar.bookAppointment}
@@ -410,7 +411,7 @@ export default function ShopBookingsPage() {
                 {/* Staff columns */}
                 {columns.map(col => {
                   const offs = col.isOther ? [] : offSegments(daySchedule?.[col.id] ?? null, range.start, range.end);
-                  const creatable = isOwner && !col.isOther;
+                  const creatable = canManage && !col.isOther;
 
                   return (
                     <div

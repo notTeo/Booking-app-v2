@@ -436,14 +436,14 @@ describe('sending an invite', () => {
     expect(again.status).toBe(400);
   });
 
-  it('an invited owner becomes an owner: the role comes from the member, not the caller', async () => {
-    const i = await invited({ role: 'owner' });
+  it('an invited manager becomes a manager: the role comes from the member, not the caller', async () => {
+    const i = await invited({ role: 'manager' });
     const me = await account(i.email);
     expect((await accept(i.invite.id, me.token)).status).toBe(200);
 
     const shop = await api
       .get(`/api/shops/${i.t.shop.id}`)
       .set(authHeader(me.token));
-    expect(shop.body.data.role).toBe('owner');
+    expect(shop.body.data.role).toBe('manager');
   });
 });

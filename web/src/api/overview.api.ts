@@ -1,5 +1,4 @@
 import client from './client';
-import type { UpcomingBooking } from '../components/overview/UpcomingBookings';
 
 export type OverviewRange = 'week' | 'month' | 'quarter';
 
@@ -32,29 +31,3 @@ export const getOverview = (shopId: string, range: OverviewRange) =>
   client
     .get(`/api/shops/${shopId}/overview`, { params: { range } })
     .then((r) => r.data.data as Overview);
-
-export interface ShopOverviewRow {
-  shopId: string;
-  name: string;
-  slug: string;
-  /** Non-canceled bookings in the period. */
-  total: number;
-  pending: number;
-  /** Non-canceled bookings today, in that shop's own timezone. */
-  today: number;
-}
-
-/** The same shape as a shop overview, summed across all of the user's shops. */
-export interface MyOverview extends Overview {
-  perShop: ShopOverviewRow[];
-}
-
-export const getMyOverview = (range: OverviewRange) =>
-  client
-    .get('/api/shops/overview', { params: { range } })
-    .then((r) => r.data.data as MyOverview);
-
-export const getMyUpcoming = () =>
-  client
-    .get('/api/shops/upcoming')
-    .then((r) => r.data.data as UpcomingBooking[]);

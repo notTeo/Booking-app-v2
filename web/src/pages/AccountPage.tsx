@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { usePalette } from '../context/PaletteContext';
+import { PALETTES } from '../utils/palette';
 import { useLang } from '../context/LanguageContext';
 import { updateMe, deleteMe } from '../api/user.api';
 import { getSessions, revokeAllSessions, type Session } from '../api/auth.api';
@@ -9,6 +11,9 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faChevronLeft,
+  faCreditCard,
+  faCrown,
   faSlidersH,
   faShieldHalved,
   faTriangleExclamation,
@@ -44,7 +49,21 @@ function formatSessionDate(iso: string, lang: string) {
 
 export default function AccountPage() {
   const { user, setUser, logout } = useAuth();
+  const { hash, state } = useLocation();
+  // Set by the shop sidebar's Account link: the shop to go back to.
+  const fromShop = (state as { fromShop?: string } | null)?.fromShop;
+
+  // Arriving from the dashboard's plan button: bring the subscription card
+  // into view (the router does not follow #hash links on its own).
+  useEffect(() => {
+    if (hash !== '#subscription') return;
+    const frame = requestAnimationFrame(() =>
+      document.getElementById('subscription')?.scrollIntoView({ block: 'center' }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
   const { theme, toggleTheme } = useTheme();
+  const { palette, setPalette } = usePalette();
   const { language, toggleLanguage, t } = useLang();
   const navigate = useNavigate();
 
@@ -169,7 +188,15 @@ export default function AccountPage() {
 
   return (
     <div className="settings-page">
-      <h1 className="t-title">{t.settings.title}</h1>
+      <div className="page-header">
+        <h1 className="t-title">{t.settings.title}</h1>
+        {fromShop && (
+          <Link className="btn btn--secondary btn--sm" to={`/shops/${fromShop}`}>
+            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+            {t.settings.backToShop}
+          </Link>
+        )}
+      </div>
 
       {/* Account Overview */}
       <div className="card">
@@ -247,12 +274,53 @@ export default function AccountPage() {
         </form>
       </div>
 
+      {/* Subscription — the plan; billing is not built yet, so the button is disabled */}
+      <div className="card" id="subscription">
+        <div className="card__header">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
+            {t.settings.subscription.title}
+          </h2>
+          <span className={`badge badge--lg ${user?.isPro ? 'badge--accent' : 'badge--neutral'}`}>
+            <FontAwesomeIcon icon={user?.isPro ? faCrown : faUser} aria-hidden="true" />
+            {user?.isPro ? t.dashboard.plan.pro : t.dashboard.plan.free}
+          </span>
+        </div>
+        <p className="card__text">
+          {user?.isPro ? t.settings.subscription.proText : t.settings.subscription.freeText}{' '}
+          {t.settings.subscription.comingSoon}
+        </p>
+        <button type="button" className="btn btn--secondary btn--sm" disabled>
+          {user?.isPro ? t.settings.subscription.manageBilling : t.settings.subscription.upgrade}
+        </button>
+      </div>
+
       {/* Preferences */}
       <div className="card">
         <h2 className="card__title">
           <FontAwesomeIcon icon={faSlidersH} className="card__icon" />
           {t.settings.preferencesSection}
         </h2>
+        <div className="setting-row">
+          <div className="setting-row__label">
+            <span className="setting-row__title" id="palette-label">{t.settings.paletteLabel}</span>
+            <span className="setting-row__text">{t.settings.paletteDesc}</span>
+          </div>
+          <div className="cluster cluster--tight" role="group" aria-labelledby="palette-label">
+            {PALETTES.map((p) => (
+              <button
+                key={p}
+                type="button"
+                className="chip"
+                aria-pressed={palette === p}
+                onClick={() => setPalette(p)}
+              >
+                <span className={`swatch swatch--${p}`} aria-hidden="true" />
+                {t.settings.palettes[p]}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="setting-row">
           <div className="setting-row__label">
             <span className="setting-row__title">{t.settings.themeLabel}</span>

@@ -1,4 +1,5 @@
 import { publicShopUrl } from '../utils/publicLink';
+import { ROLE_BADGE } from '../utils/roles';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
@@ -165,7 +166,7 @@ export default function ShopSettingsPage() {
       <div className="shop-detail-header">
         <h1 className="t-title">{shop.name}</h1>
         <div className="cluster cluster--tight">
-          <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
+          <span className={`badge ${ROLE_BADGE[shop.role]}`}>{t.team.roles[shop.role]}</span>
           <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>
@@ -185,6 +186,8 @@ export default function ShopSettingsPage() {
       </div>
 
       <form onSubmit={handleSave}>
+        {/* Read-only for a manager the owner has not let edit settings. */}
+        <fieldset className="fieldset" disabled={!shop.canEditShopSettings}>
         {/* Shop Details + Configuration — one card, one Save */}
         <div className="card">
           <div className="card__header">
@@ -193,7 +196,9 @@ export default function ShopSettingsPage() {
                 <FontAwesomeIcon icon={faStore} className="card__icon" />
                 {t.shopSettings.shopDetails}
               </h2>
-              <p className="card__text">{t.shopSettings.saveHint}</p>
+              <p className="card__text">
+                {shop.canEditShopSettings ? t.shopSettings.saveHint : t.shopSettings.readOnlyHint}
+              </p>
             </div>
             <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
               {t.shopSettings.saveChanges}
@@ -281,11 +286,21 @@ export default function ShopSettingsPage() {
           <div className="setting-row">
             <div className="setting-row__label">
               <label htmlFor="detail-active" className="setting-row__title">{t.shopSettings.activeLabel}</label>
-              <span className="setting-row__text">{t.shopSettings.activeDesc}</span>
+              <span className="setting-row__text">
+                {t.shopSettings.activeDesc}
+                {shop.role !== 'owner' && ` ${t.shopSettings.activeOwnerOnly}`}
+              </span>
             </div>
-            <Switch id="detail-active" checked={isActive} onChange={setIsActive} label={t.shopSettings.activeLabel} />
+            <Switch
+              id="detail-active"
+              checked={isActive}
+              onChange={setIsActive}
+              label={t.shopSettings.activeLabel}
+              disabled={shop.role !== 'owner'}
+            />
           </div>
         </div>
+        </fieldset>
       </form>
 
       {/* Danger Zone */}

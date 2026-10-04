@@ -852,7 +852,7 @@ paths:
       summary: Overview across all of the user's shops
       description: >
         The shop overview (`/shops/{shopId}/overview`) summed across every shop
-        the user is an ACTIVE member of (owner or staff, the same set as
+        the user is an ACTIVE member of (owner, manager or staff, the same set as
         `GET /shops`), plus a `perShop` breakdown.
 
 
@@ -922,7 +922,7 @@ paths:
         period in the shop's timezone, including future bookings. week: the
         current Monday-Sunday week; month: the current calendar month;
         quarter: the current month plus the previous two, in weekly buckets.
-        Available to the shop's owner and staff.
+        Available to every active member of the shop.
       operationId: getShopOverview
       security:
         - bearerAuth: []

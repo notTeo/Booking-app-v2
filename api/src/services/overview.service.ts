@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { Prisma, type BookingStatus } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { addDays, dayBoundsUtc, todayInZone } from '../utils/shopTime';
-import { requireShopAccess } from '../utils/shopAccess';
+import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 import { redactCustomer } from '../utils/customerVisibility';
 import { AppError } from '../middleware/errorHandler';
 
@@ -311,10 +311,7 @@ export const getMyUpcoming = async (userId: string, now: Date = new Date()) => {
   const memberships = await myShops(userId);
   if (memberships.length === 0) return [];
   const canView = new Map(
-    memberships.map((m) => [
-      m.shop.id,
-      m.role === 'owner' || m.canViewCustomerDetails,
-    ]),
+    memberships.map((m) => [m.shop.id, canViewCustomerDetails(m)]),
   );
   const bookings = await prisma.booking.findMany({
     where: {

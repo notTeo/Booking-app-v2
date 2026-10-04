@@ -7,6 +7,7 @@ import { ShopRouteProvider } from './context/ShopContext';
 import ShopGate from './components/ShopGate';
 import OwnerRoute from './components/OwnerRoute';
 import { ThemeProvider } from './context/ThemeContext';
+import { PaletteProvider } from './context/PaletteContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -57,6 +58,7 @@ function RouteMeta() {
 export default function App() {
   return (
     <ThemeProvider>
+      <PaletteProvider>
       <LanguageProvider>
         <BrowserRouter>
           <ScrollToTop />
@@ -120,6 +122,7 @@ export default function App() {
           </AuthProvider>
         </BrowserRouter>
       </LanguageProvider>
+      </PaletteProvider>
     </ThemeProvider>
   );
 }
