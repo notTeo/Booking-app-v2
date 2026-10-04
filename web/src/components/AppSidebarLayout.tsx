@@ -6,7 +6,7 @@ import Wordmark from './Wordmark';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { useShopSlug } from '../hooks/useShopSlug';
+import { useNavShop } from '../hooks/useNavShop';
 
 // Two bars, the top one longer than the bottom.
 function MenuIcon() {
@@ -20,12 +20,16 @@ function MenuIcon() {
 
 // Compact-only top bar: the app navbar with the wordmark and the menu button.
 function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HTMLButtonElement> }) {
-  const slug = useShopSlug();
+  const shop = useNavShop();
   const { t } = useLang();
 
   return (
     <header className="navbar navbar--app is-compact">
-      <Link to={`/shops/${slug}`} className="wordmark wordmark--sm" aria-label={t.sidebar.overview}>
+      <Link
+        to={shop ? `/shops/${shop.slug}` : '/dashboard'}
+        className="wordmark wordmark--sm"
+        aria-label={shop ? t.sidebar.overview : t.sidebar.home}
+      >
         <Wordmark />
       </Link>
       <span className="navbar__spacer" />
@@ -42,9 +46,9 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
   );
 }
 
-// Shop pages (/shops/:slug/...): the shop sidebar, as a rail or (compact) a
-// drawer behind the top bar. Pages outside a shop use AppTopBarLayout.
-export default function ShopSidebarLayout() {
+// Every signed-in page: the sidebar, as a rail or (compact) a drawer behind
+// the top bar. The top bar exists only on phones, to hold the menu button.
+export default function AppSidebarLayout() {
   const compact = useIsCompact();
   const resize = useSidebarWidth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

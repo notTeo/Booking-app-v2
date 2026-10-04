@@ -565,9 +565,6 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 /* ---------- 17. Sidebar + app shell ---------- */
 .app-shell { --drawer-width: min(16rem, 75vw); display: grid; grid-template-columns: var(--sidebar-width, 16rem) minmax(0, 1fr); min-height: 100dvh; background: var(--bg); }
 .app-shell.is-compact { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-/* Outside a shop: no sidebar, an app navbar on top and the content centred under it. */
-.app-shell--topbar, .app-shell--topbar.is-compact { display: block; }
-.app-shell--topbar > .app-shell__main { max-width: 72rem; margin: 0 auto; }
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: var(--space-6) var(--space-4); }
 @media (min-width: 640px) { .page { padding: var(--space-8) var(--space-6); } }
 /* One card in the middle of the screen (auth pages). */
@@ -597,9 +594,12 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .nav-item[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
 .nav-item:focus-visible, .nav-item.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .nav-item[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
-.sidebar--collapsed { width: 4.5rem; align-items: center; }
+.sidebar--collapsed { width: 5rem; align-items: center; }
 .sidebar--collapsed .nav-item { justify-content: center; width: var(--control-md); padding: 0; }
-.sidebar--collapsed .nav-item__label, .sidebar--collapsed .nav-item .badge, .sidebar--collapsed .sidebar__label, .sidebar--collapsed .sidebar__shop-name { display: none; }
+.sidebar--collapsed .nav-item__label, .sidebar--collapsed .nav-item .badge, .sidebar--collapsed .sidebar__label, .sidebar--collapsed .sidebar__shop-name, .sidebar--collapsed .sidebar__title { display: none; }
+.sidebar--collapsed .sidebar__brand { padding: 0; }
+.sidebar--collapsed .sidebar__nav { align-items: center; }
+.sidebar--collapsed .sidebar__footer { align-self: stretch; }
 .sidebar--collapsed .sidebar__shop { width: auto; padding: var(--space-1); }
 .sidebar.is-drawer {
   position: fixed; inset: 0 0 auto auto; height: 100dvh; max-height: 100dvh; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: var(--z-drawer); width: var(--drawer-width, min(16rem, 75vw));

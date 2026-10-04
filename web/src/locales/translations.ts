@@ -25,7 +25,7 @@ export interface Translations {
     account: string;
     overview: string;
     logout: string;
-    backToShops: string;
+    home: string;
     shopSection: string;
     manageSection: string;
     bookings: string;
@@ -331,7 +331,6 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
-    backToShop: string;
     subscription: {
       title: string;
       proText: string;
@@ -943,7 +942,7 @@ export const translations: Record<Language, Translations> = {
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
       logout: 'Αποσύνδεση',
-      backToShops: 'Όλα τα καταστήματα',
+      home: 'Αρχική',
       shopSection: 'Κατάστημα',
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
@@ -1254,7 +1253,6 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
-      backToShop: 'Πίσω στο κατάστημα',
       subscription: {
         title: 'Συνδρομή',
         proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
@@ -1892,7 +1890,7 @@ home: {
       account: 'Account',
       overview: 'Overview',
       logout: 'Logout',
-      backToShops: 'All shops',
+      home: 'Home',
       shopSection: 'Shop',
       manageSection: 'Manage',
       bookings: 'Bookings',
@@ -2203,7 +2201,6 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
-      backToShop: 'Back to shop',
       subscription: {
         title: 'Subscription',
         proText: 'You are on the Pro plan and can create shops.',
