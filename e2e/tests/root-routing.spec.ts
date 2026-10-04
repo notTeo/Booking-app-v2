@@ -17,7 +17,7 @@ test('the old /p/<slug> link redirects to /<slug>', async ({ page }) => {
 
 test('static routes are not shadowed by /:slug', async ({ page }) => {
   await page.goto('/privacy');
-  await expect(page.locator('.legal-title')).toBeVisible();
+  await expect(page.locator('.legal-page h1')).toBeVisible();
   await page.goto('/login');
   await expect(page.locator('#email')).toBeVisible();
 });

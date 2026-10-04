@@ -45,8 +45,21 @@ export default function ShopOverviewPage() {
     />
   );
 
-  if (isLoading) return <div className="state-view">{t.overview.loading}</div>;
-  if (!shop) return <div className="state-view">{t.overview.noShop}</div>;
+  if (isLoading) {
+    return (
+      <div className="spinner-wrap" role="status">
+        <div className="spinner spinner--lg" />
+        <span className="visually-hidden">{t.overview.loading}</span>
+      </div>
+    );
+  }
+  if (!shop) {
+    return (
+      <div className="empty">
+        <p className="empty__text">{t.overview.noShop}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="overview-page">

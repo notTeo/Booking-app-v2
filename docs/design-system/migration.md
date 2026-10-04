@@ -22,11 +22,14 @@ Done (branch `feat/design-system`):
 - **Bookings** (page rebuild, phase 5): the calendar is a DS component now (`components.css` section 29, `components/Calendar`), renamed to BEM: `.cal-scroll` is `.cal`, parts are `cal__*`, block parts are `cal-block__*`, `cal-chip-badge` is `cal-chips__count`. Its sizes are rem (gutter, column minimum) and the hour height is `--cal-hour-h`, set by the page from `SLOT_H`. `bookings.css` is layout only (4 lines, from 379). New: `btn--sunken`; `btn--icon` no longer shrinks in a flex row. The header is `page-header`, the toolbar and the chip groups in the two modals are `cluster`s.
 - **Public booking** (page rebuild, phase 6): the public booking page, the owner new-booking page and the booking wizard use only DS classes. `public.css` is layout only (about 20 lines, from 315). New: `page-hero`, `suggest`, `field__required`, `field--anchor`, `slot__tag`, `slot-group--collapsible`, `slot-group__count`, `.t-muted strong`. The section title is `t-heading` (no longer uppercase with a rule under it), the confirmation is a `card--center`, loading and error states are `spinner-page` / `spinner-wrap`, an `empty` or an `Alert`. The old public `Navbar`, `Toggles` and `navbar.css` were unused and are deleted.
 
+- **Legal pages** (page rebuild, phase 7): Terms, Privacy, DPA, About and Contact use `back-link`, `t-title`, `t-subheading`, `t-body` and `t-body-sm t-muted`; `legal.css` is layout only (4 rules, from 89 lines). About and Contact keep the landing page's label and buttons.
+
+Every page outside the landing page now uses only classes from `components.css`, plus a layout-only file in `styles/pages/` where it needs one (about 80 lines in all, tokens for every gap; the only literal sizes are page and column widths). `styles/shared/components.css` is gone.
+
 Left:
 
-- **Page CSS cleanup** (steps 5-6): duplicates and raw sizes/gaps in `home.css`, `public.css`, `bookings.css` and the other page files. `home.css` keeps its fake-preview `clamp()` values. The landing page still has its own `.home-btn-primary` / `.home-btn-ghost` buttons, and a few `rgba()` shadows and scrims remain in `home.css`, `public.css`, `bookings.css` (no shadow or scrim token covers them yet).
-- **New components** (step 7): toast, tabs, empty and skeleton states, avatar and booking-flow pieces, as pages need them. Tooltip added later, with the top bar outside a shop.
-- **Open UI work:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
+- **Landing page** (`home.css`, `HomePage.tsx`, `Footer.tsx`, and the label and buttons on About and Contact): the one standing exception. It keeps its own `.home-btn-primary` / `.home-btn-ghost` buttons, its fake-preview `clamp()` values and class names, and a few `rgba()` shadows and scrims.
+- **Open UI work:** convert the remaining saving buttons to `.is-loading` + `aria-busy`.
 
 ## Decisions on the section 5 issues
 
