@@ -294,6 +294,10 @@ export default function ShopBookingsPage() {
       {/* ── Header ── */}
       <div className="bookings-header">
         <h1 className="t-title">{t.bookings.title}</h1>
+      </div>
+
+      {/* ── Toolbar: date, filters (controls live in BookingFiltersModal), new booking ── */}
+      <div className="bookings-toolbar">
         <div className="bookings-date-nav">
           <button
             type="button"
@@ -322,16 +326,6 @@ export default function ShopBookingsPage() {
             <FontAwesomeIcon icon={faChevronRight} />
           </button>
         </div>
-        {isOwner && shop && (
-          <Link className="btn btn--sm" to={`/shops/${shop.slug}/bookings/new`}>
-            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-            {t.sidebar.bookAppointment}
-          </Link>
-        )}
-      </div>
-
-      {/* ── Filters (the controls live in BookingFiltersModal) ── */}
-      <div className="cal-filters">
         <button type="button" className="btn btn--secondary btn--sm" onClick={() => setShowFilters(true)}>
           <FontAwesomeIcon icon={faSliders} aria-hidden="true" />
           {t.bookings.filters.button}
@@ -346,6 +340,12 @@ export default function ShopBookingsPage() {
               {t.bookings.filters.clear}
             </button>
           </>
+        )}
+        {isOwner && shop && (
+          <Link className="btn btn--sm bookings-toolbar-end" to={`/shops/${shop.slug}/bookings/new`}>
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+            {t.sidebar.bookAppointment}
+          </Link>
         )}
       </div>
 

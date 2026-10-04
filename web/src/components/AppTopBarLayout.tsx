@@ -18,11 +18,18 @@ function AppTopBar({ compact }: { compact: boolean }) {
       </Link>
       <span className="navbar__spacer" />
       <div className="navbar__actions">
-        <Tooltip label={t.sidebar.account} align="end">
-          <NavLink to="/account" className="btn btn--ghost btn--icon" aria-label={t.sidebar.account}>
+        {compact ? (
+          <Tooltip label={t.sidebar.account} align="end">
+            <NavLink to="/account" className="btn btn--ghost btn--icon" aria-label={t.sidebar.account}>
+              <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+            </NavLink>
+          </Tooltip>
+        ) : (
+          <NavLink to="/account" className="btn btn--ghost">
             <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+            {t.sidebar.account}
           </NavLink>
-        </Tooltip>
+        )}
       </div>
     </header>
   );

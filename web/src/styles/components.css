@@ -487,8 +487,12 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .navbar__link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .navbar__spacer { flex: 1; }
 .navbar__actions { display: flex; align-items: center; gap: var(--space-2); }
-/* App variant: a centred bar hanging from the top edge (dashboard/account, and the shop pages' compact top bar). */
-.navbar--app { width: 80%; margin-inline: auto; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+/* App variant: a centred, slightly see-through bar hanging from the top edge (dashboard/account, and the shop pages' compact top bar). */
+.navbar--app {
+  --navbar-radius: calc(var(--radius-lg) * 2);
+  width: 90%; margin-inline: auto; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 var(--navbar-radius) var(--navbar-radius);
+  background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(var(--space-3)); -webkit-backdrop-filter: blur(var(--space-3));
+}
 /* App variant: an icon action that is the current page (Account). */
 .navbar__actions [aria-current="page"] { --btn-fg: var(--accent); --btn-bg: var(--accent-soft); }
 .navbar__menu-btn, .navbar__panel { display: none; }
