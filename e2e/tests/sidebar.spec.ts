@@ -31,9 +31,13 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
     await expect(item(page, name), name).toHaveCount(0);
   }
-  // "My Shops" is a way out (to the dashboard), not the current page.
-  await expect(item(page, 'My Shops')).toHaveAttribute('href', '/dashboard');
-  await expect(item(page, 'My Shops')).not.toHaveAttribute('aria-current', 'page');
+  // "All shops" is a way out (to the dashboard), not the current page. The
+  // seeded owner has a single shop: the link shows regardless of how many.
+  await expect(item(page, 'All shops')).toHaveAttribute('href', '/dashboard');
+  await expect(item(page, 'All shops')).not.toHaveAttribute('aria-current', 'page');
+  await item(page, 'All shops').click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goBack();
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
 
   await item(page, 'Account').click();
@@ -54,7 +58,7 @@ test('staff see the trimmed menu and are redirected away from owner pages', asyn
   await query(`update "UserShop" set role = 'staff' where id = 'us1'`);
   try {
     await page.goto(SHOP);
-    for (const name of ['Overview', 'Bookings', 'Services', 'Account']) {
+    for (const name of ['All shops', 'Overview', 'Bookings', 'Services', 'Account']) {
       await expect(item(page, name), name).toBeVisible();
     }
     for (const name of ['Team', 'Customers', 'Settings']) {

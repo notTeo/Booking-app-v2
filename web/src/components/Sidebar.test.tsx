@@ -53,7 +53,7 @@ describe('Sidebar', () => {
   it('staff: no Team, Customers or Shop settings', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'staff' };
     const html = render('/shops/hair');
-    for (const label of [t.overview, t.bookings, t.services, t.account, t.logout]) expect(html).toContain(label);
+    for (const label of [t.backToShops, t.overview, t.bookings, t.services, t.account, t.logout]) expect(html).toContain(label);
     expect(html).not.toContain('/shops/hair/team');
     expect(html).not.toContain('/shops/hair/customers');
     expect(html).not.toContain('/shops/hair/settings');
