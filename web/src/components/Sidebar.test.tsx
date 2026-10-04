@@ -40,12 +40,13 @@ describe('Sidebar', () => {
     expect(render('/shops/new')).not.toContain('nav-item');
   });
 
-  it('owner: shop name, all shop items, account and logout', () => {
+  it('owner: shop name, all shop items and account, no logout', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'owner' };
     const html = render('/shops/hair/bookings');
-    for (const label of [t.backToShops, 'Hairology', t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account, t.logout]) {
+    for (const label of [t.backToShops, 'Hairology', t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account]) {
       expect(html).toContain(label);
     }
+    expect(html).not.toContain(t.logout);
     expect(html).not.toContain('/invites');
     expect(html).not.toContain(t.bookAppointment);
   });
@@ -53,7 +54,7 @@ describe('Sidebar', () => {
   it('staff: no Team, Customers or Shop settings', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'staff' };
     const html = render('/shops/hair');
-    for (const label of [t.backToShops, t.overview, t.bookings, t.services, t.account, t.logout]) expect(html).toContain(label);
+    for (const label of [t.backToShops, t.overview, t.bookings, t.services, t.account]) expect(html).toContain(label);
     expect(html).not.toContain('/shops/hair/team');
     expect(html).not.toContain('/shops/hair/customers');
     expect(html).not.toContain('/shops/hair/settings');

@@ -356,6 +356,8 @@ export interface Translations {
     newPasswordLabel: string;
     newPasswordOptionalLabel: string;
     updatePassword: string;
+    logout: string;
+    logoutDesc: string;
     dangerZone: string;
     dangerDesc: string;
     deleteAccount: string;
@@ -1257,6 +1259,8 @@ home: {
       newPasswordLabel: 'Νέος Κωδικός',
       newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
       updatePassword: 'Ενημέρωση Κωδικού',
+      logout: 'Αποσύνδεση',
+      logoutDesc: 'Αποσυνδεθείτε από τον λογαριασμό σας σε αυτή τη συσκευή.',
       dangerZone: 'Επικίνδυνη Ζώνη',
       dangerDesc: 'Οριστική διαγραφή λογαριασμού και όλων των δεδομένων. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccount: 'Διαγραφή Λογαριασμού',
@@ -2184,6 +2188,8 @@ home: {
       newPasswordLabel: 'New Password',
       newPasswordOptionalLabel: 'New Password (optional)',
       updatePassword: 'Update Password',
+      logout: 'Log out',
+      logoutDesc: 'Sign out of your account on this device.',
       dangerZone: 'Danger Zone',
       dangerDesc: 'Permanently delete your account and all associated data. This action cannot be undone.',
       deleteAccount: 'Delete Account',

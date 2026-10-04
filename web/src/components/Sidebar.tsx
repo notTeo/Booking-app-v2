@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTableCells,
   faGear,
-  faRightFromBracket,
   faCalendar,
   faScissors,
   faUsers,
@@ -13,7 +12,6 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { useShopSlug } from '../hooks/useShopSlug';
@@ -35,23 +33,6 @@ function Item({ to, icon, label, end, onNavigate }: ItemProps) {
       <FontAwesomeIcon icon={icon} aria-hidden="true" />
       <span className="nav-item__label">{label}</span>
     </NavLink>
-  );
-}
-
-function LogoutItem({ onNavigate }: { onNavigate: () => void }) {
-  const { logout } = useAuth();
-  const { t } = useLang();
-  const navigate = useNavigate();
-
-  return (
-    <button
-      type="button"
-      className="nav-item nav-item--danger"
-      onClick={async () => { await logout(); navigate('/login'); onNavigate(); }}
-    >
-      <FontAwesomeIcon icon={faRightFromBracket} aria-hidden="true" />
-      <span className="nav-item__label">{t.sidebar.logout}</span>
-    </button>
   );
 }
 
@@ -84,7 +65,6 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
       </nav>
       <div className="sidebar__footer sidebar__nav">
         <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />
-        <LogoutItem onNavigate={onNavigate} />
       </div>
     </>
   );
