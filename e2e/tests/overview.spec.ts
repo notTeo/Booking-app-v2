@@ -291,9 +291,12 @@ test('a shop with no bookings ever shows the empty state with the booking link',
 });
 
 test('on a 1280px laptop the upcoming bookings are a table, beside the stat tiles', async ({ page }) => {
+  // The tests above leave no bookings; one upcoming booking gives the table a row.
+  await query('delete from "Booking"');
+  await insertBooking('ov-laptop', addDays(today, 1), 10, 'CONFIRMED');
   await page.setViewportSize({ width: 1280, height: 900 });
   await openOverview(page);
-  await expect(page.locator('.data-table').first()).toBeVisible();
+  await expect(upcomingRows(page)).toHaveCount(1);
   // Row cards (under 640px of room) hide the header row off screen.
   const header = page.locator('.data-table thead').first();
   expect(await header.evaluate((el) => getComputedStyle(el).position)).not.toBe('absolute');
