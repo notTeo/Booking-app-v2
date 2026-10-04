@@ -145,7 +145,7 @@ export default function DashboardPage() {
       {showAnalytics && (
         <section className="overview-page" aria-labelledby="dashboard-analytics-title">
           <div className="overview-head">
-            <h2 className="card__title" id="dashboard-analytics-title">{t.dashboard.analytics}</h2>
+            <h2 className="t-subheading" id="dashboard-analytics-title">{t.dashboard.analytics}</h2>
             <RangeTabs value={range} onChange={setRange} />
           </div>
           <OverviewBody

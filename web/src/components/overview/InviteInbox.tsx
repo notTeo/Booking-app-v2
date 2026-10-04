@@ -55,7 +55,7 @@ export default function InviteInbox({ invites }: { invites: ShopInvite[] }) {
 
   return (
     <section className="shop-cards" aria-labelledby="dashboard-invites-title">
-      <h2 className="card__title" id="dashboard-invites-title">{t.dashboard.invites.title}</h2>
+      <h2 className="t-subheading" id="dashboard-invites-title">{t.dashboard.invites.title}</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       <ul className="shop-cards__grid">
         {invites.map((invite) => {

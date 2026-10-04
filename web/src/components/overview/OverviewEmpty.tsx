@@ -25,7 +25,7 @@ export default function OverviewEmpty({ link }: { link: string }) {
         <h2 className="empty__title">{t.overview.empty.title}</h2>
         <p className="empty__text">{t.overview.empty.text}</p>
         <div className="empty__actions">
-          <button type="button" className="btn btn--primary" onClick={copy}>{t.overview.empty.copy}</button>
+          <button type="button" className="btn" onClick={copy}>{t.overview.empty.copy}</button>
         </div>
         <span className="visually-hidden" role="status">{copied ? t.overview.empty.copied : ''}</span>
       </div>

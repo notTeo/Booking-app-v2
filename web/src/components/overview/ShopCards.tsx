@@ -21,7 +21,7 @@ export default function ShopCards({ shops }: { shops: ShopCardRow[] }) {
 
   return (
     <section className="shop-cards" aria-labelledby="dashboard-shops-title">
-      <h2 className="card__title" id="dashboard-shops-title">{s.title}</h2>
+      <h2 className="t-subheading" id="dashboard-shops-title">{s.title}</h2>
       <ul className="shop-cards__grid">
         {shops.map((shop) => (
           <li key={shop.id}>
