@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { usePalette } from '../context/PaletteContext';
+import { PALETTES } from '../utils/palette';
 import { useLang } from '../context/LanguageContext';
 import { updateMe, deleteMe } from '../api/user.api';
 import { getSessions, revokeAllSessions, type Session } from '../api/auth.api';
@@ -61,6 +63,7 @@ export default function AccountPage() {
     return () => cancelAnimationFrame(frame);
   }, [hash]);
   const { theme, toggleTheme } = useTheme();
+  const { palette, setPalette } = usePalette();
   const { language, toggleLanguage, t } = useLang();
   const navigate = useNavigate();
 
@@ -298,6 +301,26 @@ export default function AccountPage() {
           <FontAwesomeIcon icon={faSlidersH} className="card__icon" />
           {t.settings.preferencesSection}
         </h2>
+        <div className="setting-row">
+          <div className="setting-row__label">
+            <span className="setting-row__title" id="palette-label">{t.settings.paletteLabel}</span>
+            <span className="setting-row__text">{t.settings.paletteDesc}</span>
+          </div>
+          <div className="cluster cluster--tight" role="group" aria-labelledby="palette-label">
+            {PALETTES.map((p) => (
+              <button
+                key={p}
+                type="button"
+                className="chip"
+                aria-pressed={palette === p}
+                onClick={() => setPalette(p)}
+              >
+                <span className={`swatch swatch--${p}`} aria-hidden="true" />
+                {t.settings.palettes[p]}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="setting-row">
           <div className="setting-row__label">
             <span className="setting-row__title">{t.settings.themeLabel}</span>

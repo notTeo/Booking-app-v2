@@ -373,6 +373,9 @@ export interface Translations {
     nameLabel: string;
     saveName: string;
     preferencesSection: string;
+    paletteLabel: string;
+    paletteDesc: string;
+    palettes: { original: string; mono: string; purple: string };
     themeLabel: string;
     themeDesc: string;
     lightTheme: string;
@@ -1293,6 +1296,9 @@ home: {
       nameLabel: 'Όνομα Χρήστη',
       saveName: 'Αποθήκευση Ονόματος',
       preferencesSection: 'Προτιμήσεις',
+      paletteLabel: 'Χρώματα',
+      paletteDesc: 'Τα χρώματα της εφαρμογής σε αυτή τη συσκευή',
+      palettes: { original: 'Αρχικό', mono: 'Ασπρόμαυρο', purple: 'Μωβ' },
       themeLabel: 'Θέμα',
       themeDesc: 'Επιλέξτε το προτιμώμενο χρωματικό θέμα',
       lightTheme: 'Φωτεινό',
@@ -2239,6 +2245,9 @@ home: {
       nameLabel: 'User Name',
       saveName: 'Save Name',
       preferencesSection: 'Preferences',
+      paletteLabel: 'Colours',
+      paletteDesc: 'The colours of the app on this device',
+      palettes: { original: 'Original', mono: 'Black & white', purple: 'Purple' },
       themeLabel: 'Theme',
       themeDesc: 'Choose your preferred color scheme',
       lightTheme: 'Light',

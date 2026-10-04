@@ -330,6 +330,11 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .chip--canceled[aria-pressed="true"] { --c-fg: var(--text-muted); --c-bg: var(--surface-sunken); --c-bd: var(--border); }
 .chip--canceled .chip__label { text-decoration: line-through; text-decoration-thickness: 1px; }
 .chip--lg { min-height: var(--control-md); padding: 0 var(--space-4); }
+/* Swatch: a colour dot in a chip, one per colour set (Preferences). Always that set's colour, whichever is active. */
+.swatch { flex: none; width: var(--space-3); height: var(--space-3); border-radius: var(--radius-full); background: var(--swatch, var(--accent)); border: 1px solid var(--border-strong); }
+.swatch--original { --swatch: var(--palette-original); }
+.swatch--mono { --swatch: var(--palette-mono); }
+.swatch--purple { --swatch: var(--palette-purple); }
 .chip:disabled, .chip[aria-disabled="true"] { --c-fg: var(--text-muted); --c-bd: var(--border); opacity: 0.6; cursor: not-allowed; }
 
 /* ---------- 8. Alert ---------- */
