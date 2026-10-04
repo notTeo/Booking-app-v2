@@ -63,7 +63,7 @@ export default function AcceptInvitePage() {
     return (
       <div className="accept-invite-page">
         <div className="card card--auth accept-invite-card">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );

@@ -37,7 +37,7 @@ export default function VerifyEmailChangePage() {
   }, [searchParams]);
 
   return (
-    <div className="page">
+    <div className="page page--center">
       <div className="card card--auth">
         <h1 className="t-heading">Email Change Verification</h1>
 

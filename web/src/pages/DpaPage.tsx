@@ -17,7 +17,7 @@ export default function DpaPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <Link to="/" className="legal-back">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <h1 className="legal-title"><BrandText text={t.dpa.title} /></h1>
         <p className="legal-updated"><BrandText text={t.dpa.lastUpdated} muted /></p>
         <p className="legal-body"><strong><BrandText text={t.dpa.placeholderNotice} muted /></strong></p>

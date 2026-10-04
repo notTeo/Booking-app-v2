@@ -75,7 +75,7 @@ States use real pseudo-classes. `is-hover`, `is-focus`, `is-active` classes exis
 | Modal | `.modal-backdrop > .modal` (`modal__header`, `modal__title`, `modal__body`, `modal__footer`); `modal--confirm`, `modal__icon` | Portal; `role="dialog"` or `alertdialog`, `aria-modal`, `aria-labelledby`; trap focus; Esc closes; restore focus; lock body scroll. Phones become a bottom sheet through the media query. |
 | Tabs | `.tabs > .tab[role=tab][aria-selected]`; `tabs--segmented` | Roving tabindex, arrow keys, `role=tabpanel`. |
 | Empty | `empty`, `empty__icon`, `empty__title`, `empty__text`, `empty__actions`; `empty--sm` | |
-| Loading | `skeleton` + `--text/--title/--avatar/--button/--chip/--block`; `spinner`, `--sm`, `--lg` | Container gets `aria-busy="true"`; standalone spinner gets `role="status"` with visually hidden text. |
+| Loading | `skeleton` + `--text/--title/--avatar/--button/--chip/--block`; `spinner`, `--sm`, `--lg` | `spinner--lg` for a page or section that is loading, plain `spinner` inside a card. Container gets `aria-busy="true"`; standalone spinner gets `role="status"` with visually hidden text. |
 | Data table | `.table-wrap > .table-surface > table.data-table` | Every `td` needs `data-label`; first cell `data-table__title`; last `data-table__actions`; numbers `data-table__num`. Sortable header: `data-table__sort` button with `aria-sort` on the `th`. |
 | Avatar | `avatar`, `--sm/--lg/--xl` | Initials or `<img alt="">` when the name is next to it. |
 | Navbar | `navbar`, `navbar__links`, `navbar__link`, `navbar__actions`, `navbar__menu-btn`, `navbar__panel`; `is-compact`, `is-open` | `aria-current="page"` marks the active link, and the active icon action in `navbar__actions`. Icon-only actions get `aria-label` and a `tooltip`. |
@@ -87,7 +87,12 @@ States use real pseudo-classes. `is-hover`, `is-focus`, `is-active` classes exis
 | Time slots | `slots`, `slot`, `slot-group`, `slot-group__label`; `aria-pressed`, `disabled` | Label booked slots ("10:00, booked"). |
 | Steps | `.steps-wrap > ol.steps > li.steps__item` (`is-done`, `is-current`) and `.steps-compact` | Render both; the container query hides one. Done steps are buttons. `aria-current="step"` on the current one. |
 | Chip | `chip`, `chip__label`; `chip--pending` / `--confirmed` / `--completed` / `--canceled` / `--no-show` (colors apply when pressed); `chip--lg` | `<button aria-pressed>`. Filters and short value pickers, not view switching (use tabs). Canceled label is struck through. |
-| Wordmark | `wordmark`, `wordmark__be`, `--sm`, `--lg` | `<span class="wordmark"><span class="wordmark__be">Be</span>Booked</span>` |
+| Wordmark | `wordmark`, `wordmark__be`, `--sm`, `--lg`; `wordmark--inline`, `wordmark--muted` | `<span class="wordmark"><span class="wordmark__be">Be</span>Booked</span>`. `wordmark--inline` inside running text or a heading (takes the size and colour around it); add `wordmark--muted` so "Be" is not orange. |
+| Page | `page`; `page--center` | `page` is the 72rem content column. `page--center` puts one card in the middle of the screen (auth pages). `spinner-page` centres a `spinner spinner--lg` while a route resolves. |
+| Back link | `back-link` | `<a>` or `<button>` above a page or card title. As a direct child of `.card` it drops its bottom margin. |
+| Form links | `form-links` | The links under an auth form. |
+| Password requirements | `ul.password-requirements > li.password-requirements__item`; `is-met` | Each item has a check or x icon before the label; `is-met` turns it `success`. |
+| Copy link | `copy-link`, `copy-link__value`, `copy-link__btn`; `copy-link--compact` | A URL with Copy and Open buttons on one line; the URL truncates. Rendered by `CopyLinkButton`. |
 
 ## 5. Rules
 

@@ -63,7 +63,7 @@ export default function ShopNewPage() {
   return (
     <div className="shops-page">
       <div className="shop-detail-back">
-        <button className="card-back" type="button" onClick={() => navigate('/dashboard')}>
+        <button className="back-link" type="button" onClick={() => navigate('/dashboard')}>
           ← My Shops
         </button>
       </div>

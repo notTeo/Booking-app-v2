@@ -250,7 +250,7 @@ export default function ShopServicesPage() {
     return (
       <div className="services-page">
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -338,7 +338,7 @@ export default function ShopServicesPage() {
                 <div className="service-staff-panel">
                   {loadingDetail ? (
                     <div className="service-staff-loading">
-                      <div className="spinner" style={{ width: 24, height: 24 }} />
+                      <div className="spinner" />
                     </div>
                   ) : (
                     <>

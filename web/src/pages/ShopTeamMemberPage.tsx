@@ -279,7 +279,7 @@ export default function ShopTeamMemberPage() {
     return (
       <div className="team-member-page">
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -288,7 +288,7 @@ export default function ShopTeamMemberPage() {
   if (error || !member) {
     return (
       <div className="team-member-page">
-        <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
+        <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
           {t.team.backToTeam}
         </button>
         <Alert variant="danger">{error || t.team.notFound}</Alert>
@@ -299,7 +299,7 @@ export default function ShopTeamMemberPage() {
   return (
     <div className="team-member-page">
       {/* Back link */}
-      <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
+      <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
         {t.team.backToTeam}
       </button>
 
@@ -452,7 +452,7 @@ export default function ShopTeamMemberPage() {
         <h2 className="card__title">{t.team.assignedServices}</h2>
         {servicesLoading ? (
           <div className="shops-spinner-wrap">
-            <div className="spinner" style={{ width: 24, height: 24 }} />
+            <div className="spinner" />
           </div>
         ) : (
           <>

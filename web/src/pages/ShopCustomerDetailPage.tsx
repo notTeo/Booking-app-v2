@@ -117,7 +117,7 @@ export default function ShopCustomerDetailPage() {
     return (
       <div className="team-member-page">
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -126,7 +126,7 @@ export default function ShopCustomerDetailPage() {
   if (error || !customer) {
     return (
       <div className="team-member-page">
-        <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
+        <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
           {t.customers.backToCustomers}
         </button>
         <Alert variant="danger">{error || t.customers.notFound}</Alert>
@@ -136,7 +136,7 @@ export default function ShopCustomerDetailPage() {
 
   return (
     <div className="team-member-page">
-      <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
+      <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
         {t.customers.backToCustomers}
       </button>
 

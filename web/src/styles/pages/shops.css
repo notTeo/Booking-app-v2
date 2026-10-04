@@ -142,7 +142,7 @@
 }
 
 /* Booking-link section hint sits above the copy row, not under an input */
-.shop-settings-section .shop-field-hint:has(+ .copy-link-row) {
+.shop-settings-section .shop-field-hint:has(+ .copy-link) {
   margin-top: 0;
   margin-bottom: 0.75rem;
 }

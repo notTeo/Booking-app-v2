@@ -60,7 +60,7 @@ export default function OwnerBookingWizard({
   } | null>(null);
 
   if (wizard.loading) {
-    return <div className="public-loading"><div className="spinner" /></div>;
+    return <div className="public-loading"><div className="spinner spinner--lg" /></div>;
   }
   if (wizard.error || !wizard.shop) {
     return <div className="public-error"><p>{wizard.error ?? t.public.somethingWrong}</p></div>;

@@ -12,7 +12,7 @@ export default function BrandText({ text, muted = false }: { text: string; muted
       {parts.map((part, i) => (
         <span key={i} style={{ display: 'contents' }}>
           {i > 0 && (
-            <span className={muted ? 'brand-wordmark brand-wordmark--muted' : 'brand-wordmark'}>
+            <span className={muted ? 'wordmark wordmark--inline wordmark--muted' : 'wordmark wordmark--inline'}>
               <Wordmark />
             </span>
           )}

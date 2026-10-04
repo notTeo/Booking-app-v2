@@ -282,7 +282,7 @@ export default function ShopBookingsPage() {
   if (shopLoading) {
     return (
       <div className="bookings-page">
-        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+        <div className="shops-spinner-wrap"><div className="spinner spinner--lg" /></div>
       </div>
     );
   }
@@ -355,7 +355,7 @@ export default function ShopBookingsPage() {
       {/* ── Detail panel ── */}
       {/* ── Calendar grid ── */}
       {loading ? (
-        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+        <div className="shops-spinner-wrap"><div className="spinner spinner--lg" /></div>
       ) : (
         <>
           {outsideRangeCount > 0 && (

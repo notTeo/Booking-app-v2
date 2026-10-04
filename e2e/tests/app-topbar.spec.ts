@@ -134,7 +134,7 @@ test('the logo\'s "Be" is brand orange in the top bar and plain text colour when
   await page.goto('/account');
   await logout(page).click();
   await expect(page).toHaveURL(/\/login$/);
-  const muted = page.locator('.brand-wordmark--muted .wordmark__be');
+  const muted = page.locator('.wordmark--muted .wordmark__be');
   const [mutedColor, around] = await muted.evaluate((el) => [
     getComputedStyle(el).color,
     getComputedStyle(el.parentElement!).color,

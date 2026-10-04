@@ -128,7 +128,7 @@ export default function ShopTeamPage() {
     return (
       <div className="team-page">
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );

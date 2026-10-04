@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <Link to="/" className="legal-back">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <span className="home-label about-badge"><BrandText text={t.about.badge} muted /></span>
         <h1 className="legal-title"><BrandText text={t.about.title} /></h1>
         <p className="legal-body"><BrandText text={t.about.intro} muted /></p>

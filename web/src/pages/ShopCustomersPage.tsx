@@ -49,7 +49,7 @@ export default function ShopCustomersPage() {
     return (
       <div className="team-page">
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -82,7 +82,7 @@ export default function ShopCustomersPage() {
 
       {loading ? (
         <div className="shops-spinner-wrap">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
         </div>
       ) : (
         <>

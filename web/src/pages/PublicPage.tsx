@@ -65,7 +65,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [confirmed, setConfirmed] = useState(false);
 
   if (wizard.loading) {
-    return <div className="public-loading"><div className="spinner" /></div>;
+    return <div className="public-loading"><div className="spinner spinner--lg" /></div>;
   }
   if (wizard.notFound) return <NotFoundPage />;
   if (wizard.error || !wizard.shop) {

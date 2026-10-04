@@ -25,9 +25,9 @@ export default function CopyLinkButton({ link, compact }: CopyLinkButtonProps) {
   };
 
   return (
-    <div className={`copy-link-row${compact ? ' copy-link-row--compact' : ''}`}>
-      <span className="copy-link-value">{link}</span>
-      <button type="button" className="btn btn--secondary btn--sm copy-link-btn" onClick={handleCopy}>
+    <div className={`copy-link${compact ? ' copy-link--compact' : ''}`}>
+      <span className="copy-link__value">{link}</span>
+      <button type="button" className="btn btn--secondary btn--sm copy-link__btn" onClick={handleCopy}>
         <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
         {copied ? t.sharing.copiedLabel : t.sharing.copyButton}
       </button>
@@ -35,7 +35,7 @@ export default function CopyLinkButton({ link, compact }: CopyLinkButtonProps) {
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className="btn btn--secondary btn--sm btn--icon copy-link-btn"
+        className="btn btn--secondary btn--sm btn--icon copy-link__btn"
         title={t.sharing.viewButton}
         aria-label={t.sharing.viewButton}
       >

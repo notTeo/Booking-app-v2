@@ -31,9 +31,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="page">
+    <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <h1 className="t-heading">Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">

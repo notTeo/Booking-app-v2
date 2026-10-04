@@ -63,7 +63,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="page">
+    <div className="page page--center">
       <div className="card card--auth">
         <h1 className="t-heading">Email Verification</h1>
 

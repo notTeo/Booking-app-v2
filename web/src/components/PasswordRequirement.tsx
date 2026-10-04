@@ -10,7 +10,7 @@ interface PasswordRequirementProps {
 // render an identical password-requirements checklist.
 export default function PasswordRequirement({ met, label }: PasswordRequirementProps) {
   return (
-    <li className={met ? 'req-met' : 'req-unmet'}>
+    <li className={`password-requirements__item${met ? ' is-met' : ''}`}>
       <FontAwesomeIcon icon={met ? faCheck : faXmark} />
       {label}
     </li>

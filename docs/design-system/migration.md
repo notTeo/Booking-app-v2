@@ -14,6 +14,7 @@ Done (branch `feat/design-system`):
 - **No account-level sidebar**: `AppLayout` split into `AppTopBarLayout` (dashboard, account: app `navbar` with logo, Account and Logout icon buttons) and `ShopSidebarLayout` (shop pages). The sidebar is shop-only. New `tooltip` component for the icon buttons; `app-shell--topbar` modifier; `.topbar__title.wordmark` removed (the shop top bar always shows the shop name).
 - **Dashboard is the only page outside a shop**: invite inbox (pending only), "Your shops" with the user's role, Create shop for Pro users, an empty state, and the cross-shop analytics only for owners of 2+ shops (each shop's numbers on its card). `/shops` and `/invites` (and the Sent invites view) removed; every link to them now goes to `/dashboard`. `shop-card__actions` added; role and pending badges carry an icon. `Wordmark` outputs `wordmark__be` (the legacy `.wordmark-be` is gone).
 - **Shop sidebar back link**: "‹ All shops" (`faChevronLeft` + label), always shown whatever the number of shops, goes to `/dashboard`.
+- **Legacy shared stylesheet retired** (page rebuild, phase 0): `styles/shared/components.css` is gone. Its classes are DS classes now: `.brand-wordmark` is `.wordmark.wordmark--inline` (+ `wordmark--muted`), `.card-back` is `.back-link`, auth `.page` is `.page.page--center`, `.copy-link-row` is `.copy-link`, `.req-met` / `.req-unmet` are `.password-requirements__item` (+ `is-met`); `.form-links`, `.password-requirements` and `.spinner-page` moved as they were; the unused `.divider` is dropped. The old 36px `.spinner` override is gone: loading pages use `spinner--lg`, cards the plain `spinner`. `shared/base.css` no longer repeats the DS focus ring and `.visually-hidden`.
 
 Left:
 
@@ -71,7 +72,10 @@ Left:
 | `.form-group`, `.form-hint` | `.field`, `.field__hint`, `.field__error` |
 | `.card` (auth, max-width 420) | `.card.card--auth` |
 | `.spinner` | `.spinner`, `.spinner--sm`, `.spinner--lg` |
-| `.brand-wordmark` | `.wordmark` + `.wordmark__be` |
+| `.brand-wordmark` | `.wordmark` + `.wordmark__be` (`.wordmark--inline` in running text) |
+| `.card-back` | `.back-link` |
+| `.copy-link-row`, `.copy-link-value` | `.copy-link`, `.copy-link__value` |
+| `.req-met`, `.req-unmet` | `.password-requirements__item`, `.is-met` |
 | `.visually-hidden` | `.visually-hidden` |
 
 ## Order of work

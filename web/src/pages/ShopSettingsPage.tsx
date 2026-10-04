@@ -134,7 +134,7 @@ export default function ShopSettingsPage() {
   if (loading) {
     return (
       <div className="shops-page">
-        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+        <div className="shops-spinner-wrap"><div className="spinner spinner--lg" /></div>
       </div>
     );
   }
@@ -150,7 +150,7 @@ export default function ShopSettingsPage() {
   if (notFound || !shop) {
     return (
       <div className="shops-page">
-        <button className="card-back" type="button" onClick={() => navigate(`/shops/${slug}`)}>
+        <button className="back-link" type="button" onClick={() => navigate(`/shops/${slug}`)}>
           {t.shopSettings.backToShop}
         </button>
         <div className="shops-empty">

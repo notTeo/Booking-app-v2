@@ -39,7 +39,7 @@ export default function CancelBookingPage() {
     return (
       <div className="accept-invite-page">
         <div className="card card--auth accept-invite-card">
-          <div className="spinner" />
+          <div className="spinner spinner--lg" />
           <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             {t.cancelBooking.cancelling}
           </p>

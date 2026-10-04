@@ -69,6 +69,9 @@ a { color: var(--accent); }
 .wordmark__be { color: var(--brand-accent); }
 .wordmark--sm { font-size: var(--fs-lg); }
 .wordmark--lg { font-size: var(--fs-3xl); }
+/* The logo inside running text or a heading: logo face, the size and colour of the text around it. */
+.wordmark--inline { display: inline; font-size: inherit; font-weight: var(--fw-regular); line-height: inherit; color: inherit; letter-spacing: inherit; }
+.wordmark--muted .wordmark__be { color: inherit; }
 
 /* ---------- 2. Button ---------- */
 .btn {
@@ -422,6 +425,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 }
 .spinner--sm { width: 1rem; height: 1rem; border-width: 2px; }
 .spinner--lg { width: 2.5rem; height: 2.5rem; border-width: 4px; }
+/* A spinner alone on the screen while a route resolves. */
+.spinner-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .skeleton, .switch.is-loading .switch__track::after { animation: none; }
@@ -518,6 +523,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .app-shell--topbar > .app-shell__main { max-width: 72rem; margin: 0 auto; }
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: var(--space-6) var(--space-4); }
 @media (min-width: 640px) { .page { padding: var(--space-8) var(--space-6); } }
+/* One card in the middle of the screen (auth pages). */
+.page--center { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: none; min-height: 100vh; min-height: 100dvh; padding: var(--space-6); }
 .sidebar {
   display: flex; flex-direction: column; gap: var(--space-4); width: 16rem; height: 100%; padding: var(--space-4);
   color: var(--text); background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto;
@@ -684,6 +691,31 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   opacity: 1; visibility: visible; transition-delay: 0s;
 }
 .tooltip.is-dismissed .tooltip__bubble { opacity: 0; visibility: hidden; }
+
+/* ---------- 23. Back link ---------- */
+.back-link {
+  display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-5); padding: 0;
+  font: var(--fw-semibold) var(--fs-xs) / var(--lh-sm) var(--font-body); color: var(--text-muted); text-decoration: none;
+  background: none; border: 0; cursor: pointer; transition: color var(--motion-base) var(--ease-standard);
+}
+.back-link:hover, .back-link.is-hover { color: var(--text); text-decoration: none; }
+.card > .back-link { margin-bottom: 0; align-self: flex-start; }
+
+/* ---------- 24. Form links + password requirements ---------- */
+/* Links under an auth form ("Forgot password?", "Create an account"). */
+.form-links { display: flex; flex-direction: column; gap: var(--space-2); text-align: center; font-size: var(--fs-sm); color: var(--text-muted); }
+.password-requirements { display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-1) 0 var(--space-2); padding: 0; list-style: none; }
+.password-requirements__item { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); line-height: var(--lh-sm); color: var(--text-muted); }
+.password-requirements__item.is-met { color: var(--success); }
+
+/* ---------- 25. Copy link ---------- */
+/* A URL with Copy and Open buttons, kept on one line at any width: the URL shrinks with an ellipsis. */
+.copy-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.copy-link__value { flex: 1 1 0; min-width: 0; font-family: monospace; font-size: var(--fs-sm); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 3 classes: must beat `.shop-settings-section .btn { width: 100% }` on phones */
+.copy-link .copy-link__btn.btn { width: auto; flex-shrink: 0; }
+.copy-link .copy-link__btn.btn--icon { width: var(--control-sm); }
+.copy-link--compact .copy-link__value { font-size: var(--fs-xs); }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }
