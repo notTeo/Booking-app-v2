@@ -245,7 +245,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card > .btn:not(.btn--block) { align-self: flex-start; }
 .card > .alert + * { margin-top: 0; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
-.stat { display: flex; flex-direction: column; gap: var(--space-1); }
+/* icon, value and label on one line; the label wraps under them only when the card is too narrow */
+.stat { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
 .stat__value { font: var(--fw-black) var(--fs-2xl) / var(--lh-2xl) var(--font-display); }
 .stat__label { font-size: var(--fs-sm); color: var(--text-muted); }
 
@@ -683,7 +684,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 @media (min-width: 960px) { .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); } }
-.stat__icon { display: grid; place-items: center; width: var(--control-sm); height: var(--control-sm); margin-bottom: var(--space-2); border-radius: var(--radius-full); font-size: var(--fs-sm); color: var(--chip-fg); background: var(--chip-bg); }
+.stat__icon { display: grid; place-items: center; flex: none; width: var(--control-sm); height: var(--control-sm); border-radius: var(--radius-full); font-size: var(--fs-sm); color: var(--chip-fg); background: var(--chip-bg); }
 .stat__icon--accent { --chip-fg: var(--accent); --chip-bg: var(--accent-soft); }
 .stat__icon--warning { --chip-fg: var(--warning); --chip-bg: var(--warning-bg); }
 .stat__icon--info { --chip-fg: var(--info); --chip-bg: var(--info-bg); }
