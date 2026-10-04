@@ -152,9 +152,10 @@ const upcomingWhen = (page: Page) => page.locator('.data-table td[data-label="Wh
 async function expectPeriod(page: Page, range: Range) {
   await expect(bars(page)).toHaveCount(bucketStarts(range).length);
   await expect(stat(page, 'Bookings')).toHaveText(String(count(range, 'PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW')));
-  await expect(stat(page, 'Pending')).toHaveText(String(count(range, 'PENDING')));
   await expect(stat(page, 'Completed')).toHaveText(String(count(range, 'COMPLETED')));
-  await expect(stat(page, 'Canceled / no-show')).toHaveText(String(count(range, 'CANCELED', 'NO_SHOW')));
+  await expect(stat(page, 'Canceled')).toHaveText(String(count(range, 'CANCELED')));
+  await expect(stat(page, 'No-show')).toHaveText(String(count(range, 'NO_SHOW')));
+  await expect(page.locator('.stat')).toHaveCount(4);
 
   // Today's bar/week is highlighted; later ones are drawn as scheduled and say so.
   await expect(page.locator('.bar-chart__col--current')).toHaveCount(1);

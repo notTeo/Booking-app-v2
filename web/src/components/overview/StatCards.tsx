@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faCalendarCheck, faCircleCheck, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faCalendarCheck, faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../../context/LanguageContext';
 import type { Overview } from '../../api/overview.api';
 
@@ -8,9 +8,9 @@ export default function StatCards({ totals, tiles = false }: { totals: Overview[
   const { t } = useLang();
   const cards = [
     { key: 'bookings', tone: 'accent', icon: faCalendarCheck, label: t.overview.stats.bookings, value: totals.all },
-    { key: 'pending', tone: 'warning', icon: faClock, label: t.overview.stats.pending, value: totals.pending },
     { key: 'completed', tone: 'info', icon: faCircleCheck, label: t.overview.stats.completed, value: totals.completed },
-    { key: 'canceled', tone: 'danger', icon: faBan, label: t.overview.stats.canceledNoShow, value: totals.canceled + totals.noShow },
+    { key: 'canceled', tone: 'neutral', icon: faXmark, label: t.overview.stats.canceled, value: totals.canceled },
+    { key: 'noShow', tone: 'danger', icon: faBan, label: t.overview.stats.noShow, value: totals.noShow },
   ] as const;
 
   return (

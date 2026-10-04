@@ -753,9 +753,9 @@ export interface Translations {
     range: { week: string; month: string; quarter: string };
     stats: {
       bookings: string;
-      pending: string;
       completed: string;
-      canceledNoShow: string;
+      canceled: string;
+      noShow: string;
     };
     chart: {
       title: string;
@@ -1680,9 +1680,9 @@ home: {
       range: { week: 'Εβδομάδα', month: 'Μήνας', quarter: '3 μήνες' },
       stats: {
         bookings: 'Ραντεβού',
-        pending: 'Σε αναμονή',
         completed: 'Ολοκληρωμένα',
-        canceledNoShow: 'Ακυρωμένα / Δεν προσήλθαν',
+        canceled: 'Ακυρωμένα',
+        noShow: 'Δεν προσήλθαν',
       },
       chart: {
         title: 'Ραντεβού ανά περίοδο',
@@ -2626,9 +2626,9 @@ home: {
       range: { week: 'Week', month: 'Month', quarter: '3 months' },
       stats: {
         bookings: 'Bookings',
-        pending: 'Pending',
         completed: 'Completed',
-        canceledNoShow: 'Canceled / no-show',
+        canceled: 'Canceled',
+        noShow: 'No-show',
       },
       chart: {
         title: 'Bookings over time',
