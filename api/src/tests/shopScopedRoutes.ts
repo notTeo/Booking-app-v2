@@ -42,8 +42,9 @@ export const fill = (path: string, w: World) =>
 // ── Route table ──────────────────────────────────────────────────────────────
 
 export interface Fixture {
-  // Active staff must get 403 here (owner-only action).
-  ownerOnly?: boolean;
+  // The lowest role let in: active members below it must get 403. 'manager'
+  // admits the owner and managers, 'owner' only the owner.
+  minRole?: 'manager' | 'owner';
   body?: (w: World) => object;
   query?: string;
 }
@@ -59,47 +60,50 @@ const day = {
 export const SHOP_SCOPED: Record<string, Fixture> = {
   'GET /api/shops/:id': {},
   'PATCH /api/shops/:id': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ name: 'Renamed' }),
   },
-  'DELETE /api/shops/:id': { ownerOnly: true },
+  'DELETE /api/shops/:id': { minRole: 'owner' },
   'GET /api/shops/:shopId/schedules/day': { query: 'date=2027-01-04' },
   'GET /api/shops/:shopId/overview': { query: 'range=week' },
 
   'GET /api/shops/:shopId/team': {},
   'POST /api/shops/:shopId/team': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ name: 'New', role: 'staff', sendEmail: false }),
   },
   'GET /api/shops/:shopId/team/:memberId': {},
   'PATCH /api/shops/:shopId/team/:memberId': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ role: 'staff', canViewCustomerDetails: false }),
   },
-  'DELETE /api/shops/:shopId/team/:memberId': { ownerOnly: true },
-  'POST /api/shops/:shopId/team/:memberId/invite': { ownerOnly: true },
-  'DELETE /api/shops/:shopId/team/:memberId/invite': { ownerOnly: true },
+  'DELETE /api/shops/:shopId/team/:memberId': { minRole: 'manager' },
+  'POST /api/shops/:shopId/team/:memberId/invite': { minRole: 'manager' },
+  'DELETE /api/shops/:shopId/team/:memberId/invite': { minRole: 'manager' },
+  'POST /api/shops/:shopId/team/:memberId/transfer-ownership': {
+    minRole: 'owner',
+  },
   'GET /api/shops/:shopId/team/:memberId/services': {},
 
   'POST /api/shops/:shopId/team/:memberId/schedules': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ startDate: '2030-01-01', isActive: false }),
   },
   'GET /api/shops/:shopId/team/:memberId/schedules': {},
   'GET /api/shops/:shopId/team/:memberId/schedules/:scheduleId': {},
   'PATCH /api/shops/:shopId/team/:memberId/schedules/:scheduleId': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ isActive: false }),
   },
   'DELETE /api/shops/:shopId/team/:memberId/schedules/:scheduleId': {
-    ownerOnly: true,
+    minRole: 'manager',
   },
   'PUT /api/shops/:shopId/team/:memberId/schedules/:scheduleId/days': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ days: [day] }),
   },
   'PATCH /api/shops/:shopId/team/:memberId/schedules/:scheduleId/days/:day': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({
       isOpen: true,
       hours: [{ startTime: '09:00', endTime: '12:00' }],
@@ -107,22 +111,22 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
 
   'POST /api/shops/:shopId/services': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ name: 'Color', duration: 45, price: 5000 }),
   },
   'GET /api/shops/:shopId/services': {},
   'GET /api/shops/:shopId/services/:serviceId': {},
   'PATCH /api/shops/:shopId/services/:serviceId': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: () => ({ name: 'Cut v2' }),
   },
-  'DELETE /api/shops/:shopId/services/:serviceId': { ownerOnly: true },
+  'DELETE /api/shops/:shopId/services/:serviceId': { minRole: 'manager' },
   'POST /api/shops/:shopId/services/:serviceId/staff': {
-    ownerOnly: true,
+    minRole: 'manager',
     body: (w) => ({ userShopId: w.member.staff.id }),
   },
   'DELETE /api/shops/:shopId/services/:serviceId/staff/:userShopId': {
-    ownerOnly: true,
+    minRole: 'manager',
   },
 
   'POST /api/shops/:shopId/bookings': {
@@ -153,6 +157,6 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   'PATCH /api/shops/:shopId/customers/:customerId': {
     body: () => ({ name: 'Renamed Customer' }),
   },
-  'GET /api/shops/:shopId/customers/:customerId/export': { ownerOnly: true },
-  'DELETE /api/shops/:shopId/customers/:customerId': { ownerOnly: true },
+  'GET /api/shops/:shopId/customers/:customerId/export': { minRole: 'manager' },
+  'DELETE /api/shops/:shopId/customers/:customerId': { minRole: 'manager' },
 };

@@ -130,10 +130,10 @@ export async function addService(t: Tenant, duration: number, name = 'Svc') {
   return service;
 }
 
-// A second owner of the tenant's shop who is not a bookable provider. Lets a
-// test deactivate the tenant's own owner/provider without losing the caller
-// (an inactive member has no access to the shop).
-export async function addSecondOwner(t: Tenant, label = 'Second') {
+// A manager of the tenant's shop who is not a bookable provider. Lets a test
+// deactivate the tenant's own owner/provider without losing the caller (an
+// inactive member has no access to the shop).
+export async function addManager(t: Tenant, label = 'Manager') {
   const id = unique();
   const user = await prisma.user.create({
     data: {
@@ -146,7 +146,7 @@ export async function addSecondOwner(t: Tenant, label = 'Second') {
     data: {
       userId: user.id,
       shopId: t.shop.id,
-      role: 'owner',
+      role: 'manager',
       name: label,
       bookableByCustomers: false,
       bookableInternally: false,

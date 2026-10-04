@@ -8,6 +8,7 @@ import {
   removeMember as removeMemberService,
   sendLoginInvite as sendLoginInviteService,
   cancelLoginInvite as cancelLoginInviteService,
+  transferOwnership as transferOwnershipService,
   UpdateMemberRoleDto,
   CreateTeamMemberDto,
 } from '../services/team.service';
@@ -119,6 +120,22 @@ export const removeMember = async (
     const memberId = req.params.memberId as string;
     await removeMemberService(userId, shopId, memberId);
     successResponse(res, { message: 'Member removed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const transferOwnership = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const memberId = req.params.memberId as string;
+    const member = await transferOwnershipService(userId, shopId, memberId);
+    successResponse(res, member);
   } catch (err) {
     next(err);
   }

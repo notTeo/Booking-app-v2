@@ -470,30 +470,18 @@ export const deleteUser = async (userId: string, password?: string) => {
     if (!valid) throw new AppError(403, 'Invalid password', 'INVALID_PASSWORD');
   }
 
-  // A shop must keep an owner who can sign in. Deleting the account removes
-  // the user's memberships, so the only such owner of a shop has to delete the
-  // shop or hand it over first, instead of leaving it live with nobody able
-  // to manage it.
+  // A shop has exactly one owner. Deleting the account removes the user's
+  // memberships, so the owner has to delete the shop or transfer it to a
+  // manager first, instead of leaving it live with no owner.
   const owned = await prisma.userShop.findMany({
-    where: { userId, role: 'owner', active: true },
+    where: { userId, role: 'owner' },
     select: { shop: { select: { id: true, name: true, slug: true } } },
   });
-  const stranded = [];
-  for (const { shop } of owned) {
-    const otherOwners = await prisma.userShop.count({
-      where: {
-        shopId: shop.id,
-        role: 'owner',
-        active: true,
-        AND: [{ userId: { not: null } }, { userId: { not: userId } }],
-      },
-    });
-    if (otherOwners === 0) stranded.push(shop);
-  }
+  const stranded = owned.map((m) => m.shop);
   if (stranded.length > 0)
     throw new AppError(
       409,
-      `You are the only owner of ${stranded.map((s) => s.name).join(', ')}. Delete the shop or make someone else an owner first.`,
+      `You are the owner of ${stranded.map((s) => s.name).join(', ')}. Delete the shop or transfer ownership to a manager first.`,
       'SOLE_OWNER_OF_SHOP',
       undefined,
       { shops: stranded },

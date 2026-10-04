@@ -136,10 +136,11 @@ export const updateCustomer = async (
 };
 
 // GDPR access/erasure requests are handled by the shop (the data controller),
-// so only the owner may run them — not staff, even with canViewCustomerDetails.
-const OWNER_ONLY = {
-  role: 'owner',
-  ownerMessage: 'Only the shop owner can do this',
+// so only the owner or a manager may run them — not staff, even with
+// canViewCustomerDetails.
+const MANAGER_ONLY = {
+  role: 'manager',
+  forbiddenMessage: 'Only the shop owner or a manager can do this',
 } as const;
 
 // Everything we hold about one customer, for a data-access request.
@@ -148,7 +149,7 @@ export const exportCustomer = async (
   shopId: string,
   customerId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   const customer = await requireCustomerInShop(customerId, shopId);
 
   const bookings = await prisma.booking.findMany({
@@ -192,7 +193,7 @@ export const deleteCustomer = async (
   shopId: string,
   customerId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
   await requireCustomerInShop(customerId, shopId);
 
   const { count } = await prisma.booking.deleteMany({

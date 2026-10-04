@@ -116,8 +116,8 @@ export const updateShop = async (
   dto: UpdateShopDto,
 ) => {
   const membership = await requireShopAccess(userId, shopId, {
-    role: 'owner',
-    ownerMessage: 'Only the shop owner can update this shop',
+    role: 'manager',
+    forbiddenMessage: 'Only the shop owner or a manager can update this shop',
   });
 
   const shop = await prisma.shop.update({
@@ -132,7 +132,7 @@ export const updateShop = async (
 export const deleteShop = async (userId: string, shopId: string) => {
   await requireShopAccess(userId, shopId, {
     role: 'owner',
-    ownerMessage: 'Only the shop owner can delete this shop',
+    forbiddenMessage: 'Only the shop owner can delete this shop',
   });
 
   await prisma.shop.delete({ where: { id: shopId } });

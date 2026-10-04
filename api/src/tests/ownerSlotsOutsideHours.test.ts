@@ -3,7 +3,7 @@ import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
-  addSecondOwner,
+  addManager,
   addWeeklySchedule,
   authHeader,
   createBookingRow,
@@ -370,7 +370,7 @@ describe('access, scope and the public endpoint', () => {
     });
     // The provider is deactivated; a second owner makes the call (the
     // deactivated provider would have no access to the shop at all).
-    const caller = await addSecondOwner(t);
+    const caller = await addManager(t);
     await prisma.userShop.update({
       where: { id: t.staff.id },
       data: { bookableInternally: true, active: false },

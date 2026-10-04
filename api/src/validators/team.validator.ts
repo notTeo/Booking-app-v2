@@ -13,8 +13,8 @@ export const updateMemberRoleValidation = [
   body('role')
     .notEmpty()
     .withMessage('role is required')
-    .isIn(['owner', 'staff'])
-    .withMessage('role must be either owner or staff'),
+    .isIn(['owner', 'manager', 'staff'])
+    .withMessage('role must be owner, manager or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
   body('email')
     .optional({ checkFalsy: true })
@@ -43,8 +43,8 @@ export const createTeamMemberValidation = [
     .withMessage('Invalid email')
     .normalizeEmail(),
   body('role')
-    .isIn(['owner', 'staff'])
-    .withMessage('role must be either owner or staff'),
+    .isIn(['manager', 'staff'])
+    .withMessage('role must be either manager or staff'),
   body('canViewCustomerDetails').optional().isBoolean(),
   body('sendEmail').optional().isBoolean(),
 ];
