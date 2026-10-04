@@ -8,14 +8,14 @@ export default function ShopNewBookingPage() {
   const { shop, isLoading } = useShop();
   const navigate = useNavigate();
 
-  if (isLoading) return <div className="public-loading"><div className="spinner spinner--lg" /></div>;
+  if (isLoading) return <div className="spinner-wrap"><div className="spinner spinner--lg" /></div>;
   if (!shop || !slug) return null;
 
   return (
     <div className="public-page">
-      <header className="public-header">
-        <div className="public-header-inner">
-          <h1 className="public-shop-name">{shop.name}</h1>
+      <header className="page-hero">
+        <div className="page-hero__inner">
+          <h1 className="t-title">{shop.name}</h1>
         </div>
       </header>
 

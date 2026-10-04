@@ -7,6 +7,7 @@ import {
   type Booking,
   type BookingRuleCode,
 } from '../../api/booking.api';
+import Alert from '../Alert';
 import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
@@ -60,10 +61,10 @@ export default function OwnerBookingWizard({
   } | null>(null);
 
   if (wizard.loading) {
-    return <div className="public-loading"><div className="spinner spinner--lg" /></div>;
+    return <div className="spinner-wrap"><div className="spinner spinner--lg" /></div>;
   }
   if (wizard.error || !wizard.shop) {
-    return <div className="public-error"><p>{wizard.error ?? t.public.somethingWrong}</p></div>;
+    return <Alert variant="danger">{wizard.error ?? t.public.somethingWrong}</Alert>;
   }
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
@@ -139,7 +140,7 @@ export default function OwnerBookingWizard({
 
   return (
     <section className="public-section">
-      {!hideTitle && <h2 className="public-section-title">{t.bookings.newBookingTitle}</h2>}
+      {!hideTitle && <h2 className="t-heading">{t.bookings.newBookingTitle}</h2>}
 
       <WizardStepsIndicator currentStep={wizard.step} />
 

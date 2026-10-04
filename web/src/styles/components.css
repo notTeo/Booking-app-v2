@@ -60,6 +60,7 @@ a { color: var(--accent); }
 .t-caption { font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); }
 .label-caps { text-transform: uppercase; letter-spacing: 0.04em; }
 .t-muted { color: var(--text-muted); }
+.t-muted strong { color: var(--text); }
 @media (max-width: 639px) { .t-display { font-size: clamp(2.25rem, 9vw, 3rem); } }
 
 /* ---------- 1. Wordmark ---------- */
@@ -136,6 +137,9 @@ a { color: var(--accent); }
 /* ---------- 3. Form fields ---------- */
 .field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; margin-bottom: var(--space-4); }
 .field__label { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); color: var(--text); }
+.field__required { margin-left: var(--space-1); color: var(--accent); }
+/* A field with a suggestion list hanging under its input. */
+.field--anchor { position: relative; }
 .field__optional { font-weight: 400; color: var(--text-muted); }
 .field__hint { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
 .field__error {
@@ -272,7 +276,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card > .alert + * { margin-top: 0; }
 /* A short message with its actions (accept an invite, cancel a booking): centred text, centred spinner. */
 .card--center { text-align: center; }
-.card--center > :is(.spinner, .btn:not(.btn--block)) { align-self: center; }
+.card--center > :is(.spinner, .avatar, .btn:not(.btn--block)) { align-self: center; }
 .card--center > .alert { text-align: left; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
 /* icon, value and label on one line, never wrapped: in a .stat-grid a card that doesn't fit moves to the next row whole */
@@ -671,6 +675,15 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .slot:disabled, .slot[aria-disabled="true"] { color: var(--text-muted); background: var(--surface-sunken); border-color: var(--border); text-decoration: line-through; cursor: not-allowed; }
 /* Off-hours or off-grid time (owner booking): dashed, and named in the aria-label. */
 .slot--dashed { border-style: dashed; }
+/* "booked" / "past" after the time, on a slot the owner can still see. */
+.slot__tag { font-size: var(--fs-xs); opacity: 0.8; text-decoration: none; }
+.slot-group__count { font-weight: var(--fw-regular); }
+/* An out-of-hours group that folds (<details> / <summary>, no JS). */
+.slot-group--collapsible > summary { display: flex; align-items: baseline; gap: var(--space-1); margin-bottom: var(--space-2); cursor: pointer; list-style: none; }
+.slot-group--collapsible > summary .slot-group__label { margin: 0; }
+.slot-group--collapsible > summary::-webkit-details-marker { display: none; }
+.slot-group--collapsible > summary::before { content: "▸"; display: inline-block; width: 0.8em; color: var(--text-muted); transition: transform var(--motion-fast) var(--ease-standard); }
+.slot-group--collapsible[open] > summary::before { transform: rotate(90deg); }
 
 /* ---------- 21. Steps indicator ---------- */
 .steps-wrap { container: steps / inline-size; }
@@ -764,6 +777,25 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* A wrapping row of buttons, badges or short texts. */
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .cluster--tight { gap: var(--space-2); }
+
+/* ---------- 30. Page hero ---------- */
+/* The band at the top of a booking page: the shop's name, a line about it, its contact badges. */
+.page-hero { padding: var(--space-8) var(--space-5) var(--space-6); background: var(--surface); border-bottom: 1px solid var(--border); }
+.page-hero__inner { display: flex; flex-direction: column; gap: var(--space-2); max-width: 45rem; margin: 0 auto; }
+@media (min-width: 640px) { .page-hero { padding: var(--space-12) var(--space-6) var(--space-10); } }
+
+/* ---------- 31. Suggestions (under an input) ---------- */
+.suggest {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-nav); max-height: calc(var(--control-md) * 4.5); margin: 0; padding: 0; overflow-y: auto;
+  list-style: none; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+}
+.suggest__item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: var(--control-md); padding: var(--space-2) var(--space-4);
+  color: var(--text); text-align: left; font: inherit; font-size: var(--fs-sm); background: none; border: 0; cursor: pointer;
+}
+.suggest__item:hover, .suggest__item:focus-visible, .suggest__item.is-hover { background: var(--surface-sunken); }
+.suggest__item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.suggest__meta { color: var(--text-muted); }
 
 /* ---------- 29. Calendar (day view, one column per provider) ---------- */
 /* .cal is the scroll box. The hour row height comes from the page as --cal-hour-h (it positions the blocks in JS). */
