@@ -59,6 +59,7 @@ a { color: var(--accent); }
 .t-body-sm { font: var(--fw-regular) var(--fs-sm) / var(--lh-sm) var(--font-body); }
 .t-caption { font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); }
 .label-caps { text-transform: uppercase; letter-spacing: 0.04em; }
+.t-muted { color: var(--text-muted); }
 @media (max-width: 639px) { .t-display { font-size: clamp(2.25rem, 9vw, 3rem); } }
 
 /* ---------- 1. Wordmark ---------- */
@@ -235,6 +236,7 @@ a { color: var(--accent); }
 .card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .card__title { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .card__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+.card__icon { margin-right: var(--space-2); font-size: var(--fs-sm); color: var(--text-muted); }
 .card__text strong { font-weight: var(--fw-semibold); color: var(--text); }
 .card__footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); }
 .card--flat { background: var(--surface-sunken); border-color: transparent; }
@@ -432,6 +434,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 }
 .spinner--sm { width: 1rem; height: 1rem; border-width: 2px; }
 .spinner--lg { width: 2.5rem; height: 2.5rem; border-width: 4px; }
+/* A spinner centred in the space where a page or section is loading. */
+.spinner-wrap { display: flex; justify-content: center; padding: var(--space-12) 0; }
 /* A spinner alone on the screen while a route resolves. */
 .spinner-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; }
 @media (prefers-reduced-motion: reduce) {
@@ -705,6 +709,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   font: var(--fw-semibold) var(--fs-xs) / var(--lh-sm) var(--font-body); color: var(--text-muted); text-decoration: none;
   background: none; border: 0; cursor: pointer; transition: color var(--motion-base) var(--ease-standard);
 }
+.back-link { align-self: flex-start; }
 .back-link:hover, .back-link.is-hover { color: var(--text); text-decoration: none; }
 .card > .back-link { margin-bottom: 0; align-self: flex-start; }
 
@@ -719,10 +724,15 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* A URL with Copy and Open buttons, kept on one line at any width: the URL shrinks with an ellipsis. */
 .copy-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
 .copy-link__value { flex: 1 1 0; min-width: 0; font-family: monospace; font-size: var(--fs-sm); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* 3 classes: must beat `.shop-settings-section .btn { width: 100% }` on phones */
-.copy-link .copy-link__btn.btn { width: auto; flex-shrink: 0; }
-.copy-link .copy-link__btn.btn--icon { width: var(--control-sm); }
+.copy-link__btn { flex-shrink: 0; }
 .copy-link--compact .copy-link__value { font-size: var(--fs-xs); }
+
+/* ---------- 26. Setting row ---------- */
+/* A setting's name and one-line explanation, with its switch or button on the right. */
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.setting-row__label { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.setting-row__title { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); color: var(--text); }
+.setting-row__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }

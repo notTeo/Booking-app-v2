@@ -48,7 +48,7 @@ export default function ShopCustomersPage() {
   if (shopLoading) {
     return (
       <div className="team-page">
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function ShopCustomersPage() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {loading ? (
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       ) : (

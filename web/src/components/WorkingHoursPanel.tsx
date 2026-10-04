@@ -324,7 +324,7 @@ const created = await api.createSchedule(dto);
   if (loading) {
     return (
       <div className="working-hours-page">
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       </div>

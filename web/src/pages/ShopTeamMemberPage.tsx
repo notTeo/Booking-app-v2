@@ -278,7 +278,7 @@ export default function ShopTeamMemberPage() {
   if (shopLoading || loading) {
     return (
       <div className="team-member-page">
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       </div>
@@ -451,7 +451,7 @@ export default function ShopTeamMemberPage() {
       <div className="card">
         <h2 className="card__title">{t.team.assignedServices}</h2>
         {servicesLoading ? (
-          <div className="shops-spinner-wrap">
+          <div className="spinner-wrap">
             <div className="spinner" />
           </div>
         ) : (
@@ -510,7 +510,7 @@ export default function ShopTeamMemberPage() {
 
       {/* Danger zone — owner only */}
       {isOwner && (
-        <div className="card card--danger shop-danger-card">
+        <div className="card card--danger">
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>
           {removeError && <Alert variant="danger">{removeError}</Alert>}

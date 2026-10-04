@@ -249,7 +249,7 @@ export default function ShopServicesPage() {
   if (shopLoading || loading) {
     return (
       <div className="services-page">
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       </div>

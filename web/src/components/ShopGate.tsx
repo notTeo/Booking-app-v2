@@ -14,7 +14,7 @@ export default function ShopGate() {
 
   if (isLoading) {
     return (
-      <div className="shops-spinner-wrap">
+      <div className="spinner-wrap">
         <div className="spinner spinner--lg" />
       </div>
     );

@@ -134,7 +134,7 @@ export default function ShopSettingsPage() {
   if (loading) {
     return (
       <div className="shops-page">
-        <div className="shops-spinner-wrap"><div className="spinner spinner--lg" /></div>
+        <div className="spinner-wrap"><div className="spinner spinner--lg" /></div>
       </div>
     );
   }
@@ -153,8 +153,8 @@ export default function ShopSettingsPage() {
         <button className="back-link" type="button" onClick={() => navigate(`/shops/${slug}`)}>
           {t.shopSettings.backToShop}
         </button>
-        <div className="shops-empty">
-          <p>{t.shopSettings.notFound}</p>
+        <div className="empty">
+          <p className="empty__text">{t.shopSettings.notFound}</p>
         </div>
       </div>
     );
@@ -163,37 +163,37 @@ export default function ShopSettingsPage() {
   return (
     <div className="shops-page">
       <div className="shop-detail-header">
-        <h1>{shop.name}</h1>
+        <h1 className="t-title">{shop.name}</h1>
         <div className="shop-detail-meta">
           <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
           <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>
-          <span className="shop-detail-date">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
-          <span className="shop-detail-date">{t.shopSettings.updatedPrefix} {formatRelative(shop.updatedAt, t.shopSettings)}</span>
+          <span className="t-body-sm t-muted">{t.shopSettings.created} {formatDate(shop.createdAt, language)}</span>
+          <span className="t-body-sm t-muted">{t.shopSettings.updatedPrefix} {formatRelative(shop.updatedAt, t.shopSettings)}</span>
         </div>
       </div>
 
       {/* Booking link — copyable public /:slug link */}
-      <div className="card shop-settings-section">
-        <p className="card__title settings-section-title">
-          <FontAwesomeIcon icon={faLink} className="settings-section-icon" />
+      <div className="card">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faLink} className="card__icon" />
           {t.sharing.title}
-        </p>
-        <p className="shop-field-hint">{t.sharing.desc}</p>
+        </h2>
+        <p className="card__text">{t.sharing.desc}</p>
         <CopyLinkButton link={publicShopUrl(shop.slug)} />
       </div>
 
       <form onSubmit={handleSave}>
         {/* Shop Details + Configuration — one card, one Save */}
-        <div className="card shop-settings-section">
-          <div className="settings-section-header">
+        <div className="card">
+          <div className="card__header">
             <div>
-              <p className="card__title settings-section-title">
-                <FontAwesomeIcon icon={faStore} className="settings-section-icon" />
+              <h2 className="card__title">
+                <FontAwesomeIcon icon={faStore} className="card__icon" />
                 {t.shopSettings.shopDetails}
-              </p>
-              <span className="shop-field-hint">{t.shopSettings.saveHint}</span>
+              </h2>
+              <p className="card__text">{t.shopSettings.saveHint}</p>
             </div>
             <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
               {t.shopSettings.saveChanges}
@@ -214,7 +214,7 @@ export default function ShopSettingsPage() {
               readOnly
               disabled
             />
-            <span className="shop-field-hint">{t.shops.slugLockedHint}</span>
+            <small className="field__hint">{t.shops.slugLockedHint}</small>
           </div>
           <div className="field">
             <label className="field__label" htmlFor="detail-description">{t.shops.description}</label>
@@ -278,10 +278,10 @@ export default function ShopSettingsPage() {
             </select></div>
             <small className="field__hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
-          <div className="shop-active-row">
-            <div className="shop-active-label">
-              <label htmlFor="detail-active" className="shop-active-name">{t.shopSettings.activeLabel}</label>
-              <span className="shop-active-desc">{t.shopSettings.activeDesc}</span>
+          <div className="setting-row">
+            <div className="setting-row__label">
+              <label htmlFor="detail-active" className="setting-row__title">{t.shopSettings.activeLabel}</label>
+              <span className="setting-row__text">{t.shopSettings.activeDesc}</span>
             </div>
             <Switch id="detail-active" checked={isActive} onChange={setIsActive} label={t.shopSettings.activeLabel} />
           </div>
@@ -290,12 +290,12 @@ export default function ShopSettingsPage() {
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (
-        <div className="card card--danger shop-settings-section">
-          <p className="card__title settings-section-title">
-            <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
+        <div className="card card--danger">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faTriangleExclamation} className="card__icon" />
             {t.shops.dangerZone}
-          </p>
-          <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
+          </h2>
+          <p className="card__text">{t.shops.dangerDesc}</p>
           {deleteError && <Alert variant="danger">{deleteError}</Alert>}
           <button className="btn btn--danger-outline btn--sm" type="button" onClick={() => { setDeleteError(''); setShowDeleteConfirm(true); }}>
             {t.shops.deleteShop}

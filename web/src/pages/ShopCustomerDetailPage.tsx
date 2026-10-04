@@ -116,7 +116,7 @@ export default function ShopCustomerDetailPage() {
   if (shopLoading || loading) {
     return (
       <div className="team-member-page">
-        <div className="shops-spinner-wrap">
+        <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       </div>
