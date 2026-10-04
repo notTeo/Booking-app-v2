@@ -1,13 +1,12 @@
-import { useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useId, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { createTeamMember, type TeamMember, type ShopRole } from '../api/team.api';
-import { useModalBehavior } from '../hooks/useModalBehavior';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from './Alert';
 import ConfirmDialog from './ConfirmDialog';
+import Modal from './Modal';
 import Switch from './Switch';
 
 interface Props {
@@ -22,7 +21,6 @@ interface Props {
 export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
   const uid = useId();
   const { t } = useLang();
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,8 +30,6 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
   const [confirmOwner, setConfirmOwner] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-
-  useModalBehavior(dialogRef, () => { if (!sending) onClose(); }, { paused: confirmOwner });
 
   const submitCreate = async () => {
     if (sending) return;
@@ -64,15 +60,12 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
     submitCreate();
   };
 
-  return createPortal(
-    <div className="modal-backdrop" onClick={() => { if (!sending) onClose(); }}>
-      <div
-        ref={dialogRef}
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={`${uid}-title`}
-        onClick={(e) => e.stopPropagation()}
+  return (
+    <>
+      <Modal
+        onClose={() => { if (!sending) onClose(); }}
+        labelledBy={`${uid}-title`}
+        paused={confirmOwner}
       >
         <div className="modal__header">
           <h2 id={`${uid}-title`} className="modal__title">{t.invites.addMember}</h2>
@@ -170,7 +163,7 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
             {t.invites.addMember}
           </button>
         </div>
-      </div>
+      </Modal>
 
       {confirmOwner && (
         <ConfirmDialog
@@ -184,7 +177,6 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
           onCancel={() => setConfirmOwner(false)}
         />
       )}
-    </div>,
-    document.body,
+    </>
   );
 }

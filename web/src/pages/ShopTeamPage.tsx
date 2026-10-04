@@ -9,6 +9,8 @@ import '../styles/pages/team.css';
 import '../styles/pages/invites.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddMemberModal from '../components/AddMemberModal';
 
 export default function ShopTeamPage() {
@@ -103,14 +105,14 @@ export default function ShopTeamPage() {
               {member.hasPendingInvite ? t.invites.resend : t.invites.sendInvite}
             </button>
             {member.hasPendingInvite && (
-              <button className="btn btn--secondary btn--sm" onClick={() => setConfirmCancelInvite(member.id)}>
+              <button className="btn btn--danger-outline btn--sm" onClick={() => setConfirmCancelInvite(member.id)}>
                 {t.invites.cancelInvite}
               </button>
             )}
           </>
         )}
         <button
-          className="btn btn--secondary btn--sm team-remove-btn"
+          className="btn btn--danger-outline btn--sm"
           onClick={() => {
             setConfirmRemove(member.id);
             setRemoveError('');
@@ -137,7 +139,8 @@ export default function ShopTeamPage() {
       <div className="team-header">
         <h1>{t.team.title}</h1>
         {isOwner && (
-          <button type="button" className="btn" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
+          <button type="button" className="btn btn--sm" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.invites.addMember}
           </button>
         )}

@@ -4,7 +4,8 @@ import { waitForLanding } from '../support/auth';
 
 /**
  * Pages outside a shop (/dashboard, /account): no sidebar, only the app
- * navbar: logo -> /dashboard, then icon-only Account and Logout with tooltips.
+ * navbar: logo -> /dashboard, then Account (icon and label on desktop,
+ * icon-only with a tooltip on phones). Log out lives on the Account page.
  */
 async function login(page: Page, theme: 'light' | 'dark' = 'light') {
   await page.context().addCookies([
@@ -24,7 +25,7 @@ async function login(page: Page, theme: 'light' | 'dark' = 'light') {
 
 const bar = (page: Page) => page.locator('header.navbar');
 const account = (page: Page) => bar(page).getByRole('link', { name: 'Account', exact: true });
-const logout = (page: Page) => bar(page).getByRole('button', { name: 'Logout', exact: true });
+const logout = (page: Page) => page.getByRole('button', { name: 'Log out', exact: true });
 const bubble = (page: Page, text: string) => bar(page).locator('.tooltip__bubble', { hasText: text });
 
 test('outside a shop there is no sidebar, only the top bar', async ({ page }) => {
@@ -48,15 +49,24 @@ test('logo goes to the dashboard, Account to /account (marked current)', async (
   await expect(account(page)).not.toHaveAttribute('aria-current', 'page');
 });
 
-test('Logout signs out and protected pages send you to login', async ({ page }) => {
+test('the bar has no Logout; Log out on the Account page signs out and protected pages send you to login', async ({ page }) => {
   await login(page);
+  await expect(bar(page).getByRole('button')).toHaveCount(0);
+  await page.goto('/account');
   await logout(page).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto('/dashboard');
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test('icon buttons show a tooltip on hover and on keyboard focus; Esc hides it', async ({ page }) => {
+test('desktop: Account shows its label and has no tooltip', async ({ page }) => {
+  await login(page);
+  await expect(account(page)).toHaveText('Account');
+  await expect(bar(page).locator('.tooltip__bubble')).toHaveCount(0);
+});
+
+test('phone: the icon-only Account button shows a tooltip on hover and on keyboard focus; Esc hides it', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
   await login(page);
   await expect(bubble(page, 'Account')).toBeHidden();
 
@@ -65,16 +75,13 @@ test('icon buttons show a tooltip on hover and on keyboard focus; Esc hides it',
   await page.mouse.move(5, 400);
   await expect(bubble(page, 'Account')).toBeHidden();
 
-  // Tab from the logo: Account, then Logout.
+  // Tab from the logo: Account.
   await bar(page).getByRole('link', { name: 'Dashboard' }).focus();
   await page.keyboard.press('Tab');
   await expect(account(page)).toBeFocused();
   await expect(bubble(page, 'Account')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(bubble(page, 'Account')).toBeHidden();
-  await page.keyboard.press('Tab');
-  await expect(logout(page)).toBeFocused();
-  await expect(bubble(page, 'Logout')).toBeVisible();
 });
 
 for (const theme of ['light', 'dark'] as const) {
@@ -88,15 +95,15 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(bar(page)).toBeVisible();
       const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(scroll, path).toBeLessThanOrEqual(360);
-      for (const control of [bar(page).getByRole('link', { name: 'Dashboard' }), account(page), logout(page)]) {
+      for (const control of [bar(page).getByRole('link', { name: 'Dashboard' }), account(page)]) {
         const box = (await control.boundingBox())!;
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(360);
       }
     }
 
-    await logout(page).hover();
-    const tip = bubble(page, 'Logout');
+    await account(page).hover();
+    const tip = bubble(page, 'Account');
     await expect(tip).toBeVisible();
     const box = (await tip.boundingBox())!;
     expect(box.x + box.width).toBeLessThanOrEqual(360);
@@ -124,7 +131,8 @@ test('the logo\'s "Be" is brand orange in the top bar and plain text colour when
   });
   expect(beColor).toBe(brand);
 
-  await bar(page).getByRole('button', { name: 'Logout', exact: true }).click();
+  await page.goto('/account');
+  await logout(page).click();
   await expect(page).toHaveURL(/\/login$/);
   const muted = page.locator('.brand-wordmark--muted .wordmark__be');
   const [mutedColor, around] = await muted.evaluate((el) => [

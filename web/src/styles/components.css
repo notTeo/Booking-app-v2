@@ -44,6 +44,11 @@ a { color: var(--accent); }
 @keyframes ds-pulse { 50% { opacity: 0.45; } }
 @keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px); } }
 @keyframes ds-modal-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes ds-modal-out { to { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes ds-sheet-in { from { transform: translateY(100%); } }
+@keyframes ds-sheet-out { to { transform: translateY(100%); } }
+@keyframes ds-fade-in { from { opacity: 0; } }
+@keyframes ds-fade-out { to { opacity: 0; } }
 
 /* ---------- Typography ---------- */
 .t-display { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); }
@@ -94,6 +99,10 @@ a { color: var(--accent); }
 .btn--danger { --btn-bg: var(--danger); --btn-fg: var(--on-danger); }
 .btn--danger:hover, .btn--danger.is-hover { --btn-bg: var(--danger-hover); box-shadow: none; }
 .btn--danger:active, .btn--danger.is-active { --btn-bg: var(--danger-hover); }
+/* remove/delete triggers: red outline, no fill; the fill turns soft red on hover */
+.btn--danger-outline { --btn-bg: transparent; --btn-fg: var(--danger); --btn-bd: var(--danger); }
+.btn--danger-outline:hover, .btn--danger-outline.is-hover { --btn-bg: var(--danger-bg); --btn-bd: var(--danger); box-shadow: none; }
+.btn--danger-outline:active, .btn--danger-outline.is-active { --btn-bg: var(--danger-bg); }
 
 .btn--sm { min-height: var(--control-sm); padding: 0 var(--space-4); font-size: var(--fs-sm); }
 .btn--lg { min-height: var(--control-lg); padding: 0 var(--space-8); font-size: var(--fs-lg); }
@@ -240,7 +249,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card > .btn:not(.btn--block) { align-self: flex-start; }
 .card > .alert + * { margin-top: 0; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
-.stat { display: flex; flex-direction: column; gap: var(--space-1); }
+/* icon, value and label on one line, never wrapped: in a .stat-grid a card that doesn't fit moves to the next row whole */
+.stat { display: flex; flex-direction: row; align-items: center; gap: var(--space-3); white-space: nowrap; }
 .stat__value { font: var(--fw-black) var(--fs-2xl) / var(--lh-2xl) var(--font-display); }
 .stat__label { font-size: var(--fs-sm); color: var(--text-muted); }
 
@@ -322,6 +332,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .modal-backdrop {
   position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
   padding: var(--space-6); background: var(--scrim);
+  animation: ds-fade-in var(--motion-base) var(--ease-standard);
 }
 .modal {
   display: flex; flex-direction: column; width: 100%; max-width: 30rem; max-height: calc(100dvh - var(--space-12));
@@ -346,15 +357,22 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .modal__icon--accent { color: var(--accent); background: var(--accent-soft); }
 /* phone: bottom sheet (class for JS-driven layout, media query for CSS-only) */
 .modal-backdrop--sheet { align-items: flex-end; padding: 0; }
-.modal-backdrop--sheet .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; }
+.modal-backdrop--sheet .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; box-shadow: var(--shadow-sheet); animation-name: ds-sheet-in; }
 .modal-backdrop--sheet .modal__footer { flex-direction: column-reverse; }
 .modal-backdrop--sheet .modal--confirm { max-width: none; }
 .modal-backdrop--sheet .modal--confirm .modal__footer { flex-direction: column-reverse; }
 @media (max-width: 639px) {
   .modal-backdrop { align-items: flex-end; padding: 0; }
-  .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; }
+  .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; box-shadow: var(--shadow-sheet); animation-name: ds-sheet-in; }
   .modal__footer, .modal--confirm .modal__footer { flex-direction: column-reverse; }
   .modal--confirm { max-width: none; }
+}
+/* closing: the enter animation in reverse (Modal.tsx keeps the node until it ends) */
+.modal-backdrop.is-closing { pointer-events: none; animation: ds-fade-out var(--motion-base) var(--ease-exit) forwards; }
+.modal-backdrop.is-closing .modal { animation: ds-modal-out var(--motion-base) var(--ease-exit) forwards; }
+.modal-backdrop--sheet.is-closing .modal { animation-name: ds-sheet-out; }
+@media (max-width: 639px) {
+  .modal-backdrop.is-closing .modal { animation-name: ds-sheet-out; }
 }
 
 /* ---------- 11. Tabs ---------- */
@@ -407,7 +425,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .skeleton, .switch.is-loading .switch__track::after { animation: none; }
-  .modal, .toast { animation: none; }
+  .modal, .modal-backdrop, .toast { animation: none; }
   .spinner, .btn.is-loading::before { animation-duration: 1.6s; }
 }
 
@@ -474,6 +492,11 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .navbar__link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .navbar__spacer { flex: 1; }
 .navbar__actions { display: flex; align-items: center; gap: var(--space-2); }
+/* App variant: a centred, slightly see-through bar hanging from the top edge (dashboard/account, and the shop pages' compact top bar). */
+.navbar--app {
+  width: 90%; margin-inline: auto; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: color-mix(in srgb, var(--surface) 80%, transparent); backdrop-filter: blur(var(--space-3)); -webkit-backdrop-filter: blur(var(--space-3));
+}
 /* App variant: an icon action that is the current page (Account). */
 .navbar__actions [aria-current="page"] { --btn-fg: var(--accent); --btn-bg: var(--accent-soft); }
 .navbar__menu-btn, .navbar__panel { display: none; }
@@ -525,14 +548,15 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .sidebar--collapsed .nav-item__label, .sidebar--collapsed .nav-item .badge, .sidebar--collapsed .sidebar__label, .sidebar--collapsed .sidebar__shop-name { display: none; }
 .sidebar--collapsed .sidebar__shop { width: auto; padding: var(--space-1); }
 .sidebar.is-drawer {
-  position: fixed; inset: 0 auto auto 0; height: 100dvh; max-height: 100dvh; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: var(--z-drawer); width: var(--drawer-width, min(16rem, 75vw));
-  box-shadow: var(--shadow-lg); transform: translateX(-100%); visibility: hidden;
+  position: fixed; inset: 0 0 auto auto; height: 100dvh; max-height: 100dvh; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: var(--z-drawer); width: var(--drawer-width, min(16rem, 75vw));
+  border-right: 0; border-left: 1px solid var(--border); border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  box-shadow: var(--shadow-lg); transform: translateX(100%); visibility: hidden;
   transition: transform var(--motion-base) var(--ease-standard), visibility 0s linear var(--motion-base);
 }
 .sidebar.is-drawer.is-open { transform: none; visibility: visible; transition-delay: 0s; }
 .scrim { position: fixed; inset: 0; z-index: calc(var(--z-drawer) - 1); background: var(--scrim); }
 
-/* App shell: sticky rail on desktop, topbar + drawer at 640px and below. */
+/* App shell: sticky rail on desktop, app navbar + drawer (from the right, under the menu button) at 640px and below. */
 .app-shell > .sidebar:not(.is-drawer) { position: sticky; top: 0; height: 100dvh; width: var(--sidebar-width, 16rem); }
 /* Drag handle on the rail's right edge: a wide hit area around the 1px border, which takes the accent colour on hover. */
 .sidebar__resize {
@@ -550,15 +574,6 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 }
 .nav-item > svg { flex: none; width: 1.25em; font-size: var(--fs-base); }
 .nav-item--danger:hover { color: var(--danger); }
-.topbar {
-  position: sticky; top: 0; z-index: var(--z-nav); display: flex; align-items: center; gap: var(--space-3);
-  width: var(--drawer-width); padding: var(--space-1) var(--space-4); background: var(--surface);
-  border: 1px solid var(--border); border-width: 0 1px 1px 0; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-}
-.topbar__title {
-  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  color: var(--text); font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body);
-}
 
 /* ---------- 18. Booking flow: selectable option cards ---------- */
 .service-card, .staff-card {
@@ -671,9 +686,10 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .tooltip.is-dismissed .tooltip__bubble { opacity: 0; visibility: hidden; }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
-.stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-@media (min-width: 960px) { .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); } }
-.stat__icon { display: grid; place-items: center; width: var(--control-sm); height: var(--control-sm); margin-bottom: var(--space-2); border-radius: var(--radius-full); font-size: var(--fs-sm); color: var(--chip-fg); background: var(--chip-bg); }
+.stat-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.stat-grid > * { flex: 1 1 0; min-width: max-content; }
+@media (min-width: 960px) { .stat-grid { gap: var(--space-4); } }
+.stat__icon { display: grid; place-items: center; flex: none; width: var(--control-sm); height: var(--control-sm); border-radius: var(--radius-full); font-size: var(--fs-sm); color: var(--chip-fg); background: var(--chip-bg); }
 .stat__icon--accent { --chip-fg: var(--accent); --chip-bg: var(--accent-soft); }
 .stat__icon--warning { --chip-fg: var(--warning); --chip-bg: var(--warning-bg); }
 .stat__icon--info { --chip-fg: var(--info); --chip-bg: var(--info-bg); }

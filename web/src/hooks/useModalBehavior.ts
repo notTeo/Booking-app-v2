@@ -2,6 +2,10 @@ import { useEffect, useRef, type RefObject } from 'react';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Open modals, oldest first. Only the last one answers the keyboard, so a
+// dialog opened from inside another (e.g. a confirm) doesn't close both on Esc.
+const openModals: symbol[] = [];
+
 /**
  * Shared modal behaviour: body scroll lock, focus into the dialog (the
  * `initialFocus` element, else the first control), Tab trapped inside, Escape
@@ -28,8 +32,11 @@ export function useModalBehavior(
     const dialog = dialogRef.current;
     (initialFocus?.current ?? dialog?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
 
+    const self = Symbol('modal');
+    openModals.push(self);
+
     const onKey = (e: KeyboardEvent) => {
-      if (pausedRef.current) return;
+      if (pausedRef.current || openModals[openModals.length - 1] !== self) return;
       if (e.key === 'Escape') {
         onCancelRef.current();
         return;
@@ -51,6 +58,7 @@ export function useModalBehavior(
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
+      openModals.splice(openModals.indexOf(self), 1);
       document.body.style.overflow = prevOverflow;
       trigger?.focus();
     };

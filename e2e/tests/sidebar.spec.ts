@@ -27,7 +27,8 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings', 'Account']) {
     await expect(item(page, name), name).toBeVisible();
   }
-  await expect(sidebar(page).getByRole('button', { name: 'Logout' })).toBeVisible();
+  // Log out is on the Account page only.
+  await expect(sidebar(page).getByRole('button', { name: 'Logout' })).toHaveCount(0);
   for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
     await expect(item(page, name), name).toHaveCount(0);
   }
@@ -103,11 +104,13 @@ test('desktop rail has rounded right corners and can be resized by dragging its 
 test.describe('mobile', () => {
   test.use({ viewport: { width: 390, height: 800 } });
 
-  test('top bar shows the shop name; drawer closes on link tap, backdrop tap and Esc', async ({ page }) => {
+  test('top bar: logo left, menu button right; drawer closes on link tap, backdrop tap and Esc', async ({ page }) => {
     await login(page);
     await page.goto(SHOP);
     const menu = page.getByRole('button', { name: 'Open menu' });
-    await expect(page.locator('.topbar__title')).toHaveText(/\S/);
+    const logo = page.locator('header.navbar .wordmark');
+    await expect(logo).toHaveAttribute('href', SHOP);
+    expect((await logo.boundingBox())!.x).toBeLessThan((await menu.boundingBox())!.x);
     await expect(sidebar(page)).toBeHidden();
 
     await menu.click();
@@ -118,7 +121,7 @@ test.describe('mobile', () => {
 
     await menu.click();
     await expect(sidebar(page)).toBeVisible();
-    await page.locator('.scrim').click({ position: { x: 380, y: 400 } });
+    await page.locator('.scrim').click({ position: { x: 10, y: 400 } });
     await expect(sidebar(page)).toBeHidden();
 
     await menu.click();
@@ -127,18 +130,21 @@ test.describe('mobile', () => {
     await expect(sidebar(page)).toBeHidden();
   });
 
-  test('closed top bar is as wide as the open drawer, with the same corner radius', async ({ page }) => {
+  test('top bar is 90% wide and centred, with the drawer\'s corner radius; the drawer opens from the right', async ({ page }) => {
     await login(page);
-    const bar = page.locator('.topbar');
-    const barWidth = (await bar.boundingBox())!.width;
+    const bar = page.locator('header.navbar');
+    const box = (await bar.boundingBox())!;
+    expect(box.width).toBeCloseTo(390 * 0.9, 0);
+    expect(box.x).toBeCloseTo(390 * 0.05, 0);
     const barRadius = await bar.evaluate((el) => getComputedStyle(el).borderBottomRightRadius);
     expect(parseFloat(barRadius)).toBeGreaterThan(0);
 
     await page.getByRole('button', { name: 'Open menu' }).click();
     await expect(sidebar(page)).toBeVisible();
     await page.waitForTimeout(400);
-    expect((await sidebar(page).boundingBox())!.width).toBeCloseTo(barWidth, 0);
-    expect(await sidebar(page).evaluate((el) => getComputedStyle(el).borderBottomRightRadius)).toBe(barRadius);
+    const drawer = (await sidebar(page).boundingBox())!;
+    expect(Math.round(drawer.x + drawer.width)).toBe(390);
+    expect(await sidebar(page).evaluate((el) => getComputedStyle(el).borderBottomLeftRadius)).toBe(barRadius);
     await expect(page.getByRole('separator', { name: 'Resize sidebar' })).toHaveCount(0);
   });
 
@@ -148,12 +154,12 @@ test.describe('mobile', () => {
     // An unknown shop is the shortest shop page: just the not-found state.
     await page.goto('/shops/no-such-shop');
     await expect(page.getByText('Shop not available')).toBeVisible();
-    expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);
+    expect((await page.locator('header.navbar').boundingBox())!.height).toBeLessThan(60);
   });
 
   test('top bar stays slim and the drawer fits the visible viewport, footer items reachable', async ({ page }) => {
     await login(page);
-    expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);
+    expect((await page.locator('header.navbar').boundingBox())!.height).toBeLessThan(60);
 
     // A short phone screen (browser bars showing): footer must stay on screen.
     await page.setViewportSize({ width: 360, height: 480 });
@@ -162,8 +168,8 @@ test.describe('mobile', () => {
     const rail = (await sidebar(page).boundingBox())!;
     expect(rail.y).toBe(0);
     expect(Math.round(rail.height)).toBe(480);
-    await sidebar(page).getByRole('button', { name: 'Logout' }).scrollIntoViewIfNeeded();
-    const logout = (await sidebar(page).getByRole('button', { name: 'Logout' }).boundingBox())!;
-    expect(logout.y + logout.height).toBeLessThanOrEqual(480);
+    await item(page, 'Account').scrollIntoViewIfNeeded();
+    const account = (await item(page, 'Account').boundingBox())!;
+    expect(account.y + account.height).toBeLessThanOrEqual(480);
   });
 });

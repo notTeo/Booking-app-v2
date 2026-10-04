@@ -5,7 +5,7 @@ import { query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
 /**
- * Per-shop slot interval (Shop settings) and the calendar filter bar.
+ * Per-shop slot interval (Shop settings) and the calendar filters modal.
  * The shop is put back on the default 30 minutes at the end: the other specs
  * assume a 30-minute grid and share this database.
  */
@@ -13,7 +13,7 @@ test.afterAll(async () => {
   await query('update "Shop" set "slotIntervalMinutes" = 30 where id = $1', ['s1']);
 });
 
-test('a 15-minute interval offers :15 starts, and the calendar filter bar hides blocks', async ({
+test('a 15-minute interval offers :15 starts, and the calendar filters hide blocks', async ({
   page,
   context,
 }) => {
@@ -51,20 +51,28 @@ test('a 15-minute interval offers :15 starts, and the calendar filter bar hides 
   const block = page.locator('.cal-block', { hasText: 'Filter Test' });
   await expect(block).toBeVisible();
 
+  // the filters live in a modal and apply straight away
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const filters = page.getByRole('dialog');
+
   // filter by a status it does not have: hidden, and the count says so
-  await page.getByRole('button', { name: 'Canceled', exact: true }).click();
+  await filters.getByRole('button', { name: 'Canceled', exact: true }).click();
   await expect(block).toHaveCount(0);
   await expect(page.locator('.cal-filters-count')).toContainText('0 of');
 
   // clear: back
-  await page.getByRole('button', { name: /clear filters/i }).click();
+  await filters.getByRole('button', { name: /clear filters/i }).click();
   await expect(block).toBeVisible();
 
   // a service filter that matches keeps it; staff filter to the member keeps it
-  await page.locator('#cal-filter-service').selectOption({ label: 'Haircut' });
+  await filters.getByLabel('Service').selectOption({ label: 'Haircut' });
   await expect(block).toBeVisible();
-  await page.locator('#cal-filter-staff').selectOption({ label: 'E2E Owner' });
+  await filters.getByLabel('Staff').selectOption({ label: 'E2E Owner' });
   await expect(block).toBeVisible();
+
+  await filters.getByRole('button', { name: 'Done' }).click();
+  await expect(filters).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Filters/ })).toContainText('2');
 });
 
 test('the "Time step" buttons in the staff wizard offer 10-minute starts for one booking, saved as a custom time', async ({

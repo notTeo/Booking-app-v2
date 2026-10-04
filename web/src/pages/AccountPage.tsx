@@ -15,6 +15,7 @@ import {
   faUser,
   faSun,
   faMoon,
+  faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
@@ -322,6 +323,24 @@ export default function AccountPage() {
         </button>
       </div>
 
+      {/* Log out */}
+      <div className="card settings-section">
+        <div className="settings-pref-row">
+          <div className="settings-pref-label">
+            <span>{t.settings.logout}</span>
+            <span className="settings-pref-desc">{t.settings.logoutDesc}</span>
+          </div>
+          <button
+            className="btn btn--secondary btn--sm settings-pref-btn"
+            type="button"
+            onClick={async () => { await logout(); navigate('/login'); }}
+          >
+            <FontAwesomeIcon icon={faRightFromBracket} aria-hidden="true" />
+            {' '}{t.settings.logout}
+          </button>
+        </div>
+      </div>
+
       {/* Danger Zone */}
       <div className="card card--danger settings-section">
         <p className="card__title settings-section-title">
@@ -333,7 +352,7 @@ export default function AccountPage() {
         </p>
 
         <button
-          className="btn btn--danger btn--sm"
+          className="btn btn--danger-outline btn--sm"
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
         >
