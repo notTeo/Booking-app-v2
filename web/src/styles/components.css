@@ -44,6 +44,11 @@ a { color: var(--accent); }
 @keyframes ds-pulse { 50% { opacity: 0.45; } }
 @keyframes ds-toast-in { from { opacity: 0; transform: translateY(8px); } }
 @keyframes ds-modal-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes ds-modal-out { to { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes ds-sheet-in { from { transform: translateY(100%); } }
+@keyframes ds-sheet-out { to { transform: translateY(100%); } }
+@keyframes ds-fade-in { from { opacity: 0; } }
+@keyframes ds-fade-out { to { opacity: 0; } }
 
 /* ---------- Typography ---------- */
 .t-display { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); }
@@ -322,6 +327,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .modal-backdrop {
   position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
   padding: var(--space-6); background: var(--scrim);
+  animation: ds-fade-in var(--motion-base) var(--ease-standard);
 }
 .modal {
   display: flex; flex-direction: column; width: 100%; max-width: 30rem; max-height: calc(100dvh - var(--space-12));
@@ -346,15 +352,22 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .modal__icon--accent { color: var(--accent); background: var(--accent-soft); }
 /* phone: bottom sheet (class for JS-driven layout, media query for CSS-only) */
 .modal-backdrop--sheet { align-items: flex-end; padding: 0; }
-.modal-backdrop--sheet .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; }
+.modal-backdrop--sheet .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; box-shadow: var(--shadow-sheet); animation-name: ds-sheet-in; }
 .modal-backdrop--sheet .modal__footer { flex-direction: column-reverse; }
 .modal-backdrop--sheet .modal--confirm { max-width: none; }
 .modal-backdrop--sheet .modal--confirm .modal__footer { flex-direction: column-reverse; }
 @media (max-width: 639px) {
   .modal-backdrop { align-items: flex-end; padding: 0; }
-  .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; }
+  .modal { max-width: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0; box-shadow: var(--shadow-sheet); animation-name: ds-sheet-in; }
   .modal__footer, .modal--confirm .modal__footer { flex-direction: column-reverse; }
   .modal--confirm { max-width: none; }
+}
+/* closing: the enter animation in reverse (Modal.tsx keeps the node until it ends) */
+.modal-backdrop.is-closing { pointer-events: none; animation: ds-fade-out var(--motion-base) var(--ease-exit) forwards; }
+.modal-backdrop.is-closing .modal { animation: ds-modal-out var(--motion-base) var(--ease-exit) forwards; }
+.modal-backdrop--sheet.is-closing .modal { animation-name: ds-sheet-out; }
+@media (max-width: 639px) {
+  .modal-backdrop.is-closing .modal { animation-name: ds-sheet-out; }
 }
 
 /* ---------- 11. Tabs ---------- */
@@ -407,7 +420,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .skeleton, .switch.is-loading .switch__track::after { animation: none; }
-  .modal, .toast { animation: none; }
+  .modal, .modal-backdrop, .toast { animation: none; }
   .spinner, .btn.is-loading::before { animation-duration: 1.6s; }
 }
 

@@ -1,5 +1,4 @@
 import { useId, useRef, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCircleQuestion,
@@ -7,7 +6,7 @@ import {
   faTriangleExclamation,
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
-import { useModalBehavior } from '../hooks/useModalBehavior';
+import Modal from './Modal';
 
 type Tone = 'danger' | 'warning' | 'neutral';
 
@@ -49,49 +48,42 @@ export default function ConfirmDialog({
   onCancel: () => void;
 }) {
   const id = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const { icon, iconCls, btnCls } = TONE[tone];
 
-  useModalBehavior(dialogRef, onCancel, { initialFocus: cancelRef });
-
-  return createPortal(
-    <div className="modal-backdrop" onClick={onCancel}>
-      <div
-        ref={dialogRef}
-        className="modal modal--confirm"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={`${id}-title`}
-        aria-describedby={`${id}-message`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal__header">
-          <span className={`modal__icon${iconCls}`}>
-            <FontAwesomeIcon icon={icon} aria-hidden="true" />
-          </span>
-          <h2 id={`${id}-title`} className="modal__title">{title}</h2>
-        </div>
-        <div className="modal__body">
-          <p id={`${id}-message`}>{message}</p>
-          {children}
-        </div>
-        <div className="modal__footer">
-          <button type="button" className="btn btn--ghost" ref={cancelRef} onClick={onCancel} disabled={busy}>
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className={`btn${btnCls}${busy ? ' is-loading' : ''}`}
-            onClick={busy ? undefined : onConfirm}
-            aria-busy={busy}
-            disabled={confirmDisabled}
-          >
-            {confirmLabel}
-          </button>
-        </div>
+  return (
+    <Modal
+      onClose={onCancel}
+      role="alertdialog"
+      className="modal--confirm"
+      labelledBy={`${id}-title`}
+      describedBy={`${id}-message`}
+      initialFocus={cancelRef}
+    >
+      <div className="modal__header">
+        <span className={`modal__icon${iconCls}`}>
+          <FontAwesomeIcon icon={icon} aria-hidden="true" />
+        </span>
+        <h2 id={`${id}-title`} className="modal__title">{title}</h2>
       </div>
-    </div>,
-    document.body,
+      <div className="modal__body">
+        <p id={`${id}-message`}>{message}</p>
+        {children}
+      </div>
+      <div className="modal__footer">
+        <button type="button" className="btn btn--ghost" ref={cancelRef} onClick={onCancel} disabled={busy}>
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          className={`btn${btnCls}${busy ? ' is-loading' : ''}`}
+          onClick={busy ? undefined : onConfirm}
+          aria-busy={busy}
+          disabled={confirmDisabled}
+        >
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
   );
 }
