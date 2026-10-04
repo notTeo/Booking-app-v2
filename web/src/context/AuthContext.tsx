@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { login as loginApi, logout as logoutApi, refreshTokens } from '../api/auth.api';
 import { getMe } from '../api/user.api';
 import { authStore } from '../store/authStore';
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Nothing to do: the session is dropped locally either way.
     }
     authStore.clearToken();
+    // Cached shops, invites and bookings belong to this user: the next person
+    // to log in on this tab must not see them, even for a moment.
+    queryClient.clear();
     setUser(null);
   };
 

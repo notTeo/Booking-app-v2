@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import Wordmark from './Wordmark';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
@@ -18,8 +17,7 @@ function MenuIcon() {
   );
 }
 
-// Compact-only top bar: menu button, then the shop name on shop pages and the
-// logo on account pages.
+// Compact-only top bar: menu button, then the shop name.
 function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HTMLButtonElement> }) {
   const slug = useShopSlug();
   const { shop, isLoading } = useShop();
@@ -36,14 +34,14 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
       >
         <MenuIcon />
       </button>
-      {slug
-        ? <span className="topbar__title">{isLoading ? '…' : (shop?.name ?? slug)}</span>
-        : <span className="topbar__title wordmark"><Wordmark /></span>}
+      <span className="topbar__title">{isLoading ? '…' : (shop?.name ?? slug)}</span>
     </header>
   );
 }
 
-export default function AppLayout() {
+// Shop pages (/shops/:slug/...): the shop sidebar, as a rail or (compact) a
+// drawer behind the top bar. Pages outside a shop use AppTopBarLayout.
+export default function ShopSidebarLayout() {
   const compact = useIsCompact();
   const resize = useSidebarWidth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

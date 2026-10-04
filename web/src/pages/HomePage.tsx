@@ -97,7 +97,7 @@ const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle:
   settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle },
 });
 
-// Same icon as AppLayout.tsx's IconMenu, so the mockup's mobile header
+// Same icon as ShopSidebarLayout.tsx's MenuIcon, so the mockup's mobile header
 // matches the real one exactly (not FontAwesome's evenly-spaced bars icon).
 function PreviewMenuIcon() {
   return (
@@ -417,7 +417,7 @@ export default function HomePage() {
 
             <div className="home-preview-card-body">
               {/* Mobile-only — the real app's own mobile top header
-                  (components/AppLayout.tsx), reused exactly: hamburger button +
+                  (components/ShopSidebarLayout.tsx), reused exactly: hamburger button +
                   BeBooked wordmark in a pill rounded only on the right, flush left.
                   Positioned so the drawer (below) can overlap it, same as the
                   real app's z-index relationship between the two. */}

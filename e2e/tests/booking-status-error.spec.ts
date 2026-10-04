@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
@@ -36,7 +37,7 @@ async function openCanceledBooking(page: Page) {
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/bookings?date=${date}`);
   // top edge of the block: the later booking overlaps its lower half
   await page.locator('.cal-block--canceled').click({ position: { x: 8, y: 3 } });

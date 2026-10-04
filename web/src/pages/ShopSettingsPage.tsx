@@ -123,7 +123,7 @@ export default function ShopSettingsPage() {
     setDeleteLoading(true);
     try {
       await deleteShop(shop.id);
-      navigate('/shops');
+      navigate('/dashboard');
     } catch (err: unknown) {
       setShowDeleteConfirm(false);
       setDeleteError(apiErrorMessage(err, t.shopSettings.errorDelete));

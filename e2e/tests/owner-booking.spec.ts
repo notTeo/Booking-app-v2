@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { latestBookingStart } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
@@ -33,7 +34,7 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
 
   // wizard: service -> team member -> date -> in-hours slot
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);

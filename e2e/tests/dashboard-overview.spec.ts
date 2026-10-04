@@ -1,12 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
 
 /**
- * Dashboard overview: the shop overview summed across all of the owner's
- * shops, plus a "Your shops" section. The owner has the seeded Athens shop
- * (s1, first membership) and a New York shop (s2) added here.
+ * Dashboard analytics: the shop overview summed across all of the user's
+ * shops, shown only to owners of two or more shops, plus each shop's numbers
+ * on its "Your shops" card. The owner has the seeded Athens shop (s1, first
+ * membership) and a New York shop (s2) added here.
  *
  * Bookings sit at mid-day UTC, which is the same calendar date in Athens and
  * New York, so period expectations don't depend on when the suite runs. The
@@ -134,7 +136,12 @@ async function login(page: Page) {
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
+  // The owner's landing depends on how many shops the test left active.
+  await page.goto('/dashboard');
+  // Let the page finish its session refresh before anything navigates again:
+  // a reload that aborts the refresh in flight loses the rotated cookie.
+  await page.locator('.app-shell').waitFor();
 }
 
 async function openDashboard(page: Page) {
@@ -216,32 +223,25 @@ test('a shop with nothing pending shows no warning badge', async ({ page }) => {
   }
 });
 
-test('one shop: same page, one card, and a "View all" link', async ({ page }) => {
-  await query(`update "UserShop" set active = false where id = 'us2'`);
-  try {
-    await openDashboard(page);
-    await expect(page.locator('.shop-card')).toHaveCount(1);
-    await expect(page.locator('.shop-card')).toContainText(SHOPS.s1.name);
-    await expect(page.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `/shops/${SHOPS.s1.slug}/bookings`);
-    // Totals now only count that shop.
-    const mine = inWeek.filter((b) => b.shop === 's1');
-    await expect(stat(page, 'Bookings')).toHaveText(String(mine.filter((b) => b.status !== 'CANCELED').length));
-  } finally {
-    await query(`update "UserShop" set active = true where id = 'us2'`);
-  }
-});
-
-test('no shops: an empty state with "Create your first shop"', async ({ page }) => {
-  await query(`update "UserShop" set active = false where "userId" = 'u1'`);
-  try {
-    await login(page);
-    await expect(page.getByRole('heading', { name: "You don't have any shops yet" })).toBeVisible();
-    await page.getByRole('link', { name: 'Create your first shop' }).click();
-    await expect(page).toHaveURL(/\/shops\/new$/);
-  } finally {
-    await query(`update "UserShop" set active = true where "userId" = 'u1'`);
-  }
-});
+for (const [label, sql] of [
+  ['owning one shop', `update "UserShop" set active = false where id = 'us2'`],
+  ['owning one shop and staff in another', `update "UserShop" set role = 'staff' where id = 'us2'`],
+] as const) {
+  test(`${label}: shop cards with roles, no analytics`, async ({ page }) => {
+    await query(sql);
+    try {
+      await login(page);
+      await expect(page.locator('.shop-card').first()).toBeVisible();
+      await expect(shopCard(page, SHOPS.s1.name)).toContainText('Owner');
+      await expect(page.locator('.shop-card__metric')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Across your shops' })).toHaveCount(0);
+      await expect(page.locator('.stat')).toHaveCount(0);
+      await expect(tab(page, 'Week')).toHaveCount(0);
+    } finally {
+      await query(`update "UserShop" set active = true, role = 'owner' where id = 'us2'`);
+    }
+  });
+}
 
 test('the API failing shows an alert with a working retry', async ({ page }) => {
   let fail = true;
