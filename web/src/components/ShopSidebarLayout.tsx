@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { useShop } from '../context/ShopContext';
+import Wordmark from './Wordmark';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
@@ -17,14 +17,17 @@ function MenuIcon() {
   );
 }
 
-// Compact-only top bar: menu button, then the shop name.
+// Compact-only top bar: the app navbar with the wordmark and the menu button.
 function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HTMLButtonElement> }) {
   const slug = useShopSlug();
-  const { shop, isLoading } = useShop();
   const { t } = useLang();
 
   return (
-    <header className="topbar">
+    <header className="navbar navbar--app is-compact">
+      <Link to={`/shops/${slug}`} className="wordmark wordmark--sm" aria-label={t.sidebar.overview}>
+        <Wordmark />
+      </Link>
+      <span className="navbar__spacer" />
       <button
         ref={menuRef}
         type="button"
@@ -34,7 +37,6 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
       >
         <MenuIcon />
       </button>
-      <span className="topbar__title">{isLoading ? '…' : (shop?.name ?? slug)}</span>
     </header>
   );
 }
