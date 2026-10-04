@@ -11,7 +11,7 @@ interface Props {
   /** With both, the Week | Month | 3 months switch sits on the right. */
   range?: OverviewRange;
   onRangeChange?: (range: OverviewRange) => void;
-  /** Otherwise this goes on the right (e.g. the dashboard's Create shop). */
+  /** Otherwise this goes on the right (e.g. the dashboard's plan pill). */
   action?: ReactNode;
 }
 

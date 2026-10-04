@@ -923,6 +923,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 @media (min-width: 640px) { .shop-cards__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 960px) { .shop-cards__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .shop-card { height: 100%; align-items: flex-start; }
+/* The "Create shop" card after the last shop is as tall as the shop cards in its row. */
+.shop-cards__grid > li > .card--dashed { width: 100%; height: 100%; }
 .shop-card__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; }
 .shop-card__name { min-width: 0; overflow-wrap: anywhere; font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .shop-card__arrow { flex: none; color: var(--text-muted); }

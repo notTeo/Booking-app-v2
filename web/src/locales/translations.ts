@@ -39,16 +39,7 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    subscription: {
-      title: string;
-      pro: string;
-      free: string;
-      proText: string;
-      freeText: string;
-      manageBilling: string;
-      upgrade: string;
-      comingSoon: string;
-    };
+    plan: { pro: string; free: string };
     /** from: "{email} invited you as {role}" */
     invites: { title: string; from: string; empty: string };
     shops: { title: string };
@@ -340,6 +331,14 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
+    subscription: {
+      title: string;
+      proText: string;
+      freeText: string;
+      manageBilling: string;
+      upgrade: string;
+      comingSoon: string;
+    };
     wrongPassword: string;
     soleOwnerOfShop: string;
     deleteAccountMessage: string;
@@ -954,16 +953,7 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      subscription: {
-        title: 'Συνδρομή',
-        pro: 'Pro',
-        free: 'Δωρεάν',
-        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
-        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
-        manageBilling: 'Διαχείριση χρέωσης',
-        upgrade: 'Αναβάθμιση',
-        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
-      },
+      plan: { pro: 'Pro', free: 'Δωρεάν' },
       invites: {
         title: 'Προσκλήσεις',
         from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
@@ -1260,6 +1250,14 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
+      subscription: {
+        title: 'Συνδρομή',
+        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
+        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
+        manageBilling: 'Διαχείριση χρέωσης',
+        upgrade: 'Αναβάθμιση',
+        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
+      },
       wrongPassword: 'Λάθος κωδικός.',
       soleOwnerOfShop: 'Είστε ο ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή μεταβιβάστε το πρώτα σε έναν διαχειριστή.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
@@ -1900,16 +1898,7 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      subscription: {
-        title: 'Subscription',
-        pro: 'Pro',
-        free: 'Free',
-        proText: 'You are on the Pro plan and can create shops.',
-        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
-        manageBilling: 'Manage billing',
-        upgrade: 'Upgrade',
-        comingSoon: 'Billing is coming soon.',
-      },
+      plan: { pro: 'Pro', free: 'Free' },
       invites: {
         title: 'Invitations',
         from: '{email} invited you as {role}',
@@ -2206,6 +2195,14 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
+      subscription: {
+        title: 'Subscription',
+        proText: 'You are on the Pro plan and can create shops.',
+        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
+        manageBilling: 'Manage billing',
+        upgrade: 'Upgrade',
+        comingSoon: 'Billing is coming soon.',
+      },
       wrongPassword: 'Incorrect password.',
       soleOwnerOfShop: 'You are the owner of a shop. Delete the shop or transfer it to a manager first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',

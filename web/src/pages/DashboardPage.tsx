@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faStore } from '@fortawesome/free-solid-svg-icons';
+import { faCrown, faPlus, faStore, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { useMyShops } from '../hooks/useMyShops';
@@ -10,7 +10,6 @@ import Alert from '../components/Alert';
 import OverviewHeader from '../components/overview/OverviewHeader';
 import ShopCards, { type ShopCardRow } from '../components/overview/ShopCards';
 import InviteInbox from '../components/overview/InviteInbox';
-import SubscriptionCard from '../components/overview/SubscriptionCard';
 import '../styles/pages/shop-overview.css';
 
 /** The greeting's time of day follows the browser: there is no single shop here. */
@@ -35,9 +34,9 @@ function EmptyText({ text, email }: { text: string; email: string }) {
 }
 
 /**
- * The one page outside a shop: the user's shops, the subscription and pending
- * invites. Every section is always shown, with an empty state when it has
- * nothing in it.
+ * The one page outside a shop: the plan (a pill by the greeting), the user's
+ * shops with Create shop after the last one, and pending invites. Both
+ * sections are always shown, with an empty state when they have nothing in them.
  */
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -47,22 +46,31 @@ export default function DashboardPage() {
   const shops = shopsQuery.data ?? [];
   const invites = invitesQuery.data?.received ?? [];
 
+  const isPro = !!user?.isPro;
+  // The plan, where a way to billing will go once there is one.
   const header = (
     <OverviewHeader
       zone={BROWSER_ZONE}
-      // Creating a shop needs Pro: without it the button is there but disabled.
-      action={user?.isPro ? (
-        <Link to="/shops/new" className="btn btn--sm">
-          <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-          {t.dashboard.createShop}
-        </Link>
-      ) : (
-        <button type="button" className="btn btn--sm" disabled>
-          <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-          {t.dashboard.createShop}
-        </button>
-      )}
+      action={
+        <span className={`badge badge--lg ${isPro ? 'badge--accent' : 'badge--neutral'}`}>
+          <FontAwesomeIcon icon={isPro ? faCrown : faUser} aria-hidden="true" />
+          {isPro ? t.dashboard.plan.pro : t.dashboard.plan.free}
+        </span>
+      }
     />
+  );
+
+  // Creating a shop needs Pro: without it the card is there but disabled.
+  const createShop = isPro ? (
+    <Link to="/shops/new" className="card card--interactive card--dashed">
+      <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+      <span>{t.dashboard.createShop}</span>
+    </Link>
+  ) : (
+    <button type="button" className="card card--dashed" disabled>
+      <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+      <span>{t.dashboard.createShop}</span>
+    </button>
   );
 
   if (shopsQuery.isError || invitesQuery.isError) {
@@ -104,6 +112,7 @@ export default function DashboardPage() {
 
       <ShopCards
         shops={shopRows(shops)}
+        createShop={createShop}
         empty={
           <div className="card">
             <div className="empty">
@@ -114,8 +123,6 @@ export default function DashboardPage() {
           </div>
         }
       />
-
-      <SubscriptionCard isPro={!!user?.isPro} />
 
       <InviteInbox invites={invites} />
     </div>

@@ -9,6 +9,8 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faCreditCard,
+  faCrown,
   faSlidersH,
   faShieldHalved,
   faTriangleExclamation,
@@ -245,6 +247,27 @@ export default function AccountPage() {
             {t.settings.saveProfile}
           </button>
         </form>
+      </div>
+
+      {/* Subscription — the plan; billing is not built yet, so the button is disabled */}
+      <div className="card" id="subscription">
+        <div className="card__header">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
+            {t.settings.subscription.title}
+          </h2>
+          <span className={`badge badge--lg ${user?.isPro ? 'badge--accent' : 'badge--neutral'}`}>
+            <FontAwesomeIcon icon={user?.isPro ? faCrown : faUser} aria-hidden="true" />
+            {user?.isPro ? t.dashboard.plan.pro : t.dashboard.plan.free}
+          </span>
+        </div>
+        <p className="card__text">
+          {user?.isPro ? t.settings.subscription.proText : t.settings.subscription.freeText}{' '}
+          {t.settings.subscription.comingSoon}
+        </p>
+        <button type="button" className="btn btn--secondary btn--sm" disabled>
+          {user?.isPro ? t.settings.subscription.manageBilling : t.settings.subscription.upgrade}
+        </button>
       </div>
 
       {/* Preferences */}

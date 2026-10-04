@@ -18,9 +18,18 @@ export interface ShopCardRow {
 
 /**
  * "All shops": one card per shop with the user's role and the shop's address,
- * linking to that shop. With no shops, `empty` takes the place of the cards.
+ * linking to that shop, then `createShop` as the last card. With no shops,
+ * `empty` comes before it.
  */
-export default function ShopCards({ shops, empty }: { shops: ShopCardRow[]; empty: ReactNode }) {
+export default function ShopCards({
+  shops,
+  empty,
+  createShop,
+}: {
+  shops: ShopCardRow[];
+  empty: ReactNode;
+  createShop: ReactNode;
+}) {
   const { t } = useLang();
 
   return (
@@ -47,6 +56,7 @@ export default function ShopCards({ shops, empty }: { shops: ShopCardRow[]; empt
             </Link>
           </li>
         ))}
+        <li>{createShop}</li>
       </ul>
     </section>
   );

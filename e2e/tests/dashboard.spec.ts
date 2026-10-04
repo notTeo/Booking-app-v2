@@ -5,10 +5,10 @@ import { query } from '../support/db';
 import { addPendingInvite } from '../support/invites';
 
 /**
- * /dashboard, the one page outside a shop, in this order: "All shops" with
- * the user's role, the subscription (one card wide) and the invite inbox,
- * plus Create shop. Every section is always shown, with an empty state when
- * it has nothing in it. A shop card is the name, my role and the address.
+ * /dashboard, the one page outside a shop: the plan pill by the greeting,
+ * "All shops" with the user's role and Create shop after the last shop, then
+ * the invite inbox. Both sections are always shown, with an empty state when
+ * they have nothing in them. A shop card is the name, my role and the address.
  * The seeded owner u1 is Pro and owns one shop (s1, membership us1). Shops
  * added here have ids starting "dash2-" and are deleted after each test.
  */
@@ -29,9 +29,9 @@ async function openDashboard(page: Page, theme: 'light' | 'dark' = 'light') {
 
 const inbox = (page: Page) => page.getByRole('region', { name: 'Invitations' });
 const shops = (page: Page) => page.getByRole('region', { name: 'All shops', exact: true });
-const subscription = (page: Page) => page.getByRole('region', { name: 'Subscription' });
-const createShop = (page: Page) => page.getByRole('link', { name: 'Create shop' });
-const createShopDisabled = (page: Page) => page.getByRole('button', { name: 'Create shop' });
+const planPill = (page: Page) => page.locator('.overview-head .badge');
+const createShop = (page: Page) => shops(page).getByRole('link', { name: 'Create shop' });
+const createShopDisabled = (page: Page) => shops(page).getByRole('button', { name: 'Create shop' });
 const inviteShop = (n: number) => ({ shopId: `dash2-inv${n}`, slug: `dash2-invited-${n}`, name: `Invited Shop ${n}`, token: `dash2-token-${n}` });
 
 test.afterEach(async () => {
@@ -85,29 +85,38 @@ test('Create shop: opens the form for Pro users, shown but disabled otherwise', 
   await expect(createShopDisabled(page)).toBeDisabled();
 });
 
-test('Subscription: the plan and a billing button that is not usable yet', async ({ page }) => {
+test('the plan is a pill where Create shop used to be; Create shop comes after the last shop', async ({ page }) => {
   await openDashboard(page);
-  await expect(subscription(page).locator('.badge')).toHaveText('Pro');
-  await expect(subscription(page).getByRole('button', { name: 'Manage billing' })).toBeDisabled();
-  await expect(subscription(page)).toContainText('Billing is coming soon.');
+  await expect(planPill(page)).toHaveText('Pro');
+  await expect(page.locator('.overview-head').getByRole('link')).toHaveCount(0);
+  const cards = shops(page).locator('.shop-cards__grid > li');
+  await expect(cards).toHaveCount(2);
+  await expect(cards.last()).toHaveText('Create shop');
 
   await query(`update "User" set "isPro" = false where id = 'u1'`);
   await page.goto('/dashboard');
-  await expect(subscription(page).locator('.badge')).toHaveText('Free');
-  await expect(subscription(page).getByRole('button', { name: 'Upgrade' })).toBeDisabled();
+  await expect(planPill(page)).toHaveText('Free');
+  await expect(page.getByRole('region', { name: 'Subscription' })).toHaveCount(0);
 });
 
-test('sections come in order: All shops, Subscription, Invitations; the subscription is one card wide', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test('Account has the subscription: the plan and a billing button that is not usable yet', async ({ page }) => {
   await openDashboard(page);
-  await expect(page.getByRole('heading', { level: 2 })).toHaveText(['All shops', 'Subscription', 'Invitations']);
-  await expect(page.getByRole('heading', { name: 'Across your shops' })).toHaveCount(0);
+  await page.goto('/account');
+  const card = page.locator('#subscription');
+  await expect(card.getByRole('heading', { name: 'Subscription' })).toBeVisible();
+  await expect(card.locator('.badge')).toHaveText('Pro');
+  await expect(card.getByRole('button', { name: 'Manage billing' })).toBeDisabled();
+  await expect(card).toContainText('Billing is coming soon.');
 
-  const card = (await subscription(page).locator('.card').boundingBox())!;
-  const section = (await subscription(page).boundingBox())!;
-  expect(card.width).toBeLessThan(section.width / 2);
-  const shopCard = (await shops(page).locator('.shop-card').first().boundingBox())!;
-  expect(Math.round(card.width)).toBe(Math.round(shopCard.width));
+  await query(`update "User" set "isPro" = false where id = 'u1'`);
+  await page.reload();
+  await expect(card.locator('.badge')).toHaveText('Free');
+  await expect(card.getByRole('button', { name: 'Upgrade' })).toBeDisabled();
+});
+
+test('sections come in order: All shops, then Invitations', async ({ page }) => {
+  await openDashboard(page);
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText(['All shops', 'Invitations']);
 });
 
 test('no pending invites: the inbox says so', async ({ page }) => {
@@ -162,7 +171,7 @@ test('no shops and no invites: ask your shop owner to invite my email', async ({
   // Every section is still there, each with its empty state.
   await expect(shops(page).locator('.shop-card')).toHaveCount(0);
   await expect(inbox(page)).toContainText('You have no pending invitations.');
-  await expect(subscription(page).locator('.badge')).toHaveText('Free');
+  await expect(planPill(page)).toHaveText('Free');
   await expect(createShopDisabled(page)).toBeDisabled();
 });
 
@@ -184,12 +193,12 @@ test('the old /shops and /invites pages are gone', async ({ page }) => {
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`360px, ${theme}: subscription, inbox and shop cards fit, no horizontal scroll`, async ({ page }) => {
+  test(`360px, ${theme}: plan pill, inbox and shop cards fit, no horizontal scroll`, async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await addPendingInvite(inviteShop(1));
     await openDashboard(page, theme);
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-    await expect(subscription(page)).toBeVisible();
+    await expect(planPill(page)).toBeVisible();
     await expect(inbox(page)).toBeVisible();
     await expect(shops(page)).toBeVisible();
     const overflow = await page.evaluate(
