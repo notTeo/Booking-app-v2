@@ -455,15 +455,15 @@ export default function ShopTeamMemberPage() {
           <>
             {servicesError && <Alert variant="danger">{servicesError}</Alert>}
             {memberServices.length === 0 ? (
-              <p className="team-services-empty">{t.team.noAssignedServices}</p>
+              <p className="card__text">{t.team.noAssignedServices}</p>
             ) : (
-              <ul className="service-staff-list">
+              <ul className="list">
                 {memberServices.map((a) => (
-                  <li key={a.serviceId} className="service-staff-item">
+                  <li key={a.serviceId} className="list__item">
                     <span>{a.service.name}</span>
                     {isOwner && (
                       <button
-                        className="btn btn--secondary btn--sm service-action-btn"
+                        className="btn btn--secondary btn--sm"
                         onClick={() => handleUnassignService(a.serviceId)}
                         disabled={unassigningServiceId === a.serviceId}
                       >
@@ -479,7 +479,7 @@ export default function ShopTeamMemberPage() {
               const available = allServices.filter((s) => !assignedIds.has(s.id));
               if (available.length === 0) return null;
               return (
-                <div className="service-staff-add">
+                <div className="cluster cluster--tight">
                   <div className="select-wrap select-wrap--sm service-staff-select"><select
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
@@ -492,7 +492,7 @@ export default function ShopTeamMemberPage() {
                     ))}
                   </select></div>
                   <button
-                    className="btn btn--sm service-action-btn"
+                    className="btn btn--sm"
                     onClick={handleAssignService}
                     disabled={!selectedServiceId || assigningService}
                   >

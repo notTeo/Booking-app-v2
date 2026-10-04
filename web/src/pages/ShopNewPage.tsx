@@ -109,7 +109,7 @@ export default function ShopNewPage() {
             />
           </div>
 
-          <div className="shop-form-row">
+          <div className="field-row field-row--wrap">
             <div className="field">
               <label className="field__label" htmlFor="shop-phone">Phone</label>
               <input className="input"

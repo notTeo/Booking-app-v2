@@ -93,6 +93,8 @@ a { color: var(--accent); }
 .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 .btn--secondary { --btn-bg: var(--surface); --btn-fg: var(--accent); --btn-bd: var(--border-strong); }
+/* A secondary button whose panel is open, or that is toggled on. */
+.btn--secondary[aria-expanded="true"], .btn--secondary[aria-pressed="true"] { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); }
 .btn--secondary:hover, .btn--secondary.is-hover { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); box-shadow: none; }
 .btn--secondary:active, .btn--secondary.is-active { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); }
 
@@ -171,6 +173,9 @@ a { color: var(--accent); }
 .input--sm, .select--sm { min-height: var(--control-sm); padding-left: var(--space-3); font-size: var(--fs-sm); line-height: var(--lh-sm); }
 .select--sm { padding-right: var(--space-10); }
 .select-wrap--sm::after { right: var(--space-4); }
+/* Two short fields side by side; field-row--wrap stacks them on phones. */
+.field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-4); }
+@media (max-width: 639px) { .field-row--wrap { grid-template-columns: minmax(0, 1fr); } }
 .input-wrap { position: relative; }
 .input-wrap .spinner { position: absolute; right: var(--space-4); top: 50%; margin-top: -0.5rem; }
 .input-wrap.is-loading .input { padding-right: var(--space-12); }
@@ -248,6 +253,7 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card.is-disabled { background: var(--surface-sunken); color: var(--text-muted); cursor: not-allowed; }
 .card--flush { padding: 0; gap: 0; overflow: hidden; }
 .card--flush > .card__section { padding: var(--space-4) var(--space-5); }
+.card--flush > .card__section:first-child { border-top: 0; }
 /* A flush card that opens and closes: the clickable first row (role="button", aria-expanded) and its chevron. */
 .card__toggle { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-5); cursor: pointer; user-select: none; transition: background var(--motion-fast) var(--ease-standard); }
 .card__toggle:hover, .card__toggle.is-hover { background: var(--accent-soft); }
@@ -743,6 +749,12 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .setting-row + .setting-row { margin-top: var(--space-4); }
 .card > .setting-row + .setting-row { margin-top: 0; }
 .setting-row__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+
+/* ---------- 28. List ---------- */
+/* Short rows inside a card: a name (or icon and text) on the left, a button or detail on the right. */
+.list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.list__item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); padding: var(--space-2) 0; font-size: var(--fs-sm); line-height: var(--lh-sm); }
+.list__item + .list__item { border-top: 1px solid var(--border); }
 
 /* ---------- 27. Page header + cluster (layout) ---------- */
 /* The page (or section) title on the left, its one action on the right. */
