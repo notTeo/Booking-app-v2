@@ -47,6 +47,20 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   await expect(page.locator('header.navbar')).toBeVisible();
 });
 
+test('Account opened from a shop has a Back to shop button; from the dashboard it does not', async ({ page }) => {
+  await login(page);
+  await item(page, 'Account').click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Account');
+  await page.getByRole('link', { name: 'Back to shop' }).click();
+  await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
+
+  await page.goto('/dashboard');
+  await page.locator('header.navbar').getByRole('link', { name: 'Account' }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole('link', { name: 'Back to shop' })).toHaveCount(0);
+});
+
 test('owner can still start a booking from the Bookings page', async ({ page }) => {
   await login(page);
   await page.goto(`${SHOP}/bookings`);

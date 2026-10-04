@@ -258,6 +258,8 @@ a { color: var(--accent); }
 a.card, button.card, .card--interactive { cursor: pointer; text-align: left; font: inherit; text-decoration: none; transition: border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard); }
 a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is-hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
 .card--selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+/* Bar: one row, title or greeting on the left and its controls on the right */
+.card--bar { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .card.is-disabled { background: var(--surface-sunken); color: var(--text-muted); cursor: not-allowed; }
 .card--flush { padding: 0; gap: 0; overflow: hidden; }
 .card--flush > .card__section { padding: var(--space-4) var(--space-5); }
@@ -285,6 +287,13 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .stat { display: flex; flex-direction: row; align-items: center; gap: var(--space-3); white-space: nowrap; }
 .stat__value { font: var(--fw-black) var(--fs-2xl) / var(--lh-2xl) var(--font-display); }
 .stat__label { font-size: var(--fs-sm); color: var(--text-muted); }
+/* Tile: a tinted stat with the icon above the value above the label; in a .stat-grid--tiles it sits 2 by 2 */
+.stat--tile { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--space-1); white-space: normal; border-color: transparent; background: var(--tile-bg, var(--surface-sunken)); }
+.stat--tile .stat__icon { margin-bottom: var(--space-2); background: var(--surface); }
+.stat--accent { --tile-bg: var(--accent-soft); }
+.stat--warning { --tile-bg: var(--warning-bg); }
+.stat--info { --tile-bg: var(--info-bg); }
+.stat--danger { --tile-bg: var(--danger-bg); }
 
 /* ---------- 7. Badge / status ---------- */
 .badge {
@@ -868,6 +877,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .stat-grid > * { flex: 1 1 0; min-width: max-content; }
+.stat-grid--tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; }
+.stat-grid--tiles > * { min-width: 0; }
 @media (min-width: 960px) { .stat-grid { gap: var(--space-4); } }
 .stat__icon { display: grid; place-items: center; flex: none; width: var(--control-sm); height: var(--control-sm); border-radius: var(--radius-full); font-size: var(--fs-sm); color: var(--chip-fg); background: var(--chip-bg); }
 .stat__icon--accent { --chip-fg: var(--accent); --chip-bg: var(--accent-soft); }

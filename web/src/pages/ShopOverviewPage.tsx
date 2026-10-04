@@ -63,7 +63,7 @@ export default function ShopOverviewPage() {
 
   return (
     <div className="overview-page">
-      <OverviewHeader zone={shop.timezone} range={range} onRangeChange={setRange} />
+      <OverviewHeader zone={shop.timezone} range={range} onRangeChange={setRange} bar />
       <OverviewBody
         range={range}
         overview={overview}

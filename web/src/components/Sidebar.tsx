@@ -24,13 +24,15 @@ interface ItemProps {
   icon: IconDefinition;
   label: string;
   end?: boolean;
+  /** Router state handed to the destination. */
+  state?: unknown;
   onNavigate: () => void;
 }
 
 // NavLink sets aria-current="page" itself, which is what .nav-item styles.
-function Item({ to, icon, label, end, onNavigate }: ItemProps) {
+function Item({ to, icon, label, end, state, onNavigate }: ItemProps) {
   return (
-    <NavLink to={to} end={end} className="nav-item" onClick={onNavigate}>
+    <NavLink to={to} end={end} state={state} className="nav-item" onClick={onNavigate}>
       <FontAwesomeIcon icon={icon} aria-hidden="true" />
       <span className="nav-item__label">{label}</span>
     </NavLink>
@@ -65,7 +67,8 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
         )}
       </nav>
       <div className="sidebar__footer sidebar__nav">
-        <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />
+        {/* The Account page offers a way back to the shop it was opened from. */}
+        <Item to="/account" icon={faUser} label={t.sidebar.account} state={{ fromShop: slug }} onNavigate={onNavigate} />
       </div>
     </>
   );

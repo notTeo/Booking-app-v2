@@ -331,6 +331,7 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
+    backToShop: string;
     subscription: {
       title: string;
       proText: string;
@@ -1250,6 +1251,7 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
+      backToShop: 'Πίσω στο κατάστημα',
       subscription: {
         title: 'Συνδρομή',
         proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
@@ -1263,7 +1265,7 @@ home: {
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
       deleteAccountConfirmButton: 'Διαγραφή λογαριασμού',
       deleteAccountTitle: 'Διαγραφή του λογαριασμού σας;',
-      title: 'Ρυθμίσεις',
+      title: 'Λογαριασμός',
       profileSection: 'Προφίλ',
       saveProfile: 'Αποθήκευση Προφίλ',
       successProfile: 'Το προφίλ ενημερώθηκε επιτυχώς.',
@@ -2195,6 +2197,7 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
+      backToShop: 'Back to shop',
       subscription: {
         title: 'Subscription',
         proText: 'You are on the Pro plan and can create shops.',
@@ -2208,7 +2211,7 @@ home: {
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
       deleteAccountConfirmButton: 'Delete account',
       deleteAccountTitle: 'Delete your account?',
-      title: 'Settings',
+      title: 'Account',
       profileSection: 'Profile',
       saveProfile: 'Save Profile',
       successProfile: 'Profile updated successfully.',
