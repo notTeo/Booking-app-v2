@@ -122,6 +122,46 @@ describe('a manager', () => {
     expect(await roleOf(t.staff.id)).toBe('owner');
   });
 
+  it('cannot take the shop offline or bring it back, but can save settings that leave it as is', async () => {
+    const t = await createTenant('Managed');
+    const manager = await addManager(t);
+    const patch = (body: object, token = manager.token) =>
+      api.patch(`/api/shops/${t.shop.id}`).set(authHeader(token)).send(body);
+    const isActive = async () =>
+      (await prisma.shop.findUniqueOrThrow({ where: { id: t.shop.id } }))
+        .isActive;
+
+    expect((await patch({ isActive: false })).status).toBe(403);
+    expect(await isActive()).toBe(true);
+    // The settings form sends the unchanged value along with every save.
+    expect((await patch({ name: 'Still Open', isActive: true })).status).toBe(
+      200,
+    );
+
+    expect((await patch({ isActive: false }, t.token)).status).toBe(200);
+    expect((await patch({ isActive: true })).status).toBe(403);
+    expect(await isActive()).toBe(false);
+  });
+
+  it('cannot export or erase a customer’s data', async () => {
+    const t = await createTenant('Managed');
+    const manager = await addManager(t);
+    const customer = await prisma.customer.create({
+      data: { shopId: t.shop.id, name: 'Cust', phone: '6900000001' },
+    });
+    const url = `/api/shops/${t.shop.id}/customers/${customer.id}`;
+
+    expect(
+      (await api.get(`${url}/export`).set(authHeader(manager.token))).status,
+    ).toBe(403);
+    expect((await api.delete(url).set(authHeader(manager.token))).status).toBe(
+      403,
+    );
+    expect(
+      await prisma.customer.findUnique({ where: { id: customer.id } }),
+    ).not.toBeNull();
+  });
+
   it('runs the shop: settings, and adding, promoting, demoting and removing members', async () => {
     const t = await createTenant('Managed');
     const manager = await addManager(t);

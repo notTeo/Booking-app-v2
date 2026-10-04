@@ -657,6 +657,7 @@ export interface Translations {
     configuration: string;
     activeLabel: string;
     activeDesc: string;
+    activeOwnerOnly: string;
     saveChanges: string;
     saveHint: string;
     backToShop: string;
@@ -1583,6 +1584,7 @@ home: {
       configuration: 'Διαμόρφωση',
       activeLabel: 'Ενεργό',
       activeDesc: 'Όταν ανενεργό, το κατάστημα δεν δέχεται νέα ραντεβού.',
+      activeOwnerOnly: 'Μόνο ο ιδιοκτήτης μπορεί να το αλλάξει.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
       backToShop: '← Πίσω στο Κατάστημα',
@@ -2535,6 +2537,7 @@ home: {
       configuration: 'Configuration',
       activeLabel: 'Active',
       activeDesc: "When inactive, your shop won't accept new bookings.",
+      activeOwnerOnly: 'Only the owner can change this.',
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
       backToShop: '← Back to Shop',

@@ -120,6 +120,20 @@ export const updateShop = async (
     forbiddenMessage: 'Only the shop owner or a manager can update this shop',
   });
 
+  // Taking the shop offline (or back online) is the owner's call. The settings
+  // form sends isActive on every save, so only an actual change is refused.
+  if (dto.isActive !== undefined && membership.role !== 'owner') {
+    const current = await prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { isActive: true },
+    });
+    if (current && current.isActive !== dto.isActive)
+      throw new AppError(
+        403,
+        'Only the shop owner can activate or deactivate the shop',
+      );
+  }
+
   const shop = await prisma.shop.update({
     where: { id: shopId },
     data: pick(dto, UPDATE_FIELDS),

@@ -157,6 +157,6 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   'PATCH /api/shops/:shopId/customers/:customerId': {
     body: () => ({ name: 'Renamed Customer' }),
   },
-  'GET /api/shops/:shopId/customers/:customerId/export': { minRole: 'manager' },
-  'DELETE /api/shops/:shopId/customers/:customerId': { minRole: 'manager' },
+  'GET /api/shops/:shopId/customers/:customerId/export': { minRole: 'owner' },
+  'DELETE /api/shops/:shopId/customers/:customerId': { minRole: 'owner' },
 };

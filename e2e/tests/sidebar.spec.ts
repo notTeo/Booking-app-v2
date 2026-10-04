@@ -66,6 +66,9 @@ test('a manager gets the owner menu and pages, but no way to delete the shop', a
     await expect(page).toHaveURL(new RegExp(`${SHOP}/settings$`));
     await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
     await expect(page.locator('.card--danger')).toHaveCount(0);
+    // Taking the shop offline stays with the owner.
+    await expect(page.locator('#detail-active')).toBeDisabled();
+    await expect(page.getByText('Only the owner can change this.')).toBeVisible();
   } finally {
     await query(`update "UserShop" set role = 'owner' where id = 'us1'`);
   }

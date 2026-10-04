@@ -282,9 +282,18 @@ export default function ShopSettingsPage() {
           <div className="setting-row">
             <div className="setting-row__label">
               <label htmlFor="detail-active" className="setting-row__title">{t.shopSettings.activeLabel}</label>
-              <span className="setting-row__text">{t.shopSettings.activeDesc}</span>
+              <span className="setting-row__text">
+                {t.shopSettings.activeDesc}
+                {shop.role !== 'owner' && ` ${t.shopSettings.activeOwnerOnly}`}
+              </span>
             </div>
-            <Switch id="detail-active" checked={isActive} onChange={setIsActive} label={t.shopSettings.activeLabel} />
+            <Switch
+              id="detail-active"
+              checked={isActive}
+              onChange={setIsActive}
+              label={t.shopSettings.activeLabel}
+              disabled={shop.role !== 'owner'}
+            />
           </div>
         </div>
       </form>

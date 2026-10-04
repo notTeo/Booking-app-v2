@@ -1,5 +1,4 @@
 import { formatDateTimeInZone } from '../utils/shopTime';
-import { canManageShop } from '../utils/roles';
 import { useEffect, useState, useId } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
@@ -210,7 +209,7 @@ export default function ShopCustomerDetailPage() {
       )}
 
       {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
-      {canManageShop(shop?.role) && (
+      {shop?.role === 'owner' && (
         <div className="card">
           <h2 className="card__title">{t.customers.privacyHeading}</h2>
           <p className="card__text">{t.customers.privacyBody}</p>
