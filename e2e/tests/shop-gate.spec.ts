@@ -28,7 +28,7 @@ test('an unknown shop slug shows a not-found state on every shop page', async ({
     await expect(page.locator('.spinner'), path).toHaveCount(0);
   }
   await page.getByRole('link', { name: 'Back to my shops' }).click();
-  await expect(page).toHaveURL(/\/shops$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
 });
 
 test('a deactivated member sees the not-found state, not a spinner', async ({ page }) => {

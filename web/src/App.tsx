@@ -21,7 +21,6 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import AccountPage from './pages/AccountPage';
-import ShopsPage from './pages/ShopsPage';
 import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
@@ -32,7 +31,6 @@ import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
-import InvitesPage from './pages/InvitesPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
@@ -87,12 +85,11 @@ export default function App() {
                 <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 
                 <Route element={<ProtectedRoute />}>
+                  {/* Outside a shop. /dashboard is the only list of shops and invites. */}
                   <Route element={<AppTopBarLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/shops" element={<ShopsPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
                     <Route path="/account" element={<AccountPage />} />
-                    <Route path="/invites" element={<InvitesPage />} />
                   </Route>
 
                   <Route element={<ShopSidebarLayout />}>

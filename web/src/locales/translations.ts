@@ -19,13 +19,11 @@ export interface Translations {
   };
   sidebar: {
     dashboard: string;
-    myInvites: string;
     openMenu: string;
     mainNav: string;
     resize: string;
     account: string;
     overview: string;
-    shops: string;
     logout: string;
     backToShops: string;
     shopSection: string;
@@ -40,6 +38,11 @@ export interface Translations {
   };
   dashboard: {
     title: string;
+    createShop: string;
+    /** "{email} invited you as {role}" */
+    invites: { title: string; from: string };
+    /** Heading of the cross-shop analytics (owners of 2+ shops). */
+    analytics: string;
     shops: {
       title: string;
       bookings: string;
@@ -47,13 +50,13 @@ export interface Translations {
       pending: string;
       noPending: string;
     };
+    /** text contains {email}. */
     empty: { title: string; text: string };
     neverBooked: { title: string; text: string };
   };
   shops: {
     title: string;
     newShop: string;
-    noShops: string;
     name: string;
     slug: string;
     slugHint: string;
@@ -80,8 +83,6 @@ export interface Translations {
     notFound: string;
     errorLoad: string;
     successUpdate: string;
-    createFirstShop: string;
-    upgradeToCreate: string;
   };
   home: {
     headline: string;
@@ -480,8 +481,6 @@ export interface Translations {
     title: string;
     received: string;
     sent: string;
-    noReceived: string;
-    noSent: string;
     sendInvite: string;
     emailLabel: string;
     roleLabel: string;
@@ -491,10 +490,7 @@ export interface Translations {
     revoking: string;
     status: { pending: string; accepted: string; expired: string };
     roles: { owner: string; staff: string };
-    shopLabel: string;
-    invitedBy: string;
     expiresAt: string;
-    sentAt: string;
     errorLoad: string;
     errorSend: string;
     errorAccept: string;
@@ -919,13 +915,11 @@ export const translations: Record<Language, Translations> = {
     },
     sidebar: {
       dashboard: 'Πίνακας ελέγχου',
-      myInvites: 'Οι προσκλήσεις μου',
       openMenu: 'Άνοιγμα μενού',
       mainNav: 'Κύρια πλοήγηση',
       resize: 'Αλλαγή πλάτους μενού',
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
-      shops: 'Καταστήματα',
       logout: 'Αποσύνδεση',
       backToShops: 'Τα Καταστήματά μου',
       shopSection: 'Κατάστημα',
@@ -940,6 +934,9 @@ export const translations: Record<Language, Translations> = {
     },
     dashboard: {
       title: 'Επισκόπηση',
+      createShop: 'Νέο κατάστημα',
+      invites: { title: 'Προσκλήσεις', from: 'Ο/Η {email} σε προσκάλεσε ως {role}' },
+      analytics: 'Σε όλα τα καταστήματά σου',
       shops: {
         title: 'Τα καταστήματά σου',
         bookings: 'Ραντεβού',
@@ -948,8 +945,8 @@ export const translations: Record<Language, Translations> = {
         noPending: 'Κανένα σε αναμονή',
       },
       empty: {
-        title: 'Δεν έχεις ακόμα κανένα κατάστημα',
-        text: 'Δημιούργησε το πρώτο σου κατάστημα και τα ραντεβού σου θα εμφανίζονται εδώ.',
+        title: 'Δεν ανήκεις ακόμα σε κάποιο κατάστημα',
+        text: 'Ζήτησε από τον ιδιοκτήτη του καταστήματός σου να προσκαλέσει το {email}.',
       },
       neverBooked: {
         title: 'Δεν υπάρχουν ακόμα ραντεβού',
@@ -959,7 +956,6 @@ export const translations: Record<Language, Translations> = {
     shops: {
       title: 'Τα Καταστήματά μου',
       newShop: 'Νέο Κατάστημα',
-      noShops: 'Δεν έχετε ακόμα καταστήματα.',
       name: 'Όνομα',
       slug: 'Slug',
       slugHint: 'Μόνο πεζά γράμματα, αριθμοί και παύλες (π.χ. my-shop)',
@@ -986,8 +982,6 @@ export const translations: Record<Language, Translations> = {
       notFound: 'Το κατάστημα δεν βρέθηκε.',
       errorLoad: 'Αποτυχία φόρτωσης καταστημάτων.',
       successUpdate: 'Το κατάστημα ενημερώθηκε επιτυχώς.',
-      createFirstShop: 'Δημιούργησε το πρώτο σου κατάστημα',
-      upgradeToCreate: 'Αναβάθμισε σε Pro για να δημιουργήσεις κατάστημα',
     },
 home: {
     headline: 'Το πρόγραμμά σου,',
@@ -1386,8 +1380,6 @@ home: {
       title: 'Προσκλήσεις',
       received: 'Ληφθείσες',
       sent: 'Απεσταλμένες',
-      noReceived: 'Δεν έχετε εκκρεμείς προσκλήσεις.',
-      noSent: 'Δεν έχετε στείλει προσκλήσεις ακόμα.',
       sendInvite: 'Αποστολή Πρόσκλησης',
       emailLabel: 'Email',
       roleLabel: 'Ρόλος',
@@ -1397,10 +1389,7 @@ home: {
       revoking: 'Ανάκληση...',
       status: { pending: 'Εκκρεμής', accepted: 'Αποδεκτή', expired: 'Ληγμένη' },
       roles: { owner: 'Ιδιοκτήτης', staff: 'Προσωπικό' },
-      shopLabel: 'Κατάστημα',
-      invitedBy: 'Από',
       expiresAt: 'Λήγει',
-      sentAt: 'Εστάλη',
       errorLoad: 'Αποτυχία φόρτωσης προσκλήσεων.',
       errorSend: 'Αποτυχία αποστολής πρόσκλησης.',
       errorAccept: 'Αποτυχία αποδοχής πρόσκλησης.',
@@ -1851,13 +1840,11 @@ home: {
     },
     sidebar: {
       dashboard: 'Dashboard',
-      myInvites: 'My invites',
       openMenu: 'Open menu',
       mainNav: 'Main navigation',
       resize: 'Resize sidebar',
       account: 'Account',
       overview: 'Overview',
-      shops: 'Shops',
       logout: 'Logout',
       backToShops: 'My Shops',
       shopSection: 'Shop',
@@ -1872,6 +1859,9 @@ home: {
     },
     dashboard: {
       title: 'Overview',
+      createShop: 'Create shop',
+      invites: { title: 'Invitations', from: '{email} invited you as {role}' },
+      analytics: 'Across your shops',
       shops: {
         title: 'Your shops',
         bookings: 'Bookings',
@@ -1880,8 +1870,8 @@ home: {
         noPending: 'None pending',
       },
       empty: {
-        title: "You don't have any shops yet",
-        text: 'Create your first shop and your bookings will show up here.',
+        title: "You're not part of a shop yet",
+        text: 'Ask your shop owner to invite {email}.',
       },
       neverBooked: {
         title: 'No bookings yet',
@@ -1891,7 +1881,6 @@ home: {
     shops: {
       title: 'My Shops',
       newShop: 'New Shop',
-      noShops: 'You have no shops yet.',
       name: 'Name',
       slug: 'Slug',
       slugHint: 'Lowercase letters, numbers, and hyphens only (e.g. my-shop)',
@@ -1918,8 +1907,6 @@ home: {
       notFound: 'Shop not found.',
       errorLoad: 'Failed to load shops.',
       successUpdate: 'Shop updated successfully.',
-      createFirstShop: 'Create your first shop',
-      upgradeToCreate: 'Upgrade to Pro to create a shop',
     },
     home: {
     headline: "It's okay to {brand}.",
@@ -2318,8 +2305,6 @@ home: {
       title: 'Invites',
       received: 'Received',
       sent: 'Sent',
-      noReceived: 'You have no pending invites.',
-      noSent: "You haven't sent any invites yet.",
       sendInvite: 'Send Invite',
       emailLabel: 'Email',
       roleLabel: 'Role',
@@ -2329,10 +2314,7 @@ home: {
       revoking: 'Revoking...',
       status: { pending: 'Pending', accepted: 'Accepted', expired: 'Expired' },
       roles: { owner: 'Owner', staff: 'Staff' },
-      shopLabel: 'Shop',
-      invitedBy: 'Invited by',
       expiresAt: 'Expires',
-      sentAt: 'Sent',
       errorLoad: 'Failed to load invites.',
       errorSend: 'Failed to send invite.',
       errorAccept: 'Failed to accept invite.',

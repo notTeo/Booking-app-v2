@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { lookupInvite, acceptInvite, type InviteLookup } from '../api/invite.api';
+import { MY_INVITES_KEY } from '../hooks/useMyInvites';
+import { MY_SHOPS_KEY } from '../hooks/useMyShops';
 import '../styles/pages/invites.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
@@ -11,6 +14,7 @@ export default function AcceptInvitePage() {
   const { t } = useLang();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
 
@@ -44,6 +48,9 @@ export default function AcceptInvitePage() {
     setAcceptError('');
     try {
       const result = await acceptInvite(invite.inviteId);
+      // The dashboard must not still offer this invite, and must list the shop.
+      queryClient.invalidateQueries({ queryKey: MY_INVITES_KEY });
+      queryClient.invalidateQueries({ queryKey: MY_SHOPS_KEY });
       navigate(`/shops/${result.shopSlug}`);
     } catch (err: unknown) {
       setAcceptError(apiErrorMessage(err, t.invites.errorAccept));

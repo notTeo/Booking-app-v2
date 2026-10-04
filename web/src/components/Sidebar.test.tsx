@@ -25,12 +25,14 @@ function render(path: string) {
 describe('Sidebar', () => {
   beforeEach(() => { shopState.shop = null; });
 
-  it('has no account-level items: Dashboard, Shops and My invites are gone', () => {
+  it('has no account-level items; the only way out is back to the dashboard', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'owner' };
     const html = render('/shops/hair');
-    for (const label of [t.dashboard, t.shops, t.myInvites]) expect(html).not.toContain(`>${label}<`);
+    expect(html).not.toContain(`>${t.dashboard}<`);
     expect(html).not.toContain('href="/invites"');
-    expect(html).not.toContain('href="/dashboard"');
+    expect(html).not.toContain('href="/shops"');
+    expect(html.match(/href="\/dashboard"/g)).toHaveLength(1);
+    expect(html).toContain(t.backToShops);
   });
 
   it('renders no navigation outside a shop', () => {

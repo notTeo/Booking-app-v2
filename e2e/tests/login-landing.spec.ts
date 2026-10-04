@@ -1,7 +1,7 @@
-import { createHash } from 'crypto';
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { query } from '../support/db';
+import { addPendingInvite as seedInvite } from '../support/invites';
 
 /**
  * Where login lands (PublicRoute + utils/landing.ts): a safe ?redirect= first,
@@ -39,18 +39,8 @@ async function addSecondShop() {
 }
 
 /** A pending invite for the owner's email into a shop they are not in yet. */
-async function addPendingInvite() {
-  await addShop('land-inv', 'land-invited');
-  await query(
-    `insert into "UserShop"(id,"shopId",role,name,email)
-     values ('land-us-inv','land-inv','staff','E2E Owner','owner@e2e.test')`,
-  );
-  await query(
-    `insert into "ShopInvite"(id,"shopId","userShopId",email,role,"tokenHash","expiresAt","createdById","updatedAt")
-     values ('land-invite','land-inv','land-us-inv','owner@e2e.test','staff',$1,now() + interval '7 days','u1',now())`,
-    [createHash('sha256').update(INVITE_TOKEN).digest('hex')],
-  );
-}
+const addPendingInvite = () =>
+  seedInvite({ shopId: 'land-inv', slug: 'land-invited', name: 'Landing land-inv', token: INVITE_TOKEN });
 
 test.afterEach(async () => {
   await query(`delete from "Shop" where id like 'land-%'`);

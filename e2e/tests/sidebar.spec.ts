@@ -31,7 +31,8 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
     await expect(item(page, name), name).toHaveCount(0);
   }
-  // "My Shops" is a way out, not the current page.
+  // "My Shops" is a way out (to the dashboard), not the current page.
+  await expect(item(page, 'My Shops')).toHaveAttribute('href', '/dashboard');
   await expect(item(page, 'My Shops')).not.toHaveAttribute('aria-current', 'page');
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
 

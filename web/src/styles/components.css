@@ -721,7 +721,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .legend__item--canceled { --legend-fg: var(--text-muted); }
 .legend__item--no-show { --legend-fg: var(--danger); }
 
-/* ---------- Shop card (dashboard "Your shops") ---------- */
+/* ---------- Shop card (dashboard "Your shops" and invite inbox) ---------- */
 .shop-cards { display: flex; flex-direction: column; gap: var(--space-3); }
 .shop-cards__grid { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 640px) { .shop-cards__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -734,3 +734,5 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .shop-card__metric { display: flex; flex-direction: column; }
 .shop-card__value { font: var(--fw-black) var(--fs-xl) / var(--lh-xl) var(--font-display); font-variant-numeric: tabular-nums; }
 .shop-card__label { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+/* Invite card: Accept / Decline, kept at the bottom when cards in a row differ in height. */
+.shop-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: auto; }

@@ -65,7 +65,7 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
 
   return (
     <>
-      <NavLink to="/shops" end className="nav-item" onClick={onNavigate}>
+      <NavLink to="/dashboard" end className="nav-item" onClick={onNavigate}>
         <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
         <span className="nav-item__label">{t.sidebar.backToShops}</span>
       </NavLink>

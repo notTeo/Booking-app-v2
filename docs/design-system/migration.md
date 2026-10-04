@@ -12,6 +12,7 @@ Done (branch `feat/design-system`):
 - **Phase 4, owner bookings page** (`bookings.css`): booking blocks use the badge status tokens plus an icon; new `.chip` toggle and `--shadow-sheet` token; page-level button, alert, card and type duplicates removed.
 - **App shell** (sidebar Option A): `AppLayout`/`Sidebar` rebuilt on `.app-shell`, `.sidebar`, `.nav-item`, `.scrim` with account and shop levels, a `topbar` and drawer at 640px; `sidebar.css` removed. Shop Invites merged into Team (Add member modal). Routes: `/settings` is now `/account`; `/shops/:slug/invites` is gone. The landing-page preview keeps the old shell class names, scoped in `home.css`.
 - **No account-level sidebar**: `AppLayout` split into `AppTopBarLayout` (dashboard, account: app `navbar` with logo, Account and Logout icon buttons) and `ShopSidebarLayout` (shop pages). The sidebar is shop-only. New `tooltip` component for the icon buttons; `app-shell--topbar` modifier; `.topbar__title.wordmark` removed (the shop top bar always shows the shop name).
+- **Dashboard is the only page outside a shop**: invite inbox (pending only), "Your shops" with the user's role, Create shop for Pro users, an empty state, and the cross-shop analytics only for owners of 2+ shops (each shop's numbers on its card). `/shops` and `/invites` (and the Sent invites view) removed; every link to them now goes to `/dashboard`. `shop-card__actions` added; role and pending badges carry an icon. `Wordmark` outputs `wordmark__be` (the legacy `.wordmark-be` is gone).
 
 Left:
 
