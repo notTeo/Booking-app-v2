@@ -169,31 +169,15 @@
   min-width: 180px;
 }
 
-/* ---- Create / Edit form ---- */
-.service-form.card {
-  margin-bottom: var(--space-3);
-}
-
+/* ---- Create / Edit form (ServiceFormModal) ---- */
 .service-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0 1rem;
-}
-
-.service-form-active {
-  align-self: end;
-  padding-bottom: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-4);
 }
 
 .service-form-active-label {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
-
-.service-form-actions {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-}
-
