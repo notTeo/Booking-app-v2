@@ -3,7 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 
-/** Sidebar levels, owner vs staff items, and the mobile drawer. */
+/** The shop sidebar (the only sidebar): owner vs staff items, the rail and the mobile drawer. */
 const SHOP = `/shops/${E2E.shop.slug}`;
 
 async function login(page: Page) {
@@ -13,35 +13,32 @@ async function login(page: Page) {
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
   await waitForLanding(page);
-  // The owner's landing depends on how many shops the test left active.
-  await page.goto('/dashboard');
+  await page.goto(SHOP);
+  // Let the page finish its session refresh before anything navigates again:
+  // a reload that aborts the refresh in flight loses the rotated cookie.
+  await page.locator('.app-shell').waitFor();
 }
 
 const sidebar = (page: Page) => page.locator('aside.sidebar');
 const item = (page: Page, name: string) => sidebar(page).getByRole('link', { name, exact: true });
 
-test('level 1 -> shop (level 2) -> account returns to level 1', async ({ page }) => {
+test('shop sidebar: shop items, no account-level items; Account leaves for the top-bar layout', async ({ page }) => {
   await login(page);
-  await expect(item(page, 'Dashboard')).toBeVisible();
-  await expect(item(page, 'Shops')).toBeVisible();
-  await expect(item(page, 'My invites')).toBeVisible();
-  await expect(item(page, 'Account')).toBeVisible();
-  await expect(sidebar(page).getByRole('button', { name: 'Logout' })).toBeVisible();
-  await expect(sidebar(page).getByText('App', { exact: true })).toHaveCount(0);
-
-  await page.goto(SHOP);
   for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings', 'Account']) {
     await expect(item(page, name), name).toBeVisible();
   }
-  await expect(item(page, 'New Booking')).toHaveCount(0);
+  await expect(sidebar(page).getByRole('button', { name: 'Logout' })).toBeVisible();
+  for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
+    await expect(item(page, name), name).toHaveCount(0);
+  }
   // "My Shops" is a way out, not the current page.
   await expect(item(page, 'My Shops')).not.toHaveAttribute('aria-current', 'page');
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
 
   await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(item(page, 'Dashboard')).toBeVisible();
-  await expect(item(page, 'Team')).toHaveCount(0);
+  await expect(sidebar(page)).toHaveCount(0);
+  await expect(page.locator('header.navbar')).toBeVisible();
 });
 
 test('owner can still start a booking from the Bookings page', async ({ page }) => {
@@ -143,8 +140,9 @@ test.describe('mobile', () => {
   test('top bar stays slim on a short page, even on a tall screen', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 1000 });
     await login(page);
-    await page.goto('/shops');
-    await expect(page.getByRole('heading', { name: /shops/i }).first()).toBeVisible();
+    // An unknown shop is the shortest shop page: just the not-found state.
+    await page.goto('/shops/no-such-shop');
+    await expect(page.getByText('Shop not available')).toBeVisible();
     expect((await page.locator('.topbar').boundingBox())!.height).toBeLessThan(52);
   });
 
@@ -162,12 +160,5 @@ test.describe('mobile', () => {
     await sidebar(page).getByRole('button', { name: 'Logout' }).scrollIntoViewIfNeeded();
     const logout = (await sidebar(page).getByRole('button', { name: 'Logout' }).boundingBox())!;
     expect(logout.y + logout.height).toBeLessThanOrEqual(480);
-  });
-
-  test('account-level pages show the logo in the top bar', async ({ page }) => {
-    await login(page);
-    await expect(page.locator('.topbar .wordmark')).toBeVisible();
-    await page.getByRole('button', { name: 'Open menu' }).click();
-    await expect(item(page, 'Dashboard')).toBeVisible();
   });
 });

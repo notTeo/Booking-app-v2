@@ -138,6 +138,9 @@ async function login(page: Page) {
   await waitForLanding(page);
   // The owner's landing depends on how many shops the test left active.
   await page.goto('/dashboard');
+  // Let the page finish its session refresh before anything navigates again:
+  // a reload that aborts the refresh in flight loses the rotated cookie.
+  await page.locator('.app-shell').waitFor();
 }
 
 async function openDashboard(page: Page) {

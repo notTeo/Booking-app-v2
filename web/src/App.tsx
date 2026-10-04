@@ -10,7 +10,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import AppLayout from './components/AppLayout';
+import AppTopBarLayout from './components/AppTopBarLayout';
+import ShopSidebarLayout from './components/ShopSidebarLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
@@ -86,13 +87,15 @@ export default function App() {
                 <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 
                 <Route element={<ProtectedRoute />}>
-                  <Route element={<AppLayout />}>
+                  <Route element={<AppTopBarLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/shops" element={<ShopsPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
                     <Route path="/account" element={<AccountPage />} />
                     <Route path="/invites" element={<InvitesPage />} />
+                  </Route>
 
+                  <Route element={<ShopSidebarLayout />}>
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route element={<ShopGate />}>
                         <Route index element={<ShopOverviewPage />} />

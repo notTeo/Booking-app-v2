@@ -95,7 +95,7 @@ FontAwesome stays as the icon set in the app. Icons inherit text color, sit at `
 | No data yet, or nothing matches | `empty` | A blank area |
 | Content is loading | `skeleton` for areas, `spinner` for actions | A full-page spinner |
 | Many records with several fields | `data-table` (cards on phones) | A table of two columns |
-| Top-level navigation | `navbar` (public pages, marketing), `sidebar` (dashboard) | Both nav patterns on one page |
+| Top-level navigation | `navbar` (public pages, marketing, and app pages outside a shop: dashboard, account), `sidebar` (shop pages) | Both nav patterns on one page |
 | Customer booking flow | `steps` > service > staff > `datepicker` > `slots` > details | Skipping the steps indicator |
 
 ### Spacing rules

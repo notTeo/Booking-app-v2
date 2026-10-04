@@ -3,14 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTableCells,
-  faStore,
   faGear,
   faRightFromBracket,
   faCalendar,
   faScissors,
   faUsers,
   faMagnifyingGlass,
-  faEnvelopeOpen,
   faChevronLeft,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
@@ -18,7 +16,6 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { useMyInvites } from '../hooks/useMyInvites';
 import { useShopSlug } from '../hooks/useShopSlug';
 import type { useSidebarWidth } from '../hooks/useSidebarWidth';
 import Wordmark from './Wordmark';
@@ -28,17 +25,15 @@ interface ItemProps {
   icon: IconDefinition;
   label: string;
   end?: boolean;
-  badge?: number;
   onNavigate: () => void;
 }
 
 // NavLink sets aria-current="page" itself, which is what .nav-item styles.
-function Item({ to, icon, label, end, badge, onNavigate }: ItemProps) {
+function Item({ to, icon, label, end, onNavigate }: ItemProps) {
   return (
     <NavLink to={to} end={end} className="nav-item" onClick={onNavigate}>
       <FontAwesomeIcon icon={icon} aria-hidden="true" />
       <span className="nav-item__label">{label}</span>
-      {badge ? <span className="badge badge--info">{badge}</span> : null}
     </NavLink>
   );
 }
@@ -60,29 +55,8 @@ function LogoutItem({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-// Level 1: account level.
-function AccountLevel({ onNavigate }: { onNavigate: () => void }) {
-  const { t } = useLang();
-  const { data } = useMyInvites();
-  const received = data?.received.length ?? 0;
-
-  return (
-    <>
-      <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
-        <Item to="/dashboard" end icon={faTableCells} label={t.sidebar.dashboard} onNavigate={onNavigate} />
-        <Item to="/shops" icon={faStore} label={t.sidebar.shops} onNavigate={onNavigate} />
-        <Item to="/invites" icon={faEnvelopeOpen} label={t.sidebar.myInvites} badge={received} onNavigate={onNavigate} />
-      </nav>
-      <div className="sidebar__footer sidebar__nav">
-        <Item to="/account" icon={faUser} label={t.sidebar.account} onNavigate={onNavigate} />
-        <LogoutItem onNavigate={onNavigate} />
-      </div>
-    </>
-  );
-}
-
-// Level 2: shop level. Owners see Team, Customers and Shop settings on top of
-// what staff see.
+// The shop sidebar (the only sidebar; pages outside a shop have a top bar).
+// Owners see Team, Customers and Shop settings on top of what staff see.
 function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void }) {
   const { shop, isLoading } = useShop();
   const { t } = useLang();
@@ -164,9 +138,7 @@ export default function Sidebar({ compact, isOpen, onClose, resize }: SidebarPro
       <div className="sidebar__brand">
         <span className="wordmark"><Wordmark /></span>
       </div>
-      {slug
-        ? <ShopLevel slug={slug} onNavigate={onClose} />
-        : <AccountLevel onNavigate={onClose} />}
+      {slug && <ShopLevel slug={slug} onNavigate={onClose} />}
       {resize && (
         <div
           className={`sidebar__resize${resize.dragging ? ' is-dragging' : ''}`}

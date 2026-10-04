@@ -474,6 +474,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .navbar__link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .navbar__spacer { flex: 1; }
 .navbar__actions { display: flex; align-items: center; gap: var(--space-2); }
+/* App variant: an icon action that is the current page (Account). */
+.navbar__actions [aria-current="page"] { --btn-fg: var(--accent); --btn-bg: var(--accent-soft); }
 .navbar__menu-btn, .navbar__panel { display: none; }
 .navbar.is-compact { height: 3.5rem; padding: 0 var(--space-4); gap: var(--space-3); }
 .navbar.is-compact .navbar__links, .navbar.is-compact .navbar__actions--wide { display: none; }
@@ -488,6 +490,9 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 /* ---------- 17. Sidebar + app shell ---------- */
 .app-shell { --drawer-width: min(16rem, 75vw); display: grid; grid-template-columns: var(--sidebar-width, 16rem) minmax(0, 1fr); min-height: 100dvh; background: var(--bg); }
 .app-shell.is-compact { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+/* Outside a shop: no sidebar, an app navbar on top and the content centred under it. */
+.app-shell--topbar, .app-shell--topbar.is-compact { display: block; }
+.app-shell--topbar > .app-shell__main { max-width: 72rem; margin: 0 auto; }
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: var(--space-6) var(--space-4); }
 @media (min-width: 640px) { .page { padding: var(--space-8) var(--space-6); } }
 .sidebar {
@@ -550,7 +555,6 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
   width: var(--drawer-width); padding: var(--space-1) var(--space-4); background: var(--surface);
   border: 1px solid var(--border); border-width: 0 1px 1px 0; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
-.topbar__title.wordmark { font-family: var(--font-logo); font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: var(--fw-regular); }
 .topbar__title {
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--text); font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body);
@@ -646,6 +650,25 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   .steps { display: none; }
   .steps-compact { display: block; }
 }
+
+/* ---------- 22. Tooltip ---------- */
+/* Visual label for icon-only controls, shown on hover and keyboard focus. The
+   control keeps its own aria-label; the bubble is aria-hidden. Opens below the
+   trigger; --end aligns it to the trigger's right edge (controls at the right
+   of a bar, so it never overflows a 360px screen). Esc adds .is-dismissed. */
+.tooltip { position: relative; display: inline-flex; }
+.tooltip__bubble {
+  position: absolute; top: calc(100% + var(--space-2)); left: 50%; z-index: 1; padding: var(--space-1) var(--space-2);
+  color: var(--surface); background: var(--text); border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+  font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); white-space: nowrap; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: translateX(-50%);
+  transition: opacity var(--motion-fast) var(--ease-standard), visibility 0s linear var(--motion-fast);
+}
+.tooltip--end .tooltip__bubble { left: auto; right: 0; transform: none; }
+.tooltip:hover .tooltip__bubble, .tooltip:has(:focus-visible) .tooltip__bubble, .tooltip.is-open .tooltip__bubble {
+  opacity: 1; visibility: visible; transition-delay: 0s;
+}
+.tooltip.is-dismissed .tooltip__bubble { opacity: 0; visibility: hidden; }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }

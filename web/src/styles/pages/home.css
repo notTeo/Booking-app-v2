@@ -588,7 +588,7 @@
   border-radius: 0 0 var(--radius-md) var(--radius-md); border-top: 1px solid var(--border); margin-top: auto;
 }
 
-/* Mobile-only — the real app's own mobile header (old AppLayout.tsx shell),
+/* Mobile-only — the real app's own mobile header (old account-level AppLayout shell),
    reused exactly for visual accuracy, just repositioned for the card context
    (not position:sticky, and shown at the card's own breakpoint below). */
 .home-preview-card .app-mobile-header {
@@ -613,7 +613,7 @@
   height: clamp(20px, 2.9cqw, 32px);
   /* Draws the eye to the mockup's own hamburger — scoped to the preview
      card only, so the real app's sidebar toggle (same .hamburger-btn
-     class, in AppLayout.tsx) is unaffected. */
+     class, in ShopSidebarLayout.tsx) is unaffected. */
   animation: home-preview-hamburger-pulse 1.8s ease-in-out infinite;
 }
 
@@ -2210,7 +2210,7 @@
    own mobile header) at 767px. */
 @media (max-width: 767px) {
   /* Sidebar becomes a toggleable drawer instead of disappearing, matching
-     the real app's mobile pattern (components/Sidebar.tsx + AppLayout.tsx).
+     the real app's mobile pattern (components/Sidebar.tsx + ShopSidebarLayout.tsx).
      The header is taken out of flow (position:absolute) so the drawer,
      sitting above it in z-index, can slide out and overlap it completely —
      same relationship as the real app's sidebar (z-index 200) covering its
