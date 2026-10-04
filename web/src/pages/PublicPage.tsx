@@ -15,6 +15,7 @@ import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
+import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
@@ -48,10 +49,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
   );
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
+  const [saved] = useState(readSavedCustomer);
+  const [name, setName] = useState(saved?.name ?? '');
+  const [phone, setPhone] = useState(saved?.phone ?? '');
+  const [email, setEmail] = useState(saved?.email ?? '');
   const [notes, setNotes] = useState('');
+  const [remember, setRemember] = useState(saved !== null);
 
   // ── Submission state ──
   const [submitting, setSubmitting] = useState(false);
@@ -96,6 +100,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
       });
+      if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
+      else clearSavedCustomer();
       setConfirmed(true);
       setSubmitting(false);
     } catch (err: unknown) {
@@ -122,6 +128,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
       setSubmitError(msg);
       setSubmitting(false);
     }
+  }
+
+  // Unticking is the customer's "forget me": the stored copy goes at once, the typed values stay.
+  function handleRememberChange(checked: boolean) {
+    setRemember(checked);
+    if (!checked) clearSavedCustomer();
   }
 
   function handleBackFromForm() {
@@ -277,6 +289,22 @@ function PublicBookingPage({ slug }: { slug: string }) {
                       onChange={(e) => setNotes(e.target.value)}
                       rows={3}
                     />
+                  </div>
+
+                  <div className="field">
+                    <label className="checkbox">
+                      <input
+                        id="b-remember"
+                        className="checkbox__input"
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(e) => handleRememberChange(e.target.checked)}
+                        aria-describedby="b-remember-hint"
+                      />
+                      <span className="checkbox__box" />
+                      {t.public.rememberLabel}
+                    </label>
+                    <p id="b-remember-hint" className="field__hint">{t.public.rememberHint}</p>
                   </div>
 
                   <p className="field__hint">
