@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmailChange } from '../api/auth.api';
-import '../styles/pages/verify-email.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 
@@ -37,11 +36,11 @@ export default function VerifyEmailChangePage() {
   }, [searchParams]);
 
   return (
-    <div className="page">
+    <div className="page page--center">
       <div className="card card--auth">
         <h1 className="t-heading">Email Change Verification</h1>
 
-        {status === 'loading' && <p className="verify-email-status">Verifying...</p>}
+        {status === 'loading' && <p className="card__text">Verifying...</p>}
 
         {status === 'success' && (
           <>

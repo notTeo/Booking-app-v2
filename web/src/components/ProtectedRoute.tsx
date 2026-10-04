@@ -6,7 +6,7 @@ export default function ProtectedRoute() {
 
   if (isLoading) return (
     <div className="spinner-page">
-      <div className="spinner" />
+      <div className="spinner spinner--lg" />
     </div>
   );
   if (!isAuthenticated) return <Navigate to="/login" replace />;

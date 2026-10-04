@@ -119,8 +119,8 @@ export default function DateTimeStep({
     >
       {slot.outsideHours && <><FontAwesomeIcon icon={faClock} aria-hidden="true" /> </>}
       {slot.time}
-      {internal && !slot.available && <span className="slot-tag"> {os.booked}</span>}
-      {internal && slot.available && slot.past && <span className="slot-tag"> {os.past}</span>}
+      {internal && !slot.available && <span className="slot__tag"> {os.booked}</span>}
+      {internal && slot.available && slot.past && <span className="slot__tag"> {os.past}</span>}
     </button>
   );
 
@@ -149,7 +149,7 @@ export default function DateTimeStep({
   return (
     <div className="public-wizard-panel">
       {selectedService && (
-        <p className="public-wizard-context">
+        <p className="t-body-sm t-muted">
           {t.public.serviceContext} <strong>{selectedService.name}</strong>
           {selectedMember && (
             <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
@@ -157,7 +157,7 @@ export default function DateTimeStep({
         </p>
       )}
 
-      <div className="public-datetime-row">
+      <div className="public-stack">
         <label className="field__label" htmlFor="booking-date">{t.public.date}</label>
         <input
           id="booking-date"
@@ -171,7 +171,7 @@ export default function DateTimeStep({
       </div>
 
       {internal && date !== '' && intervalOptions && interval !== undefined && onIntervalChange && (
-        <div className="interval-picker" role="group" aria-label={t.bookings.intervalPicker.label}>
+        <div className="public-stack" role="group" aria-label={t.bookings.intervalPicker.label}>
           <span className="field__label">{t.bookings.intervalPicker.label}</span>
           <div className="slots">
           {intervalOptions.map((m) => (
@@ -190,7 +190,7 @@ export default function DateTimeStep({
       )}
 
       {internal && date !== '' && (hasOutsideSlots || isClosed) && (
-        <div className="ooh-toggle">
+        <div className="cluster cluster--tight t-body-sm">
           <Switch
             id="ooh-toggle"
             checked={showOutside}
@@ -277,7 +277,7 @@ export default function DateTimeStep({
         })}
 
       {internal && showOutside && date !== '' && !failed && (
-        <div className="ooh-other-time">
+        <div className="public-stack">
           <label className="field__label" htmlFor="booking-other-time">{os.otherTime}</label>
           <input
             id="booking-other-time"
@@ -294,10 +294,10 @@ export default function DateTimeStep({
         </div>
       )}
 
-      <div className="public-wizard-actions">
-        <button className="btn btn--ghost wizard-btn" onClick={onBack}>{t.public.back}</button>
+      <div className="cluster public-wizard-actions">
+        <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
         {date !== '' && time !== '' && (
-          <button className="btn wizard-btn" onClick={onContinue}>{t.public.continue}</button>
+          <button className="btn" onClick={onContinue}>{t.public.continue}</button>
         )}
       </div>
     </div>

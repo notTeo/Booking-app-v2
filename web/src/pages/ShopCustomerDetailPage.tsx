@@ -116,8 +116,8 @@ export default function ShopCustomerDetailPage() {
   if (shopLoading || loading) {
     return (
       <div className="team-member-page">
-        <div className="shops-spinner-wrap">
-          <div className="spinner" />
+        <div className="spinner-wrap">
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -126,7 +126,7 @@ export default function ShopCustomerDetailPage() {
   if (error || !customer) {
     return (
       <div className="team-member-page">
-        <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
+        <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
           {t.customers.backToCustomers}
         </button>
         <Alert variant="danger">{error || t.customers.notFound}</Alert>
@@ -136,21 +136,21 @@ export default function ShopCustomerDetailPage() {
 
   return (
     <div className="team-member-page">
-      <button className="card-back" onClick={() => navigate(`/shops/${slug}/customers`)}>
+      <button className="back-link" onClick={() => navigate(`/shops/${slug}/customers`)}>
         {t.customers.backToCustomers}
       </button>
 
       {/* Customer info */}
       <div className="card team-member-card">
         <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
-        <div className="team-member-meta">
-          <span className="team-date">
+        <div className="cluster">
+          <span className="t-body-sm t-muted">
             {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
           </span>
         </div>
-        <div className="team-member-meta">
-          <span className="team-date">{t.customers.totalVisitsLabel}: {customer.totalVisits}</span>
-          <span className="team-date">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+        <div className="cluster">
+          <span className="t-body-sm t-muted">{t.customers.totalVisitsLabel}: {customer.totalVisits}</span>
+          <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
         </div>
       </div>
 
@@ -158,7 +158,7 @@ export default function ShopCustomerDetailPage() {
       {customer.contactHidden ? (
         <div className="card">
           <h2 className="card__title">{t.customers.editInfo}</h2>
-          <p className="team-empty">{t.customers.contactHiddenNotice}</p>
+          <p className="card__text">{t.customers.contactHiddenNotice}</p>
         </div>
       ) : (
         <div className="card">
@@ -212,9 +212,9 @@ export default function ShopCustomerDetailPage() {
       {shop?.role === 'owner' && (
         <div className="card">
           <h2 className="card__title">{t.customers.privacyHeading}</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t.customers.privacyBody}</p>
+          <p className="card__text">{t.customers.privacyBody}</p>
           {privacyError && <Alert variant="danger">{privacyError}</Alert>}
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="cluster">
             <button
               className={`btn btn--secondary${privacyBusy === 'export' ? ' is-loading' : ''}`}
               onClick={handleExport}

@@ -127,10 +127,10 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
             </div>
 
             {role === 'staff' && (
-              <div className="team-switch-row">
-                <div className="team-switch-label">
-                  <span>{t.invites.canViewCustomerDetails}</span>
-                  <span className="team-switch-desc">{t.invites.canViewCustomerDetailsDesc}</span>
+              <div className="setting-row">
+                <div className="setting-row__label">
+                  <span className="setting-row__title">{t.invites.canViewCustomerDetails}</span>
+                  <span className="setting-row__text">{t.invites.canViewCustomerDetailsDesc}</span>
                 </div>
                 <Switch
                   checked={canViewCustomerDetails}
@@ -141,10 +141,10 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
               </div>
             )}
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.invites.sendEmailNow}</span>
-                <span className="team-switch-desc">{t.invites.sendEmailNowDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.invites.sendEmailNow}</span>
+                <span className="setting-row__text">{t.invites.sendEmailNowDesc}</span>
               </div>
               <Switch checked={sendEmail} onChange={setSendEmail} label={t.invites.sendEmailNow} disabled={sending} />
             </div>

@@ -58,8 +58,8 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
 
   const block = page.locator('.cal-block', { hasText: 'Smoke Test' });
   await expect(block).toBeVisible();
-  await expect(block.locator('.cal-block-time')).toContainText(/10:00/);
-  await expect(block.locator('.cal-block-service')).toContainText('Haircut');
+  await expect(block.locator('.cal-block__time')).toContainText(/10:00/);
+  await expect(block.locator('.cal-block__service')).toContainText('Haircut');
 
   // stored as exactly 10:00 Athens
   expect(await latestBookingStart()).toBe(athensWallClockToUtc(date, '10:00').toISOString());

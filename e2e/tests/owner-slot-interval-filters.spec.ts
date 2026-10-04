@@ -58,7 +58,7 @@ test('a 15-minute interval offers :15 starts, and the calendar filters hide bloc
   // filter by a status it does not have: hidden, and the count says so
   await filters.getByRole('button', { name: 'Canceled', exact: true }).click();
   await expect(block).toHaveCount(0);
-  await expect(page.locator('.cal-filters-count')).toContainText('0 of');
+  await expect(page.getByText(/\d+ of \d+/)).toContainText('0 of');
 
   // clear: back
   await filters.getByRole('button', { name: /clear filters/i }).click();

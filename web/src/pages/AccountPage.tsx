@@ -169,33 +169,33 @@ export default function AccountPage() {
 
   return (
     <div className="settings-page">
-      <h1>{t.settings.title}</h1>
+      <h1 className="t-title">{t.settings.title}</h1>
 
       {/* Account Overview */}
-      <div className="card settings-section settings-overview">
-        <div className="settings-avatar">
-          {getInitials(user?.email ?? '?')}
-        </div>
-        <div className="settings-overview-info">
-          <p className="settings-overview-email">{user?.email}</p>
-          <div className="settings-overview-badges">
+      <div className="card">
+        <div className="account-overview">
+          <div className="avatar avatar--lg">
+            {getInitials(user?.email ?? '?')}
+          </div>
+          <div className="account-overview__info">
+            <p className="t-body account-overview__email"><strong>{user?.email}</strong></p>
             {user?.isVerified ? (
               <span className="badge badge--success">{t.settings.verified}</span>
             ) : (
               <span className="badge badge--warning">{t.settings.notVerified}</span>
             )}
+            {user?.createdAt && (
+              <p className="t-body-sm t-muted">{t.settings.memberSince} {formatMemberSince(user.createdAt, language)}</p>
+            )}
           </div>
-          {user?.createdAt && (
-            <p className="settings-overview-since">{t.settings.memberSince} {formatMemberSince(user.createdAt, language)}</p>
-          )}
         </div>
       </div>
       {/* Profile — name, email, password, one save */}
-      <div className="card settings-section">
-        <p className="card__title settings-section-title">
-          <FontAwesomeIcon icon={faUser} className="settings-section-icon" />
+      <div className="card">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faUser} className="card__icon" />
           {t.settings.profileSection}
-        </p>
+        </h2>
         <form onSubmit={handleSaveProfile}>
           <div className="field">
             <label className="field__label" htmlFor="settings-name">{t.settings.nameLabel}</label>
@@ -248,18 +248,18 @@ export default function AccountPage() {
       </div>
 
       {/* Preferences */}
-      <div className="card settings-section">
-        <p className="card__title settings-section-title">
-          <FontAwesomeIcon icon={faSlidersH} className="settings-section-icon" />
+      <div className="card">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faSlidersH} className="card__icon" />
           {t.settings.preferencesSection}
-        </p>
-        <div className="settings-pref-row">
-          <div className="settings-pref-label">
-            <span>{t.settings.themeLabel}</span>
-            <span className="settings-pref-desc">{t.settings.themeDesc}</span>
+        </h2>
+        <div className="setting-row">
+          <div className="setting-row__label">
+            <span className="setting-row__title">{t.settings.themeLabel}</span>
+            <span className="setting-row__text">{t.settings.themeDesc}</span>
           </div>
           <button
-            className="btn btn--secondary btn--sm settings-pref-btn"
+            className="btn btn--secondary btn--sm"
             onClick={toggleTheme}
             type="button"
             aria-label={theme === 'dark' ? t.toggles.switchToLight : t.toggles.switchToDark}
@@ -268,13 +268,13 @@ export default function AccountPage() {
             {' '}{theme === 'dark' ? t.settings.lightTheme : t.settings.darkTheme}
           </button>
         </div>
-        <div className="settings-pref-row">
-          <div className="settings-pref-label">
-            <span>{t.settings.languageLabel}</span>
-            <span className="settings-pref-desc">{t.settings.languageDesc}</span>
+        <div className="setting-row">
+          <div className="setting-row__label">
+            <span className="setting-row__title">{t.settings.languageLabel}</span>
+            <span className="setting-row__text">{t.settings.languageDesc}</span>
           </div>
           <button
-            className="btn btn--secondary btn--sm settings-pref-btn"
+            className="btn btn--secondary btn--sm"
             onClick={toggleLanguage}
             type="button"
             aria-label={language === 'el' ? 'Switch to English' : 'Αλλαγή σε Ελληνικά'}
@@ -285,29 +285,31 @@ export default function AccountPage() {
       </div>
 
       {/* Active Sessions */}
-      <div className="card settings-section">
-        <p className="card__title settings-section-title">
-          <FontAwesomeIcon icon={faShieldHalved} className="settings-section-icon" />
+      <div className="card">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faShieldHalved} className="card__icon" />
           {t.settings.activeSessionsSection}
-        </p>
+        </h2>
         {sessionsLoading ? (
-          <p className="settings-sessions-hint">{t.settings.loadingSessions}</p>
+          <p className="card__text">{t.settings.loadingSessions}</p>
         ) : sessions.length === 0 ? (
-          <p className="settings-sessions-hint">{t.settings.noSessions}</p>
+          <p className="card__text">{t.settings.noSessions}</p>
         ) : (
           <>
-            <p className="settings-sessions-hint">
+            <p className="card__text">
               {sessions.length} {t.settings.sessions} — {t.settings.mostRecent} {formatSessionDate(sessions[0].createdAt, language)}
             </p>
-            <div className="settings-sessions-list">
+            <ul className="list">
               {sessions.slice(0, 5).map((s) => (
-                <div key={s.id} className="settings-session-row">
-                  <FontAwesomeIcon icon={faUser} className="settings-session-icon" />
-                  <span className="settings-session-date">{t.settings.sessionStarted} {formatSessionDate(s.createdAt, language)}</span>
-                  <span className="settings-session-expiry">{t.settings.sessionExpires} {formatSessionDate(s.expiresAt, language)}</span>
-                </div>
+                <li key={s.id} className="list__item">
+                  <span>
+                    <FontAwesomeIcon icon={faUser} className="card__icon" aria-hidden="true" />
+                    {t.settings.sessionStarted} {formatSessionDate(s.createdAt, language)}
+                  </span>
+                  <span className="t-muted">{t.settings.sessionExpires} {formatSessionDate(s.expiresAt, language)}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </>
         )}
         {revokeError && <Alert variant="danger">{revokeError}</Alert>}
@@ -324,14 +326,14 @@ export default function AccountPage() {
       </div>
 
       {/* Log out */}
-      <div className="card settings-section">
-        <div className="settings-pref-row">
-          <div className="settings-pref-label">
-            <span>{t.settings.logout}</span>
-            <span className="settings-pref-desc">{t.settings.logoutDesc}</span>
+      <div className="card">
+        <div className="setting-row">
+          <div className="setting-row__label">
+            <span className="setting-row__title">{t.settings.logout}</span>
+            <span className="setting-row__text">{t.settings.logoutDesc}</span>
           </div>
           <button
-            className="btn btn--secondary btn--sm settings-pref-btn"
+            className="btn btn--secondary btn--sm"
             type="button"
             onClick={async () => { await logout(); navigate('/login'); }}
           >
@@ -342,14 +344,12 @@ export default function AccountPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="card card--danger settings-section">
-        <p className="card__title settings-section-title">
-          <FontAwesomeIcon icon={faTriangleExclamation} className="settings-section-icon" />
+      <div className="card card--danger">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faTriangleExclamation} className="card__icon" />
           {t.settings.dangerZone}
-        </p>
-        <p className="settings-danger-desc">
-          {t.settings.dangerDesc}
-        </p>
+        </h2>
+        <p className="card__text">{t.settings.dangerDesc}</p>
 
         <button
           className="btn btn--danger-outline btn--sm"

@@ -59,6 +59,8 @@ a { color: var(--accent); }
 .t-body-sm { font: var(--fw-regular) var(--fs-sm) / var(--lh-sm) var(--font-body); }
 .t-caption { font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); }
 .label-caps { text-transform: uppercase; letter-spacing: 0.04em; }
+.t-muted { color: var(--text-muted); }
+.t-muted strong { color: var(--text); }
 @media (max-width: 639px) { .t-display { font-size: clamp(2.25rem, 9vw, 3rem); } }
 
 /* ---------- 1. Wordmark ---------- */
@@ -69,6 +71,9 @@ a { color: var(--accent); }
 .wordmark__be { color: var(--brand-accent); }
 .wordmark--sm { font-size: var(--fs-lg); }
 .wordmark--lg { font-size: var(--fs-3xl); }
+/* The logo inside running text or a heading: logo face, the size and colour of the text around it. */
+.wordmark--inline { display: inline; font-size: inherit; font-weight: var(--fw-regular); line-height: inherit; color: inherit; letter-spacing: inherit; }
+.wordmark--muted .wordmark__be { color: inherit; }
 
 /* ---------- 2. Button ---------- */
 .btn {
@@ -84,11 +89,15 @@ a { color: var(--accent); }
               box-shadow var(--motion-fast) var(--ease-standard),
               transform var(--motion-fast) var(--ease-standard);
 }
-.btn:hover, .btn.is-hover { --btn-bg: var(--accent-hover); box-shadow: var(--shadow-accent); }
+.btn:hover, .btn.is-hover { --btn-bg: var(--accent-hover); box-shadow: var(--shadow-accent); text-decoration: none; }
 .btn:active, .btn.is-active { --btn-bg: var(--accent-active); box-shadow: none; transform: translateY(1px); }
 .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 .btn--secondary { --btn-bg: var(--surface); --btn-fg: var(--accent); --btn-bd: var(--border-strong); }
+/* On a sunken fill at rest, to sit beside an input (date stepper arrows). */
+.btn--sunken { --btn-bg: var(--surface-sunken); }
+/* A secondary button whose panel is open, or that is toggled on. */
+.btn--secondary[aria-expanded="true"], .btn--secondary[aria-pressed="true"] { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); }
 .btn--secondary:hover, .btn--secondary.is-hover { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); box-shadow: none; }
 .btn--secondary:active, .btn--secondary.is-active { --btn-bg: var(--accent-soft); --btn-bd: var(--accent); }
 
@@ -106,7 +115,7 @@ a { color: var(--accent); }
 
 .btn--sm { min-height: var(--control-sm); padding: 0 var(--space-4); font-size: var(--fs-sm); }
 .btn--lg { min-height: var(--control-lg); padding: 0 var(--space-8); font-size: var(--fs-lg); }
-.btn--icon { width: var(--control-md); padding: 0; font-size: var(--fs-lg); border-radius: var(--radius-full); }
+.btn--icon { flex: none; width: var(--control-md); padding: 0; font-size: var(--fs-lg); border-radius: var(--radius-full); }
 .btn--icon.btn--sm { width: var(--control-sm); font-size: var(--fs-base); }
 .btn--icon.btn--lg { width: var(--control-lg); font-size: var(--fs-xl); }
 .btn--block { display: flex; width: 100%; }
@@ -128,6 +137,9 @@ a { color: var(--accent); }
 /* ---------- 3. Form fields ---------- */
 .field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; margin-bottom: var(--space-4); }
 .field__label { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); color: var(--text); }
+.field__required { margin-left: var(--space-1); color: var(--accent); }
+/* A field with a suggestion list hanging under its input. */
+.field--anchor { position: relative; }
 .field__optional { font-weight: 400; color: var(--text-muted); }
 .field__hint { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
 .field__error {
@@ -167,6 +179,9 @@ a { color: var(--accent); }
 .input--sm, .select--sm { min-height: var(--control-sm); padding-left: var(--space-3); font-size: var(--fs-sm); line-height: var(--lh-sm); }
 .select--sm { padding-right: var(--space-10); }
 .select-wrap--sm::after { right: var(--space-4); }
+/* Two short fields side by side; field-row--wrap stacks them on phones. */
+.field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-4); }
+@media (max-width: 639px) { .field-row--wrap { grid-template-columns: minmax(0, 1fr); } }
 .input-wrap { position: relative; }
 .input-wrap .spinner { position: absolute; right: var(--space-4); top: 50%; margin-top: -0.5rem; }
 .input-wrap.is-loading .input { padding-right: var(--space-12); }
@@ -232,6 +247,9 @@ a { color: var(--accent); }
 .card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .card__title { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .card__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+.card__icon { margin-right: var(--space-2); font-size: var(--fs-sm); color: var(--text-muted); }
+.card__text strong { font-weight: var(--fw-semibold); color: var(--text); }
+.card__section { display: flex; flex-direction: column; gap: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
 .card__footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); }
 .card--flat { background: var(--surface-sunken); border-color: transparent; }
 .card--glow { box-shadow: var(--shadow-glow); }
@@ -240,6 +258,14 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card--selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
 .card.is-disabled { background: var(--surface-sunken); color: var(--text-muted); cursor: not-allowed; }
 .card--flush { padding: 0; gap: 0; overflow: hidden; }
+.card--flush > .card__section { padding: var(--space-4) var(--space-5); }
+.card--flush > .card__section:first-child { border-top: 0; }
+/* A flush card that opens and closes: the clickable first row (role="button", aria-expanded) and its chevron. */
+.card__toggle { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-5); cursor: pointer; user-select: none; transition: background var(--motion-fast) var(--ease-standard); }
+.card__toggle:hover, .card__toggle.is-hover { background: var(--accent-soft); }
+.card__toggle:focus-visible, .card__toggle.is-focus { outline-offset: -2px; }
+.card__chevron { flex: none; font-size: var(--fs-xs); color: var(--text-muted); transition: transform var(--motion-base) var(--ease-standard); }
+.card__toggle[aria-expanded="true"] .card__chevron { transform: rotate(180deg); }
 .card--danger { border-color: var(--danger-border); }
 .card--dashed { flex-direction: row; align-items: center; justify-content: center; gap: var(--space-2); background: transparent; border-style: dashed; color: var(--accent); font-weight: var(--fw-semibold); }
 .card--dashed:hover:not(:disabled) { background: var(--accent-soft); box-shadow: none; }
@@ -248,6 +274,10 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .card > :is(h1, h2, h3, h4, p, .field) { margin: 0; }
 .card > .btn:not(.btn--block) { align-self: flex-start; }
 .card > .alert + * { margin-top: 0; }
+/* A short message with its actions (accept an invite, cancel a booking): centred text, centred spinner. */
+.card--center { text-align: center; }
+.card--center > :is(.spinner, .avatar, .btn:not(.btn--block)) { align-self: center; }
+.card--center > .alert { text-align: left; }
 .card--auth { width: 100%; max-width: 26.25rem; padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
 /* icon, value and label on one line, never wrapped: in a .stat-grid a card that doesn't fit moves to the next row whole */
 .stat { display: flex; flex-direction: row; align-items: center; gap: var(--space-3); white-space: nowrap; }
@@ -404,6 +434,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .empty__icon { display: grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: var(--space-2); border-radius: var(--radius-full); font-size: var(--fs-xl); color: var(--accent); background: var(--accent-soft); }
 .empty__title { font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
 .empty__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+/* The big status code of an error page ("404"), in place of the icon. */
+.empty__code { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); color: var(--accent); }
 .empty__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-4); }
 .empty--sm { padding: var(--space-6) var(--space-4); }
 .empty--sm .empty__icon { width: 3rem; height: 3rem; font-size: var(--fs-lg); }
@@ -422,6 +454,10 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 }
 .spinner--sm { width: 1rem; height: 1rem; border-width: 2px; }
 .spinner--lg { width: 2.5rem; height: 2.5rem; border-width: 4px; }
+/* A spinner centred in the space where a page or section is loading. */
+.spinner-wrap { display: flex; justify-content: center; padding: var(--space-12) 0; }
+/* A spinner alone on the screen while a route resolves. */
+.spinner-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .skeleton, .switch.is-loading .switch__track::after { animation: none; }
@@ -518,6 +554,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .app-shell--topbar > .app-shell__main { max-width: 72rem; margin: 0 auto; }
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: var(--space-6) var(--space-4); }
 @media (min-width: 640px) { .page { padding: var(--space-8) var(--space-6); } }
+/* One card in the middle of the screen (auth pages). */
+.page--center { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: none; min-height: 100vh; min-height: 100dvh; padding: var(--space-6); }
 .sidebar {
   display: flex; flex-direction: column; gap: var(--space-4); width: 16rem; height: 100%; padding: var(--space-4);
   color: var(--text); background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto;
@@ -637,6 +675,15 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .slot:disabled, .slot[aria-disabled="true"] { color: var(--text-muted); background: var(--surface-sunken); border-color: var(--border); text-decoration: line-through; cursor: not-allowed; }
 /* Off-hours or off-grid time (owner booking): dashed, and named in the aria-label. */
 .slot--dashed { border-style: dashed; }
+/* "booked" / "past" after the time, on a slot the owner can still see. */
+.slot__tag { font-size: var(--fs-xs); opacity: 0.8; text-decoration: none; }
+.slot-group__count { font-weight: var(--fw-regular); }
+/* An out-of-hours group that folds (<details> / <summary>, no JS). */
+.slot-group--collapsible > summary { display: flex; align-items: baseline; gap: var(--space-1); margin-bottom: var(--space-2); cursor: pointer; list-style: none; }
+.slot-group--collapsible > summary .slot-group__label { margin: 0; }
+.slot-group--collapsible > summary::-webkit-details-marker { display: none; }
+.slot-group--collapsible > summary::before { content: "▸"; display: inline-block; width: 0.8em; color: var(--text-muted); transition: transform var(--motion-fast) var(--ease-standard); }
+.slot-group--collapsible[open] > summary::before { transform: rotate(90deg); }
 
 /* ---------- 21. Steps indicator ---------- */
 .steps-wrap { container: steps / inline-size; }
@@ -684,6 +731,137 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   opacity: 1; visibility: visible; transition-delay: 0s;
 }
 .tooltip.is-dismissed .tooltip__bubble { opacity: 0; visibility: hidden; }
+
+/* ---------- 23. Back link ---------- */
+.back-link {
+  display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-5); padding: 0;
+  font: var(--fw-semibold) var(--fs-xs) / var(--lh-sm) var(--font-body); color: var(--text-muted); text-decoration: none;
+  background: none; border: 0; cursor: pointer; transition: color var(--motion-base) var(--ease-standard);
+}
+.back-link { align-self: flex-start; }
+.back-link:hover, .back-link.is-hover { color: var(--text); text-decoration: none; }
+.card > .back-link { margin-bottom: 0; align-self: flex-start; }
+
+/* ---------- 24. Form links + password requirements ---------- */
+/* Links under an auth form ("Forgot password?", "Create an account"). */
+.form-links { display: flex; flex-direction: column; gap: var(--space-2); text-align: center; font-size: var(--fs-sm); color: var(--text-muted); }
+.password-requirements { display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-1) 0 var(--space-2); padding: 0; list-style: none; }
+.password-requirements__item { display: flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); line-height: var(--lh-sm); color: var(--text-muted); }
+.password-requirements__item.is-met { color: var(--success); }
+
+/* ---------- 25. Copy link ---------- */
+/* A URL with Copy and Open buttons, kept on one line at any width: the URL shrinks with an ellipsis. */
+.copy-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.copy-link__value { flex: 1 1 0; min-width: 0; font-family: monospace; font-size: var(--fs-sm); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.copy-link__btn { flex-shrink: 0; }
+.copy-link--compact .copy-link__value { font-size: var(--fs-xs); }
+
+/* ---------- 26. Setting row ---------- */
+/* A setting's name and one-line explanation, with its switch or button on the right. */
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.setting-row__label { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.setting-row__title { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); color: var(--text); }
+.setting-row + .setting-row { margin-top: var(--space-4); }
+.card > .setting-row + .setting-row { margin-top: 0; }
+.setting-row__text { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+
+/* ---------- 28. List ---------- */
+/* Short rows inside a card: a name (or icon and text) on the left, a button or detail on the right. */
+.list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.list__item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); padding: var(--space-2) 0; font-size: var(--fs-sm); line-height: var(--lh-sm); }
+.list__item + .list__item { border-top: 1px solid var(--border); }
+
+/* ---------- 27. Page header + cluster (layout) ---------- */
+/* The page (or section) title on the left, its one action on the right. */
+.page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+/* A wrapping row of buttons, badges or short texts. */
+.cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.cluster--tight { gap: var(--space-2); }
+
+/* ---------- 30. Page hero ---------- */
+/* The band at the top of a booking page: the shop's name, a line about it, its contact badges. */
+.page-hero { padding: var(--space-8) var(--space-5) var(--space-6); background: var(--surface); border-bottom: 1px solid var(--border); }
+.page-hero__inner { display: flex; flex-direction: column; gap: var(--space-2); max-width: 45rem; margin: 0 auto; }
+@media (min-width: 640px) { .page-hero { padding: var(--space-12) var(--space-6) var(--space-10); } }
+
+/* ---------- 31. Suggestions (under an input) ---------- */
+.suggest {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-nav); max-height: calc(var(--control-md) * 4.5); margin: 0; padding: 0; overflow-y: auto;
+  list-style: none; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+}
+.suggest__item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: var(--control-md); padding: var(--space-2) var(--space-4);
+  color: var(--text); text-align: left; font: inherit; font-size: var(--fs-sm); background: none; border: 0; cursor: pointer;
+}
+.suggest__item:hover, .suggest__item:focus-visible, .suggest__item.is-hover { background: var(--surface-sunken); }
+.suggest__item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.suggest__meta { color: var(--text-muted); }
+
+/* ---------- 29. Calendar (day view, one column per provider) ---------- */
+/* .cal is the scroll box. The hour row height comes from the page as --cal-hour-h (it positions the blocks in JS). */
+.cal {
+  --cal-gutter-w: 3.5rem; --cal-col-min: 8.75rem; --cal-stripe: 6px; --cal-hour-h: 4rem;
+  overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.cal__grid { min-width: fit-content; }
+.cal__head { position: sticky; top: 0; z-index: 10; display: flex; background: var(--surface); border-bottom: 2px solid var(--border); }
+.cal__corner, .cal__gutter { flex: none; width: var(--cal-gutter-w); border-right: 1px solid var(--border); }
+.cal__col-head { flex: 1; min-width: var(--cal-col-min); padding: var(--space-3) var(--space-2); text-align: center; color: var(--text-muted); border-right: 1px solid var(--border); }
+.cal__col-head:last-child, .cal__col:last-child { border-right: 0; }
+.cal__body { display: flex; }
+.cal__hour {
+  display: flex; align-items: flex-start; justify-content: flex-end; height: var(--cal-hour-h); padding: var(--space-1) var(--space-2) 0 0;
+  font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.cal__col { position: relative; flex: 1; min-width: var(--cal-col-min); border-right: 1px solid var(--border); }
+/* Owners can click an empty part of a column to start a booking there. */
+.cal__col--creatable { cursor: pointer; }
+.cal__line { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--border); pointer-events: none; }
+/* Off hours: a hatch pattern plus a text label, never colour alone. */
+.cal__off {
+  position: absolute; left: 0; right: 0; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; pointer-events: none;
+  background-image: repeating-linear-gradient(135deg, var(--surface-sunken) 0, var(--surface-sunken) var(--cal-stripe), var(--border) var(--cal-stripe), var(--border) calc(var(--cal-stripe) * 2));
+}
+.cal__off-label { margin-top: var(--space-1); }
+/* Booking block. Status = fill + left bar + icon + (canceled) strike-through, same tokens as .badge--*. */
+.cal-block {
+  --blk-bg: var(--surface-sunken); --blk-bd: var(--border); --blk-bar: var(--border-strong);
+  position: absolute; left: var(--space-1); width: calc(100% - var(--space-2)); display: flex; flex-direction: column; align-items: stretch;
+  padding: var(--space-1) var(--space-2); overflow: hidden; text-align: left; font: inherit; color: var(--text); background: var(--blk-bg);
+  border: 1px solid var(--blk-bd); border-left: 3px solid var(--blk-bar); border-radius: var(--radius-sm); cursor: pointer;
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
+}
+.cal-block:hover, .cal-block.is-hover { z-index: 2; box-shadow: var(--shadow-sm); }
+.cal-block:focus-visible, .cal-block.is-focus { z-index: 3; outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.cal-block--selected { z-index: 3; outline: 2px solid var(--accent); }
+.cal-block--pending { --blk-bg: var(--warning-bg); --blk-bd: var(--warning-border); --blk-bar: var(--warning); }
+.cal-block--confirmed { --blk-bg: var(--success-bg); --blk-bd: var(--success-border); --blk-bar: var(--success); }
+.cal-block--completed { --blk-bg: var(--info-bg); --blk-bd: var(--info-border); --blk-bar: var(--info); }
+.cal-block--no-show { --blk-bg: var(--danger-bg); --blk-bd: var(--danger-border); --blk-bar: var(--danger); }
+.cal-block--canceled { color: var(--text-muted); }
+.cal-block--canceled .cal-block__name { text-decoration: line-through; text-decoration-thickness: 1px; }
+/* Out-of-hours exception: dashed edge; the clock icon and a text tag are in the markup. */
+.cal-block--override { border-style: dashed; border-color: var(--text-muted); border-left-style: solid; border-left-color: var(--blk-bar); }
+.cal-block__time { display: flex; align-items: center; gap: var(--space-1); font-size: var(--fs-xs); font-weight: var(--fw-bold); line-height: var(--lh-xs); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cal-block__time > svg:first-child { color: var(--blk-bar); }
+.cal-block__name { overflow: hidden; font-size: var(--fs-sm); font-weight: var(--fw-semibold); line-height: var(--lh-sm); white-space: nowrap; text-overflow: ellipsis; }
+.cal-block__service, .cal-block__tag, .cal-block__next-day { overflow: hidden; font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-muted); white-space: nowrap; text-overflow: ellipsis; }
+.cal-block__tag, .cal-block__next-day { font-weight: var(--fw-semibold); }
+/* Under an hour: time, name and service share one row; the out-of-hours tag is left to the details. */
+.cal-block--compact { flex-direction: row; align-items: center; gap: var(--space-2); padding-top: 0; padding-bottom: 0; }
+.cal-block--compact .cal-block__name { flex: 0 1 auto; min-width: 0; }
+.cal-block--compact .cal-block__service { flex: 1 1 0; min-width: 0; }
+.cal-block--compact .cal-block__tag, .cal-block--compact .cal-block__next-day { display: none; }
+/* Phones: one provider column per "page", picked with a row of chips above the calendar. */
+.cal-chips { display: none; }
+.cal-chips__count { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--fs-xs); }
+@media (max-width: 639px) {
+  .cal-chips { display: flex; gap: var(--space-2); padding-bottom: var(--space-2); overflow-x: auto; }
+  .cal { scroll-snap-type: x mandatory; }
+  .cal__col-head, .cal__col { flex: 0 0 calc(100% - var(--cal-gutter-w)); min-width: calc(100% - var(--cal-gutter-w)); scroll-snap-align: start; }
+  /* The time gutter stays put while a column swipes past it. */
+  .cal__gutter, .cal__corner { position: sticky; left: 0; z-index: 6; background: var(--surface); }
+}
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
 .stat-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }

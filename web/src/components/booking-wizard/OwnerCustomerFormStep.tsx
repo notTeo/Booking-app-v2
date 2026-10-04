@@ -118,7 +118,7 @@ export default function OwnerCustomerFormStep({
   return (
     <div className="public-wizard-panel">
       {selectedService && (
-        <p className="public-wizard-context">
+        <p className="t-body-sm t-muted">
           {t.public.serviceContext} <strong>{selectedService.name}</strong>
           {selectedMember && (
             <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
@@ -129,9 +129,9 @@ export default function OwnerCustomerFormStep({
 
       <div className="public-booking-form">
         {/* Phone first — with customer search dropdown */}
-        <div className="field" style={{ position: 'relative' }}>
+        <div className="field field--anchor">
           <label className="field__label" htmlFor="b-phone">
-            {t.public.phoneLabel} <span className="public-field-required">*</span>
+            {t.public.phoneLabel} <span className="field__required">*</span>
           </label>
           <input
             id="b-phone"
@@ -143,16 +143,16 @@ export default function OwnerCustomerFormStep({
             autoComplete="off"
           />
           {showDropdown && (
-            <ul className="customer-search-dropdown">
+            <ul className="suggest">
               {customerResults.map((c) => (
                 <li key={c.id}>
                   <button
                     type="button"
-                    className="customer-search-item"
+                    className="suggest__item"
                     onClick={() => selectCustomer(c)}
                   >
                     <strong>{c.name}</strong>
-                    <span className="customer-search-phone">{c.phone}</span>
+                    <span className="suggest__meta">{c.phone}</span>
                   </button>
                 </li>
               ))}
@@ -165,7 +165,7 @@ export default function OwnerCustomerFormStep({
 
         <div className="field">
           <label className="field__label" htmlFor="b-name">
-            {t.public.nameLabel} <span className="public-field-required">*</span>
+            {t.public.nameLabel} <span className="field__required">*</span>
           </label>
           <input
             id="b-name"
@@ -220,12 +220,12 @@ export default function OwnerCustomerFormStep({
         {error && <Alert variant="danger">{error}</Alert>}
       </div>
 
-      <div className="public-wizard-actions">
-        <button className="btn btn--ghost wizard-btn" onClick={onBack} disabled={submitting}>
+      <div className="cluster public-wizard-actions">
+        <button className="btn btn--ghost" onClick={onBack} disabled={submitting}>
           {t.public.back}
         </button>
         <button
-          className={`btn wizard-btn${submitting && !cooling ? ' is-loading' : ''}`}
+          className={`btn${submitting && !cooling ? ' is-loading' : ''}`}
           onClick={handleSubmit}
           aria-busy={submitting && !cooling}
           disabled={cooling || name.trim() === '' || phone.trim() === ''}

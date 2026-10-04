@@ -53,7 +53,7 @@ export default function BookingFiltersModal({
       <div className="modal__body">
         <div className="field">
           <span className="field__label" id={`${uid}-status`}>{f.statusLabel}</span>
-          <div className="cal-filters-statuses" role="group" aria-labelledby={`${uid}-status`}>
+          <div className="cluster cluster--tight" role="group" aria-labelledby={`${uid}-status`}>
             {statuses.map((s) => (
               <button
                 key={s}

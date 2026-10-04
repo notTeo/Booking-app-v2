@@ -278,8 +278,8 @@ export default function ShopTeamMemberPage() {
   if (shopLoading || loading) {
     return (
       <div className="team-member-page">
-        <div className="shops-spinner-wrap">
-          <div className="spinner" />
+        <div className="spinner-wrap">
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -288,7 +288,7 @@ export default function ShopTeamMemberPage() {
   if (error || !member) {
     return (
       <div className="team-member-page">
-        <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
+        <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
           {t.team.backToTeam}
         </button>
         <Alert variant="danger">{error || t.team.notFound}</Alert>
@@ -299,18 +299,18 @@ export default function ShopTeamMemberPage() {
   return (
     <div className="team-member-page">
       {/* Back link */}
-      <button className="card-back" onClick={() => navigate(`/shops/${slug}/team`)}>
+      <button className="back-link" onClick={() => navigate(`/shops/${slug}/team`)}>
         {t.team.backToTeam}
       </button>
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
         <h1 className="t-heading">{member.name}</h1>
-        <div className="team-member-meta">
+        <div className="cluster">
           <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
             {t.team.roles[member.role]}
           </span>
-          <span className="team-date">
+          <span className="t-body-sm t-muted">
             {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -339,10 +339,10 @@ export default function ShopTeamMemberPage() {
               </select></div>
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.active}</span>
-                <span className="team-switch-desc">
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.active}</span>
+                <span className="setting-row__text">
                   {editRole === 'owner' ? t.team.ownerAlwaysActiveHint : t.team.activeDesc}
                 </span>
               </div>
@@ -354,10 +354,10 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.bookableByCustomers}</span>
-                <span className="team-switch-desc">{t.team.bookableByCustomersDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.bookableByCustomers}</span>
+                <span className="setting-row__text">{t.team.bookableByCustomersDesc}</span>
               </div>
               <Switch
                 checked={editBookableByCustomers}
@@ -367,10 +367,10 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.bookableInternally}</span>
-                <span className="team-switch-desc">{t.team.bookableInternallyDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.bookableInternally}</span>
+                <span className="setting-row__text">{t.team.bookableInternallyDesc}</span>
               </div>
               <Switch
                 checked={editBookableInternally}
@@ -381,10 +381,10 @@ export default function ShopTeamMemberPage() {
             </div>
 
             {editRole === 'staff' && (
-              <div className="team-switch-row">
-                <div className="team-switch-label">
-                  <span>{t.team.canViewCustomerDetails}</span>
-                  <span className="team-switch-desc">{t.team.canViewCustomerDetailsDesc}</span>
+              <div className="setting-row">
+                <div className="setting-row__label">
+                  <span className="setting-row__title">{t.team.canViewCustomerDetails}</span>
+                  <span className="setting-row__text">{t.team.canViewCustomerDetailsDesc}</span>
                 </div>
                 <Switch checked={editCanView} onChange={setEditCanView} label={t.team.canViewCustomerDetails} />
               </div>
@@ -392,7 +392,7 @@ export default function ShopTeamMemberPage() {
 
             {memberError && <Alert variant="danger">{memberError}</Alert>}
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
-            <div className="team-invite-actions">
+            <div className="cluster">
               <button
                 className={`btn${savingMember ? ' is-loading' : ''}`}
                 onClick={handleSaveMember}
@@ -406,16 +406,16 @@ export default function ShopTeamMemberPage() {
             {/* Login invite — only relevant until they accept and get a login;
                 sends an email, so it stays a distinct action from the save above. */}
             {!member.userId && (
-              <div className="team-invite-block">
+              <div className="card__section">
                 <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
                 </p>
                 {editEmail !== (member.email ?? '') && (
-                  <p className="team-switch-desc">{t.team.emailChangedHint}</p>
+                  <p className="card__text">{t.team.emailChangedHint}</p>
                 )}
                 {inviteError && <Alert variant="danger">{inviteError}</Alert>}
                 {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
-                <div className="team-invite-actions">
+                <div className="cluster">
                   <button
                     className={`btn${invitePending ? ' is-loading' : ''}`}
                     onClick={handleSendInvite}
@@ -435,38 +435,35 @@ export default function ShopTeamMemberPage() {
             )}
           </>
         ) : (
-          <p className="team-date">{member.email}</p>
+          <p className="card__text">{member.email}</p>
         )}
       </div>
 
       {/* Staff availability schedule */}
       {workingHoursApi && (
-        <div className="team-member-schedules">
-          <h2>{t.team.availability}</h2>
-          <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} />
-        </div>
+        <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} title={t.team.availability} />
       )}
 
       {/* Assigned services */}
       <div className="card">
         <h2 className="card__title">{t.team.assignedServices}</h2>
         {servicesLoading ? (
-          <div className="shops-spinner-wrap">
-            <div className="spinner" style={{ width: 24, height: 24 }} />
+          <div className="spinner-wrap">
+            <div className="spinner" />
           </div>
         ) : (
           <>
             {servicesError && <Alert variant="danger">{servicesError}</Alert>}
             {memberServices.length === 0 ? (
-              <p className="team-services-empty">{t.team.noAssignedServices}</p>
+              <p className="card__text">{t.team.noAssignedServices}</p>
             ) : (
-              <ul className="service-staff-list">
+              <ul className="list">
                 {memberServices.map((a) => (
-                  <li key={a.serviceId} className="service-staff-item">
+                  <li key={a.serviceId} className="list__item">
                     <span>{a.service.name}</span>
                     {isOwner && (
                       <button
-                        className="btn btn--secondary btn--sm service-action-btn"
+                        className="btn btn--secondary btn--sm"
                         onClick={() => handleUnassignService(a.serviceId)}
                         disabled={unassigningServiceId === a.serviceId}
                       >
@@ -482,7 +479,7 @@ export default function ShopTeamMemberPage() {
               const available = allServices.filter((s) => !assignedIds.has(s.id));
               if (available.length === 0) return null;
               return (
-                <div className="service-staff-add">
+                <div className="cluster cluster--tight">
                   <div className="select-wrap select-wrap--sm service-staff-select"><select
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
@@ -495,7 +492,7 @@ export default function ShopTeamMemberPage() {
                     ))}
                   </select></div>
                   <button
-                    className="btn btn--sm service-action-btn"
+                    className="btn btn--sm"
                     onClick={handleAssignService}
                     disabled={!selectedServiceId || assigningService}
                   >
@@ -510,7 +507,7 @@ export default function ShopTeamMemberPage() {
 
       {/* Danger zone — owner only */}
       {isOwner && (
-        <div className="card card--danger shop-danger-card">
+        <div className="card card--danger">
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>
           {removeError && <Alert variant="danger">{removeError}</Alert>}

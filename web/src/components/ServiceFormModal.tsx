@@ -59,7 +59,7 @@ export default function ServiceFormModal({ title, submitLabel, form, onChange, o
               disabled={submitting}
             />
           </div>
-          <div className="service-form-grid">
+          <div className="field-row">
             <div className="field">
               <label className="field__label" htmlFor={`${uid}-duration`}>{t.services.duration} (min)</label>
               <input
@@ -102,14 +102,14 @@ export default function ServiceFormModal({ title, submitLabel, form, onChange, o
               disabled={submitting}
             />
           </div>
-          <div className="service-form-active-label">
+          <div className="setting-row">
+            <span className="setting-row__title">{t.services.isActive}</span>
             <Switch
               checked={form.isActive}
               onChange={(v) => onChange('isActive', v)}
               label={t.services.isActive}
               disabled={submitting}
             />
-            <span className="field__label">{t.services.isActive}</span>
           </div>
         </form>
       </div>
