@@ -57,13 +57,13 @@ export default function ShopCustomersPage() {
 
   return (
     <div className="team-page">
-      <div className="team-header">
-        <h1>{t.customers.title}</h1>
+      <div className="page-header">
+        <h1 className="t-title">{t.customers.title}</h1>
       </div>
 
       {/* Search matches names and phones, so it is only offered to members who may see them. */}
       {shop?.canViewCustomerDetails !== false && (
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div className="field">
           <label htmlFor="customer-search" className="visually-hidden">
             {t.customers.searchPlaceholder}
           </label>
@@ -73,7 +73,6 @@ export default function ShopCustomersPage() {
             placeholder={t.customers.searchPlaceholder}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            style={{ maxWidth: 320 }}
           />
         </div>
       )}
@@ -85,68 +84,68 @@ export default function ShopCustomersPage() {
           <div className="spinner spinner--lg" />
         </div>
       ) : (
-        <>
-          <div className="table-wrap">
-            <div className="table-surface">
-              {customers.length === 0 ? (
-                <div className="empty empty--sm">
-                  <p className="empty__text">
-                    {search ? t.customers.noResults : t.customers.noCustomers}
-                  </p>
-                </div>
-              ) : (
-                <table className="data-table" role="table">
-                  <thead>
-                    <tr role="row">
-                      <th scope="col" role="columnheader">{t.customers.nameCol}</th>
-                      <th scope="col" role="columnheader">{t.customers.phoneCol}</th>
-                      <th scope="col" role="columnheader">{t.customers.emailCol}</th>
-                      <th scope="col" role="columnheader">{t.customers.addedCol}</th>
+        <div className="table-wrap">
+          <div className="table-surface">
+            {customers.length === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">
+                  {search ? t.customers.noResults : t.customers.noCustomers}
+                </p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
+                <thead>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.customers.nameCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.phoneCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.emailCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.addedCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.map((c) => (
+                    <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
+                      <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
+                        <Link to={c.id} className="data-table__link">
+                          {c.contactHidden ? t.customers.hiddenLabel : c.name}
+                        </Link>
+                      </td>
+                      <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
+                      <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>
+                      <td role="cell" data-label={t.customers.addedCol}>
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((c) => (
-                      <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
-                        <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
-                          <Link to={c.id} className="data-table__link">
-                            {c.contactHidden ? t.customers.hiddenLabel : c.name}
-                          </Link>
-                        </td>
-                        <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
-                        <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>
-                        <td role="cell" data-label={t.customers.addedCol}>
-                          {new Date(c.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {customers.length > 0 && (
+              <div className="data-table__foot">
+                <span>
+                  {t.customers.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
+                </span>
+                <div className="cluster cluster--tight">
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                  >
+                    {t.customers.prevPage}
+                  </button>
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    {t.customers.nextPage}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
 
-          {customers.length > 0 && (
-            <div className="pagination-controls">
-              <button
-                className="bookings-date-nav-btn "
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                {t.customers.prevPage}
-              </button>
-              <span className="pagination-status">
-                {t.customers.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
-              </span>
-              <button
-                className="bookings-date-nav-btn"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                {t.customers.nextPage}
-              </button>
-            </div>
-          )}
-        </>
       )}
     </div>
   );

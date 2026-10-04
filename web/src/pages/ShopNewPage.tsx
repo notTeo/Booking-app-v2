@@ -147,7 +147,7 @@ export default function ShopNewPage() {
 
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <div className="shop-form-actions">
+          <div className="cluster">
             <button className={`btn${loading ? ' is-loading' : ''}`} type="submit" aria-busy={loading}>
               Create Shop
             </button>

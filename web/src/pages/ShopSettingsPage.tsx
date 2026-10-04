@@ -164,7 +164,7 @@ export default function ShopSettingsPage() {
     <div className="shops-page">
       <div className="shop-detail-header">
         <h1 className="t-title">{shop.name}</h1>
-        <div className="shop-detail-meta">
+        <div className="cluster cluster--tight">
           <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
           <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}

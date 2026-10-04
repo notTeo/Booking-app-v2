@@ -6,7 +6,6 @@ import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, sendLoginInvite, cancelLoginInvite, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
-import '../styles/pages/invites.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -94,7 +93,7 @@ export default function ShopTeamPage() {
   const renderActions = (member: TeamMember) => {
     const resending = invitePendingId === member.id && confirmCancelInvite !== member.id;
     return (
-      <div className="invite-actions">
+      <div className="cluster cluster--tight">
         {!member.userId && (
           <>
             <button
@@ -136,8 +135,8 @@ export default function ShopTeamPage() {
 
   return (
     <div className="team-page">
-      <div className="team-header">
-        <h1>{t.team.title}</h1>
+      <div className="page-header">
+        <h1 className="t-title">{t.team.title}</h1>
         {isOwner && (
           <button type="button" className="btn btn--sm" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />

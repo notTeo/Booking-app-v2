@@ -306,11 +306,11 @@ export default function ShopTeamMemberPage() {
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
         <h1 className="t-heading">{member.name}</h1>
-        <div className="team-member-meta">
+        <div className="cluster">
           <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
             {t.team.roles[member.role]}
           </span>
-          <span className="team-date">
+          <span className="t-body-sm t-muted">
             {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -339,10 +339,10 @@ export default function ShopTeamMemberPage() {
               </select></div>
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.active}</span>
-                <span className="team-switch-desc">
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.active}</span>
+                <span className="setting-row__text">
                   {editRole === 'owner' ? t.team.ownerAlwaysActiveHint : t.team.activeDesc}
                 </span>
               </div>
@@ -354,10 +354,10 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.bookableByCustomers}</span>
-                <span className="team-switch-desc">{t.team.bookableByCustomersDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.bookableByCustomers}</span>
+                <span className="setting-row__text">{t.team.bookableByCustomersDesc}</span>
               </div>
               <Switch
                 checked={editBookableByCustomers}
@@ -367,10 +367,10 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.team.bookableInternally}</span>
-                <span className="team-switch-desc">{t.team.bookableInternallyDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.team.bookableInternally}</span>
+                <span className="setting-row__text">{t.team.bookableInternallyDesc}</span>
               </div>
               <Switch
                 checked={editBookableInternally}
@@ -381,10 +381,10 @@ export default function ShopTeamMemberPage() {
             </div>
 
             {editRole === 'staff' && (
-              <div className="team-switch-row">
-                <div className="team-switch-label">
-                  <span>{t.team.canViewCustomerDetails}</span>
-                  <span className="team-switch-desc">{t.team.canViewCustomerDetailsDesc}</span>
+              <div className="setting-row">
+                <div className="setting-row__label">
+                  <span className="setting-row__title">{t.team.canViewCustomerDetails}</span>
+                  <span className="setting-row__text">{t.team.canViewCustomerDetailsDesc}</span>
                 </div>
                 <Switch checked={editCanView} onChange={setEditCanView} label={t.team.canViewCustomerDetails} />
               </div>
@@ -392,7 +392,7 @@ export default function ShopTeamMemberPage() {
 
             {memberError && <Alert variant="danger">{memberError}</Alert>}
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
-            <div className="team-invite-actions">
+            <div className="cluster">
               <button
                 className={`btn${savingMember ? ' is-loading' : ''}`}
                 onClick={handleSaveMember}
@@ -406,16 +406,16 @@ export default function ShopTeamMemberPage() {
             {/* Login invite — only relevant until they accept and get a login;
                 sends an email, so it stays a distinct action from the save above. */}
             {!member.userId && (
-              <div className="team-invite-block">
+              <div className="card__section">
                 <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
                 </p>
                 {editEmail !== (member.email ?? '') && (
-                  <p className="team-switch-desc">{t.team.emailChangedHint}</p>
+                  <p className="card__text">{t.team.emailChangedHint}</p>
                 )}
                 {inviteError && <Alert variant="danger">{inviteError}</Alert>}
                 {inviteSuccess && <Alert variant="success">{inviteSuccess}</Alert>}
-                <div className="team-invite-actions">
+                <div className="cluster">
                   <button
                     className={`btn${invitePending ? ' is-loading' : ''}`}
                     onClick={handleSendInvite}
@@ -435,16 +435,13 @@ export default function ShopTeamMemberPage() {
             )}
           </>
         ) : (
-          <p className="team-date">{member.email}</p>
+          <p className="card__text">{member.email}</p>
         )}
       </div>
 
       {/* Staff availability schedule */}
       {workingHoursApi && (
-        <div className="team-member-schedules">
-          <h2>{t.team.availability}</h2>
-          <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} />
-        </div>
+        <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} title={t.team.availability} />
       )}
 
       {/* Assigned services */}

@@ -31,6 +31,8 @@ export interface WorkingHoursPanelProps {
   api: WorkingHoursApi;
   isOwner: boolean;
   /** Shop-wide content rendered above the schedules (e.g. the booking window). */
+  /** Section heading; defaults to the working-hours title. */
+  title?: string;
 }
 
 const DAY_ORDER: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -90,7 +92,9 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
   };
 }
 
-export default function WorkingHoursPanel({ api, isOwner }: WorkingHoursPanelProps) {
+const STATUS_BADGE = { current: 'badge--success', upcoming: 'badge--accent', ended: 'badge--neutral' } as const;
+
+export default function WorkingHoursPanel({ api, isOwner, title }: WorkingHoursPanelProps) {
   const uid = useId();
   const { t } = useLang();
 
@@ -323,7 +327,7 @@ const created = await api.createSchedule(dto);
   // ---- Render ----
   if (loading) {
     return (
-      <div className="working-hours-page">
+      <div className="working-hours">
         <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
@@ -332,12 +336,12 @@ const created = await api.createSchedule(dto);
   }
 
   return (
-    <div className="working-hours-page">
-      <div className="working-hours-header">
-        <h1>{t.workingHours.title}</h1>
+    <section className="working-hours">
+      <div className="page-header">
+        <h2 className="t-subheading">{title ?? t.workingHours.title}</h2>
         {isOwner && (
           <button
-            className="btn"
+            className="btn btn--sm"
             onClick={() => {
               setShowCreate((v) => !v);
               setCreateError('');
@@ -350,8 +354,7 @@ const created = await api.createSchedule(dto);
 
       {pageError && <Alert variant="danger">{pageError}</Alert>}
 
-
-      <p className="wh-rule-note">{t.workingHours.ruleNote}</p>
+      <p className="t-body-sm t-muted">{t.workingHours.ruleNote}</p>
 
       {isOwner && openEnded && (
         <Alert
@@ -375,9 +378,9 @@ const created = await api.createSchedule(dto);
 
       {/* Create form */}
       {showCreate && (
-        <div className="card wh-create-form">
-          <h3>{t.workingHours.newSchedule}</h3>
-          <div className="wh-create-fields">
+        <div className="card">
+          <h3 className="card__title">{t.workingHours.newSchedule}</h3>
+          <div className="working-hours__dates">
             <div className="field">
               <label className="field__label" htmlFor={`${uid}-create-start`}>{t.workingHours.startDate}</label>
               <input id={`${uid}-create-start`} className="input"
@@ -399,7 +402,7 @@ const created = await api.createSchedule(dto);
             <Alert variant="danger">{conflictText(createConflict)}</Alert>
           )}
           {createError && <Alert variant="danger">{createError}</Alert>}
-          <div className="wh-create-actions">
+          <div className="cluster">
             <button
               className={`btn${creating ? ' is-loading' : ''}`}
               onClick={handleCreate}
@@ -423,7 +426,9 @@ const created = await api.createSchedule(dto);
 
       {/* Empty state */}
       {schedules.length === 0 && !showCreate && (
-        <p className="wh-empty">{t.workingHours.noSchedules}</p>
+        <div className="empty empty--sm">
+          <p className="empty__text">{t.workingHours.noSchedules}</p>
+        </div>
       )}
 
       {/* Schedule list */}
@@ -432,44 +437,47 @@ const created = await api.createSchedule(dto);
         if (!state) return null;
         const isExpanded = expandedId === schedule.id;
         const hasErrors = Object.keys(state.slotErrors).length > 0;
+        const status = scheduleStatus(schedule);
 
         return (
-          <div key={schedule.id} className="card card--flush wh-schedule-card">
+          <div key={schedule.id} className="card card--flush">
             {/* Header — role="button" (not a real <button>) since it wraps the
                 nested active/inactive toggle button; buttons can't contain buttons. */}
             <div
-              className="wh-schedule-header"
+              className="card__toggle"
               role="button"
               tabIndex={0}
               aria-expanded={isExpanded}
               onClick={() => setExpandedId(isExpanded ? null : schedule.id)}
               onKeyDown={handleActivateKeyDown(() => setExpandedId(isExpanded ? null : schedule.id))}
             >
-              <div className="wh-date-range">
-                <span className={`wh-status wh-status--${scheduleStatus(schedule)}`}>
+              <div className="working-hours__range">
+                <span className={`badge ${STATUS_BADGE[status]}`}>
                   {
                     {
                       current: t.workingHours.statusCurrent,
                       upcoming: t.workingHours.statusUpcoming,
                       ended: t.workingHours.statusEnded,
-                    }[scheduleStatus(schedule)]
+                    }[status]
                   }
                 </span>
-                {t.workingHours.from} {formatDate(schedule.startDate)}
-                {schedule.endDate ? (
-                  <>
-                    {' '}
-                    <span>{t.workingHours.to}</span> {formatDate(schedule.endDate)}
-                  </>
-                ) : (
-                  <>
-                    {' '}— <span>{t.workingHours.ongoing}</span>
-                  </>
-                )}
+                <span className="t-body-sm">
+                  <strong>{t.workingHours.from} {formatDate(schedule.startDate)}</strong>
+                  {schedule.endDate ? (
+                    <>
+                      {' '}
+                      <span className="t-muted">{t.workingHours.to}</span>{' '}
+                      <strong>{formatDate(schedule.endDate)}</strong>
+                    </>
+                  ) : (
+                    <>
+                      {' '}— <span className="t-muted">{t.workingHours.ongoing}</span>
+                    </>
+                  )}
+                </span>
               </div>
               {isOwner ? (
                 <span
-                  className="wh-active-switch"
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
@@ -485,27 +493,24 @@ const created = await api.createSchedule(dto);
                   {schedule.isActive ? t.workingHours.open : t.workingHours.closed}
                 </span>
               )}
-              <span className={`wh-chevron ${isExpanded ? 'open' : ''}`} aria-hidden="true">
-                <FontAwesomeIcon icon={faChevronDown} />
-              </span>
+              <FontAwesomeIcon icon={faChevronDown} className="card__chevron" aria-hidden="true" />
             </div>
 
             {/* Body */}
             {isExpanded && (
-              <div className="wh-schedule-body">
+              <>
                 {/* Actions — Save + Delete, at the top of the schedule */}
                 {isOwner && (
-                  <div className="wh-schedule-actions">
-                    <button
-                      className={`btn${state.saving ? ' is-loading' : ''}`}
-                      onClick={() => handleSaveSchedule(schedule.id)}
-                      aria-busy={state.saving}
-                      disabled={hasErrors}
-                    >
-                      {t.workingHours.saveDays}
-                    </button>
-
-                    <div>
+                  <div className="card__section">
+                    <div className="cluster">
+                      <button
+                        className={`btn${state.saving ? ' is-loading' : ''}`}
+                        onClick={() => handleSaveSchedule(schedule.id)}
+                        aria-busy={state.saving}
+                        disabled={hasErrors}
+                      >
+                        {t.workingHours.saveDays}
+                      </button>
                       <button
                         className={`btn btn--danger-outline${state.deleting ? ' is-loading' : ''}`}
                         onClick={() => updateEdit(schedule.id, { confirmDelete: true })}
@@ -513,32 +518,31 @@ const created = await api.createSchedule(dto);
                       >
                         {t.workingHours.deleteSchedule}
                       </button>
-                      {state.confirmDelete && (
-                        <ConfirmDialog
-                          tone="danger"
-                          title={t.workingHours.deleteScheduleTitle}
-                          message={t.workingHours.deleteScheduleMessage}
-                          confirmLabel={t.workingHours.deleteScheduleConfirmButton}
-                          cancelLabel={t.workingHours.cancel}
-                          busy={state.deleting}
-                          onConfirm={() => handleDelete(schedule.id)}
-                          onCancel={() => updateEdit(schedule.id, { confirmDelete: false })}
-                        />
-                      )}
                     </div>
-
+                    {state.confirmDelete && (
+                      <ConfirmDialog
+                        tone="danger"
+                        title={t.workingHours.deleteScheduleTitle}
+                        message={t.workingHours.deleteScheduleMessage}
+                        confirmLabel={t.workingHours.deleteScheduleConfirmButton}
+                        cancelLabel={t.workingHours.cancel}
+                        busy={state.deleting}
+                        onConfirm={() => handleDelete(schedule.id)}
+                        onCancel={() => updateEdit(schedule.id, { confirmDelete: false })}
+                      />
+                    )}
                   </div>
                 )}
 
                 {(state.error || state.success) && (
-                  <div className="wh-schedule-alerts">
+                  <div className="card__section">
                     {state.error && <Alert variant="danger">{state.error}</Alert>}
                     {state.success && <Alert variant="success">{state.success}</Alert>}
                   </div>
                 )}
                 {isOwner && (
-                  <div className="wh-dates-section">
-                    <div className="wh-create-fields">
+                  <div className="card__section">
+                    <div className="working-hours__dates">
                       <div className="field">
                         <label className="field__label" htmlFor={`${uid}-${schedule.id}-start`}>{t.workingHours.startDate}</label>
                         <input id={`${uid}-${schedule.id}-start`} className="input"
@@ -560,87 +564,81 @@ const created = await api.createSchedule(dto);
                 )}
 
                 {/* Day rows */}
-                <div
-                  className="card card--flush working-hours-card"
-                  style={{ borderRadius: 0, border: 'none', marginBottom: 0 }}
-                >
-                  {DAY_ORDER.map((day) => {
-                    const dayState = state.days[day];
-                    const slotErr = state.slotErrors[day];
-                    return (
-                      <div key={day} className="working-hours-row">
-                        <div className="working-hours-day-label">{t.workingHours.days[day]}</div>
-
-                        <div className="working-hours-toggle">
+                {DAY_ORDER.map((day) => {
+                  const dayState = state.days[day];
+                  const slotErr = state.slotErrors[day];
+                  return (
+                    <div key={day} className="card__section">
+                      <div className="setting-row">
+                        <span className="setting-row__title">{t.workingHours.days[day]}</span>
+                        <div className="cluster cluster--tight">
+                          <span className={`badge ${dayState.isOpen ? 'badge--success' : 'badge--neutral'}`}>
+                            {dayState.isOpen ? t.workingHours.open : t.workingHours.closed}
+                          </span>
                           <Switch
                             checked={dayState.isOpen}
                             onChange={() => toggleDay(schedule.id, day)}
                             disabled={!isOwner}
                             label={t.workingHours.days[day]}
                           />
-                          <span
-                            className={`working-hours-status ${dayState.isOpen ? 'open' : 'closed'}`}
-                          >
-                            {dayState.isOpen ? t.workingHours.open : t.workingHours.closed}
-                          </span>
                         </div>
-
-                        {dayState.isOpen && (
-                          <div className="working-hours-slots">
-                            {dayState.hours.map((slot, idx) => (
-                              <div key={idx} className="working-hours-slot">
-                                <input className="input"
-                                  type="time"
-                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.from}`}
-                                  value={slot.startTime}
-                                  onChange={(e) =>
-                                    updateHour(schedule.id, day, idx, 'startTime', e.target.value)
-                                  }
-                                  disabled={!isOwner}
-                                />
-                                <span className="working-hours-sep">–</span>
-                                <input className="input"
-                                  type="time"
-                                  aria-label={`${t.workingHours.days[day]} ${t.workingHours.to}`}
-                                  value={slot.endTime}
-                                  onChange={(e) =>
-                                    updateHour(schedule.id, day, idx, 'endTime', e.target.value)
-                                  }
-                                  disabled={!isOwner}
-                                />
-                                {isOwner && (
-                                  <button
-                                    type="button"
-                                    className="working-hours-remove"
-                                    onClick={() => removeSlot(schedule.id, day, idx)}
-                                    aria-label={t.workingHours.removeSlot}
-                                  >
-                                    <FontAwesomeIcon icon={faXmark} />
-                                  </button>
-                                )}
-                              </div>
-                            ))}
-                            {slotErr && <p className="wh-slot-error">{slotErr}</p>}
-                            {isOwner && (
-                              <button
-                                type="button"
-                                className="working-hours-add-slot"
-                                onClick={() => addSlot(schedule.id, day)}
-                              >
-                                {t.workingHours.addSlot}
-                              </button>
-                            )}
-                          </div>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+
+                      {dayState.isOpen && (
+                        <div className="working-hours__slots">
+                          {dayState.hours.map((slot, idx) => (
+                            <div key={idx} className="working-hours__slot">
+                              <input className="input"
+                                type="time"
+                                aria-label={`${t.workingHours.days[day]} ${t.workingHours.from}`}
+                                value={slot.startTime}
+                                onChange={(e) =>
+                                  updateHour(schedule.id, day, idx, 'startTime', e.target.value)
+                                }
+                                disabled={!isOwner}
+                              />
+                              <span className="t-muted" aria-hidden="true">–</span>
+                              <input className="input"
+                                type="time"
+                                aria-label={`${t.workingHours.days[day]} ${t.workingHours.to}`}
+                                value={slot.endTime}
+                                onChange={(e) =>
+                                  updateHour(schedule.id, day, idx, 'endTime', e.target.value)
+                                }
+                                disabled={!isOwner}
+                              />
+                              {isOwner && (
+                                <button
+                                  type="button"
+                                  className="btn btn--ghost btn--icon btn--sm"
+                                  onClick={() => removeSlot(schedule.id, day, idx)}
+                                  aria-label={t.workingHours.removeSlot}
+                                >
+                                  <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          {slotErr && <p className="field__error">{slotErr}</p>}
+                          {isOwner && (
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--sm"
+                              onClick={() => addSlot(schedule.id, day)}
+                            >
+                              {t.workingHours.addSlot}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         );
       })}
-    </div>
+    </section>
   );
 }
