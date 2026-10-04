@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { canManageShop } from '../utils/roles';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -57,7 +58,7 @@ const formToDto = (f: FormData) => ({
 export default function ShopServicesPage() {
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
 
   // list
   const [services, setServices] = useState<Service[]>([]);
@@ -249,8 +250,8 @@ export default function ShopServicesPage() {
   if (shopLoading || loading) {
     return (
       <div className="services-page">
-        <div className="shops-spinner-wrap">
-          <div className="spinner" />
+        <div className="spinner-wrap">
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -260,26 +261,28 @@ export default function ShopServicesPage() {
 
   return (
     <div className="services-page">
-      <div className="services-header">
-        <h1>{t.services.title}</h1>
+      <div className="page-header">
+        <h1 className="t-title">{t.services.title}</h1>
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Empty state */}
       {services.length === 0 && (
-        <p className="services-empty">{t.services.noServices}</p>
+        <div className="empty empty--sm">
+          <p className="empty__text">{t.services.noServices}</p>
+        </div>
       )}
 
       {/* Services list (+ add card) */}
-      {(services.length > 0 || isOwner) && (
+      {(services.length > 0 || canManage) && (
         <div className="services-list">
           {services.map((service) => (
             <div key={service.id} className="card card--flush">
-              <div className="service-card-main">
-                <div className="service-card-info">
-                  <div className="service-card-name">
-                    {service.name}
+              <div className="card__section">
+                <div className="service-card__main">
+                  <div className="cluster cluster--tight">
+                    <span className="service-card__name">{service.name}</span>
                     <span
                       className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
                     >
@@ -287,74 +290,76 @@ export default function ShopServicesPage() {
                     </span>
                   </div>
                   {service.description && (
-                    <div className="service-card-desc">{service.description}</div>
+                    <div className="service-card__desc">{service.description}</div>
                   )}
-                  <div className="service-card-meta">
+                  <div className="service-card__meta">
                     <span>{formatDuration(service.duration)}</span>
-                    <span className="service-card-sep">·</span>
+                    <span aria-hidden="true">·</span>
                     <span>{formatPrice(service.price)}</span>
                   </div>
                 </div>
-
               </div>
 
-              {isOwner && (
-                <div className="service-card-actions">
-                  <button
-                    className="btn btn--secondary btn--sm service-action-btn"
-                    onClick={() => {
-                      setEditingId(service.id);
-                      setEditForm(serviceToForm(service));
-                      setEditError('');
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPenToSquare} /> {t.services.edit}
-                  </button>
+              {canManage && (
+                <div className="card__section">
+                  <div className="cluster cluster--tight">
+                    <button
+                      className="btn btn--secondary btn--sm"
+                      onClick={() => {
+                        setEditingId(service.id);
+                        setEditForm(serviceToForm(service));
+                        setEditError('');
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} /> {t.services.edit}
+                    </button>
 
-                  <button
-                    className={`btn btn--secondary btn--sm service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
-                    onClick={() => {
-                      if (staffServiceId === service.id) {
-                        closeStaffPanel();
-                      } else {
-                        openStaffPanel(service.id);
-                      }
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
-                  </button>
+                    <button
+                      className="btn btn--secondary btn--sm"
+                      aria-expanded={staffServiceId === service.id}
+                      onClick={() => {
+                        if (staffServiceId === service.id) {
+                          closeStaffPanel();
+                        } else {
+                          openStaffPanel(service.id);
+                        }
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
+                    </button>
 
-                  <button
-                    className="btn btn--danger-outline btn--sm service-action-btn service-delete-btn"
-                    onClick={() => setConfirmDeleteId(service.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
-                  </button>
+                    <button
+                      className="btn btn--danger-outline btn--sm service-actions__end"
+                      onClick={() => setConfirmDeleteId(service.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
+                    </button>
+                  </div>
                 </div>
               )}
 
               {/* Staff panel */}
               {staffServiceId === service.id && (
-                <div className="service-staff-panel">
+                <div className="card__section">
                   {loadingDetail ? (
-                    <div className="service-staff-loading">
-                      <div className="spinner" style={{ width: 24, height: 24 }} />
+                    <div className="spinner-wrap">
+                      <div className="spinner" />
                     </div>
                   ) : (
                     <>
                       {staffError && <Alert variant="danger">{staffError}</Alert>}
 
-                      <div className="service-staff-title">{t.services.assignedStaff}</div>
+                      <h3 className="t-caption label-caps t-muted">{t.services.assignedStaff}</h3>
 
                       {!serviceDetail?.staffServices?.length ? (
-                        <p className="service-staff-empty">{t.services.noStaff}</p>
+                        <p className="card__text">{t.services.noStaff}</p>
                       ) : (
-                        <ul className="service-staff-list">
+                        <ul className="list">
                           {serviceDetail.staffServices.map((ss) => (
-                            <li key={ss.userShopId} className="service-staff-item">
+                            <li key={ss.userShopId} className="list__item">
                               <span>{ss.userShop.name}</span>
                               <button
-                                className="btn btn--danger-outline btn--sm service-action-btn"
+                                className="btn btn--danger-outline btn--sm"
                                 onClick={() => handleUnassign(ss.userShopId)}
                                 disabled={unassigningId === ss.userShopId}
                               >
@@ -373,7 +378,7 @@ export default function ShopServicesPage() {
                         const available = teamMembers.filter((m) => !assignedIds.has(m.id));
                         if (available.length === 0) return null;
                         return (
-                          <div className="service-staff-add">
+                          <div className="cluster cluster--tight">
                             <div className="select-wrap select-wrap--sm service-staff-select"><select
                               value={selectedUserShopId}
                               onChange={(e) => setSelectedUserShopId(e.target.value)}
@@ -388,7 +393,7 @@ export default function ShopServicesPage() {
                               ))}
                             </select></div>
                             <button
-                              className="btn btn--sm service-action-btn"
+                              className="btn btn--sm"
                               onClick={handleAssign}
                               disabled={!selectedUserShopId || assigning}
                             >
@@ -404,7 +409,7 @@ export default function ShopServicesPage() {
             </div>
           ))}
 
-          {isOwner && (
+          {canManage && (
             <button type="button" className="card card--interactive card--dashed" onClick={() => { setCreateForm({ ...emptyForm }); setCreateError(''); setShowCreate(true); }}>
               <FontAwesomeIcon icon={faPlus} />
               <span>{t.services.addService}</span>

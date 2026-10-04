@@ -17,14 +17,14 @@ test('the old /p/<slug> link redirects to /<slug>', async ({ page }) => {
 
 test('static routes are not shadowed by /:slug', async ({ page }) => {
   await page.goto('/privacy');
-  await expect(page.locator('.legal-title')).toBeVisible();
+  await expect(page.locator('.legal-page h1')).toBeVisible();
   await page.goto('/login');
   await expect(page.locator('#email')).toBeVisible();
 });
 
 test('an unknown slug shows the real 404 page', async ({ page }) => {
   await page.goto('/no-such-shop');
-  await expect(page.locator('.not-found')).toBeVisible();
+  await expect(page.locator('.empty__code')).toBeVisible();
 });
 
 test('a path that cannot be a slug is a 404 without asking the API', async ({ page }) => {
@@ -33,6 +33,6 @@ test('a path that cannot be a slug is a 404 without asking the API', async ({ pa
     if (r.url().startsWith(E2E.apiUrl) && r.url().includes('/public/')) apiCalls++;
   });
   await page.goto('/not_a_slug');
-  await expect(page.locator('.not-found')).toBeVisible();
+  await expect(page.locator('.empty__code')).toBeVisible();
   expect(apiCalls).toBe(0);
 });

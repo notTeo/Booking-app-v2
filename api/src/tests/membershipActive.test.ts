@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
-  addSecondOwner,
+  addManager,
   ALL_OVERRIDABLE_RULES,
   authHeader,
   createBookingRow,
@@ -129,11 +129,11 @@ const shape = (res: { status: number; body: unknown }) => ({
 describe.each(Object.entries(SHOP_SCOPED))('%s', (routeKey, fx) => {
   const [method, path] = routeKey.split(' ');
 
-  it('an inactive member is denied exactly like a non-member (404, owner or staff)', async () => {
+  it('an inactive member is denied exactly like a non-member (404, manager or staff)', async () => {
     const w = await world();
     const outsider = await createTenant('Outsider');
-    const inactiveOwner = await addSecondOwner(w.t, 'GoneOwner');
-    await deactivate(inactiveOwner.staff.id);
+    const inactiveManager = await addManager(w.t, 'GoneManager');
+    await deactivate(inactiveManager.staff.id);
     const inactiveStaff = await createStaffMember(w.t, 'GoneStaff');
     await deactivate(inactiveStaff.staff.id);
 
@@ -142,7 +142,7 @@ describe.each(Object.entries(SHOP_SCOPED))('%s', (routeKey, fx) => {
     expect(nonMember.body.message).toBe('Shop not found');
 
     for (const [label, token] of [
-      ['inactive owner', inactiveOwner.token],
+      ['inactive manager', inactiveManager.token],
       ['inactive staff', inactiveStaff.token],
     ] as const) {
       const res = await call(method, fx, path, w, token);
@@ -156,18 +156,32 @@ describe.each(Object.entries(SHOP_SCOPED))('%s', (routeKey, fx) => {
   });
 
   it(
-    fx.ownerOnly
-      ? 'an active staff member gets 403, the owner is let in'
-      : 'an active member and the owner are let in',
+    fx.minRole === 'owner'
+      ? 'active staff and a manager get 403, the owner is let in'
+      : fx.minRole === 'manager'
+        ? 'an active staff member gets 403, a manager and the owner are let in'
+        : 'an active member, a manager and the owner are let in',
     async () => {
       const w = await world();
       const staff = await createStaffMember(w.t, 'ActiveStaff');
-      if (fx.ownerOnly) {
+      if (fx.minRole) {
         const res = await call(method, fx, path, w, staff.token);
         expect(res.status, JSON.stringify(res.body)).toBe(403);
       } else {
         const res = await call(method, fx, path, w, staff.token);
         expect(res.body.message).not.toBe('Shop not found');
+      }
+      // A world of its own: the owner's call below must not run into what
+      // the manager's already changed.
+      const w2 = await world();
+      const manager = await addManager(w2.t, 'ActiveManager');
+      const managed = await call(method, fx, path, w2, manager.token);
+      if (fx.minRole === 'owner') {
+        expect(managed.status, JSON.stringify(managed.body)).toBe(403);
+      } else {
+        expect(managed.status, JSON.stringify(managed.body)).not.toBe(403);
+        expect(managed.status, JSON.stringify(managed.body)).toBeLessThan(500);
+        expect(managed.body.message).not.toBe('Shop not found');
       }
       const owner = await call(method, fx, path, w, w.t.token);
       expect(owner.status, JSON.stringify(owner.body)).not.toBe(403);
@@ -181,21 +195,21 @@ describe.each(Object.entries(SHOP_SCOPED))('%s', (routeKey, fx) => {
 
 // ── Specifics ────────────────────────────────────────────────────────────────
 
-describe('an inactive OWNER (only reachable by editing the DB)', () => {
-  it('is denied every owner-only action, same as a non-member', async () => {
+describe('an inactive manager or owner', () => {
+  it('a deactivated manager is denied every managing action, same as a non-member', async () => {
     const w = await world();
-    const owner2 = await addSecondOwner(w.t);
-    await deactivate(owner2.staff.id);
+    const manager = await addManager(w.t);
+    await deactivate(manager.staff.id);
     for (const [k, fx] of Object.entries(SHOP_SCOPED).filter(
-      ([, f]) => f.ownerOnly,
+      ([, f]) => f.minRole,
     )) {
       const [method, path] = k.split(' ');
-      const res = await call(method, fx, path, w, owner2.token);
+      const res = await call(method, fx, path, w, manager.token);
       expect(res.status, k).toBe(404);
     }
   });
 
-  it('the tenant owner row itself can be made inactive and loses access', async () => {
+  it('the owner row, made inactive by editing the DB, loses access', async () => {
     const t = await createTenant('SoleOwner');
     await deactivate(t.staff.id);
     const res = await api

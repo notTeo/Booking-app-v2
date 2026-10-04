@@ -21,9 +21,9 @@ interface UpdateServiceDto {
 
 // ── helpers ──────────────────────────────────────────────
 
-const OWNER_ONLY = {
-  role: 'owner',
-  ownerMessage: 'Only the shop owner can perform this action',
+const MANAGER_ONLY = {
+  role: 'manager',
+  forbiddenMessage: 'Only the shop owner or a manager can perform this action',
 } as const;
 
 // ── service CRUD ──────────────────────────────────────────
@@ -33,7 +33,7 @@ export const createService = async (
   shopId: string,
   dto: CreateServiceDto,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   const service = await prisma.service.create({
     data: { shopId, ...dto },
@@ -82,7 +82,7 @@ export const updateService = async (
   serviceId: string,
   dto: UpdateServiceDto,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   const existing = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
@@ -103,7 +103,7 @@ export const deleteService = async (
   shopId: string,
   serviceId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   const existing = await prisma.service.findFirst({
     where: { id: serviceId, shopId },
@@ -132,7 +132,7 @@ export const assignStaffToService = async (
   serviceId: string,
   userShopId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   // verify service belongs to this shop
   const service = await prisma.service.findFirst({
@@ -161,7 +161,7 @@ export const unassignStaffFromService = async (
   serviceId: string,
   userShopId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   const assignment = await prisma.staffService.findFirst({
     where: { userShopId, serviceId },

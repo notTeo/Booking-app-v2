@@ -22,7 +22,7 @@ function LandingRedirect() {
 
   return (
     <div className="spinner-page">
-      <div className="spinner" />
+      <div className="spinner spinner--lg" />
     </div>
   );
 }

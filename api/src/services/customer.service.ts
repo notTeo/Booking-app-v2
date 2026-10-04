@@ -136,10 +136,11 @@ export const updateCustomer = async (
 };
 
 // GDPR access/erasure requests are handled by the shop (the data controller),
-// so only the owner may run them — not staff, even with canViewCustomerDetails.
+// so only the owner may run them — not managers, and not staff even with
+// canViewCustomerDetails.
 const OWNER_ONLY = {
   role: 'owner',
-  ownerMessage: 'Only the shop owner can do this',
+  forbiddenMessage: 'Only the shop owner can do this',
 } as const;
 
 // Everything we hold about one customer, for a data-access request.

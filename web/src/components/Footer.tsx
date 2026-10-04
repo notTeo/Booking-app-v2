@@ -50,7 +50,7 @@ export default function Footer() {
         </div>
 
         <div className="home-footer-bottom">
-          <span className="home-footer-copy">© {new Date().getFullYear()} <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span>. {t.footer.copyright}</span>
+          <span className="home-footer-copy">© {new Date().getFullYear()} <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span>. {t.footer.copyright}</span>
         </div>
       </div>
     </footer>

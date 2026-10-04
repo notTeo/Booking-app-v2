@@ -1,5 +1,6 @@
 import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
-import { useEffect, useRef, useState } from 'react';
+import { canManageShop } from '../utils/roles';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders } from '@fortawesome/free-solid-svg-icons';
@@ -68,7 +69,7 @@ export default function ShopBookingsPage() {
   const [searchParams] = useSearchParams();
   const { shop, isLoading: shopLoading } = useShop();
   const { t } = useLang();
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
   const slotStep = shop?.slotIntervalMinutes ?? 30;
 
   const [bookings, setBookings]               = useState<Booking[]>([]);
@@ -282,7 +283,7 @@ export default function ShopBookingsPage() {
   if (shopLoading) {
     return (
       <div className="bookings-page">
-        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+        <div className="spinner-wrap"><div className="spinner spinner--lg" /></div>
       </div>
     );
   }
@@ -293,9 +294,9 @@ export default function ShopBookingsPage() {
     <div className="bookings-page">
 
       {/* ── Header ── */}
-      <div className="bookings-header">
+      <div className="page-header">
         <h1 className="t-title">{t.bookings.title}</h1>
-        {isOwner && shop && (
+        {canManage && shop && (
           <Link className="btn btn--sm" to={`/shops/${shop.slug}/bookings/new`}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.sidebar.bookAppointment}
@@ -304,11 +305,11 @@ export default function ShopBookingsPage() {
       </div>
 
       {/* ── Toolbar: date, filters (controls live in BookingFiltersModal) ── */}
-      <div className="bookings-toolbar">
+      <div className="cluster">
         <div className="bookings-date-nav">
           <button
             type="button"
-            className="btn btn--secondary btn--icon btn--sm"
+            className="btn btn--secondary btn--sunken btn--icon btn--sm"
             onClick={() => setDateOverride(shiftDate(date, -1))}
             aria-label="Previous day"
           >
@@ -326,7 +327,7 @@ export default function ShopBookingsPage() {
           />
           <button
             type="button"
-            className="btn btn--secondary btn--icon btn--sm"
+            className="btn btn--secondary btn--sunken btn--icon btn--sm"
             onClick={() => setDateOverride(shiftDate(date, 1))}
             aria-label="Next day"
           >
@@ -340,7 +341,7 @@ export default function ShopBookingsPage() {
         </button>
         {filtersActive && (
           <>
-            <span className="cal-filters-count t-body-sm">
+            <span className="t-body-sm t-muted">
               {t.bookings.filters.showing.replace('{shown}', String(shownCount)).replace('{total}', String(bookings.length))}
             </span>
             <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
@@ -355,7 +356,7 @@ export default function ShopBookingsPage() {
       {/* ── Detail panel ── */}
       {/* ── Calendar grid ── */}
       {loading ? (
-        <div className="shops-spinner-wrap"><div className="spinner" /></div>
+        <div className="spinner-wrap"><div className="spinner spinner--lg" /></div>
       ) : (
         <>
           {outsideRangeCount > 0 && (
@@ -377,31 +378,31 @@ export default function ShopBookingsPage() {
                 >
                   <span className="chip__label">{col.label}</span>
                   {overrideCountByCol[col.id] > 0 && (
-                    <span className="cal-chip-badge"><FontAwesomeIcon icon={faClock} /> {overrideCountByCol[col.id]}</span>
+                    <span className="cal-chips__count"><FontAwesomeIcon icon={faClock} /> {overrideCountByCol[col.id]}</span>
                   )}
                 </button>
               ))}
             </div>
           )}
 
-          <div className="cal-scroll" ref={scrollRef}>
-            <div className="cal-grid">
+          <div className="cal" style={{ '--cal-hour-h': `${SLOT_H}px` } as CSSProperties} ref={scrollRef}>
+            <div className="cal__grid">
 
               {/* Column headers */}
-              <div className="cal-header-row">
-                <div className="cal-gutter-cell" />
+              <div className="cal__head">
+                <div className="cal__corner" />
                 {columns.map(col => (
-                  <div key={col.id} className="cal-col-header t-caption label-caps">{col.label}</div>
+                  <div key={col.id} className="cal__col-head t-caption label-caps">{col.label}</div>
                 ))}
               </div>
 
               {/* Body */}
-              <div className="cal-body">
+              <div className="cal__body">
 
                 {/* Time gutter */}
-                <div className="cal-gutter">
+                <div className="cal__gutter">
                   {HOURS.map(h => (
-                    <div key={h} className="cal-hour-label">
+                    <div key={h} className="cal__hour">
                       {h.toString().padStart(2, '0')}:00
                     </div>
                   ))}
@@ -410,7 +411,7 @@ export default function ShopBookingsPage() {
                 {/* Staff columns */}
                 {columns.map(col => {
                   const offs = col.isOther ? [] : offSegments(daySchedule?.[col.id] ?? null, range.start, range.end);
-                  const creatable = isOwner && !col.isOther;
+                  const creatable = canManage && !col.isOther;
 
                   return (
                     <div
@@ -420,7 +421,7 @@ export default function ShopBookingsPage() {
                         if (el) colRefs.current.set(col.id, el);
                         else colRefs.current.delete(col.id);
                       }}
-                      className={`cal-col${creatable ? ' cal-col--creatable' : ''}`}
+                      className={`cal__col${creatable ? ' cal__col--creatable' : ''}`}
                       style={{ height: HOURS.length * SLOT_H }}
                       onClick={creatable ? (e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -435,10 +436,10 @@ export default function ShopBookingsPage() {
                       {offs.map((seg, i) => (
                         <div
                           key={i}
-                          className="cal-off-segment"
+                          className="cal__off"
                           style={{ top: (seg.from - range.start) * PX_PER_MIN, height: (seg.to - seg.from) * PX_PER_MIN }}
                         >
-                          <span className="badge badge--neutral cal-off-label">{seg.closed ? t.bookings.calendar.closed : t.bookings.calendar.off}</span>
+                          <span className="badge badge--neutral cal__off-label">{seg.closed ? t.bookings.calendar.closed : t.bookings.calendar.off}</span>
                         </div>
                       ))}
 
@@ -446,7 +447,7 @@ export default function ShopBookingsPage() {
                       {HOURS.map((h, i) => (
                         <div
                           key={h}
-                          className="cal-hour-line"
+                          className="cal__line"
                           style={{ top: i * SLOT_H }}
                         />
                       ))}
@@ -474,21 +475,21 @@ export default function ShopBookingsPage() {
                               openBookingDetail(b, isSelected);
                             }}
                           >
-                            <span className="cal-block-time">
+                            <span className="cal-block__time">
                               <FontAwesomeIcon icon={BOOKING_STATUS[b.status].icon} aria-hidden="true" />
                               {tags.length > 0 && <FontAwesomeIcon icon={faClock} aria-hidden="true" />}
                               {formatTimeInZone(b.startTime, zone)}
                               <span className="visually-hidden">{t.bookings.filters.status[b.status]}</span>
                             </span>
-                            <span className="cal-block-name">
+                            <span className="cal-block__name">
                               {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
                             </span>
-                            <span className="cal-block-service">{b.service.name}</span>
+                            <span className="cal-block__service">{b.service.name}</span>
                             {tags.length > 0 && (
-                              <span className="cal-block-tag label-caps">{tags.map(tagLabel).join(' · ')}</span>
+                              <span className="cal-block__tag label-caps">{tags.map(tagLabel).join(' · ')}</span>
                             )}
                             {geom.crossesNextDay && (
-                              <span className="cal-block-next-day">{t.bookings.calendar.nextDay}</span>
+                              <span className="cal-block__next-day">{t.bookings.calendar.nextDay}</span>
                             )}
                           </button>
                         );
@@ -520,7 +521,7 @@ export default function ShopBookingsPage() {
             </button>
           </div>
           <div className="modal__body">
-            <div className="cal-detail-meta t-body-sm">
+            <div className="cluster cluster--tight t-body-sm">
               <span>{selectedBooking.service.name}</span>
               <span aria-hidden="true">·</span>
               <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
@@ -529,13 +530,13 @@ export default function ShopBookingsPage() {
             </div>
 
             {!selectedBooking.customer.contactHidden && (
-              <div className="t-body-sm cal-detail-muted">{selectedBooking.customer.phone}</div>
+              <div className="t-body-sm">{selectedBooking.customer.phone}</div>
             )}
             {selectedBooking.notes && (
-              <div className="t-body-sm cal-detail-muted cal-detail-notes">{selectedBooking.notes}</div>
+              <div className="t-body-sm"><em>{selectedBooking.notes}</em></div>
             )}
 
-            <div className="cal-detail-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
+            <div className="cluster cluster--tight" role="group" aria-label={t.bookings.filters.statusLabel}>
               {ALL_STATUSES.map(s => (
                 <button
                   key={s}

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { cancelBooking, type CancelBookingResult } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
-import '../styles/pages/invites.css';
 import { apiErrorField } from '../utils/apiError';
+import Alert from '../components/Alert';
 
 export default function CancelBookingPage() {
   const [params] = useSearchParams();
@@ -37,12 +37,10 @@ export default function CancelBookingPage() {
 
   if (loading) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
-          <div className="spinner" />
-          <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            {t.cancelBooking.cancelling}
-          </p>
+      <div className="page page--center">
+        <div className="card card--auth card--center">
+          <div className="spinner spinner--lg" />
+          <p className="card__text">{t.cancelBooking.cancelling}</p>
         </div>
       </div>
     );
@@ -50,9 +48,9 @@ export default function CancelBookingPage() {
 
   if (error) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
-          <p className="accept-invite-error">{error}</p>
+      <div className="page page--center">
+        <div className="card card--auth card--center">
+          <Alert variant="danger">{error}</Alert>
         </div>
       </div>
     );
@@ -60,9 +58,9 @@ export default function CancelBookingPage() {
 
   if (kept) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
-          <p style={{ textAlign: 'center' }}>{t.cancelBooking.kept}</p>
+      <div className="page page--center">
+        <div className="card card--auth card--center">
+          <p>{t.cancelBooking.kept}</p>
         </div>
       </div>
     );
@@ -70,18 +68,16 @@ export default function CancelBookingPage() {
 
   if (!result) {
     return (
-      <div className="accept-invite-page">
-        <div className="card card--auth accept-invite-card">
+      <div className="page page--center">
+        <div className="card card--auth card--center">
           <h1 className="t-heading">{t.cancelBooking.confirmTitle}</h1>
-          <p className="accept-invite-meta">{t.cancelBooking.confirmText}</p>
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
-              {t.cancelBooking.confirmButton}
-            </button>
-            <button type="button" className="btn btn--ghost btn--block" onClick={() => setKept(true)}>
-              {t.cancelBooking.keepButton}
-            </button>
-          </div>
+          <p className="card__text">{t.cancelBooking.confirmText}</p>
+          <button type="button" className="btn btn--danger btn--block" onClick={confirmCancel}>
+            {t.cancelBooking.confirmButton}
+          </button>
+          <button type="button" className="btn btn--ghost btn--block" onClick={() => setKept(true)}>
+            {t.cancelBooking.keepButton}
+          </button>
         </div>
       </div>
     );
@@ -99,18 +95,14 @@ export default function CancelBookingPage() {
   }).format(new Date(result.startTime));
 
   return (
-    <div className="accept-invite-page">
-      <div className="card card--auth accept-invite-card">
+    <div className="page page--center">
+      <div className="card card--auth card--center">
         <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
-        <div className="accept-invite-meta">
-          <p>
-            {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}
-            <strong>{result.shopName}</strong> {t.cancelBooking.hasCancelled}
-          </p>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-            {formattedDate}
-          </p>
-        </div>
+        <p className="card__text">
+          {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}
+          <strong>{result.shopName}</strong> {t.cancelBooking.hasCancelled}
+        </p>
+        <p className="card__text">{formattedDate}</p>
       </div>
     </div>
   );

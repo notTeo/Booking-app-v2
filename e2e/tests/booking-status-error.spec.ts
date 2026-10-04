@@ -45,7 +45,7 @@ async function openCanceledBooking(page: Page) {
 }
 
 const reopen = (page: Page) =>
-  page.locator('.cal-detail-statuses').getByRole('button', { name: 'Confirmed' }).click();
+  page.getByRole('dialog').getByRole('group').getByRole('button', { name: 'Confirmed' }).click();
 
 test('reopening a canceled booking whose slot is taken explains why (409)', async ({ page }) => {
   await openCanceledBooking(page);

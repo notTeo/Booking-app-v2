@@ -19,7 +19,7 @@ export default function StaffSelectStep({
   return (
     <div className="public-wizard-panel">
       {selectedService && (
-        <p className="public-wizard-context">
+        <p className="t-body-sm t-muted">
           {t.public.serviceContext} <strong>{selectedService.name}</strong>
         </p>
       )}
@@ -65,7 +65,7 @@ export default function StaffSelectStep({
         </button>
       </div>
 
-      <button className="btn btn--ghost wizard-btn" onClick={onBack}>{t.public.back}</button>
+      <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
     </div>
   );
 }

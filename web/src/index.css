@@ -1,5 +1,4 @@
 @import './styles/shared/base.css';
-@import './styles/shared/components.css';
 
 :root { color-scheme: light; }
 [data-theme="dark"] { color-scheme: dark; }

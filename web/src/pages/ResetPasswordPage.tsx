@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api/auth.api';
 import PasswordRequirement from '../components/PasswordRequirement';
-import '../styles/pages/reset-password.css';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';
@@ -44,9 +43,9 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="page">
+    <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="card-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <h1 className="t-heading">Reset Password</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">

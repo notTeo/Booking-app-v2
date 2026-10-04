@@ -25,7 +25,7 @@ export default function ShopNewPage() {
   if (!user?.isPro) {
     return (
       <div className="shops-page">
-        <div className="card shops-upgrade-card">
+        <div className="card">
           <h2 className="card__title">Pro Account Required</h2>
           <p className="card__text">Creating a shop requires a Pro account. Contact us to upgrade.</p>
         </div>
@@ -62,13 +62,11 @@ export default function ShopNewPage() {
 
   return (
     <div className="shops-page">
-      <div className="shop-detail-back">
-        <button className="card-back" type="button" onClick={() => navigate('/dashboard')}>
-          ← My Shops
-        </button>
-      </div>
+      <button className="back-link" type="button" onClick={() => navigate('/dashboard')}>
+        ← My Shops
+      </button>
 
-      <div className="card shop-form-card">
+      <div className="card">
         <h1 className="t-heading">New Shop</h1>
 
         <form onSubmit={handleSubmit}>
@@ -95,7 +93,7 @@ export default function ShopNewPage() {
               maxLength={40}
               required
             />
-            <span className="shop-field-hint">
+            <span className="field__hint">
               3-40 characters: lowercase letters, numbers, and hyphens (not at the start or end).
               Used in your shop URL and cannot be changed later.
             </span>
@@ -111,7 +109,7 @@ export default function ShopNewPage() {
             />
           </div>
 
-          <div className="shop-form-row">
+          <div className="field-row field-row--wrap">
             <div className="field">
               <label className="field__label" htmlFor="shop-phone">Phone</label>
               <input className="input"
@@ -149,7 +147,7 @@ export default function ShopNewPage() {
 
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <div className="shop-form-actions">
+          <div className="cluster">
             <button className={`btn${loading ? ' is-loading' : ''}`} type="submit" aria-busy={loading}>
               Create Shop
             </button>

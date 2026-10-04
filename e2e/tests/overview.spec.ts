@@ -152,9 +152,10 @@ const upcomingWhen = (page: Page) => page.locator('.data-table td[data-label="Wh
 async function expectPeriod(page: Page, range: Range) {
   await expect(bars(page)).toHaveCount(bucketStarts(range).length);
   await expect(stat(page, 'Bookings')).toHaveText(String(count(range, 'PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW')));
-  await expect(stat(page, 'Pending')).toHaveText(String(count(range, 'PENDING')));
   await expect(stat(page, 'Completed')).toHaveText(String(count(range, 'COMPLETED')));
-  await expect(stat(page, 'Canceled / no-show')).toHaveText(String(count(range, 'CANCELED', 'NO_SHOW')));
+  await expect(stat(page, 'Canceled')).toHaveText(String(count(range, 'CANCELED')));
+  await expect(stat(page, 'No-show')).toHaveText(String(count(range, 'NO_SHOW')));
+  await expect(page.locator('.stat')).toHaveCount(4);
 
   // Today's bar/week is highlighted; later ones are drawn as scheduled and say so.
   await expect(page.locator('.bar-chart__col--current')).toHaveCount(1);
@@ -287,4 +288,19 @@ test('a shop with no bookings ever shows the empty state with the booking link',
   await expect(bars(page)).toHaveCount(0);
   // Nothing to list, so no empty "upcoming" table next to the call to action.
   await expect(page.getByRole('heading', { name: 'Upcoming bookings' })).toHaveCount(0);
+});
+
+test('on a 1280px laptop the upcoming bookings are a table, beside the stat tiles', async ({ page }) => {
+  // The tests above leave no bookings; one upcoming booking gives the table a row.
+  await query('delete from "Booking"');
+  await insertBooking('ov-laptop', addDays(today, 1), 10, 'CONFIRMED');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openOverview(page);
+  await expect(upcomingRows(page)).toHaveCount(1);
+  // Row cards (under 640px of room) hide the header row off screen.
+  const header = page.locator('.data-table thead').first();
+  expect(await header.evaluate((el) => getComputedStyle(el).position)).not.toBe('absolute');
+  const tiles = (await page.locator('.overview-grid__stats').boundingBox())!;
+  const chart = (await page.locator('.overview-grid__chart').boundingBox())!;
+  expect(tiles.x).toBeGreaterThan(chart.x + chart.width);
 });

@@ -14,13 +14,15 @@ export default function AboutPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
+        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <span className="home-label about-badge"><BrandText text={t.about.badge} muted /></span>
-        <h1 className="legal-title"><BrandText text={t.about.title} /></h1>
-        <p className="legal-body"><BrandText text={t.about.intro} muted /></p>
-        <h2 className="legal-section-heading"><BrandText text={t.about.storyHeading} /></h2>
-        <p className="legal-body"><BrandText text={t.about.storyBody} muted /></p>
-        <div className="about-actions">
+        <h1 className="t-title"><BrandText text={t.about.title} /></h1>
+        <p className="t-body"><BrandText text={t.about.intro} muted /></p>
+        <div className="legal-section">
+          <h2 className="t-subheading"><BrandText text={t.about.storyHeading} /></h2>
+          <p className="t-body"><BrandText text={t.about.storyBody} muted /></p>
+        </div>
+        <div className="cluster">
           <a
             href="https://github.com/notTeo"
             target="_blank"

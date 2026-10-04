@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { canManageShop, ROLE_BADGE } from '../utils/roles';
 import { Link, useNavigate } from 'react-router-dom';
 import { handleRowClick } from '../utils/a11y';
 import { isReferencedConflict } from '../utils/apiError';
@@ -6,7 +7,6 @@ import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, sendLoginInvite, cancelLoginInvite, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
-import '../styles/pages/invites.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -31,7 +31,7 @@ export default function ShopTeamPage() {
   const [inviteError, setInviteError] = useState('');
   const [confirmCancelInvite, setConfirmCancelInvite] = useState<string | null>(null);
 
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
 
   useEffect(() => {
     if (!shop) return;
@@ -92,9 +92,11 @@ export default function ShopTeamPage() {
   // Shared between the table row's actions cell and the mobile card's
   // actions row. The confirm dialog is rendered once, at the bottom.
   const renderActions = (member: TeamMember) => {
+    // Managers are managed by the owner, or by a manager the owner allows.
+    if (member.role === 'manager' && !shop?.canManageManagers) return null;
     const resending = invitePendingId === member.id && confirmCancelInvite !== member.id;
     return (
-      <div className="invite-actions">
+      <div className="cluster cluster--tight">
         {!member.userId && (
           <>
             <button
@@ -111,15 +113,18 @@ export default function ShopTeamPage() {
             )}
           </>
         )}
-        <button
-          className="btn btn--danger-outline btn--sm"
-          onClick={() => {
-            setConfirmRemove(member.id);
-            setRemoveError('');
-          }}
-        >
-          {t.team.remove}
-        </button>
+        {/* The owner is never removed: they transfer the shop or delete it. */}
+        {member.role !== 'owner' && (
+          <button
+            className="btn btn--danger-outline btn--sm"
+            onClick={() => {
+              setConfirmRemove(member.id);
+              setRemoveError('');
+            }}
+          >
+            {t.team.remove}
+          </button>
+        )}
       </div>
     );
   };
@@ -127,8 +132,8 @@ export default function ShopTeamPage() {
   if (shopLoading || loading) {
     return (
       <div className="team-page">
-        <div className="shops-spinner-wrap">
-          <div className="spinner" />
+        <div className="spinner-wrap">
+          <div className="spinner spinner--lg" />
         </div>
       </div>
     );
@@ -136,9 +141,9 @@ export default function ShopTeamPage() {
 
   return (
     <div className="team-page">
-      <div className="team-header">
-        <h1>{t.team.title}</h1>
-        {isOwner && (
+      <div className="page-header">
+        <h1 className="t-title">{t.team.title}</h1>
+        {canManage && (
           <button type="button" className="btn btn--sm" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.invites.addMember}
@@ -163,7 +168,7 @@ export default function ShopTeamPage() {
                   <th scope="col" role="columnheader">{t.team.email}</th>
                   <th scope="col" role="columnheader">{t.team.role}</th>
                   <th scope="col" role="columnheader">{t.team.joined}</th>
-                  {isOwner && <th scope="col" role="columnheader">{t.team.actions}</th>}
+                  {canManage && <th scope="col" role="columnheader">{t.team.actions}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -181,7 +186,7 @@ export default function ShopTeamPage() {
                       )}
                     </td>
                     <td role="cell" data-label={t.team.role}>
-                      <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
+                      <span className={`badge ${ROLE_BADGE[member.role]}`}>
                         {t.team.roles[member.role]}
                       </span>
                       {!member.active && (
@@ -191,7 +196,7 @@ export default function ShopTeamPage() {
                     <td role="cell" data-label={t.team.joined}>
                       {new Date(member.createdAt).toLocaleDateString()}
                     </td>
-                    {isOwner && (
+                    {canManage && (
                       <td
                         role="cell"
                         data-label=""
@@ -212,6 +217,7 @@ export default function ShopTeamPage() {
 
       {showAdd && shop && (
         <AddMemberModal
+          canAddManager={!!shop.canManageManagers}
           shopId={shop.id}
           onCreated={(member, emailSent) => {
             setMembers((prev) => [member, ...prev]);

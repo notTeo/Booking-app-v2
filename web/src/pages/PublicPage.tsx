@@ -15,6 +15,7 @@ import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
+import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
@@ -48,10 +49,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
   );
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
+  const [saved] = useState(readSavedCustomer);
+  const [name, setName] = useState(saved?.name ?? '');
+  const [phone, setPhone] = useState(saved?.phone ?? '');
+  const [email, setEmail] = useState(saved?.email ?? '');
   const [notes, setNotes] = useState('');
+  const [remember, setRemember] = useState(saved !== null);
 
   // ── Submission state ──
   const [submitting, setSubmitting] = useState(false);
@@ -65,11 +69,17 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [confirmed, setConfirmed] = useState(false);
 
   if (wizard.loading) {
-    return <div className="public-loading"><div className="spinner" /></div>;
+    return <div className="spinner-page"><div className="spinner spinner--lg" /></div>;
   }
   if (wizard.notFound) return <NotFoundPage />;
   if (wizard.error || !wizard.shop) {
-    return <div className="public-error"><p>{wizard.error ?? t.public.somethingWrong}</p></div>;
+    return (
+      <div className="page page--center">
+        <div className="empty">
+          <p className="empty__title">{wizard.error ?? t.public.somethingWrong}</p>
+        </div>
+      </div>
+    );
   }
 
   const shop = wizard.shop;
@@ -90,6 +100,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
       });
+      if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
+      else clearSavedCustomer();
       setConfirmed(true);
       setSubmitting(false);
     } catch (err: unknown) {
@@ -118,6 +130,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
     }
   }
 
+  // Unticking is the customer's "forget me": the stored copy goes at once, the typed values stay.
+  function handleRememberChange(checked: boolean) {
+    setRemember(checked);
+    if (!checked) clearSavedCustomer();
+  }
+
   function handleBackFromForm() {
     setSubmitError(null);
     setBusyNotice(null);
@@ -126,11 +144,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
   return (
     <div className="public-page">
-      <header className="public-header">
-        <div className="public-header-inner">
-          <h1 className="public-shop-name">{shop.name}</h1>
-          {shop.description && <p className="public-shop-desc">{shop.description}</p>}
-          <div className="public-shop-meta">
+      <header className="page-hero">
+        <div className="page-hero__inner">
+          <h1 className="t-title">{shop.name}</h1>
+          {shop.description && <p className="t-body t-muted">{shop.description}</p>}
+          <div className="cluster cluster--tight">
             {shop.phone && <span className="badge badge--neutral"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
             {shop.formattedAddress && <span className="badge badge--neutral"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
             <span className="badge badge--neutral"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
@@ -141,7 +159,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
       <main className="public-main">
         {confirmed ? (
           <section className="public-section">
-            <div className="card public-booking-confirmed">
+            <div className="card card--center">
               <div className="avatar avatar--xl" aria-hidden="true">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>
@@ -164,7 +182,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
           </section>
         ) : (
           <section className="public-section">
-            <h2 className="public-section-title">{t.public.bookAppointment}</h2>
+            <h2 className="t-heading">{t.public.bookAppointment}</h2>
 
             <WizardStepsIndicator currentStep={wizard.step} />
 
@@ -203,7 +221,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
             {wizard.step === 4 && (
               <div className="public-wizard-panel">
                 {wizard.selectedService && (
-                  <p className="public-wizard-context">
+                  <p className="t-body-sm t-muted">
                     {t.public.serviceContext} <strong>{wizard.selectedService.name}</strong>
                     {selectedMember && (
                       <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
@@ -215,7 +233,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 <div className="public-booking-form">
                   <div className="field">
                     <label className="field__label" htmlFor="b-name">
-                      {t.public.nameLabel} <span className="public-field-required">*</span>
+                      {t.public.nameLabel} <span className="field__required">*</span>
                     </label>
                     <input
                       id="b-name"
@@ -230,7 +248,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
                   <div className="field">
                     <label className="field__label" htmlFor="b-phone">
-                      {t.public.phoneLabel} <span className="public-field-required">*</span>
+                      {t.public.phoneLabel} <span className="field__required">*</span>
                     </label>
                     <input
                       id="b-phone"
@@ -273,6 +291,22 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
+                  <div className="field">
+                    <label className="checkbox">
+                      <input
+                        id="b-remember"
+                        className="checkbox__input"
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(e) => handleRememberChange(e.target.checked)}
+                        aria-describedby="b-remember-hint"
+                      />
+                      <span className="checkbox__box" />
+                      {t.public.rememberLabel}
+                    </label>
+                    <p id="b-remember-hint" className="field__hint">{t.public.rememberHint}</p>
+                  </div>
+
                   <p className="field__hint">
                     {t.public.privacyNoticeBefore}{' '}
                     <Link to="/privacy" target="_blank" rel="noopener">{t.public.privacyNoticeLink}</Link>
@@ -283,16 +317,16 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   {submitError && <Alert variant="danger">{submitError}</Alert>}
                 </div>
 
-                <div className="public-wizard-actions">
+                <div className="cluster public-wizard-actions">
                   <button
-                    className="btn btn--ghost wizard-btn"
+                    className="btn btn--ghost"
                     onClick={handleBackFromForm}
                     disabled={submitting}
                   >
                     {t.public.back}
                   </button>
                   <button
-                    className={`btn wizard-btn${submitting && !cooling ? ' is-loading' : ''}`}
+                    className={`btn${submitting && !cooling ? ' is-loading' : ''}`}
                     onClick={handleSubmit}
                     aria-busy={submitting && !cooling}
                     disabled={cooling || name.trim() === '' || phone.trim() === ''}

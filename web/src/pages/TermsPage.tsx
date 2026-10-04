@@ -18,17 +18,17 @@ export default function TermsPage() {
   return (
     <>
       <div className="legal-page">
-        <Link to="/" className="legal-back">← <span className="brand-wordmark brand-wordmark--muted"><Wordmark /></span></Link>
-        <h1 className="legal-title"><BrandText text={t.terms.title} /></h1>
-        <p className="legal-updated"><BrandText text={t.terms.lastUpdated} muted /></p>
-        <p className="legal-body"><BrandText text={t.terms.intro} muted /></p>
+        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
+        <h1 className="t-title"><BrandText text={t.terms.title} /></h1>
+        <p className="t-body-sm t-muted"><BrandText text={t.terms.lastUpdated} muted /></p>
+        <p className="t-body"><BrandText text={t.terms.intro} muted /></p>
         {sections.map(([heading, body]) => (
-          <div key={heading}>
-            <h2 className="legal-section-heading"><BrandText text={heading} /></h2>
-            <p className="legal-body"><BrandText text={body} muted /></p>
+          <div key={heading} className="legal-section">
+            <h2 className="t-subheading"><BrandText text={heading} /></h2>
+            <p className="t-body"><BrandText text={body} muted /></p>
           </div>
         ))}
-        <p className="legal-contact">
+        <p className="t-body-sm t-muted">
           <BrandText text={t.terms.contact} muted /> <a href="mailto:nikostheodosis05@gmail.com">nikostheodosis05@gmail.com</a>
         </p>
       </div>

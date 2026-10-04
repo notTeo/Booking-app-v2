@@ -1,7 +1,7 @@
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/prisma';
-import { requireShopAccess } from '../utils/shopAccess';
+import { canManageManagers, requireShopAccess } from '../utils/shopAccess';
 import {
   generateRandomToken,
   getInviteTokenExpiry,
@@ -10,8 +10,10 @@ import {
 import { sendInviteEmail } from './email.service';
 
 export interface UpdateMemberRoleDto {
-  role: 'owner' | 'staff';
+  role: 'owner' | 'manager' | 'staff';
   canViewCustomerDetails?: boolean;
+  canManageManagers?: boolean;
+  canEditShopSettings?: boolean;
   email?: string;
   active?: boolean;
   bookableByCustomers?: boolean;
@@ -21,7 +23,7 @@ export interface UpdateMemberRoleDto {
 export interface CreateTeamMemberDto {
   name: string;
   email?: string;
-  role: 'owner' | 'staff';
+  role: 'manager' | 'staff';
   canViewCustomerDetails?: boolean;
   sendEmail?: boolean;
 }
@@ -34,6 +36,8 @@ const MEMBER_SELECT = {
   name: true,
   email: true,
   canViewCustomerDetails: true,
+  canManageManagers: true,
+  canEditShopSettings: true,
   active: true,
   bookableByCustomers: true,
   bookableInternally: true,
@@ -50,10 +54,23 @@ const shapeMember = <T extends { invites: { id: string }[] }>(member: T) => {
   return { ...rest, hasPendingInvite: invites.length > 0 };
 };
 
-const OWNER_ONLY = {
-  role: 'owner',
-  ownerMessage: 'Only the shop owner can manage team members',
+const MANAGER_ONLY = {
+  role: 'manager',
+  forbiddenMessage: 'Only the shop owner or a manager can manage team members',
 } as const;
+
+const TRANSFER_FIRST =
+  'The owner cannot be changed or removed. Transfer ownership first.';
+
+type Caller = Awaited<ReturnType<typeof requireShopAccess>>;
+
+// Anything that touches a manager — adding one, promoting to or demoting from
+// the role, editing, inviting or removing one — needs the owner, or a manager
+// the owner has let manage managers. Everyone else manages staff only.
+const requireManagerAccess = (caller: Caller, ...roles: string[]) => {
+  if (roles.includes('manager') && !canManageManagers(caller))
+    throw new AppError(403, 'The shop owner has not let you manage managers');
+};
 
 // memberId is UserShop.id — a member may not have a login (User) yet
 async function requireMemberInShop(memberId: string, shopId: string) {
@@ -64,20 +81,6 @@ async function requireMemberInShop(memberId: string, shopId: string) {
   if (!member) throw new AppError(404, 'Member not found');
   return member;
 }
-
-// Owners who can actually manage the shop, other than `memberId`: the owner
-// role alone is not enough, they must be active and have a login. A shop must
-// always keep at least one.
-const countOtherManagingOwners = (shopId: string, memberId: string) =>
-  prisma.userShop.count({
-    where: {
-      shopId,
-      role: 'owner',
-      active: true,
-      userId: { not: null },
-      id: { not: memberId },
-    },
-  });
 
 export const getMembers = async (userId: string, shopId: string) => {
   await requireShopAccess(userId, shopId);
@@ -103,7 +106,8 @@ export const createTeamMember = async (
   shopId: string,
   dto: CreateTeamMemberDto,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
+  requireManagerAccess(caller, dto.role);
 
   const email = dto.email ? dto.email.toLowerCase() : null;
 
@@ -148,13 +152,39 @@ export const updateMemberRole = async (
   memberId: string,
   dto: UpdateMemberRoleDto,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
+  requireManagerAccess(caller, member.role, dto.role);
 
-  // Prevent demoting the only owner
-  if (dto.role === 'staff' && member.role === 'owner') {
-    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
-      throw new AppError(400, 'Cannot demote the only owner');
+  // A manager's two extra permissions are the owner's to give. They are sent
+  // with every save of the member form, so only an actual change is refused,
+  // and they are cleared when the member is not (or no longer) a manager.
+  const permission = (key: 'canManageManagers' | 'canEditShopSettings') => {
+    if (dto.role !== 'manager') return false;
+    const wanted = dto[key] ?? member[key];
+    if (wanted !== member[key] && caller.role !== 'owner')
+      throw new AppError(
+        403,
+        "Only the shop owner can change a manager's permissions",
+      );
+    return wanted;
+  };
+  const managerPermissions = {
+    canManageManagers: permission('canManageManagers'),
+    canEditShopSettings: permission('canEditShopSettings'),
+  };
+
+  // A shop has one owner. Only the owner edits their own row, and its role
+  // changes only through transferOwnership — never here, in either direction.
+  if (member.role === 'owner') {
+    if (member.userId !== userId)
+      throw new AppError(403, 'Only the owner can edit the owner');
+    if (dto.role !== 'owner') throw new AppError(400, TRANSFER_FIRST);
+  } else if (dto.role === 'owner') {
+    throw new AppError(
+      400,
+      'A shop has one owner. Use transfer ownership to change it.',
+    );
   }
 
   const email =
@@ -179,8 +209,7 @@ export const updateMemberRole = async (
   }
 
   // The owner must always be able to access their own shop — active can
-  // never be turned off for the owner role, and promoting someone to owner
-  // implicitly reactivates them.
+  // never be turned off for the owner role.
   let active: boolean;
   if (dto.role === 'owner') {
     if (dto.active === false)
@@ -219,6 +248,7 @@ export const updateMemberRole = async (
         canViewCustomerDetails: dto.canViewCustomerDetails,
       }),
       ...(email !== undefined && { email }),
+      ...managerPermissions,
       active,
       bookableByCustomers,
       bookableInternally,
@@ -237,13 +267,16 @@ export const removeMember = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
+  requireManagerAccess(caller, member.role);
 
-  // Prevent removing the last owner
+  // The owner leaves by handing the shop over (or deleting it), never by
+  // being removed — not even by themself.
   if (member.role === 'owner') {
-    if ((await countOtherManagingOwners(shopId, memberId)) === 0)
-      throw new AppError(400, 'Cannot remove the only owner');
+    if (member.userId !== userId)
+      throw new AppError(403, 'Only the owner can edit the owner');
+    throw new AppError(400, TRANSFER_FIRST);
   }
 
   await prisma.userShop.delete({
@@ -255,6 +288,52 @@ export const removeMember = async (
   );
 };
 
+// Hands the shop to a manager: they become the owner and the caller becomes a
+// manager, in one step so the shop never has zero or two owners.
+export const transferOwnership = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
+  const caller = await requireShopAccess(userId, shopId, {
+    role: 'owner',
+    forbiddenMessage: 'Only the shop owner can transfer ownership',
+  });
+  const member = await requireMemberInShop(memberId, shopId);
+
+  if (member.role !== 'manager' || !member.active || !member.userId)
+    throw new AppError(
+      400,
+      'Ownership can only be transferred to an active manager who has a login',
+    );
+
+  await prisma.$transaction([
+    // The old owner starts as a plain manager, like any other; the new owner
+    // decides what more to allow. The flags mean nothing on the owner's row.
+    prisma.userShop.update({
+      where: { id: caller.id },
+      data: {
+        role: 'manager',
+        canManageManagers: false,
+        canEditShopSettings: false,
+      },
+    }),
+    prisma.userShop.update({
+      where: { id: memberId },
+      data: {
+        role: 'owner',
+        canManageManagers: false,
+        canEditShopSettings: false,
+      },
+    }),
+  ]);
+
+  logger.info(
+    `Ownership of shop ${shopId} transferred from user ${userId} to member ${memberId}`,
+  );
+  return getMember(userId, shopId, memberId);
+};
+
 // Sends (or resends) the login invite for a member who has no login yet.
 // Rotates the token each time, since the plain token from a prior send was
 // never stored — this same function backs "send now", "send later", and
@@ -264,8 +343,9 @@ export const sendLoginInvite = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
   const member = await requireMemberInShop(memberId, shopId);
+  requireManagerAccess(caller, member.role);
 
   if (member.userId) throw new AppError(400, 'This member already has a login');
   if (!member.active)
@@ -306,6 +386,7 @@ export const sendLoginInvite = async (
         tokenHash,
         expiresAt: getInviteTokenExpiry(),
         email: member.email,
+        role: member.role,
       },
     });
   } else {
@@ -343,8 +424,9 @@ export const cancelLoginInvite = async (
   shopId: string,
   memberId: string,
 ) => {
-  await requireShopAccess(userId, shopId, OWNER_ONLY);
-  await requireMemberInShop(memberId, shopId);
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
+  const member = await requireMemberInShop(memberId, shopId);
+  requireManagerAccess(caller, member.role);
 
   await prisma.shopInvite.deleteMany({
     where: { userShopId: memberId, status: 'pending' },

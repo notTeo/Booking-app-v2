@@ -77,7 +77,7 @@ for (const c of CASES) {
       await page.locator('#b-name').fill('E2E Tester');
       await page.locator('#b-phone').fill(`69${String(Date.now()).slice(-8)}`);
       await page.getByRole('button', { name: /confirm booking/i }).click();
-      await expect(page.locator('.public-booking-confirmed')).toBeVisible();
+      await expect(page.locator('.public-main .card--center')).toBeVisible();
 
       expect(await latestBookingStart()).toBe(athensWallClockToUtc(c.date, '10:00').toISOString());
     });

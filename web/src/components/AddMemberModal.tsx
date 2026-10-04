@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
-import { createTeamMember, type TeamMember, type ShopRole } from '../api/team.api';
+import { createTeamMember, type TeamMember, type AssignableRole } from '../api/team.api';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from './Alert';
 import ConfirmDialog from './ConfirmDialog';
@@ -11,23 +11,25 @@ import Switch from './Switch';
 
 interface Props {
   shopId: string;
+  /** Whether the manager role is on offer (the owner, or a manager allowed to manage managers). */
+  canAddManager: boolean;
   /** Called with the new member and whether the invite email was sent. */
   onCreated: (member: TeamMember, emailSent: boolean) => void;
   onClose: () => void;
 }
 
 // Add a team member (the form that used to live on the shop Invites page).
-// Giving someone the owner role goes through an extra confirmation.
-export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
+// Giving someone the manager role goes through an extra confirmation.
+export default function AddMemberModal({ shopId, canAddManager, onCreated, onClose }: Props) {
   const uid = useId();
   const { t } = useLang();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<ShopRole>('staff');
+  const [role, setRole] = useState<AssignableRole>('staff');
   const [canViewCustomerDetails, setCanViewCustomerDetails] = useState(true);
   const [sendEmail, setSendEmail] = useState(true);
-  const [confirmOwner, setConfirmOwner] = useState(false);
+  const [confirmManager, setConfirmManager] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -45,7 +47,7 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
       });
       onCreated(member, sendEmail);
     } catch (err: unknown) {
-      setConfirmOwner(false);
+      setConfirmManager(false);
       setError(apiErrorMessage(err, t.invites.errorSend));
       setSending(false);
     }
@@ -53,8 +55,8 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (role === 'owner' && !confirmOwner) {
-      setConfirmOwner(true);
+    if (role === 'manager' && !confirmManager) {
+      setConfirmManager(true);
       return;
     }
     submitCreate();
@@ -65,7 +67,7 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
       <Modal
         onClose={() => { if (!sending) onClose(); }}
         labelledBy={`${uid}-title`}
-        paused={confirmOwner}
+        paused={confirmManager}
       >
         <div className="modal__header">
           <h2 id={`${uid}-title`} className="modal__title">{t.invites.addMember}</h2>
@@ -117,20 +119,20 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
                   id={`${uid}-role`}
                   className="select"
                   value={role}
-                  onChange={(e) => { setRole(e.target.value as ShopRole); setConfirmOwner(false); }}
+                  onChange={(e) => { setRole(e.target.value as AssignableRole); setConfirmManager(false); }}
                   disabled={sending}
                 >
                   <option value="staff">{t.invites.roles.staff}</option>
-                  <option value="owner">{t.invites.roles.owner}</option>
+                  {canAddManager && <option value="manager">{t.invites.roles.manager}</option>}
                 </select>
               </div>
             </div>
 
             {role === 'staff' && (
-              <div className="team-switch-row">
-                <div className="team-switch-label">
-                  <span>{t.invites.canViewCustomerDetails}</span>
-                  <span className="team-switch-desc">{t.invites.canViewCustomerDetailsDesc}</span>
+              <div className="setting-row">
+                <div className="setting-row__label">
+                  <span className="setting-row__title">{t.invites.canViewCustomerDetails}</span>
+                  <span className="setting-row__text">{t.invites.canViewCustomerDetailsDesc}</span>
                 </div>
                 <Switch
                   checked={canViewCustomerDetails}
@@ -141,10 +143,10 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
               </div>
             )}
 
-            <div className="team-switch-row">
-              <div className="team-switch-label">
-                <span>{t.invites.sendEmailNow}</span>
-                <span className="team-switch-desc">{t.invites.sendEmailNowDesc}</span>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <span className="setting-row__title">{t.invites.sendEmailNow}</span>
+                <span className="setting-row__text">{t.invites.sendEmailNowDesc}</span>
               </div>
               <Switch checked={sendEmail} onChange={setSendEmail} label={t.invites.sendEmailNow} disabled={sending} />
             </div>
@@ -165,16 +167,16 @@ export default function AddMemberModal({ shopId, onCreated, onClose }: Props) {
         </div>
       </Modal>
 
-      {confirmOwner && (
+      {confirmManager && (
         <ConfirmDialog
           tone="warning"
-          title={t.invites.ownerInviteTitle.replace('{name}', name)}
-          message={t.invites.confirmOwnerInvite}
-          confirmLabel={t.invites.ownerInviteConfirmButton}
+          title={t.invites.managerInviteTitle.replace('{name}', name)}
+          message={t.invites.confirmManagerInvite}
+          confirmLabel={t.invites.managerInviteConfirmButton}
           cancelLabel={t.team.cancel}
           busy={sending}
           onConfirm={submitCreate}
-          onCancel={() => setConfirmOwner(false)}
+          onCancel={() => setConfirmManager(false)}
         />
       )}
     </>

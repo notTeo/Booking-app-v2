@@ -22,7 +22,7 @@ async function login(page: Page) {
 const sidebar = (page: Page) => page.locator('aside.sidebar');
 const item = (page: Page, name: string) => sidebar(page).getByRole('link', { name, exact: true });
 
-test('shop sidebar: shop items, no account-level items; Account leaves for the top-bar layout', async ({ page }) => {
+test('shop sidebar: shop items, no account-level items; on Account the sidebar stays as it is', async ({ page }) => {
   await login(page);
   for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings', 'Account']) {
     await expect(item(page, name), name).toBeVisible();
@@ -32,19 +32,30 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
     await expect(item(page, name), name).toHaveCount(0);
   }
-  // "All shops" is a way out (to the dashboard), not the current page. The
-  // seeded owner has a single shop: the link shows regardless of how many.
-  await expect(item(page, 'All shops')).toHaveAttribute('href', '/dashboard');
-  await expect(item(page, 'All shops')).not.toHaveAttribute('aria-current', 'page');
-  await item(page, 'All shops').click();
+  // "Home" is a way out (to the dashboard), not the current page.
+  await expect(item(page, 'Home')).toHaveAttribute('href', '/dashboard');
+  await expect(item(page, 'Home')).not.toHaveAttribute('aria-current', 'page');
+  await item(page, 'Home').click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goBack();
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
 
   await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(sidebar(page)).toHaveCount(0);
-  await expect(page.locator('header.navbar')).toBeVisible();
+  await expect(item(page, 'Account')).toHaveAttribute('aria-current', 'page');
+  await expect(item(page, 'Home')).toBeVisible();
+  await expect(item(page, 'Overview')).toBeVisible();
+  await expect(page.locator('header.navbar')).toHaveCount(0);
+});
+
+test('Account has no Back to shop button: Overview in the sidebar goes back to the shop', async ({ page }) => {
+  await login(page);
+  await item(page, 'Account').click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Account');
+  await expect(page.getByRole('link', { name: 'Back to shop' })).toHaveCount(0);
+  await item(page, 'Overview').click();
+  await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
 });
 
 test('owner can still start a booking from the Bookings page', async ({ page }) => {
@@ -54,12 +65,40 @@ test('owner can still start a booking from the Bookings page', async ({ page }) 
   await expect(page).toHaveURL(new RegExp(`${SHOP}/bookings/new$`));
 });
 
+test('a manager gets the owner menu and pages, but no way to delete the shop', async ({ page }) => {
+  await login(page);
+  await query(`update "UserShop" set role = 'manager' where id = 'us1'`);
+  try {
+    await page.goto(SHOP);
+    for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings']) {
+      await expect(item(page, name), name).toBeVisible();
+    }
+    await page.goto(`${SHOP}/settings`);
+    await expect(page).toHaveURL(new RegExp(`${SHOP}/settings$`));
+    await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
+    await expect(page.locator('.card--danger')).toHaveCount(0);
+    // Without the owner's permission the settings are view only.
+    await expect(page.getByText('View only. The owner can let you edit these settings.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+    await expect(page.locator('#detail-active')).toBeDisabled();
+
+    // With it they can save, but taking the shop offline stays with the owner.
+    await query(`update "UserShop" set "canEditShopSettings" = true where id = 'us1'`);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
+    await expect(page.locator('#detail-active')).toBeDisabled();
+    await expect(page.getByText('Only the owner can change this.')).toBeVisible();
+  } finally {
+    await query(`update "UserShop" set role = 'owner', "canEditShopSettings" = false where id = 'us1'`);
+  }
+});
+
 test('staff see the trimmed menu and are redirected away from owner pages', async ({ page }) => {
   await login(page);
   await query(`update "UserShop" set role = 'staff' where id = 'us1'`);
   try {
     await page.goto(SHOP);
-    for (const name of ['All shops', 'Overview', 'Bookings', 'Services', 'Account']) {
+    for (const name of ['Home', 'Overview', 'Bookings', 'Services', 'Account']) {
       await expect(item(page, name), name).toBeVisible();
     }
     for (const name of ['Team', 'Customers', 'Settings']) {
