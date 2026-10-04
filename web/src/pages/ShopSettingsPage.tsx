@@ -1,4 +1,5 @@
 import { publicShopUrl } from '../utils/publicLink';
+import { ROLE_BADGE } from '../utils/roles';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
@@ -165,7 +166,7 @@ export default function ShopSettingsPage() {
       <div className="shop-detail-header">
         <h1 className="t-title">{shop.name}</h1>
         <div className="cluster cluster--tight">
-          <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>{shop.role}</span>
+          <span className={`badge ${ROLE_BADGE[shop.role]}`}>{t.team.roles[shop.role]}</span>
           <span className={`badge ${shop.isActive ? 'badge--success' : 'badge--neutral'}`}>
             {shop.isActive ? t.shops.active : t.shops.inactive}
           </span>

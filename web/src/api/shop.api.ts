@@ -1,6 +1,6 @@
 import client from './client';
 
-export type ShopRole = 'owner' | 'staff';
+export type ShopRole = 'owner' | 'manager' | 'staff';
 
 export interface Shop {
   id: string;

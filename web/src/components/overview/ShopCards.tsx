@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
+import { ROLE_BADGE } from '../../utils/roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faClock, faStore, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faClock, faStore, faUser, faUserGear } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../../context/LanguageContext';
 import type { ShopRole } from '../../api/shop.api';
 import type { ShopOverviewRow } from '../../api/overview.api';
+
+const ROLE_ICON = { owner: faStore, manager: faUserGear, staff: faUser } as const;
 
 export interface ShopCardRow {
   id: string;
@@ -30,8 +33,8 @@ export default function ShopCards({ shops }: { shops: ShopCardRow[] }) {
                 <span className="shop-card__name">{shop.name}</span>
                 <FontAwesomeIcon icon={faArrowRight} className="shop-card__arrow" aria-hidden="true" />
               </span>
-              <span className={`badge ${shop.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
-                <FontAwesomeIcon icon={shop.role === 'owner' ? faStore : faUser} aria-hidden="true" />
+              <span className={`badge ${ROLE_BADGE[shop.role]}`}>
+                <FontAwesomeIcon icon={ROLE_ICON[shop.role]} aria-hidden="true" />
                 {t.invites.roles[shop.role]}
               </span>
               {shop.metrics && (

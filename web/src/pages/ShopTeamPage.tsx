@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { canManageShop, ROLE_BADGE } from '../utils/roles';
 import { Link, useNavigate } from 'react-router-dom';
 import { handleRowClick } from '../utils/a11y';
 import { isReferencedConflict } from '../utils/apiError';
@@ -30,7 +31,7 @@ export default function ShopTeamPage() {
   const [inviteError, setInviteError] = useState('');
   const [confirmCancelInvite, setConfirmCancelInvite] = useState<string | null>(null);
 
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
 
   useEffect(() => {
     if (!shop) return;
@@ -110,15 +111,18 @@ export default function ShopTeamPage() {
             )}
           </>
         )}
-        <button
-          className="btn btn--danger-outline btn--sm"
-          onClick={() => {
-            setConfirmRemove(member.id);
-            setRemoveError('');
-          }}
-        >
-          {t.team.remove}
-        </button>
+        {/* The owner is never removed: they transfer the shop or delete it. */}
+        {member.role !== 'owner' && (
+          <button
+            className="btn btn--danger-outline btn--sm"
+            onClick={() => {
+              setConfirmRemove(member.id);
+              setRemoveError('');
+            }}
+          >
+            {t.team.remove}
+          </button>
+        )}
       </div>
     );
   };
@@ -137,7 +141,7 @@ export default function ShopTeamPage() {
     <div className="team-page">
       <div className="page-header">
         <h1 className="t-title">{t.team.title}</h1>
-        {isOwner && (
+        {canManage && (
           <button type="button" className="btn btn--sm" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.invites.addMember}
@@ -162,7 +166,7 @@ export default function ShopTeamPage() {
                   <th scope="col" role="columnheader">{t.team.email}</th>
                   <th scope="col" role="columnheader">{t.team.role}</th>
                   <th scope="col" role="columnheader">{t.team.joined}</th>
-                  {isOwner && <th scope="col" role="columnheader">{t.team.actions}</th>}
+                  {canManage && <th scope="col" role="columnheader">{t.team.actions}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +184,7 @@ export default function ShopTeamPage() {
                       )}
                     </td>
                     <td role="cell" data-label={t.team.role}>
-                      <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
+                      <span className={`badge ${ROLE_BADGE[member.role]}`}>
                         {t.team.roles[member.role]}
                       </span>
                       {!member.active && (
@@ -190,7 +194,7 @@ export default function ShopTeamPage() {
                     <td role="cell" data-label={t.team.joined}>
                       {new Date(member.createdAt).toLocaleDateString()}
                     </td>
-                    {isOwner && (
+                    {canManage && (
                       <td
                         role="cell"
                         data-label=""

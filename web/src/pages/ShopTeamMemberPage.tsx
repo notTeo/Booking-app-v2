@@ -1,6 +1,7 @@
 import { useEffect, useState, useId } from 'react';
+import { canManageShop, ROLE_BADGE } from '../utils/roles';
 import { useParams, useNavigate } from 'react-router-dom';
-import { isReferencedConflict } from '../utils/apiError';
+import { apiErrorMessage, isReferencedConflict } from '../utils/apiError';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -9,6 +10,8 @@ import {
   removeMember,
   sendLoginInvite,
   cancelLoginInvite,
+  transferOwnership,
+  type ShopRole,
   type TeamMember,
 } from '../api/team.api';
 import * as whApi from '../api/workingHours.api';
@@ -29,7 +32,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 export default function ShopTeamMemberPage() {
   const uid = useId();
   const { slug, memberId } = useParams<{ slug: string; memberId: string }>();
-  const { shop, isLoading: shopLoading } = useShop();
+  const { shop, isLoading: shopLoading, refetch: refetchShop } = useShop();
   const { t } = useLang();
   const navigate = useNavigate();
 
@@ -38,7 +41,7 @@ export default function ShopTeamMemberPage() {
   const [error, setError] = useState('');
 
   // Member & Access — name/role/email/permissions, saved together
-  const [editRole, setEditRole] = useState<'owner' | 'staff'>('staff');
+  const [editRole, setEditRole] = useState<ShopRole>('staff');
   const [editCanView, setEditCanView] = useState(true);
   const [editEmail, setEditEmail] = useState('');
   const [editActive, setEditActive] = useState(true);
@@ -54,6 +57,11 @@ export default function ShopTeamMemberPage() {
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [inviteError, setInviteError] = useState('');
 
+  // Transfer ownership — the owner hands the shop to this manager
+  const [confirmTransfer, setConfirmTransfer] = useState(false);
+  const [transferring, setTransferring] = useState(false);
+  const [transferError, setTransferError] = useState('');
+
   // Remove
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -68,7 +76,13 @@ export default function ShopTeamMemberPage() {
   const [assigningService, setAssigningService] = useState(false);
   const [unassigningServiceId, setUnassigningServiceId] = useState<string | null>(null);
 
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
+  const viewerIsOwner = shop?.role === 'owner';
+  const memberIsOwner = member?.role === 'owner';
+  // A shop has one owner, so an owner looking at the owner's row is looking at
+  // their own. Managers see it read-only.
+  const canEdit = canManage && (!memberIsOwner || viewerIsOwner);
+  const canTransfer = viewerIsOwner && member?.role === 'manager' && member.active && !!member.userId;
 
   useEffect(() => {
     if (!shop || !memberId) return;
@@ -107,7 +121,7 @@ export default function ShopTeamMemberPage() {
       editActive !== member.active ||
       editBookableByCustomers !== member.bookableByCustomers ||
       editBookableInternally !== member.bookableInternally);
-  const isOwnerChange = !!member && editRole !== member.role && (editRole === 'owner' || member.role === 'owner');
+  const isManagerChange = !!member && editRole !== member.role && (editRole === 'manager' || member.role === 'manager');
 
   // Turning Active off also turns off both bookable toggles — an inactive
   // member should never be selectable anywhere. Turning it back on is
@@ -120,12 +134,9 @@ export default function ShopTeamMemberPage() {
     }
   };
 
-  const handleRoleChange = (role: 'owner' | 'staff') => {
+  const handleRoleChange = (role: ShopRole) => {
     setEditRole(role);
     setConfirmRoleChange(false);
-    // The owner can never be inactive, since that would lock them out of
-    // their own shop.
-    if (role === 'owner') setEditActive(true);
   };
 
   const saveMemberChange = async () => {
@@ -135,7 +146,7 @@ export default function ShopTeamMemberPage() {
     setMemberSuccess('');
     try {
       const dto: {
-        role: 'owner' | 'staff';
+        role: ShopRole;
         canViewCustomerDetails: boolean;
         email?: string;
         active: boolean;
@@ -172,11 +183,30 @@ export default function ShopTeamMemberPage() {
   };
 
   const handleSaveMember = () => {
-    if (isOwnerChange && !confirmRoleChange) {
+    if (isManagerChange && !confirmRoleChange) {
       setConfirmRoleChange(true);
       return;
     }
     saveMemberChange();
+  };
+
+  const handleTransfer = async () => {
+    if (!shop || !memberId || transferring) return;
+    setTransferring(true);
+    setTransferError('');
+    try {
+      const updated = await transferOwnership(shop.id, memberId);
+      setMember(updated);
+      setEditRole(updated.role);
+      setConfirmTransfer(false);
+      // The viewer is a manager now: reload the shop so every gate follows.
+      refetchShop();
+    } catch (err: unknown) {
+      setConfirmTransfer(false);
+      setTransferError(apiErrorMessage(err, t.team.errorTransfer));
+    } finally {
+      setTransferring(false);
+    }
   };
 
   const handleRemove = async () => {
@@ -307,7 +337,7 @@ export default function ShopTeamMemberPage() {
       <div className="card team-member-card">
         <h1 className="t-heading">{member.name}</h1>
         <div className="cluster">
-          <span className={`badge ${member.role === 'owner' ? 'badge--accent' : 'badge--neutral'}`}>
+          <span className={`badge ${ROLE_BADGE[member.role]}`}>
             {t.team.roles[member.role]}
           </span>
           <span className="t-body-sm t-muted">
@@ -315,7 +345,7 @@ export default function ShopTeamMemberPage() {
           </span>
         </div>
 
-        {isOwner ? (
+        {canEdit ? (
           <>
             <div className="field">
               <label className="field__label" htmlFor={`${uid}-email`}>{t.team.emailLabel}</label>
@@ -328,16 +358,19 @@ export default function ShopTeamMemberPage() {
               />
             </div>
 
-            <div className="field">
-              <label className="field__label" htmlFor={`${uid}-role`}>{t.team.role}</label>
-              <div className="select-wrap"><select id={`${uid}-role`} className="select"
-                value={editRole}
-                onChange={(e) => handleRoleChange(e.target.value as 'owner' | 'staff')}
-              >
-                <option value="staff">{t.team.roles.staff}</option>
-                <option value="owner">{t.team.roles.owner}</option>
-              </select></div>
-            </div>
+            {/* The owner's role only changes by transferring the shop. */}
+            {!memberIsOwner && (
+              <div className="field">
+                <label className="field__label" htmlFor={`${uid}-role`}>{t.team.role}</label>
+                <div className="select-wrap"><select id={`${uid}-role`} className="select"
+                  value={editRole}
+                  onChange={(e) => handleRoleChange(e.target.value as ShopRole)}
+                >
+                  <option value="staff">{t.team.roles.staff}</option>
+                  <option value="manager">{t.team.roles.manager}</option>
+                </select></div>
+              </div>
+            )}
 
             <div className="setting-row">
               <div className="setting-row__label">
@@ -441,7 +474,7 @@ export default function ShopTeamMemberPage() {
 
       {/* Staff availability schedule */}
       {workingHoursApi && (
-        <WorkingHoursPanel api={workingHoursApi} isOwner={isOwner} title={t.team.availability} />
+        <WorkingHoursPanel api={workingHoursApi} canManage={canManage} title={t.team.availability} />
       )}
 
       {/* Assigned services */}
@@ -461,7 +494,7 @@ export default function ShopTeamMemberPage() {
                 {memberServices.map((a) => (
                   <li key={a.serviceId} className="list__item">
                     <span>{a.service.name}</span>
-                    {isOwner && (
+                    {canManage && (
                       <button
                         className="btn btn--secondary btn--sm"
                         onClick={() => handleUnassignService(a.serviceId)}
@@ -474,7 +507,7 @@ export default function ShopTeamMemberPage() {
                 ))}
               </ul>
             )}
-            {isOwner && (() => {
+            {canManage && (() => {
               const assignedIds = new Set(memberServices.map((a) => a.serviceId));
               const available = allServices.filter((s) => !assignedIds.has(s.id));
               if (available.length === 0) return null;
@@ -505,8 +538,20 @@ export default function ShopTeamMemberPage() {
         )}
       </div>
 
-      {/* Danger zone — owner only */}
-      {isOwner && (
+      {/* Transfer ownership — the owner only, to a manager who can sign in */}
+      {canTransfer && (
+        <div className="card">
+          <h2 className="card__title">{t.team.transferOwnership}</h2>
+          <p className="card__text">{t.team.transferDesc}</p>
+          {transferError && <Alert variant="danger">{transferError}</Alert>}
+          <button className="btn btn--danger-outline" onClick={() => setConfirmTransfer(true)}>
+            {t.team.transferOwnership}
+          </button>
+        </div>
+      )}
+
+      {/* Danger zone — never for the owner, who transfers the shop or deletes it */}
+      {canManage && !memberIsOwner && (
         <div className="card card--danger">
           <h2 className="card__title">{t.team.dangerZone}</h2>
           <p className="card__text">{t.team.removeMemberDesc}</p>
@@ -520,13 +565,26 @@ export default function ShopTeamMemberPage() {
       {confirmRoleChange && member && (
         <ConfirmDialog
           tone="warning"
-          title={(editRole === 'owner' ? t.team.promoteTitle : t.team.demoteTitle).replace('{name}', member.name)}
-          message={editRole === 'owner' ? t.team.confirmPromoteOwner : t.team.confirmDemoteOwner}
-          confirmLabel={editRole === 'owner' ? t.team.promoteConfirmButton : t.team.demoteConfirmButton}
+          title={(editRole === 'manager' ? t.team.promoteTitle : t.team.demoteTitle).replace('{name}', member.name)}
+          message={editRole === 'manager' ? t.team.confirmPromoteManager : t.team.confirmDemoteManager}
+          confirmLabel={editRole === 'manager' ? t.team.promoteConfirmButton : t.team.demoteConfirmButton}
           cancelLabel={t.team.cancel}
           busy={savingMember}
           onConfirm={saveMemberChange}
           onCancel={() => setConfirmRoleChange(false)}
+        />
+      )}
+
+      {confirmTransfer && member && (
+        <ConfirmDialog
+          tone="danger"
+          title={t.team.transferTitle.replace('{name}', member.name)}
+          message={t.team.confirmTransfer}
+          confirmLabel={t.team.transferConfirmButton}
+          cancelLabel={t.team.cancel}
+          busy={transferring}
+          onConfirm={handleTransfer}
+          onCancel={() => setConfirmTransfer(false)}
         />
       )}
 

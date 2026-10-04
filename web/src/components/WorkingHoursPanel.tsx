@@ -29,7 +29,7 @@ export interface WorkingHoursApi {
 
 export interface WorkingHoursPanelProps {
   api: WorkingHoursApi;
-  isOwner: boolean;
+  canManage: boolean;
   /** Shop-wide content rendered above the schedules (e.g. the booking window). */
   /** Section heading; defaults to the working-hours title. */
   title?: string;
@@ -94,7 +94,7 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
 
 const STATUS_BADGE = { current: 'badge--success', upcoming: 'badge--accent', ended: 'badge--neutral' } as const;
 
-export default function WorkingHoursPanel({ api, isOwner, title }: WorkingHoursPanelProps) {
+export default function WorkingHoursPanel({ api, canManage, title }: WorkingHoursPanelProps) {
   const uid = useId();
   const { t } = useLang();
 
@@ -339,7 +339,7 @@ const created = await api.createSchedule(dto);
     <section className="working-hours">
       <div className="page-header">
         <h2 className="t-subheading">{title ?? t.workingHours.title}</h2>
-        {isOwner && (
+        {canManage && (
           <button
             className="btn btn--sm"
             onClick={() => {
@@ -356,7 +356,7 @@ const created = await api.createSchedule(dto);
 
       <p className="t-body-sm t-muted">{t.workingHours.ruleNote}</p>
 
-      {isOwner && openEnded && (
+      {canManage && openEnded && (
         <Alert
           variant="warning"
           actions={
@@ -476,7 +476,7 @@ const created = await api.createSchedule(dto);
                   )}
                 </span>
               </div>
-              {isOwner ? (
+              {canManage ? (
                 <span
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
@@ -500,7 +500,7 @@ const created = await api.createSchedule(dto);
             {isExpanded && (
               <>
                 {/* Actions — Save + Delete, at the top of the schedule */}
-                {isOwner && (
+                {canManage && (
                   <div className="card__section">
                     <div className="cluster">
                       <button
@@ -540,7 +540,7 @@ const created = await api.createSchedule(dto);
                     {state.success && <Alert variant="success">{state.success}</Alert>}
                   </div>
                 )}
-                {isOwner && (
+                {canManage && (
                   <div className="card__section">
                     <div className="working-hours__dates">
                       <div className="field">
@@ -578,7 +578,7 @@ const created = await api.createSchedule(dto);
                           <Switch
                             checked={dayState.isOpen}
                             onChange={() => toggleDay(schedule.id, day)}
-                            disabled={!isOwner}
+                            disabled={!canManage}
                             label={t.workingHours.days[day]}
                           />
                         </div>
@@ -595,7 +595,7 @@ const created = await api.createSchedule(dto);
                                 onChange={(e) =>
                                   updateHour(schedule.id, day, idx, 'startTime', e.target.value)
                                 }
-                                disabled={!isOwner}
+                                disabled={!canManage}
                               />
                               <span className="t-muted" aria-hidden="true">–</span>
                               <input className="input"
@@ -605,9 +605,9 @@ const created = await api.createSchedule(dto);
                                 onChange={(e) =>
                                   updateHour(schedule.id, day, idx, 'endTime', e.target.value)
                                 }
-                                disabled={!isOwner}
+                                disabled={!canManage}
                               />
-                              {isOwner && (
+                              {canManage && (
                                 <button
                                   type="button"
                                   className="btn btn--ghost btn--icon btn--sm"
@@ -620,7 +620,7 @@ const created = await api.createSchedule(dto);
                             </div>
                           ))}
                           {slotErr && <p className="field__error">{slotErr}</p>}
-                          {isOwner && (
+                          {canManage && (
                             <button
                               type="button"
                               className="btn btn--ghost btn--sm"

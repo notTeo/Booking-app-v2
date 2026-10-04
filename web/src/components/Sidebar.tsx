@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { canManageShop } from '../utils/roles';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -42,7 +43,7 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
   const { shop, isLoading } = useShop();
   const { t } = useLang();
   const base = `/shops/${slug}`;
-  const isOwner = shop?.role === 'owner';
+  const canManage = canManageShop(shop?.role);
 
   return (
     <>
@@ -55,7 +56,7 @@ function ShopLevel({ slug, onNavigate }: { slug: string; onNavigate: () => void 
         <Item to={base} end icon={faTableCells} label={t.sidebar.overview} onNavigate={onNavigate} />
         <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} onNavigate={onNavigate} />
         <Item to={`${base}/services`} icon={faScissors} label={t.sidebar.services} onNavigate={onNavigate} />
-        {isOwner && (
+        {canManage && (
           <>
             <Item to={`${base}/team`} icon={faUsers} label={t.sidebar.team} onNavigate={onNavigate} />
             <Item to={`${base}/customers`} icon={faMagnifyingGlass} label={t.sidebar.customers} onNavigate={onNavigate} />

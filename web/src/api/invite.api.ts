@@ -1,7 +1,8 @@
 import client from './client';
+import type { ShopRole } from './shop.api';
 
+export type { ShopRole };
 export type InviteStatus = 'pending' | 'accepted' | 'expired';
-export type ShopRole = 'owner' | 'staff';
 
 export interface ShopInvite {
   id: string;

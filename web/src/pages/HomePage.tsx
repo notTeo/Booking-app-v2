@@ -148,7 +148,7 @@ export default function HomePage() {
   // Invites mock — real add-member form fields (local only, not submitted anywhere)
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'staff' | 'owner'>('staff');
+  const [inviteRole, setInviteRole] = useState<'staff' | 'manager'>('staff');
 
   // Settings mock — real shop-details form fields (local only, not saved anywhere)
   const [settingsName, setSettingsName] = useState(PREVIEW_SHOP_NAME);
@@ -690,10 +690,10 @@ export default function HomePage() {
                           <select
                             className="home-preview-input"
                             value={inviteRole}
-                            onChange={(e) => setInviteRole(e.target.value as 'staff' | 'owner')}
+                            onChange={(e) => setInviteRole(e.target.value as 'staff' | 'manager')}
                           >
                             <option value="staff">{t.invites.roles.staff}</option>
-                            <option value="owner">{t.invites.roles.owner}</option>
+                            <option value="manager">{t.invites.roles.manager}</option>
                           </select>
                         </div>
                       </div>
