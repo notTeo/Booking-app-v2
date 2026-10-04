@@ -1,11 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
+import { query } from '../support/db';
 
 /**
- * Pages outside a shop (/dashboard, /account) keep the sidebar, with only the
- * logo, Home and Account. No top bar on desktop; phones get the slim bar with
- * the menu button. Log out lives on the Account page.
+ * Pages outside a shop (/dashboard, /account) keep the same sidebar as the
+ * shop pages, its links leading to the user's shop; someone in no shop gets
+ * only the logo, Home and Account. No top bar on desktop; phones get the slim
+ * bar with the menu button. Log out lives on the Account page.
  */
 const SHOP = `/shops/${E2E.shop.slug}`;
 async function login(page: Page, theme: 'light' | 'dark' = 'light') {
@@ -30,7 +32,12 @@ const item = (page: Page, name: string) => sidebar(page).getByRole('link', { nam
 const logout = (page: Page) => page.getByRole('button', { name: 'Log out', exact: true });
 const SHOP_ITEMS = ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings'];
 
-test('outside a shop: the sidebar with only the logo, Home and Account, and no top bar', async ({ page }) => {
+test.afterEach(async () => {
+  await query(`update "UserShop" set active = true, role = 'owner' where id = 'us1'`);
+});
+
+test('not in any shop: the sidebar with only the logo, Home and Account, and no top bar', async ({ page }) => {
+  await query(`update "UserShop" set active = false where id = 'us1'`);
   await login(page);
   for (const path of ['/dashboard', '/account']) {
     await page.goto(path);
@@ -44,23 +51,38 @@ test('outside a shop: the sidebar with only the logo, Home and Account, and no t
   }
 });
 
-test('the sidebar stays in place going shop -> Account -> Home; only the shop links come and go', async ({ page }) => {
+test('in a shop: the sidebar is identical on the shop, Account and Home, and survives a reload', async ({ page }) => {
   await login(page);
   await page.goto(SHOP);
-  for (const name of SHOP_ITEMS) await expect(item(page, name), name).toBeVisible();
-  const box = (await sidebar(page).boundingBox())!;
+  await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
+  const hrefs = () => sidebar(page).getByRole('link').evaluateAll((links) => links.map((a) => a.getAttribute('href')));
+  const inShop = await hrefs();
+  expect(inShop).toHaveLength(SHOP_ITEMS.length + 2);
+  const box = await sidebar(page).boundingBox();
+
+  const sameSidebar = async (current: string) => {
+    await expect(item(page, current)).toHaveAttribute('aria-current', 'page');
+    await expect(sidebar(page).locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(sidebar(page).locator('.sidebar__title')).toHaveText('E2E Shop');
+    expect(await hrefs()).toEqual(inShop);
+    expect(await sidebar(page).boundingBox()).toEqual(box);
+    await expect(bar(page)).toHaveCount(0);
+  };
 
   await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(item(page, 'Account')).toHaveAttribute('aria-current', 'page');
-  await expect(sidebar(page).getByRole('link')).toHaveCount(2);
-  expect(await sidebar(page).boundingBox()).toEqual(box);
+  await sameSidebar('Account');
 
   await item(page, 'Home').click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(item(page, 'Home')).toHaveAttribute('aria-current', 'page');
-  expect(await sidebar(page).boundingBox()).toEqual(box);
-  await expect(bar(page)).toHaveCount(0);
+  await sameSidebar('Home');
+
+  await page.goto('/account');
+  await sameSidebar('Account');
+
+  // Every shop link leads back to the shop.
+  await item(page, 'Bookings').click();
+  await expect(page).toHaveURL(new RegExp(`${SHOP}/bookings$`));
 });
 
 test('the sidebar has no Logout; Log out on the Account page signs out and protected pages send you to login', async ({ page }) => {

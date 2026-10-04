@@ -22,7 +22,7 @@ async function login(page: Page) {
 const sidebar = (page: Page) => page.locator('aside.sidebar');
 const item = (page: Page, name: string) => sidebar(page).getByRole('link', { name, exact: true });
 
-test('shop sidebar: shop items, no account-level items; on Account the sidebar stays, without the shop links', async ({ page }) => {
+test('shop sidebar: shop items, no account-level items; on Account the sidebar stays as it is', async ({ page }) => {
   await login(page);
   for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings', 'Account']) {
     await expect(item(page, name), name).toBeVisible();
@@ -44,22 +44,18 @@ test('shop sidebar: shop items, no account-level items; on Account the sidebar s
   await expect(page).toHaveURL(/\/account$/);
   await expect(item(page, 'Account')).toHaveAttribute('aria-current', 'page');
   await expect(item(page, 'Home')).toBeVisible();
-  await expect(item(page, 'Overview')).toHaveCount(0);
+  await expect(item(page, 'Overview')).toBeVisible();
   await expect(page.locator('header.navbar')).toHaveCount(0);
 });
 
-test('Account opened from a shop has a Back to shop button; from the dashboard it does not', async ({ page }) => {
+test('Account has no Back to shop button: Overview in the sidebar goes back to the shop', async ({ page }) => {
   await login(page);
   await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Account');
-  await page.getByRole('link', { name: 'Back to shop' }).click();
-  await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
-
-  await page.goto('/dashboard');
-  await item(page, 'Account').click();
-  await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole('link', { name: 'Back to shop' })).toHaveCount(0);
+  await item(page, 'Overview').click();
+  await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
 });
 
 test('owner can still start a booking from the Bookings page', async ({ page }) => {

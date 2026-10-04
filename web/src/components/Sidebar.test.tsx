@@ -5,11 +5,13 @@ import { translations } from '../locales/translations';
 import Sidebar from './Sidebar';
 import type { useSidebarWidth } from '../hooks/useSidebarWidth';
 
-const shopState = vi.hoisted(() => ({ shop: null as null | { name: string; slug: string; role: 'owner' | 'manager' | 'staff' } }));
+type TestShop = { name: string; slug: string; role: 'owner' | 'manager' | 'staff' };
+const shopState = vi.hoisted(() => ({ shop: null as null | TestShop, myShops: [] as TestShop[] }));
 
 vi.mock('../context/ShopContext', () => ({
   useShop: () => ({ shop: shopState.shop, isLoading: false, error: null, refetch: () => {} }),
 }));
+vi.mock('../hooks/useMyShops', () => ({ useMyShops: () => ({ data: shopState.myShops }) }));
 vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ logout: async () => {} }) }));
 vi.mock('../context/LanguageContext', () => ({ useLang: () => ({ t: translations.en }) }));
 
@@ -27,7 +29,7 @@ function render(path: string, collapsed?: boolean) {
 }
 
 describe('Sidebar', () => {
-  beforeEach(() => { shopState.shop = null; });
+  beforeEach(() => { shopState.shop = null; shopState.myShops = []; });
 
   it('has no account-level items; the only way out is back to the dashboard', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'owner' };
@@ -39,8 +41,7 @@ describe('Sidebar', () => {
     expect(html).toContain(t.home);
   });
 
-  it('outside a shop: only the logo, Home and Account', () => {
-    shopState.shop = null;
+  it('not in any shop: only the logo, Home and Account', () => {
     for (const path of ['/dashboard', '/account', '/shops/new']) {
       const html = render(path);
       expect(html, path).toContain('wordmark');
@@ -51,9 +52,30 @@ describe('Sidebar', () => {
     }
   });
 
-  it('marks Home and Account as current on their own pages', () => {
+  it('outside a shop the sidebar is the same as inside: the name and links of my shop', () => {
+    shopState.myShops = [{ name: 'Hairology', slug: 'hair', role: 'owner' }];
+    for (const path of ['/account', '/dashboard', '/shops/new']) {
+      const html = render(path);
+      expect(html, path).toContain('Hairology');
+      for (const href of ['/dashboard', '/shops/hair', '/shops/hair/bookings', '/shops/hair/services', '/shops/hair/team', '/shops/hair/customers', '/shops/hair/settings', '/account']) {
+        expect(html, path).toContain(`href="${href}"`);
+      }
+    }
+  });
+
+  it('outside a shop a staff member still gets only the staff links', () => {
+    shopState.myShops = [{ name: 'Hairology', slug: 'hair', role: 'staff' }];
+    const html = render('/account');
+    expect(html).toContain('href="/shops/hair/bookings"');
+    expect(html).not.toContain('/shops/hair/team');
+    expect(html).not.toContain('/shops/hair/settings');
+  });
+
+  it('marks only Home or Account as current on their own pages', () => {
+    shopState.myShops = [{ name: 'Hairology', slug: 'hair', role: 'owner' }];
     expect(render('/dashboard')).toMatch(/aria-current="page"[^>]*href="\/dashboard"/);
     expect(render('/account')).toMatch(/aria-current="page"[^>]*href="\/account"/);
+    expect(render('/account').match(/aria-current="page"/g)).toHaveLength(1);
   });
 
   it('owner: shop name, all shop items and account, no logout', () => {

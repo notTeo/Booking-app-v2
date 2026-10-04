@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { usePalette } from '../context/PaletteContext';
@@ -11,7 +11,6 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faChevronLeft,
   faCreditCard,
   faCrown,
   faSlidersH,
@@ -49,9 +48,7 @@ function formatSessionDate(iso: string, lang: string) {
 
 export default function AccountPage() {
   const { user, setUser, logout } = useAuth();
-  const { hash, state } = useLocation();
-  // Set by the shop sidebar's Account link: the shop to go back to.
-  const fromShop = (state as { fromShop?: string } | null)?.fromShop;
+  const { hash } = useLocation();
 
   // Arriving from the dashboard's plan button: bring the subscription card
   // into view (the router does not follow #hash links on its own).
@@ -190,12 +187,6 @@ export default function AccountPage() {
     <div className="settings-page">
       <div className="page-header">
         <h1 className="t-title">{t.settings.title}</h1>
-        {fromShop && (
-          <Link className="btn btn--secondary btn--sm" to={`/shops/${fromShop}`}>
-            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
-            {t.settings.backToShop}
-          </Link>
-        )}
       </div>
 
       {/* Account Overview */}

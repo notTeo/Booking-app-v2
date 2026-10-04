@@ -6,7 +6,7 @@ import Wordmark from './Wordmark';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { useShopSlug } from '../hooks/useShopSlug';
+import { useNavShop } from '../hooks/useNavShop';
 
 // Two bars, the top one longer than the bottom.
 function MenuIcon() {
@@ -20,15 +20,15 @@ function MenuIcon() {
 
 // Compact-only top bar: the app navbar with the wordmark and the menu button.
 function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HTMLButtonElement> }) {
-  const slug = useShopSlug();
+  const shop = useNavShop();
   const { t } = useLang();
 
   return (
     <header className="navbar navbar--app is-compact">
       <Link
-        to={slug ? `/shops/${slug}` : '/dashboard'}
+        to={shop ? `/shops/${shop.slug}` : '/dashboard'}
         className="wordmark wordmark--sm"
-        aria-label={slug ? t.sidebar.overview : t.sidebar.home}
+        aria-label={shop ? t.sidebar.overview : t.sidebar.home}
       >
         <Wordmark />
       </Link>

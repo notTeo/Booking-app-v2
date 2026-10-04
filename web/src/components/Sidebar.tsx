@@ -14,8 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useLang } from '../context/LanguageContext';
-import { useShop } from '../context/ShopContext';
-import { useShopSlug } from '../hooks/useShopSlug';
+import { useNavShop } from '../hooks/useNavShop';
 import type { useSidebarWidth } from '../hooks/useSidebarWidth';
 import Wordmark from './Wordmark';
 
@@ -24,20 +23,17 @@ interface ItemProps {
   icon: IconDefinition;
   label: string;
   end?: boolean;
-  /** Router state handed to the destination. */
-  state?: unknown;
   /** Icon rail: the label is hidden, so it becomes the link's name and tooltip. */
   collapsed: boolean;
   onNavigate: () => void;
 }
 
 // NavLink sets aria-current="page" itself, which is what .nav-item styles.
-function Item({ to, icon, label, end, state, collapsed, onNavigate }: ItemProps) {
+function Item({ to, icon, label, end, collapsed, onNavigate }: ItemProps) {
   return (
     <NavLink
       to={to}
       end={end}
-      state={state}
       className="nav-item"
       onClick={onNavigate}
       aria-label={collapsed ? label : undefined}
@@ -49,23 +45,22 @@ function Item({ to, icon, label, end, state, collapsed, onNavigate }: ItemProps)
   );
 }
 
-// The one sidebar, on every signed-in page. Outside a shop (dashboard,
-// account) it is just Home and Account; inside one, the shop's name and links
-// sit between them. Owners see Team, Customers and Shop settings on top of
-// what staff see.
+// The one sidebar, the same on every signed-in page. Outside a shop
+// (dashboard, account) the links still lead to the user's shop (useNavShop);
+// someone who is not in any shop gets just Home and Account. Owners see Team,
+// Customers and Shop settings on top of what staff see.
 function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => void }) {
-  const slug = useShopSlug();
-  const { shop, isLoading } = useShop();
+  const shop = useNavShop();
   const { t } = useLang();
-  const base = `/shops/${slug}`;
+  const base = `/shops/${shop?.slug}`;
   const canManage = canManageShop(shop?.role);
 
   return (
     <>
       <Item to="/dashboard" end icon={faHouse} label={t.sidebar.home} collapsed={collapsed} onNavigate={onNavigate} />
-      {slug && (
+      {shop && (
         <>
-          <div className="sidebar__title">{isLoading ? '…' : (shop?.name ?? slug)}</div>
+          <div className="sidebar__title">{shop.name ?? '…'}</div>
           <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
             <Item to={base} end icon={faTableCells} label={t.sidebar.overview} collapsed={collapsed} onNavigate={onNavigate} />
             <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} collapsed={collapsed} onNavigate={onNavigate} />
@@ -81,8 +76,7 @@ function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => 
         </>
       )}
       <div className="sidebar__footer sidebar__nav">
-        {/* The Account page offers a way back to the shop it was opened from. */}
-        <Item to="/account" icon={faUser} label={t.sidebar.account} state={slug ? { fromShop: slug } : undefined} collapsed={collapsed} onNavigate={onNavigate} />
+        <Item to="/account" icon={faUser} label={t.sidebar.account} collapsed={collapsed} onNavigate={onNavigate} />
       </div>
     </>
   );

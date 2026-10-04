@@ -331,7 +331,6 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
-    backToShop: string;
     subscription: {
       title: string;
       proText: string;
@@ -1254,7 +1253,6 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
-      backToShop: 'Πίσω στο κατάστημα',
       subscription: {
         title: 'Συνδρομή',
         proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
@@ -2203,7 +2201,6 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
-      backToShop: 'Back to shop',
       subscription: {
         title: 'Subscription',
         proText: 'You are on the Pro plan and can create shops.',

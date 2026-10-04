@@ -52,7 +52,7 @@ export function useMediaQuery(q: string) {
 // const compact = useMediaQuery('(max-width: 959px)');
 ```
 
-The app has one shell. Every signed-in page uses `AppSidebarLayout` (`.app-shell` + `.sidebar`): it switches to the app `navbar` and drawer at `max-width: 640px` (`useIsCompact`), so the desktop rail stays visible on tablets. Outside a shop (dashboard, account) the sidebar holds only the wordmark, Home and Account.
+The app has one shell. Every signed-in page uses `AppSidebarLayout` (`.app-shell` + `.sidebar`): it switches to the app `navbar` and drawer at `max-width: 640px` (`useIsCompact`), so the desktop rail stays visible on tablets. Outside a shop (dashboard, account) the sidebar is unchanged, its links leading to the user's shop (`useNavShop`); with no shop it holds only the wordmark, Home and Account.
 
 Drawer behavior: opens from the navbar menu button (`aria-expanded`), `.is-open` plus a `.scrim`; closes on scrim click, Escape, or navigation; focus moves into the drawer and returns to the button.
 
