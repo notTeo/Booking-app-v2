@@ -353,56 +353,6 @@ export default function ShopBookingsPage() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* ── Detail panel ── */}
-      {!creatingSlot && selectedBooking && (
-        <div className="card cal-detail-panel">
-          <div className="cal-detail-header">
-            <h2 className="t-subheading">
-              {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
-            </h2>
-            <button
-              type="button"
-              className="btn btn--ghost btn--icon btn--sm"
-              onClick={() => { setSelectedBooking(null); }}
-              aria-label={t.bookings.close}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
-          </div>
-
-          <div className="cal-detail-meta t-body-sm">
-            <span>{selectedBooking.service.name}</span>
-            <span aria-hidden="true">·</span>
-            <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
-            <span aria-hidden="true">·</span>
-            <span>{formatDuration(selectedBooking.service.duration)}</span>
-          </div>
-
-          {!selectedBooking.customer.contactHidden && (
-            <div className="t-body-sm cal-detail-muted">{selectedBooking.customer.phone}</div>
-          )}
-          {selectedBooking.notes && (
-            <div className="t-body-sm cal-detail-muted cal-detail-notes">{selectedBooking.notes}</div>
-          )}
-
-          <div className="cal-detail-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
-            {ALL_STATUSES.map(s => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={selectedBooking.status === s}
-                className={`chip chip--${BOOKING_STATUS[s].cls}`}
-                onClick={() => handleStatusUpdate(selectedBooking.id, s)}
-                disabled={updatingId === selectedBooking.id}
-              >
-                <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
-                <span className="chip__label">{t.bookings.filters.status[s]}</span>
-              </button>
-            ))}
-          </div>
-          {statusError && <Alert variant="danger">{statusError}</Alert>}
-        </div>
-      )}
-
       {/* ── Calendar grid ── */}
       {loading ? (
         <div className="shops-spinner-wrap"><div className="spinner" /></div>
@@ -551,6 +501,58 @@ export default function ShopBookingsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Booking details, from a click on a booking */}
+      {selectedBooking && (
+        <Modal onClose={() => setSelectedBooking(null)} labelledBy="booking-detail-title">
+          <div className="modal__header">
+            <h2 id="booking-detail-title" className="modal__title">
+              {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
+            </h2>
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon btn--sm"
+              onClick={() => { setSelectedBooking(null); }}
+              aria-label={t.bookings.close}
+            >
+              <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="modal__body">
+            <div className="cal-detail-meta t-body-sm">
+              <span>{selectedBooking.service.name}</span>
+              <span aria-hidden="true">·</span>
+              <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
+              <span aria-hidden="true">·</span>
+              <span>{formatDuration(selectedBooking.service.duration)}</span>
+            </div>
+
+            {!selectedBooking.customer.contactHidden && (
+              <div className="t-body-sm cal-detail-muted">{selectedBooking.customer.phone}</div>
+            )}
+            {selectedBooking.notes && (
+              <div className="t-body-sm cal-detail-muted cal-detail-notes">{selectedBooking.notes}</div>
+            )}
+
+            <div className="cal-detail-statuses" role="group" aria-label={t.bookings.filters.statusLabel}>
+              {ALL_STATUSES.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={selectedBooking.status === s}
+                  className={`chip chip--${BOOKING_STATUS[s].cls}`}
+                  onClick={() => handleStatusUpdate(selectedBooking.id, s)}
+                  disabled={updatingId === selectedBooking.id}
+                >
+                  <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
+                  <span className="chip__label">{t.bookings.filters.status[s]}</span>
+                </button>
+              ))}
+            </div>
+            {statusError && <Alert variant="danger">{statusError}</Alert>}
+          </div>
+        </Modal>
       )}
 
       {/* Quick booking from a click on the calendar */}
