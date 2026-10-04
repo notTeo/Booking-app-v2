@@ -1,6 +1,6 @@
 BeBooked is a calm, friendly booking product for shops and the people who book them. It is built phone-first for customers and desktop-first for shop owners. The look: emerald green on green-tinted neutrals, rounded 12px cards, pill buttons, a chunky Gasoek One wordmark with an orange "Be". Dark mode is the same brand in a low-saturation forest palette, not an inverted one.
 
-Build with plain CSS variables from `tokens.css` and the classes in `components/bundle.css`. No Tailwind, no UI library, no CSS-in-JS. Start with `implementation.md` for setup and `migration.md` for what changed from the current CSS.
+Build with plain CSS variables from `tokens.css` and the classes in `web/src/styles/components.css`. No Tailwind, no UI library, no CSS-in-JS. Start with `implementation.md` for setup and `migration.md` for what changed from the current CSS.
 
 ## Content fundamentals
 
@@ -95,7 +95,7 @@ FontAwesome stays as the icon set in the app. Icons inherit text color, sit at `
 | No data yet, or nothing matches | `empty` | A blank area |
 | Content is loading | `skeleton` for areas, `spinner` for actions | A full-page spinner |
 | Many records with several fields | `data-table` (cards on phones) | A table of two columns |
-| Top-level navigation | `navbar` (public pages, marketing), `sidebar` (dashboard) | Both nav patterns on one page |
+| Top-level navigation | `navbar` (public pages, marketing, and app pages outside a shop: dashboard, account), `sidebar` (shop pages) | Both nav patterns on one page |
 | Customer booking flow | `steps` > service > staff > `datepicker` > `slots` > details | Skipping the steps indicator |
 
 ### Spacing rules

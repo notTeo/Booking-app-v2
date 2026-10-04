@@ -6,7 +6,7 @@ interface PasswordRequirementProps {
   label: string;
 }
 
-// Shared by RegisterPage, ResetPasswordPage, and SettingsPage — all three
+// Shared by RegisterPage, ResetPasswordPage, and AccountPage — all three
 // render an identical password-requirements checklist.
 export default function PasswordRequirement({ met, label }: PasswordRequirementProps) {
   return (

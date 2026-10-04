@@ -13,8 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
-  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
 }
 
 .bookings-header h1 {
@@ -37,9 +36,9 @@
   --btn-bg: var(--surface-sunken);
 }
 
-/* ── Filter bar ──────────────────────────────────────────────────────────── */
+/* ── Toolbar under the title: date, then filters ── */
 
-.cal-filters {
+.bookings-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -47,40 +46,18 @@
   margin-bottom: var(--space-4);
 }
 
+/* Status chips inside the filters modal. */
 .cal-filters-statuses {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-.cal-filter-select {
-  width: auto;
-  min-width: 10rem;
-  max-width: 100%;
-}
-
 .cal-filters-count {
   color: var(--text-muted);
 }
 
-/* ── Detail panel (card on desktop, bottom sheet on phones) ──────────────── */
-
-.cal-detail-panel {
-  margin-bottom: var(--space-5);
-  animation: cal-panel-in var(--motion-base) var(--ease-standard);
-}
-
-@keyframes cal-panel-in {
-  from { opacity: 0; transform: translateY(calc(var(--space-2) * -1)); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.cal-detail-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
+/* ── Booking details (inside the shared modal) ──────────────────────────── */
 
 .cal-detail-meta {
   display: flex;
@@ -399,27 +376,4 @@
     z-index: 6;
     background: var(--surface);
   }
-
-  /* The detail / create panel becomes a bottom sheet instead of an inline card. */
-  .cal-detail-panel {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: calc(var(--z-nav) + 1);
-    max-height: 80dvh;
-    overflow-y: auto;
-    margin: 0;
-    padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
-    background: var(--surface-raised);
-    border-bottom: 0;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    box-shadow: var(--shadow-sheet);
-    animation: cal-sheet-in var(--motion-base) var(--ease-standard);
-  }
-}
-
-@keyframes cal-sheet-in {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
 }

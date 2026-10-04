@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
 
@@ -137,7 +138,7 @@ async function openOverview(page: Page) {
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(/Good (morning|afternoon|evening), E2E/);
 }

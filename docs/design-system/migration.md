@@ -10,12 +10,16 @@ Done (branch `feat/design-system`):
 - **Phase 2, form and action components** (step 4): buttons, form controls (field, input, select, textarea, checkbox), switch.
 - **Phase 3, display components** (step 4): badges and alerts, cards and confirm dialog, data tables (one markup per table, phone cards from the container query). Old CSS for each is removed.
 - **Phase 4, owner bookings page** (`bookings.css`): booking blocks use the badge status tokens plus an icon; new `.chip` toggle and `--shadow-sheet` token; page-level button, alert, card and type duplicates removed.
+- **App shell** (sidebar Option A): `AppLayout`/`Sidebar` rebuilt on `.app-shell`, `.sidebar`, `.nav-item`, `.scrim` with account and shop levels, a `topbar` and drawer at 640px; `sidebar.css` removed. Shop Invites merged into Team (Add member modal). Routes: `/settings` is now `/account`; `/shops/:slug/invites` is gone. The landing-page preview keeps the old shell class names, scoped in `home.css`.
+- **No account-level sidebar**: `AppLayout` split into `AppTopBarLayout` (dashboard, account: app `navbar` with logo, Account and Logout icon buttons) and `ShopSidebarLayout` (shop pages). The sidebar is shop-only. New `tooltip` component for the icon buttons; `app-shell--topbar` modifier; `.topbar__title.wordmark` removed (the shop top bar always shows the shop name).
+- **Dashboard is the only page outside a shop**: invite inbox (pending only), "Your shops" with the user's role, Create shop for Pro users, an empty state, and the cross-shop analytics only for owners of 2+ shops (each shop's numbers on its card). `/shops` and `/invites` (and the Sent invites view) removed; every link to them now goes to `/dashboard`. `shop-card__actions` added; role and pending badges carry an icon. `Wordmark` outputs `wordmark__be` (the legacy `.wordmark-be` is gone).
+- **Shop sidebar back link**: "‹ All shops" (`faChevronLeft` + label), always shown whatever the number of shops, goes to `/dashboard`.
 
 Left:
 
-- **Page CSS cleanup** (steps 5-6): duplicates and raw sizes/gaps in `home.css`, `public.css`, `bookings.css` and the other page files. `home.css` keeps its fake-preview `clamp()` values. The landing page still has its own `.home-btn-primary` / `.home-btn-ghost` buttons, and a few `rgba()` shadows and scrims remain in `home.css`, `public.css`, `bookings.css` and `sidebar.css` (no shadow or scrim token covers them yet).
-- **New components** (step 7): toast, tabs, empty and skeleton states, avatar, sidebar and booking-flow pieces, as pages need them. Tooltip is not designed.
-- **CLAUDE.md TODOs:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
+- **Page CSS cleanup** (steps 5-6): duplicates and raw sizes/gaps in `home.css`, `public.css`, `bookings.css` and the other page files. `home.css` keeps its fake-preview `clamp()` values. The landing page still has its own `.home-btn-primary` / `.home-btn-ghost` buttons, and a few `rgba()` shadows and scrims remain in `home.css`, `public.css`, `bookings.css` (no shadow or scrim token covers them yet).
+- **New components** (step 7): toast, tabs, empty and skeleton states, avatar and booking-flow pieces, as pages need them. Tooltip added later, with the top bar outside a shop.
+- **Open UI work:** convert saving buttons to `.is-loading` + `aria-busy`; convert inline confirms (service delete, team remove, shop delete, role change, invite cancel/decline) to `<ConfirmDialog tone='danger'>`.
 
 ## Decisions on the section 5 issues
 
@@ -31,7 +35,7 @@ Left:
 | 8 | Global `input` / `select` / `label` | Scoped to `.input`, `.select`, `.textarea`, `.field__label`. Error (`aria-invalid`), disabled and loading states added. |
 | 9 | Breakpoints | Three: 640, 960, 1280. 480, 767/768 and 900 go away. |
 | 10 | Dark accent contrast | Dark accent is `#8fb596`. As text it was already fine; as a fill it failed with white (2.6:1). Fills now use dark `on-accent` (8.23:1). |
-| 11 | Missing components | Added: modal, toast, tabs, empty state, skeleton, avatar. Tooltip is not designed yet. |
+| 11 | Missing components | Added: modal, toast, tabs, empty state, skeleton, avatar. Tooltip added with the top bar outside a shop. |
 
 ## Token map
 
@@ -72,13 +76,13 @@ Left:
 
 ## Order of work
 
-1. Add `tokens.css` and `bundle.css` (see `implementation.md`), keeping the old variables alongside for one pass.
+1. Add `tokens.css` and `components.css` (see `implementation.md`), keeping the old variables alongside for one pass.
 2. Replace old variable names with the new ones using the token map. Delete stray references (`--text-secondary`, `--gb-card`, `--font-mono`).
 3. Search for `#fff`, `#ffffff`, `white`, `#f87171`, `#fbbf24`, `#34d399` and replace with tokens.
 4. Migrate the shared components one at a time in this order: Button, form controls, Badge, Alert, Switch, Card, Table, ConfirmDialog.
 5. Replace page-level duplicates (cards, headers, lists, buttons in `home.css`, `public.css`, `bookings.css` and the rest) with the shared classes. Delete the page rule once a page uses the shared class.
 6. Convert font sizes and gaps to `--fs-*`, `--lh-*` and `--space-*`. Do not do this mechanically for `home.css`'s fake app preview; it can keep its `clamp()` values.
-7. Add the new components (modal, toast, tabs, empty, skeleton, sidebar changes, booking-flow pieces) as pages need them.
+7. Add the new components (modal, toast, tabs, empty, skeleton, booking-flow pieces) as pages need them.
 
 ## Judgment calls to review
 

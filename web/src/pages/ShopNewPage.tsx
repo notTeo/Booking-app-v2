@@ -63,7 +63,7 @@ export default function ShopNewPage() {
   return (
     <div className="shops-page">
       <div className="shop-detail-back">
-        <button className="card-back" type="button" onClick={() => navigate('/shops')}>
+        <button className="card-back" type="button" onClick={() => navigate('/dashboard')}>
           ← My Shops
         </button>
       </div>
@@ -156,7 +156,7 @@ export default function ShopNewPage() {
             <button
               className="btn btn--ghost"
               type="button"
-              onClick={() => navigate('/shops')}
+              onClick={() => navigate('/dashboard')}
             >
               Cancel
             </button>

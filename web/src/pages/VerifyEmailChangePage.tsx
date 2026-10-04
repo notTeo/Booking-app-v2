@@ -46,14 +46,15 @@ export default function VerifyEmailChangePage() {
         {status === 'success' && (
           <>
             <Alert variant="success">{message}</Alert>
-            <Link to="/dashboard"><button className="btn btn--block">Go to Dashboard</button></Link>
+            {/* /login sends a live session on to the landing page (PublicRoute). */}
+            <Link to="/login"><button className="btn btn--block">Continue</button></Link>
           </>
         )}
 
         {status === 'error' && (
           <>
             <Alert variant="danger">{message}</Alert>
-            <Link to="/settings"><button className="btn btn--secondary btn--block">Back to Settings</button></Link>
+            <Link to="/account"><button className="btn btn--secondary btn--block">Back to Account</button></Link>
           </>
         )}
       </div>

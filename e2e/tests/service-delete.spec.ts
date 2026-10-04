@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 
 /**
@@ -36,7 +37,7 @@ test('deleting a booked service offers Deactivate; an unbooked one is deleted', 
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/services`);
 
   const row = (name: string) => page.locator('li, .card, .service-card').filter({ hasText: name }).last();

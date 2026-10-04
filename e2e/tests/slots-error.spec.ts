@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { addDays, athensDate } from '../support/dates';
 
 /**
@@ -44,7 +45,7 @@ test('owner wizard: a failed slot fetch shows an error with Retry', async ({ pag
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await failSlotsOnce(page, /\/api\/shops\/[^/]+\/bookings\/slots/);
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
   await page.getByRole('radiogroup').getByRole('radio').first().click();

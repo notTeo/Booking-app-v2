@@ -5,11 +5,13 @@ import { AuthProvider } from './context/AuthContext';
 import { ShopContextProvider } from './context/ShopContext';
 import { ShopRouteProvider } from './context/ShopContext';
 import ShopGate from './components/ShopGate';
+import OwnerRoute from './components/OwnerRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import AppLayout from './components/AppLayout';
+import AppTopBarLayout from './components/AppTopBarLayout';
+import ShopSidebarLayout from './components/ShopSidebarLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
@@ -18,8 +20,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
-import SettingsPage from './pages/SettingsPage';
-import ShopsPage from './pages/ShopsPage';
+import AccountPage from './pages/AccountPage';
 import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
@@ -27,11 +28,9 @@ import ShopNewBookingPage from './pages/ShopNewBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
-import ShopInvitesPage from './pages/ShopInvitesPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
-import InvitesPage from './pages/InvitesPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
@@ -86,25 +85,27 @@ export default function App() {
                 <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 
                 <Route element={<ProtectedRoute />}>
-                  <Route element={<AppLayout />}>
+                  {/* Outside a shop. /dashboard is the only list of shops and invites. */}
+                  <Route element={<AppTopBarLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/shops" element={<ShopsPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/invites" element={<InvitesPage />} />
+                    <Route path="/account" element={<AccountPage />} />
+                  </Route>
 
+                  <Route element={<ShopSidebarLayout />}>
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route element={<ShopGate />}>
                         <Route index element={<ShopOverviewPage />} />
-                        <Route path="bookings/new" element={<ShopNewBookingPage />} />
                         <Route path="bookings" element={<ShopBookingsPage />} />
                         <Route path="services" element={<ShopServicesPage />} />
-                        <Route path="team" element={<ShopTeamPage />} />
-                        <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
-                        <Route path="customers" element={<ShopCustomersPage />} />
-                        <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
-                        <Route path="invites" element={<ShopInvitesPage />} />
-                        <Route path="settings" element={<ShopSettingsPage />} />
+                        <Route element={<OwnerRoute />}>
+                          <Route path="bookings/new" element={<ShopNewBookingPage />} />
+                          <Route path="team" element={<ShopTeamPage />} />
+                          <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
+                          <Route path="customers" element={<ShopCustomersPage />} />
+                          <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
+                          <Route path="settings" element={<ShopSettingsPage />} />
+                        </Route>
                       </Route>
                     </Route>
                   </Route>

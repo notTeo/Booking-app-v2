@@ -1,10 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { bookingCount, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
 /**
- * Owner/staff booking outside working hours (docs/plan-out-of-hours.md).
+ * Owner/staff booking outside working hours.
  *
  * The seeded provider works 00:00–23:30, so for this spec her hours are
  * narrowed to 09:00–17:00 (and restored afterwards). Phone-size viewport.
@@ -32,7 +33,7 @@ async function openWizard(
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.getByRole('radiogroup').getByRole('radio').first().click();

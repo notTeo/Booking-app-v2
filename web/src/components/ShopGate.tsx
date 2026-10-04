@@ -44,7 +44,7 @@ export default function ShopGate() {
         <h2 className="empty__title">{t.shopGate.notFoundTitle}</h2>
         <p className="empty__text">{t.shopGate.notFoundText}</p>
         <div className="empty__actions">
-          <Link className="btn" to="/shops">
+          <Link className="btn" to="/dashboard">
             {t.shopGate.backToShops}
           </Link>
         </div>

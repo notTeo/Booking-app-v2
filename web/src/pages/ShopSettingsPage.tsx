@@ -123,7 +123,7 @@ export default function ShopSettingsPage() {
     setDeleteLoading(true);
     try {
       await deleteShop(shop.id);
-      navigate('/shops');
+      navigate('/dashboard');
     } catch (err: unknown) {
       setShowDeleteConfirm(false);
       setDeleteError(apiErrorMessage(err, t.shopSettings.errorDelete));
@@ -297,7 +297,7 @@ export default function ShopSettingsPage() {
           </p>
           <p className="settings-danger-desc">{t.shops.dangerDesc}</p>
           {deleteError && <Alert variant="danger">{deleteError}</Alert>}
-          <button className="btn btn--danger btn--sm" type="button" onClick={() => { setDeleteError(''); setShowDeleteConfirm(true); }}>
+          <button className="btn btn--danger-outline btn--sm" type="button" onClick={() => { setDeleteError(''); setShowDeleteConfirm(true); }}>
             {t.shops.deleteShop}
           </button>
         </div>

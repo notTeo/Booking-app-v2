@@ -544,7 +544,51 @@
 .home-preview-dot--yellow { background: var(--warning); }
 .home-preview-dot--green  { background: var(--success); }
 
-/* Mobile-only — the real app's own mobile header (AppLayout.tsx / sidebar.css),
+/* ─── Landing-page mockup base ───
+   The mockup below (HomePage.tsx) is a picture of the old app shell and keeps
+   the old class names. These are the base rules it used to inherit from the
+   removed styles/pages/sidebar.css, at :where() specificity so the
+   .home-preview-* overrides after them still win. */
+:where(.home-preview-card) .app-mobile-header {
+  display: none; align-items: center; gap: 0.6rem; width: 240px; padding: 0.75rem;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  border-top-right-radius: calc(var(--radius-md) * 2); border-bottom-right-radius: calc(var(--radius-md) * 2);
+}
+:where(.home-preview-card) .app-mobile-brand { font-family: var(--font-logo); font-weight: 400; font-size: 1.3rem; color: var(--accent); }
+:where(.home-preview-card) .hamburger-btn {
+  background: none; border: none; cursor: pointer; color: var(--text); width: 32px; height: 32px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);
+}
+:where(.home-preview-card) .sidebar-section-label {
+  font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 0 0.75rem; margin-bottom: 0.4rem; margin-top: 0.75rem; white-space: nowrap;
+}
+:where(.home-preview-card) .sidebar-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+:where(.home-preview-card) .sidebar-header h4 {
+  white-space: nowrap; font-family: var(--font-logo); font-weight: 400; font-size: 1.3rem; color: var(--accent); padding: 0;
+}
+:where(.home-preview-card) .sidebar-link,
+:where(.home-preview-card) .sidebar-logout {
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.75rem; border-radius: var(--radius-md);
+  font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap;
+}
+:where(.home-preview-card) .sidebar-link svg { flex-shrink: 0; opacity: 0.8; }
+:where(.home-preview-card) .sidebar-link.active svg { opacity: 1; }
+:where(.home-preview-card) .sidebar-logout { font-family: var(--font-body); padding-top: 0.75rem; }
+:where(.home-preview-card) .sidebar-back-link {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0;
+  margin-left: auto; border-radius: var(--radius-md); background: var(--surface-sunken); color: var(--text-muted);
+  font-size: 0.85rem; text-decoration: none;
+}
+:where(.home-preview-card) .sidebar-shop-name {
+  padding: 0.25rem 0.75rem 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:where(.home-preview-card) .sidebar-bottom {
+  border-radius: 0 0 var(--radius-md) var(--radius-md); border-top: 1px solid var(--border); margin-top: auto;
+}
+
+/* Mobile-only — the real app's own mobile header (old account-level AppLayout shell),
    reused exactly for visual accuracy, just repositioned for the card context
    (not position:sticky, and shown at the card's own breakpoint below). */
 .home-preview-card .app-mobile-header {
@@ -569,7 +613,7 @@
   height: clamp(20px, 2.9cqw, 32px);
   /* Draws the eye to the mockup's own hamburger — scoped to the preview
      card only, so the real app's sidebar toggle (same .hamburger-btn
-     class, in AppLayout.tsx) is unaffected. */
+     class, in ShopSidebarLayout.tsx) is unaffected. */
   animation: home-preview-hamburger-pulse 1.8s ease-in-out infinite;
 }
 
@@ -596,7 +640,7 @@
 
 /* Clickable, non-functional mockup of the real sidebar (components/Sidebar.tsx)
    — reuses its CSS classes (.sidebar-header, .sidebar-link, etc. from
-   sidebar.css) for visual accuracy, just not the root .sidebar positioning. */
+   old shell CSS) for visual accuracy, just not the root .sidebar positioning. */
 .home-preview-sidebar {
   width: clamp(140px, 18cqw, 200px);
   flex-shrink: 0;
@@ -655,7 +699,7 @@
 }
 
 /* Re-declared at higher specificity than the plain reset above — its equal
-   specificity to sidebar.css's own :hover/.active rules meant load order
+   specificity to the base :hover/.active rules meant load order
    alone decided the winner, which silently cancelled both states. */
 .home-preview-sidebar .sidebar-link:hover {
   background: var(--surface-sunken);
@@ -2166,7 +2210,7 @@
    own mobile header) at 767px. */
 @media (max-width: 767px) {
   /* Sidebar becomes a toggleable drawer instead of disappearing, matching
-     the real app's mobile pattern (components/Sidebar.tsx + AppLayout.tsx).
+     the real app's mobile pattern (components/Sidebar.tsx + ShopSidebarLayout.tsx).
      The header is taken out of flow (position:absolute) so the drawer,
      sitting above it in z-index, can slide out and overlap it completely —
      same relationship as the real app's sidebar (z-index 200) covering its

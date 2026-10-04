@@ -13,13 +13,13 @@ import {
   type ServiceWithStaff,
 } from '../api/service.api';
 import { getMembers, type TeamMember } from '../api/team.api';
-import Switch from '../components/Switch';
 import '../styles/pages/services.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ServiceFormModal, { type ServiceFormData } from '../components/ServiceFormModal';
 
 // ── helpers ────────────────────────────────────────────────
 
@@ -32,13 +32,7 @@ const formatDuration = (mins: number) => {
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
-type FormData = {
-  name: string;
-  description: string;
-  duration: string;
-  price: string;
-  isActive: boolean;
-};
+type FormData = ServiceFormData;
 
 const emptyForm: FormData = { name: '', description: '', duration: '', price: '', isActive: true };
 
@@ -112,7 +106,6 @@ export default function ShopServicesPage() {
   // open staff panel — load detail + team members
   const openStaffPanel = async (serviceId: string) => {
     if (!shop) return;
-    setEditingId(null);
     setStaffServiceId(serviceId);
     setStaffError('');
     setSelectedUserShopId('');
@@ -251,80 +244,6 @@ export default function ShopServicesPage() {
     }
   };
 
-  // ── service form (shared for create + edit) ──────────────
-
-  const renderServiceForm = (
-    form: FormData,
-    onChange: (k: keyof FormData, v: string | boolean) => void,
-    onSubmit: (e: React.FormEvent) => void,
-    submitting: boolean,
-    submitLabel: string,
-    formError: string,
-    onCancel: () => void,
-    idPrefix: string,
-  ) => (
-    <form className="card service-form" onSubmit={onSubmit}>
-      {formError && <Alert variant="danger">{formError}</Alert>}
-      <div className="service-form-grid">
-        <div className="field">
-          <label className="field__label" htmlFor={`${idPrefix}-name`}>{t.services.name}</label>
-          <input id={`${idPrefix}-name`} className="input"
-            value={form.name}
-            onChange={(e) => onChange('name', e.target.value)}
-            required
-            placeholder={t.services.name}
-          />
-        </div>
-        <div className="field">
-          <label className="field__label" htmlFor={`${idPrefix}-duration`}>{t.services.duration} (min)</label>
-          <input id={`${idPrefix}-duration`} className="input"
-            type="number"
-            min="1"
-            value={form.duration}
-            onChange={(e) => onChange('duration', e.target.value)}
-            required
-            placeholder="30"
-          />
-        </div>
-        <div className="field">
-          <label className="field__label" htmlFor={`${idPrefix}-price`}>{t.services.price} (€)</label>
-          <input id={`${idPrefix}-price`} className="input"
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.price}
-            onChange={(e) => onChange('price', e.target.value)}
-            required
-            placeholder="0.00"
-          />
-        </div>
-        <div className="field service-form-active">
-          <div className="service-form-active-label">
-            <Switch checked={form.isActive} onChange={(v) => onChange('isActive', v)} label={t.services.isActive} />
-            <span className="field__label">{t.services.isActive}</span>
-          </div>
-        </div>
-      </div>
-      <div className="field">
-        <label className="field__label" htmlFor={`${idPrefix}-description`}>{t.services.description}</label>
-        <textarea id={`${idPrefix}-description`} className="textarea"
-          value={form.description}
-          onChange={(e) => onChange('description', e.target.value)}
-          placeholder={t.services.description}
-          rows={2}
-        />
-      </div>
-      <div className="service-form-actions">
-        <button className={`btn${submitting ? ' is-loading' : ''}`} type="submit" aria-busy={submitting}>
-          {submitLabel}
-        </button>
-        <button className="btn btn--ghost" type="button" onClick={onCancel}>
-          {t.services.cancel}
-        </button>
-      </div>
-    </form>
-  );
-
   // ── loading state ─────────────────────────────────────────
 
   if (shopLoading || loading) {
@@ -347,180 +266,177 @@ export default function ShopServicesPage() {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      {/* Create form */}
-      {showCreate &&
-        renderServiceForm(
-          createForm,
-          (k, v) => setCreateForm((p) => ({ ...p, [k]: v })),
-          handleCreate,
-          creating,
-          t.services.create,
-          createError,
-          () => { setShowCreate(false); setCreateError(''); },
-          'service-create',
-        )}
-
       {/* Empty state */}
-      {services.length === 0 && !showCreate && (
+      {services.length === 0 && (
         <p className="services-empty">{t.services.noServices}</p>
       )}
 
       {/* Services list (+ add card) */}
-      {(services.length > 0 || (isOwner && !showCreate && !editingId)) && (
+      {(services.length > 0 || isOwner) && (
         <div className="services-list">
           {services.map((service) => (
             <div key={service.id} className="card card--flush">
-              {editingId === service.id ? (
-                renderServiceForm(
-                  editForm,
-                  (k, v) => setEditForm((p) => ({ ...p, [k]: v })),
-                  handleUpdate,
-                  saving,
-                  t.services.save,
-                  editError,
-                  () => { setEditingId(null); setEditError(''); },
-                  `service-edit-${service.id}`,
-                )
-              ) : (
-                <>
-                  <div className="service-card-main">
-                    <div className="service-card-info">
-                      <div className="service-card-name">
-                        {service.name}
-                        <span
-                          className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
-                        >
-                          {service.isActive ? t.services.active : t.services.inactive}
-                        </span>
-                      </div>
-                      {service.description && (
-                        <div className="service-card-desc">{service.description}</div>
-                      )}
-                      <div className="service-card-meta">
-                        <span>{formatDuration(service.duration)}</span>
-                        <span className="service-card-sep">·</span>
-                        <span>{formatPrice(service.price)}</span>
-                      </div>
-                    </div>
-
+              <div className="service-card-main">
+                <div className="service-card-info">
+                  <div className="service-card-name">
+                    {service.name}
+                    <span
+                      className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
+                    >
+                      {service.isActive ? t.services.active : t.services.inactive}
+                    </span>
                   </div>
-
-                  {isOwner && (
-                    <div className="service-card-actions">
-                      <button
-                        className="btn btn--secondary btn--sm service-action-btn"
-                        onClick={() => {
-                          closeStaffPanel();
-                          setEditingId(service.id);
-                          setEditForm(serviceToForm(service));
-                          setEditError('');
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} /> {t.services.edit}
-                      </button>
-
-                      <button
-                        className={`btn btn--secondary btn--sm service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
-                        onClick={() => {
-                          if (staffServiceId === service.id) {
-                            closeStaffPanel();
-                          } else {
-                            openStaffPanel(service.id);
-                          }
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
-                      </button>
-
-                      <button
-                        className="btn btn--secondary btn--sm service-action-btn service-delete-btn"
-                        onClick={() => setConfirmDeleteId(service.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
-                      </button>
-                    </div>
+                  {service.description && (
+                    <div className="service-card-desc">{service.description}</div>
                   )}
+                  <div className="service-card-meta">
+                    <span>{formatDuration(service.duration)}</span>
+                    <span className="service-card-sep">·</span>
+                    <span>{formatPrice(service.price)}</span>
+                  </div>
+                </div>
 
-                  {/* Staff panel */}
-                  {staffServiceId === service.id && (
-                    <div className="service-staff-panel">
-                      {loadingDetail ? (
-                        <div className="service-staff-loading">
-                          <div className="spinner" style={{ width: 24, height: 24 }} />
-                        </div>
+              </div>
+
+              {isOwner && (
+                <div className="service-card-actions">
+                  <button
+                    className="btn btn--secondary btn--sm service-action-btn"
+                    onClick={() => {
+                      setEditingId(service.id);
+                      setEditForm(serviceToForm(service));
+                      setEditError('');
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPenToSquare} /> {t.services.edit}
+                  </button>
+
+                  <button
+                    className={`btn btn--secondary btn--sm service-action-btn${staffServiceId === service.id ? ' service-action-active' : ''}`}
+                    onClick={() => {
+                      if (staffServiceId === service.id) {
+                        closeStaffPanel();
+                      } else {
+                        openStaffPanel(service.id);
+                      }
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faUsers} /> {t.services.staff}
+                  </button>
+
+                  <button
+                    className="btn btn--danger-outline btn--sm service-action-btn service-delete-btn"
+                    onClick={() => setConfirmDeleteId(service.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}
+                  </button>
+                </div>
+              )}
+
+              {/* Staff panel */}
+              {staffServiceId === service.id && (
+                <div className="service-staff-panel">
+                  {loadingDetail ? (
+                    <div className="service-staff-loading">
+                      <div className="spinner" style={{ width: 24, height: 24 }} />
+                    </div>
+                  ) : (
+                    <>
+                      {staffError && <Alert variant="danger">{staffError}</Alert>}
+
+                      <div className="service-staff-title">{t.services.assignedStaff}</div>
+
+                      {!serviceDetail?.staffServices?.length ? (
+                        <p className="service-staff-empty">{t.services.noStaff}</p>
                       ) : (
-                        <>
-                          {staffError && <Alert variant="danger">{staffError}</Alert>}
-
-                          <div className="service-staff-title">{t.services.assignedStaff}</div>
-
-                          {!serviceDetail?.staffServices?.length ? (
-                            <p className="service-staff-empty">{t.services.noStaff}</p>
-                          ) : (
-                            <ul className="service-staff-list">
-                              {serviceDetail.staffServices.map((ss) => (
-                                <li key={ss.userShopId} className="service-staff-item">
-                                  <span>{ss.userShop.name}</span>
-                                  <button
-                                    className="btn btn--secondary btn--sm service-action-btn"
-                                    onClick={() => handleUnassign(ss.userShopId)}
-                                    disabled={unassigningId === ss.userShopId}
-                                  >
-                                    {unassigningId === ss.userShopId ? '...' : t.services.removeStaff}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                          {/* Add staff dropdown */}
-                          {(() => {
-                            const assignedIds = new Set(
-                              serviceDetail?.staffServices?.map((ss) => ss.userShopId) ?? [],
-                            );
-                            const available = teamMembers.filter((m) => !assignedIds.has(m.id));
-                            if (available.length === 0) return null;
-                            return (
-                              <div className="service-staff-add">
-                                <div className="select-wrap select-wrap--sm service-staff-select"><select
-                                  value={selectedUserShopId}
-                                  onChange={(e) => setSelectedUserShopId(e.target.value)}
-                                  className="select select--sm"
-                                  aria-label={t.services.selectStaff}
-                                >
-                                  <option value="">{t.services.selectStaff}</option>
-                                  {available.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                      {m.name}
-                                    </option>
-                                  ))}
-                                </select></div>
-                                <button
-                                  className="btn btn--sm service-action-btn"
-                                  onClick={handleAssign}
-                                  disabled={!selectedUserShopId || assigning}
-                                >
-                                  {assigning ? t.services.assigning : t.services.addStaff}
-                                </button>
-                              </div>
-                            );
-                          })()}
-                        </>
+                        <ul className="service-staff-list">
+                          {serviceDetail.staffServices.map((ss) => (
+                            <li key={ss.userShopId} className="service-staff-item">
+                              <span>{ss.userShop.name}</span>
+                              <button
+                                className="btn btn--danger-outline btn--sm service-action-btn"
+                                onClick={() => handleUnassign(ss.userShopId)}
+                                disabled={unassigningId === ss.userShopId}
+                              >
+                                {unassigningId === ss.userShopId ? '...' : t.services.removeStaff}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
                       )}
-                    </div>
+
+                      {/* Add staff dropdown */}
+                      {(() => {
+                        const assignedIds = new Set(
+                          serviceDetail?.staffServices?.map((ss) => ss.userShopId) ?? [],
+                        );
+                        const available = teamMembers.filter((m) => !assignedIds.has(m.id));
+                        if (available.length === 0) return null;
+                        return (
+                          <div className="service-staff-add">
+                            <div className="select-wrap select-wrap--sm service-staff-select"><select
+                              value={selectedUserShopId}
+                              onChange={(e) => setSelectedUserShopId(e.target.value)}
+                              className="select select--sm"
+                              aria-label={t.services.selectStaff}
+                            >
+                              <option value="">{t.services.selectStaff}</option>
+                              {available.map((m) => (
+                                <option key={m.id} value={m.id}>
+                                  {m.name}
+                                </option>
+                              ))}
+                            </select></div>
+                            <button
+                              className="btn btn--sm service-action-btn"
+                              onClick={handleAssign}
+                              disabled={!selectedUserShopId || assigning}
+                            >
+                              {assigning ? t.services.assigning : t.services.addStaff}
+                            </button>
+                          </div>
+                        );
+                      })()}
+                    </>
                   )}
-                </>
+                </div>
               )}
             </div>
           ))}
 
-          {isOwner && !showCreate && !editingId && (
-            <button type="button" className="card card--interactive card--dashed" onClick={() => setShowCreate(true)}>
+          {isOwner && (
+            <button type="button" className="card card--interactive card--dashed" onClick={() => { setCreateForm({ ...emptyForm }); setCreateError(''); setShowCreate(true); }}>
               <FontAwesomeIcon icon={faPlus} />
               <span>{t.services.addService}</span>
             </button>
           )}
         </div>
+      )}
+
+      {showCreate && (
+        <ServiceFormModal
+          title={t.services.addService}
+          submitLabel={t.services.create}
+          form={createForm}
+          onChange={(k, v) => setCreateForm((p) => ({ ...p, [k]: v }))}
+          onSubmit={handleCreate}
+          submitting={creating}
+          error={createError}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
+
+      {editingId && (
+        <ServiceFormModal
+          title={t.services.edit}
+          submitLabel={t.services.save}
+          form={editForm}
+          onChange={(k, v) => setEditForm((p) => ({ ...p, [k]: v }))}
+          onSubmit={handleUpdate}
+          submitting={saving}
+          error={editError}
+          onClose={() => setEditingId(null)}
+        />
       )}
 
       {confirmDeleteId && (

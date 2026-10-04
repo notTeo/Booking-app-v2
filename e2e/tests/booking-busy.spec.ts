@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { bookingCount } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
 
 /**
  * BOOKING_BUSY (503, out-of-retry-budget) must never look like a rejection of
- * what the customer entered (docs/plan-phase2.md, group 3 remainder): a
+ * what the customer entered: a
  * neutral notice, the typed values kept, and the submit button re-enabled
  * after the server's Retry-After window — never the red error style used for
  * real rejections (409 slot taken, 422 rule violations).
@@ -79,7 +80,7 @@ test('the owner wizard gets the same treatment: neutral notice, never the overri
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
   await page.getByRole('radiogroup').getByRole('radio').first().click();

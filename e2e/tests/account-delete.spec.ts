@@ -20,7 +20,7 @@ test('account delete with a wrong password shows "Incorrect password." after a s
     if (r.method() === 'DELETE' && r.url().endsWith('/user/me')) deleteRequests.push(r.url());
   });
 
-  await page.goto('/settings');
+  await page.goto('/account');
   await page.getByRole('button', { name: /delete account/i }).first().click();
   const dialog = page.getByRole('alertdialog');
   const password = dialog.getByLabel('Confirm your password');
@@ -34,6 +34,6 @@ test('account delete with a wrong password shows "Incorrect password." after a s
   await expect(dialog.getByRole('alert')).toHaveText('Incorrect password.');
   await expect(dialog).toBeVisible();
   await expect(password).toHaveValue('');
-  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page).toHaveURL(/\/account$/);
   expect(deleteRequests).toHaveLength(1);
 });

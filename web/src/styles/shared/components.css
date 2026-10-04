@@ -90,18 +90,14 @@
   font-weight: 400;
 }
 
-/* The orange "Be" of the logo (see components/Wordmark.tsx). */
-.wordmark-be {
-  color: var(--brand-accent);
-}
-
-/* Logo inside running text: same colour as the surrounding text. */
-.brand-wordmark--muted .wordmark-be {
+/* The orange "Be" of the logo is the DS `.wordmark__be` (components.css).
+   Logo inside running text: same colour as the surrounding text. */
+.brand-wordmark--muted .wordmark__be {
   color: inherit;
 }
 
 /* --- Password requirements checklist ---
-   Shared by RegisterPage, ResetPasswordPage, and SettingsPage (previously
+   Shared by RegisterPage, ResetPasswordPage, and AccountPage (previously
    duplicated verbatim in register.css / reset-password.css / settings.css).
    Rendered with <PasswordRequirement> (components/PasswordRequirement.tsx),
    which puts a real FontAwesome check/x icon before the label. */

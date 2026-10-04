@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 Disallow: /shops
-Disallow: /settings
+Disallow: /account
 Disallow: /invites
 Disallow: /invite
 Disallow: /cancel

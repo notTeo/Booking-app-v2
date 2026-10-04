@@ -1,3 +1,3 @@
-Dashboard navigation: shop switcher, grouped nav items, footer actions. 256px rail on 960px and up; 72px collapsed rail; a drawer with a scrim below 960px.
+Shop navigation, the only sidebar: a way back to all shops, the shop name, grouped nav items, and Account in the footer (no Log out; that is on the Account page). Pages outside a shop have no sidebar; they use the app `navbar` (see Navbar). 256px rail on 960px and up; 72px collapsed rail; a drawer with a scrim below 960px (the app shell switches at 640px, with a `navbar navbar--app` holding the wordmark and, on the right, the menu button; the drawer slides in from the right, under that button).
 
 One item is current (`aria-current="page"`). Items are 44px tall with an icon and a label; collapsed items need `aria-label`. Badges show counts that need action (pending bookings), not totals. The drawer traps focus and closes on Esc, scrim tap and link click.

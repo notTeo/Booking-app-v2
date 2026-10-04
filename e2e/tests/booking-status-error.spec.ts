@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
+import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 
@@ -36,11 +37,11 @@ async function openCanceledBooking(page: Page) {
   await page.locator('#email').fill(E2E.owner.email);
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
-  await page.waitForURL('**/dashboard');
+  await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/bookings?date=${date}`);
   // top edge of the block: the later booking overlaps its lower half
   await page.locator('.cal-block--canceled').click({ position: { x: 8, y: 3 } });
-  await expect(page.locator('.cal-detail-panel')).toContainText('Reopen Me');
+  await expect(page.getByRole('dialog')).toContainText('Reopen Me');
 }
 
 const reopen = (page: Page) =>
@@ -49,13 +50,13 @@ const reopen = (page: Page) =>
 test('reopening a canceled booking whose slot is taken explains why (409)', async ({ page }) => {
   await openCanceledBooking(page);
   await reopen(page);
-  await expect(page.locator('.cal-detail-panel').getByRole('alert')).toContainText(
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
     'That time is no longer free',
   );
   await expect(page.locator('.cal-block--canceled')).toHaveCount(1);
 });
 
-test('any other failure shows a generic error in the panel', async ({ page }) => {
+test('any other failure shows a generic error in the details modal', async ({ page }) => {
   await openCanceledBooking(page);
   await page.route(/\/api\/shops\/[^/]+\/bookings\/bk-st1/, (route) =>
     route.request().method() === 'PATCH'
@@ -63,7 +64,7 @@ test('any other failure shows a generic error in the panel', async ({ page }) =>
       : route.continue(),
   );
   await reopen(page);
-  await expect(page.locator('.cal-detail-panel').getByRole('alert')).toContainText(
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
     "Couldn't update the booking status",
   );
 });

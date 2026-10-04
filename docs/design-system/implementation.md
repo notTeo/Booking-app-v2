@@ -1,13 +1,13 @@
 # Implementation guide
 
-For the developer (Claude Code) building this in React 19 + Vite with plain CSS.
+For developers building this in React 19 + Vite with plain CSS.
 
 ## 1. Files
 
 ```
 src/styles/
-  tokens.css          # copied from this system's tokens.css (generated from tokens.json)
-  components.css      # copied from components/bundle.css
+  tokens.css          # design tokens (light + dark). Mirrors docs/design-system/tokens.json
+  components.css      # shared component classes (BEM). Edit here; do not restyle in page CSS
   pages/*.css         # page layout only: grids, page-specific spacing. No component restyling.
 ```
 
@@ -52,6 +52,8 @@ export function useMediaQuery(q: string) {
 // const compact = useMediaQuery('(max-width: 959px)');
 ```
 
+The app has two shells. Shop pages use `ShopSidebarLayout` (`.app-shell` + `.sidebar`): it switches to the `topbar` and drawer at `max-width: 640px` (`useIsCompact`), so the desktop rail stays visible on tablets. Pages outside a shop (dashboard, account) use `AppTopBarLayout` (`.app-shell.app-shell--topbar`): no sidebar, the app `navbar` on top, content centred at 72rem; `.is-compact` at the same 640px.
+
 Drawer behavior: opens from the navbar menu button (`aria-expanded`), `.is-open` plus a `.scrim`; closes on scrim click, Escape, or navigation; focus moves into the drawer and returns to the button.
 
 ## 4. Component cheat sheet
@@ -76,8 +78,10 @@ States use real pseudo-classes. `is-hover`, `is-focus`, `is-active` classes exis
 | Loading | `skeleton` + `--text/--title/--avatar/--button/--chip/--block`; `spinner`, `--sm`, `--lg` | Container gets `aria-busy="true"`; standalone spinner gets `role="status"` with visually hidden text. |
 | Data table | `.table-wrap > .table-surface > table.data-table` | Every `td` needs `data-label`; first cell `data-table__title`; last `data-table__actions`; numbers `data-table__num`. Sortable header: `data-table__sort` button with `aria-sort` on the `th`. |
 | Avatar | `avatar`, `--sm/--lg/--xl` | Initials or `<img alt="">` when the name is next to it. |
-| Navbar | `navbar`, `navbar__links`, `navbar__link`, `navbar__actions`, `navbar__menu-btn`, `navbar__panel`; `is-compact`, `is-open` | `aria-current="page"` marks the active link. |
-| Sidebar | `sidebar`, `sidebar__shop`, `sidebar__label`, `sidebar__nav`, `nav-item`, `sidebar__footer`; `sidebar--collapsed`, `is-drawer`, `is-open`; `scrim` | `aria-current="page"` on the active `nav-item`. Collapsed items need `aria-label`/`title`. |
+| Navbar | `navbar`, `navbar__links`, `navbar__link`, `navbar__actions`, `navbar__menu-btn`, `navbar__panel`; `is-compact`, `is-open` | `aria-current="page"` marks the active link, and the active icon action in `navbar__actions`. Icon-only actions get `aria-label` and a `tooltip`. |
+| Tooltip | `tooltip`, `tooltip__bubble`; `tooltip--end`; `is-open`, `is-dismissed` | Bubble is `aria-hidden`; the control keeps its `aria-label`. Esc dismisses (`is-dismissed`). |
+| Sidebar | `sidebar`, `sidebar__shop`, `sidebar__label`, `sidebar__nav`, `nav-item`, `sidebar__footer`, `sidebar__brand`, `sidebar__title`; `app-shell__main`, `app-shell--topbar`, `topbar`, `topbar__title`; `sidebar--collapsed`, `is-drawer`, `is-open`; `scrim` | `aria-current="page"` on the active `nav-item`. Collapsed items need `aria-label`/`title`. |
+| Shop card (dashboard) | `.shop-cards > .shop-cards__grid > li > .card.shop-card`; `shop-card__head`, `shop-card__name`, `shop-card__arrow`, `shop-card__metrics`, `shop-card__metric`, `shop-card__value`, `shop-card__label`, `shop-card__actions` | "Your shops": `<a class="card card--interactive shop-card">`, name, role badge (owner `badge--accent`, staff `badge--neutral`), metrics only with the cross-shop overview. Invite inbox: `<div class="card shop-card">` with `shop-card__actions` (Accept, Decline). Section is a `<section>` labelled by its `card__title` heading. |
 | Service / staff card | `service-card`, `staff-card` with `role="radio"` inside a `role="radiogroup"`; `aria-checked`; `aria-disabled` | Arrow keys move the selection; only one card is in the tab order. Always include `.option-check`. |
 | Date picker | `datepicker`, `datepicker__grid`, `day`; `day--today`, `day--open`, `day--blank`; `aria-pressed`, `disabled`; `is-loading` | Week starts Monday unless the locale says otherwise. Give each day an `aria-label` with weekday and month. |
 | Time slots | `slots`, `slot`, `slot-group`, `slot-group__label`; `aria-pressed`, `disabled` | Label booked slots ("10:00, booked"). |
