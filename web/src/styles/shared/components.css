@@ -90,13 +90,9 @@
   font-weight: 400;
 }
 
-/* The orange "Be" of the logo (see components/Wordmark.tsx). */
-.wordmark-be {
-  color: var(--brand-accent);
-}
-
-/* Logo inside running text: same colour as the surrounding text. */
-.brand-wordmark--muted .wordmark-be {
+/* The orange "Be" of the logo is the DS `.wordmark__be` (components.css).
+   Logo inside running text: same colour as the surrounding text. */
+.brand-wordmark--muted .wordmark__be {
   color: inherit;
 }
 

@@ -109,3 +109,27 @@ for (const theme of ['light', 'dark'] as const) {
     expect(bg).toBe(text);
   });
 }
+
+test('the logo\'s "Be" is brand orange in the top bar and plain text colour when muted', async ({ page }) => {
+  await login(page);
+  const be = bar(page).locator('.wordmark__be');
+  const [beColor, brand] = await be.evaluate((el) => {
+    // Resolve the token to rgb() the same way the browser resolves the logo.
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--brand-accent)';
+    el.parentElement!.append(probe);
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
+    return [getComputedStyle(el).color, resolved];
+  });
+  expect(beColor).toBe(brand);
+
+  await bar(page).getByRole('button', { name: 'Logout', exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  const muted = page.locator('.brand-wordmark--muted .wordmark__be');
+  const [mutedColor, around] = await muted.evaluate((el) => [
+    getComputedStyle(el).color,
+    getComputedStyle(el.parentElement!).color,
+  ]);
+  expect(mutedColor).toBe(around);
+});
