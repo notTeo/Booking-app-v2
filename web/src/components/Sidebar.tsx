@@ -9,12 +9,12 @@ import {
   faScissors,
   faUsers,
   faMagnifyingGlass,
-  faChevronLeft,
+  faHouse,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
+import { useShop } from '../context/ShopContext';
 import { useShopSlug } from '../hooks/useShopSlug';
 import type { useSidebarWidth } from '../hooks/useSidebarWidth';
 import Wordmark from './Wordmark';
@@ -49,9 +49,12 @@ function Item({ to, icon, label, end, state, collapsed, onNavigate }: ItemProps)
   );
 }
 
-// The shop sidebar (the only sidebar; pages outside a shop have a top bar).
-// Owners see Team, Customers and Shop settings on top of what staff see.
-function ShopLevel({ slug, collapsed, onNavigate }: { slug: string; collapsed: boolean; onNavigate: () => void }) {
+// The one sidebar, on every signed-in page. Outside a shop (dashboard,
+// account) it is just Home and Account; inside one, the shop's name and links
+// sit between them. Owners see Team, Customers and Shop settings on top of
+// what staff see.
+function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => void }) {
+  const slug = useShopSlug();
   const { shop, isLoading } = useShop();
   const { t } = useLang();
   const base = `/shops/${slug}`;
@@ -59,23 +62,27 @@ function ShopLevel({ slug, collapsed, onNavigate }: { slug: string; collapsed: b
 
   return (
     <>
-      <Item to="/dashboard" end icon={faChevronLeft} label={t.sidebar.backToShops} collapsed={collapsed} onNavigate={onNavigate} />
-      <div className="sidebar__title">{isLoading ? '…' : (shop?.name ?? slug)}</div>
-      <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
-        <Item to={base} end icon={faTableCells} label={t.sidebar.overview} collapsed={collapsed} onNavigate={onNavigate} />
-        <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} collapsed={collapsed} onNavigate={onNavigate} />
-        <Item to={`${base}/services`} icon={faScissors} label={t.sidebar.services} collapsed={collapsed} onNavigate={onNavigate} />
-        {canManage && (
-          <>
-            <Item to={`${base}/team`} icon={faUsers} label={t.sidebar.team} collapsed={collapsed} onNavigate={onNavigate} />
-            <Item to={`${base}/customers`} icon={faMagnifyingGlass} label={t.sidebar.customers} collapsed={collapsed} onNavigate={onNavigate} />
-            <Item to={`${base}/settings`} icon={faGear} label={t.sidebar.shopSettings} collapsed={collapsed} onNavigate={onNavigate} />
-          </>
-        )}
-      </nav>
+      <Item to="/dashboard" end icon={faHouse} label={t.sidebar.home} collapsed={collapsed} onNavigate={onNavigate} />
+      {slug && (
+        <>
+          <div className="sidebar__title">{isLoading ? '…' : (shop?.name ?? slug)}</div>
+          <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
+            <Item to={base} end icon={faTableCells} label={t.sidebar.overview} collapsed={collapsed} onNavigate={onNavigate} />
+            <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} collapsed={collapsed} onNavigate={onNavigate} />
+            <Item to={`${base}/services`} icon={faScissors} label={t.sidebar.services} collapsed={collapsed} onNavigate={onNavigate} />
+            {canManage && (
+              <>
+                <Item to={`${base}/team`} icon={faUsers} label={t.sidebar.team} collapsed={collapsed} onNavigate={onNavigate} />
+                <Item to={`${base}/customers`} icon={faMagnifyingGlass} label={t.sidebar.customers} collapsed={collapsed} onNavigate={onNavigate} />
+                <Item to={`${base}/settings`} icon={faGear} label={t.sidebar.shopSettings} collapsed={collapsed} onNavigate={onNavigate} />
+              </>
+            )}
+          </nav>
+        </>
+      )}
       <div className="sidebar__footer sidebar__nav">
         {/* The Account page offers a way back to the shop it was opened from. */}
-        <Item to="/account" icon={faUser} label={t.sidebar.account} state={{ fromShop: slug }} collapsed={collapsed} onNavigate={onNavigate} />
+        <Item to="/account" icon={faUser} label={t.sidebar.account} state={slug ? { fromShop: slug } : undefined} collapsed={collapsed} onNavigate={onNavigate} />
       </div>
     </>
   );
@@ -91,7 +98,6 @@ interface SidebarProps {
 
 export default function Sidebar({ compact, isOpen, onClose, resize }: SidebarProps) {
   const { t } = useLang();
-  const slug = useShopSlug();
   const ref = useRef<HTMLElement>(null);
   const drawerOpen = compact && isOpen;
 
@@ -131,7 +137,7 @@ export default function Sidebar({ compact, isOpen, onClose, resize }: SidebarPro
       <div className="sidebar__brand">
         <span className="wordmark"><Wordmark short={collapsed} /></span>
       </div>
-      {slug && <ShopLevel slug={slug} collapsed={collapsed} onNavigate={onClose} />}
+      <Nav collapsed={collapsed} onNavigate={onClose} />
       {resize && (
         <div
           className={`sidebar__resize${resize.dragging ? ' is-dragging' : ''}`}

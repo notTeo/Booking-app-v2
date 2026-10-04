@@ -25,7 +25,11 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
 
   return (
     <header className="navbar navbar--app is-compact">
-      <Link to={`/shops/${slug}`} className="wordmark wordmark--sm" aria-label={t.sidebar.overview}>
+      <Link
+        to={slug ? `/shops/${slug}` : '/dashboard'}
+        className="wordmark wordmark--sm"
+        aria-label={slug ? t.sidebar.overview : t.sidebar.home}
+      >
         <Wordmark />
       </Link>
       <span className="navbar__spacer" />
@@ -42,9 +46,9 @@ function TopBar({ onMenu, menuRef }: { onMenu: () => void; menuRef: React.Ref<HT
   );
 }
 
-// Shop pages (/shops/:slug/...): the shop sidebar, as a rail or (compact) a
-// drawer behind the top bar. Pages outside a shop use AppTopBarLayout.
-export default function ShopSidebarLayout() {
+// Every signed-in page: the sidebar, as a rail or (compact) a drawer behind
+// the top bar. The top bar exists only on phones, to hold the menu button.
+export default function AppSidebarLayout() {
   const compact = useIsCompact();
   const resize = useSidebarWidth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

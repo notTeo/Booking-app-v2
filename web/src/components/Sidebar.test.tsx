@@ -36,18 +36,30 @@ describe('Sidebar', () => {
     expect(html).not.toContain('href="/invites"');
     expect(html).not.toContain('href="/shops"');
     expect(html.match(/href="\/dashboard"/g)).toHaveLength(1);
-    expect(html).toContain(t.backToShops);
+    expect(html).toContain(t.home);
   });
 
-  it('renders no navigation outside a shop', () => {
-    expect(render('/dashboard')).not.toContain('nav-item');
-    expect(render('/shops/new')).not.toContain('nav-item');
+  it('outside a shop: only the logo, Home and Account', () => {
+    shopState.shop = null;
+    for (const path of ['/dashboard', '/account', '/shops/new']) {
+      const html = render(path);
+      expect(html, path).toContain('wordmark');
+      expect(html, path).toContain('href="/dashboard"');
+      expect(html, path).toContain('href="/account"');
+      expect(html.match(/<a [^>]*class="nav-item/g), path).toHaveLength(2);
+      expect(html, path).not.toContain('sidebar__title');
+    }
+  });
+
+  it('marks Home and Account as current on their own pages', () => {
+    expect(render('/dashboard')).toMatch(/aria-current="page"[^>]*href="\/dashboard"/);
+    expect(render('/account')).toMatch(/aria-current="page"[^>]*href="\/account"/);
   });
 
   it('owner: shop name, all shop items and account, no logout', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'owner' };
     const html = render('/shops/hair/bookings');
-    for (const label of [t.backToShops, 'Hairology', t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account]) {
+    for (const label of [t.home, 'Hairology', t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account]) {
       expect(html).toContain(label);
     }
     expect(html).not.toContain(t.logout);
@@ -66,7 +78,7 @@ describe('Sidebar', () => {
   it('staff: no Team, Customers or Shop settings', () => {
     shopState.shop = { name: 'Hairology', slug: 'hair', role: 'staff' };
     const html = render('/shops/hair');
-    for (const label of [t.backToShops, t.overview, t.bookings, t.services, t.account]) expect(html).toContain(label);
+    for (const label of [t.home, t.overview, t.bookings, t.services, t.account]) expect(html).toContain(label);
     expect(html).not.toContain('/shops/hair/team');
     expect(html).not.toContain('/shops/hair/customers');
     expect(html).not.toContain('/shops/hair/settings');
@@ -82,7 +94,7 @@ describe('Sidebar', () => {
     const html = render('/shops/hair', true);
     expect(html).toContain('sidebar--collapsed');
     expect(html).not.toContain('Booked');
-    for (const label of [t.backToShops, t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account]) {
+    for (const label of [t.home, t.overview, t.bookings, t.services, t.team, t.customers, t.shopSettings, t.account]) {
       expect(html).toContain(`aria-label="${label}"`);
     }
   });

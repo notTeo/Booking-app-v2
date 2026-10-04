@@ -11,8 +11,7 @@ import { PaletteProvider } from './context/PaletteContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import AppTopBarLayout from './components/AppTopBarLayout';
-import ShopSidebarLayout from './components/ShopSidebarLayout';
+import AppSidebarLayout from './components/AppSidebarLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
@@ -87,14 +86,12 @@ export default function App() {
                 <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 
                 <Route element={<ProtectedRoute />}>
-                  {/* Outside a shop. /dashboard is the only list of shops and invites. */}
-                  <Route element={<AppTopBarLayout />}>
+                  <Route element={<AppSidebarLayout />}>
+                    {/* Outside a shop. /dashboard is the only list of shops and invites. */}
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
                     <Route path="/account" element={<AccountPage />} />
-                  </Route>
 
-                  <Route element={<ShopSidebarLayout />}>
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route element={<ShopGate />}>
                         <Route index element={<ShopOverviewPage />} />

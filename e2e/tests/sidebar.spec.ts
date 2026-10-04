@@ -22,7 +22,7 @@ async function login(page: Page) {
 const sidebar = (page: Page) => page.locator('aside.sidebar');
 const item = (page: Page, name: string) => sidebar(page).getByRole('link', { name, exact: true });
 
-test('shop sidebar: shop items, no account-level items; Account leaves for the top-bar layout', async ({ page }) => {
+test('shop sidebar: shop items, no account-level items; on Account the sidebar stays, without the shop links', async ({ page }) => {
   await login(page);
   for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings', 'Account']) {
     await expect(item(page, name), name).toBeVisible();
@@ -32,19 +32,20 @@ test('shop sidebar: shop items, no account-level items; Account leaves for the t
   for (const name of ['Dashboard', 'Shops', 'My invites', 'New Booking']) {
     await expect(item(page, name), name).toHaveCount(0);
   }
-  // "All shops" is a way out (to the dashboard), not the current page. The
-  // seeded owner has a single shop: the link shows regardless of how many.
-  await expect(item(page, 'All shops')).toHaveAttribute('href', '/dashboard');
-  await expect(item(page, 'All shops')).not.toHaveAttribute('aria-current', 'page');
-  await item(page, 'All shops').click();
+  // "Home" is a way out (to the dashboard), not the current page.
+  await expect(item(page, 'Home')).toHaveAttribute('href', '/dashboard');
+  await expect(item(page, 'Home')).not.toHaveAttribute('aria-current', 'page');
+  await item(page, 'Home').click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goBack();
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
 
   await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(sidebar(page)).toHaveCount(0);
-  await expect(page.locator('header.navbar')).toBeVisible();
+  await expect(item(page, 'Account')).toHaveAttribute('aria-current', 'page');
+  await expect(item(page, 'Home')).toBeVisible();
+  await expect(item(page, 'Overview')).toHaveCount(0);
+  await expect(page.locator('header.navbar')).toHaveCount(0);
 });
 
 test('Account opened from a shop has a Back to shop button; from the dashboard it does not', async ({ page }) => {
@@ -56,7 +57,7 @@ test('Account opened from a shop has a Back to shop button; from the dashboard i
   await expect(page).toHaveURL(new RegExp(`${SHOP}$`));
 
   await page.goto('/dashboard');
-  await page.locator('header.navbar').getByRole('link', { name: 'Account' }).click();
+  await item(page, 'Account').click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole('link', { name: 'Back to shop' })).toHaveCount(0);
 });
@@ -101,7 +102,7 @@ test('staff see the trimmed menu and are redirected away from owner pages', asyn
   await query(`update "UserShop" set role = 'staff' where id = 'us1'`);
   try {
     await page.goto(SHOP);
-    for (const name of ['All shops', 'Overview', 'Bookings', 'Services', 'Account']) {
+    for (const name of ['Home', 'Overview', 'Bookings', 'Services', 'Account']) {
       await expect(item(page, name), name).toBeVisible();
     }
     for (const name of ['Team', 'Customers', 'Settings']) {

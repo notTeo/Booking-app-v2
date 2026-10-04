@@ -25,7 +25,7 @@ export interface Translations {
     account: string;
     overview: string;
     logout: string;
-    backToShops: string;
+    home: string;
     shopSection: string;
     manageSection: string;
     bookings: string;
@@ -943,7 +943,7 @@ export const translations: Record<Language, Translations> = {
       account: 'Λογαριασμός',
       overview: 'Επισκόπηση',
       logout: 'Αποσύνδεση',
-      backToShops: 'Όλα τα καταστήματα',
+      home: 'Αρχική',
       shopSection: 'Κατάστημα',
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
@@ -1892,7 +1892,7 @@ home: {
       account: 'Account',
       overview: 'Overview',
       logout: 'Logout',
-      backToShops: 'All shops',
+      home: 'Home',
       shopSection: 'Shop',
       manageSection: 'Manage',
       bookings: 'Bookings',
