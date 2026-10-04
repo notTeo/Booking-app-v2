@@ -84,7 +84,7 @@ a { color: var(--accent); }
               box-shadow var(--motion-fast) var(--ease-standard),
               transform var(--motion-fast) var(--ease-standard);
 }
-.btn:hover, .btn.is-hover { --btn-bg: var(--accent-hover); box-shadow: var(--shadow-accent); }
+.btn:hover, .btn.is-hover { --btn-bg: var(--accent-hover); box-shadow: var(--shadow-accent); text-decoration: none; }
 .btn:active, .btn.is-active { --btn-bg: var(--accent-active); box-shadow: none; transform: translateY(1px); }
 .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
