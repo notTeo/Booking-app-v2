@@ -39,10 +39,21 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    /** "{email} invited you as {role}" */
-    invites: { title: string; from: string };
-    /** Heading of the cross-shop analytics (owners of 2+ shops). */
+    subscription: {
+      title: string;
+      pro: string;
+      free: string;
+      proText: string;
+      freeText: string;
+      manageBilling: string;
+      upgrade: string;
+      comingSoon: string;
+    };
+    /** from: "{email} invited you as {role}" */
+    invites: { title: string; from: string; empty: string };
+    /** Heading of the cross-shop analytics. */
     analytics: string;
+    analyticsEmpty: string;
     shops: {
       title: string;
       bookings: string;
@@ -947,8 +958,23 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      invites: { title: 'Προσκλήσεις', from: 'Ο/Η {email} σε προσκάλεσε ως {role}' },
+      subscription: {
+        title: 'Συνδρομή',
+        pro: 'Pro',
+        free: 'Δωρεάν',
+        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
+        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
+        manageBilling: 'Διαχείριση χρέωσης',
+        upgrade: 'Αναβάθμιση',
+        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
+      },
+      invites: {
+        title: 'Προσκλήσεις',
+        from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
+        empty: 'Δεν έχεις προσκλήσεις σε αναμονή.',
+      },
       analytics: 'Σε όλα τα καταστήματά σου',
+      analyticsEmpty: 'Τα ραντεβού σου θα εμφανιστούν εδώ μόλις μπεις σε ένα κατάστημα.',
       shops: {
         title: 'Τα καταστήματά σου',
         bookings: 'Ραντεβού',
@@ -1884,8 +1910,23 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      invites: { title: 'Invitations', from: '{email} invited you as {role}' },
+      subscription: {
+        title: 'Subscription',
+        pro: 'Pro',
+        free: 'Free',
+        proText: 'You are on the Pro plan and can create shops.',
+        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
+        manageBilling: 'Manage billing',
+        upgrade: 'Upgrade',
+        comingSoon: 'Billing is coming soon.',
+      },
+      invites: {
+        title: 'Invitations',
+        from: '{email} invited you as {role}',
+        empty: 'You have no pending invitations.',
+      },
       analytics: 'Across your shops',
+      analyticsEmpty: 'Your bookings will appear here once you are part of a shop.',
       shops: {
         title: 'Your shops',
         bookings: 'Bookings',

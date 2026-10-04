@@ -49,14 +49,14 @@ test('Add member modal creates a member without sending an email, and the row of
   await expect(row.getByRole('button', { name: 'Remove' })).toBeVisible();
 });
 
-test('choosing the owner role asks for confirmation first, and Esc closes only the top dialog', async ({ page }) => {
+test('choosing the manager role asks for confirmation first, and Esc closes only the top dialog', async ({ page }) => {
   await login(page);
   await page.goto(TEAM);
   await page.getByRole('button', { name: 'Add Team Member' }).click();
   const dialog = page.getByRole('dialog', { name: 'Add Team Member' });
   await dialog.getByLabel('Name').fill('Modal Member');
   await toggleSwitch(page, dialog, 'Send login invite now');
-  await dialog.getByLabel('Role').selectOption('owner');
+  await dialog.getByLabel('Role').selectOption('manager');
   await dialog.getByRole('button', { name: 'Add Team Member' }).click();
 
   const confirm = page.getByRole('alertdialog');

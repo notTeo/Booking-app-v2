@@ -5,9 +5,10 @@ import { query } from '../support/db';
 import { addPendingInvite } from '../support/invites';
 
 /**
- * /dashboard, the one page outside a shop: invite inbox (only with pending
- * invites), "Your shops" with the user's role, Create shop for Pro users, and
- * an empty state. Analytics (owners of 2+ shops) are in dashboard-overview.spec.
+ * /dashboard, the one page outside a shop: the subscription, the invite
+ * inbox, "Your shops" with the user's role and Create shop. Every section is
+ * always shown, with an empty state when it has nothing in it. The analytics
+ * are in dashboard-overview.spec.
  * The seeded owner u1 is Pro and owns one shop (s1, membership us1). Shops
  * added here have ids starting "dash2-" and are deleted after each test.
  */
@@ -27,8 +28,10 @@ async function openDashboard(page: Page, theme: 'light' | 'dark' = 'light') {
 }
 
 const inbox = (page: Page) => page.getByRole('region', { name: 'Invitations' });
-const shops = (page: Page) => page.getByRole('region', { name: 'Your shops' });
+const shops = (page: Page) => page.getByRole('region', { name: 'Your shops', exact: true });
+const subscription = (page: Page) => page.getByRole('region', { name: 'Subscription' });
 const createShop = (page: Page) => page.getByRole('link', { name: 'Create shop' });
+const createShopDisabled = (page: Page) => page.getByRole('button', { name: 'Create shop' });
 const inviteShop = (n: number) => ({ shopId: `dash2-inv${n}`, slug: `dash2-invited-${n}`, name: `Invited Shop ${n}`, token: `dash2-token-${n}` });
 
 test.afterEach(async () => {
@@ -53,7 +56,13 @@ test('a staff member sees Staff on the card', async ({ page }) => {
   await expect(shops(page).locator('.shop-card')).toContainText('Staff');
 });
 
-test('Create shop: shown to Pro users and opens the form, hidden otherwise', async ({ page }) => {
+test('a manager sees Manager on the card', async ({ page }) => {
+  await query(`update "UserShop" set role = 'manager' where id = 'us1'`);
+  await openDashboard(page);
+  await expect(shops(page).locator('.shop-card')).toContainText('Manager');
+});
+
+test('Create shop: opens the form for Pro users, shown but disabled otherwise', async ({ page }) => {
   await openDashboard(page);
   await createShop(page).click();
   await expect(page).toHaveURL(/\/shops\/new$/);
@@ -62,12 +71,26 @@ test('Create shop: shown to Pro users and opens the form, hidden otherwise', asy
   await page.goto('/dashboard');
   await expect(shops(page)).toBeVisible();
   await expect(createShop(page)).toHaveCount(0);
+  await expect(createShopDisabled(page)).toBeDisabled();
 });
 
-test('no pending invites: no invite inbox', async ({ page }) => {
+test('Subscription: the plan and a billing button that is not usable yet', async ({ page }) => {
+  await openDashboard(page);
+  await expect(subscription(page).locator('.badge')).toHaveText('Pro');
+  await expect(subscription(page).getByRole('button', { name: 'Manage billing' })).toBeDisabled();
+  await expect(subscription(page)).toContainText('Billing is coming soon.');
+
+  await query(`update "User" set "isPro" = false where id = 'u1'`);
+  await page.goto('/dashboard');
+  await expect(subscription(page).locator('.badge')).toHaveText('Free');
+  await expect(subscription(page).getByRole('button', { name: 'Upgrade' })).toBeDisabled();
+});
+
+test('no pending invites: the inbox says so', async ({ page }) => {
   await openDashboard(page);
   await expect(shops(page)).toBeVisible();
-  await expect(inbox(page)).toHaveCount(0);
+  await expect(inbox(page)).toContainText('You have no pending invitations.');
+  await expect(inbox(page).locator('.shop-card')).toHaveCount(0);
 });
 
 test('invite inbox: who invited me and as what; Accept goes into that shop', async ({ page }) => {
@@ -81,7 +104,7 @@ test('invite inbox: who invited me and as what; Accept goes into that shop', asy
   // Back on the dashboard: the invite is gone and the shop is listed.
   await page.goto('/dashboard');
   await expect(shops(page).locator('.shop-card', { hasText: 'Invited Shop 1' })).toBeVisible();
-  await expect(inbox(page)).toHaveCount(0);
+  await expect(inbox(page).locator('.shop-card')).toHaveCount(0);
 });
 
 test('Decline asks first, then removes the card for good', async ({ page }) => {
@@ -112,17 +135,22 @@ test('no shops and no invites: ask your shop owner to invite my email', async ({
   await openDashboard(page);
   await expect(page.getByRole('heading', { name: "You're not part of a shop yet" })).toBeVisible();
   await expect(page.getByText('Ask your shop owner to invite owner@e2e.test.')).toBeVisible();
-  await expect(shops(page)).toHaveCount(0);
-  await expect(inbox(page)).toHaveCount(0);
-  await expect(createShop(page)).toHaveCount(0);
+  // Every section is still there, each with its empty state.
+  await expect(shops(page).locator('.shop-card')).toHaveCount(0);
+  await expect(inbox(page)).toContainText('You have no pending invitations.');
+  await expect(subscription(page).locator('.badge')).toHaveText('Free');
+  await expect(page.getByRole('region', { name: 'Across your shops' })).toContainText(
+    'Your bookings will appear here once you are part of a shop.',
+  );
+  await expect(createShopDisabled(page)).toBeDisabled();
 });
 
-test('no shops but an invite: the inbox, no empty state', async ({ page }) => {
+test('no shops but an invite: the inbox, and the shops empty state under it', async ({ page }) => {
   await query(`update "UserShop" set active = false where id = 'us1'`);
   await addPendingInvite(inviteShop(1));
   await openDashboard(page);
-  await expect(inbox(page)).toBeVisible();
-  await expect(page.getByRole('heading', { name: "You're not part of a shop yet" })).toHaveCount(0);
+  await expect(inbox(page).locator('.shop-card')).toHaveCount(1);
+  await expect(shops(page).getByRole('heading', { name: "You're not part of a shop yet" })).toBeVisible();
 });
 
 test('the old /shops and /invites pages are gone', async ({ page }) => {
@@ -135,11 +163,12 @@ test('the old /shops and /invites pages are gone', async ({ page }) => {
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`360px, ${theme}: inbox and shop cards fit, no horizontal scroll`, async ({ page }) => {
+  test(`360px, ${theme}: subscription, inbox and shop cards fit, no horizontal scroll`, async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await addPendingInvite(inviteShop(1));
     await openDashboard(page, theme);
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    await expect(subscription(page)).toBeVisible();
     await expect(inbox(page)).toBeVisible();
     await expect(shops(page)).toBeVisible();
     const overflow = await page.evaluate(

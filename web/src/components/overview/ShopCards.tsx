@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ROLE_BADGE } from '../../utils/roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,18 +14,22 @@ export interface ShopCardRow {
   slug: string;
   name: string;
   role: ShopRole;
-  /** This shop's numbers from the cross-shop overview, when it is shown. */
+  /** This shop's numbers from the cross-shop overview, once it has loaded. */
   metrics?: Pick<ShopOverviewRow, 'total' | 'today' | 'pending'>;
 }
 
-/** "Your shops": one card per shop with the user's role, linking to that shop. */
-export default function ShopCards({ shops }: { shops: ShopCardRow[] }) {
+/**
+ * "Your shops": one card per shop with the user's role, linking to that shop.
+ * With no shops, `empty` takes the place of the cards.
+ */
+export default function ShopCards({ shops, empty }: { shops: ShopCardRow[]; empty: ReactNode }) {
   const { t } = useLang();
   const s = t.dashboard.shops;
 
   return (
     <section className="shop-cards" aria-labelledby="dashboard-shops-title">
       <h2 className="t-subheading" id="dashboard-shops-title">{s.title}</h2>
+      {shops.length === 0 && empty}
       <ul className="shop-cards__grid">
         {shops.map((shop) => (
           <li key={shop.id}>

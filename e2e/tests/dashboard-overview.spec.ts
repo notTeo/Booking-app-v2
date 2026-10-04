@@ -227,16 +227,15 @@ for (const [label, sql] of [
   ['owning one shop', `update "UserShop" set active = false where id = 'us2'`],
   ['owning one shop and staff in another', `update "UserShop" set role = 'staff' where id = 'us2'`],
 ] as const) {
-  test(`${label}: shop cards with roles, no analytics`, async ({ page }) => {
+  test(`${label}: shop cards with roles, and the analytics all the same`, async ({ page }) => {
     await query(sql);
     try {
-      await login(page);
+      await openDashboard(page);
       await expect(page.locator('.shop-card').first()).toBeVisible();
       await expect(shopCard(page, SHOPS.s1.name)).toContainText('Owner');
-      await expect(page.locator('.shop-card__metric')).toHaveCount(0);
-      await expect(page.getByRole('heading', { name: 'Across your shops' })).toHaveCount(0);
-      await expect(page.locator('.stat')).toHaveCount(0);
-      await expect(tab(page, 'Week')).toHaveCount(0);
+      await expect(shopCard(page, SHOPS.s1.name).locator('.shop-card__metric')).toHaveCount(2);
+      await expect(page.getByRole('heading', { name: 'Across your shops' })).toBeVisible();
+      await expect(tab(page, 'Week')).toBeVisible();
     } finally {
       await query(`update "UserShop" set active = true, role = 'owner' where id = 'us2'`);
     }

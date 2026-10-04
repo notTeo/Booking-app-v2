@@ -54,6 +54,23 @@ test('owner can still start a booking from the Bookings page', async ({ page }) 
   await expect(page).toHaveURL(new RegExp(`${SHOP}/bookings/new$`));
 });
 
+test('a manager gets the owner menu and pages, but no way to delete the shop', async ({ page }) => {
+  await login(page);
+  await query(`update "UserShop" set role = 'manager' where id = 'us1'`);
+  try {
+    await page.goto(SHOP);
+    for (const name of ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings']) {
+      await expect(item(page, name), name).toBeVisible();
+    }
+    await page.goto(`${SHOP}/settings`);
+    await expect(page).toHaveURL(new RegExp(`${SHOP}/settings$`));
+    await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
+    await expect(page.locator('.card--danger')).toHaveCount(0);
+  } finally {
+    await query(`update "UserShop" set role = 'owner' where id = 'us1'`);
+  }
+});
+
 test('staff see the trimmed menu and are redirected away from owner pages', async ({ page }) => {
   await login(page);
   await query(`update "UserShop" set role = 'staff' where id = 'us1'`);

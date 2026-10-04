@@ -16,6 +16,7 @@ import RangeTabs from '../components/overview/RangeTabs';
 import UpcomingBookings from '../components/overview/UpcomingBookings';
 import ShopCards, { type ShopCardRow } from '../components/overview/ShopCards';
 import InviteInbox from '../components/overview/InviteInbox';
+import SubscriptionCard from '../components/overview/SubscriptionCard';
 import '../styles/pages/shop-overview.css';
 
 // One quick retry, then show the error (same as the shop overview).
@@ -25,8 +26,8 @@ const RETRY = 1;
 const BROWSER_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
 /**
- * Shop cards: by bookings when the cross-shop overview is shown (its perShop
- * order), otherwise by name. Each card carries its numbers when there are any.
+ * Shop cards: by bookings once the cross-shop overview has loaded (its perShop
+ * order), by name until then. Each card carries its numbers when there are any.
  */
 function shopRows(shops: Shop[], perShop: ShopOverviewRow[] | undefined): ShopCardRow[] {
   const rows = shops.map((shop) => ({
@@ -50,8 +51,9 @@ function EmptyText({ text, email }: { text: string; email: string }) {
 }
 
 /**
- * The one page outside a shop: pending invites, the user's shops, and for
- * owners of two or more shops the overview summed across them.
+ * The one page outside a shop: the subscription, pending invites, the user's
+ * shops and the overview summed across them. Every section is always shown,
+ * with an empty state when it has nothing in it.
  */
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -62,31 +64,37 @@ export default function DashboardPage() {
   const invitesQuery = useMyInvites();
   const shops = shopsQuery.data ?? [];
   const invites = invitesQuery.data?.received ?? [];
-  const showAnalytics = shops.filter((s) => s.role === 'owner').length >= 2;
+  const hasShops = shops.length > 0;
 
   const overviewQuery = useQuery({
     queryKey: ['my-overview', range],
     queryFn: () => getMyOverview(range),
     retry: RETRY,
-    enabled: showAnalytics,
+    enabled: hasShops,
   });
   // Independent of the selected period, like the shop overview's.
   const upcomingQuery = useQuery({
     queryKey: ['my-upcoming'],
     queryFn: getMyUpcoming,
     retry: RETRY,
-    enabled: showAnalytics,
+    enabled: hasShops,
   });
-  const overview = showAnalytics ? overviewQuery.data : undefined;
+  const overview = hasShops ? overviewQuery.data : undefined;
 
   const header = (
     <OverviewHeader
       zone={BROWSER_ZONE}
-      action={user?.isPro && (
+      // Creating a shop needs Pro: without it the button is there but disabled.
+      action={user?.isPro ? (
         <Link to="/shops/new" className="btn btn--sm">
           <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
           {t.dashboard.createShop}
         </Link>
+      ) : (
+        <button type="button" className="btn btn--sm" disabled>
+          <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+          {t.dashboard.createShop}
+        </button>
       )}
     />
   );
@@ -128,26 +136,29 @@ export default function DashboardPage() {
     <div className="overview-page">
       {header}
 
-      {invites.length > 0 && <InviteInbox invites={invites} />}
+      <SubscriptionCard isPro={!!user?.isPro} />
 
-      {shops.length > 0 && <ShopCards shops={shopRows(shops, overview?.perShop)} />}
+      <InviteInbox invites={invites} />
 
-      {shops.length === 0 && invites.length === 0 && (
-        <div className="card">
-          <div className="empty">
-            <span className="empty__icon"><FontAwesomeIcon icon={faStore} aria-hidden="true" /></span>
-            <h2 className="empty__title">{t.dashboard.empty.title}</h2>
-            <EmptyText text={t.dashboard.empty.text} email={user?.email ?? ''} />
+      <ShopCards
+        shops={shopRows(shops, overview?.perShop)}
+        empty={
+          <div className="card">
+            <div className="empty">
+              <span className="empty__icon"><FontAwesomeIcon icon={faStore} aria-hidden="true" /></span>
+              <h3 className="empty__title">{t.dashboard.empty.title}</h3>
+              <EmptyText text={t.dashboard.empty.text} email={user?.email ?? ''} />
+            </div>
           </div>
+        }
+      />
+
+      <section className="overview-page" aria-labelledby="dashboard-analytics-title">
+        <div className="overview-head">
+          <h2 className="t-subheading" id="dashboard-analytics-title">{t.dashboard.analytics}</h2>
+          {hasShops && <RangeTabs value={range} onChange={setRange} />}
         </div>
-      )}
-
-      {showAnalytics && (
-        <section className="overview-page" aria-labelledby="dashboard-analytics-title">
-          <div className="overview-head">
-            <h2 className="t-subheading" id="dashboard-analytics-title">{t.dashboard.analytics}</h2>
-            <RangeTabs value={range} onChange={setRange} />
-          </div>
+        {hasShops ? (
           <OverviewBody
             range={range}
             overview={overview}
@@ -165,14 +176,20 @@ export default function DashboardPage() {
               <div className="card">
                 <div className="empty">
                   <span className="empty__icon"><FontAwesomeIcon icon={faCalendarCheck} aria-hidden="true" /></span>
-                  <h2 className="empty__title">{t.dashboard.neverBooked.title}</h2>
+                  <h3 className="empty__title">{t.dashboard.neverBooked.title}</h3>
                   <p className="empty__text">{t.dashboard.neverBooked.text}</p>
                 </div>
               </div>
             }
           />
-        </section>
-      )}
+        ) : (
+          <div className="card">
+            <div className="empty empty--sm">
+              <p className="empty__text">{t.dashboard.analyticsEmpty}</p>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
