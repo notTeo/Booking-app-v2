@@ -102,6 +102,7 @@ export interface Translations {
     pricingTeamName: string;
     pricingTeamDesc: string;
     pricingTeamFeatures: string[];
+    pricingDetailsLink: string;
     previewHint: string;
     step1Title: string;
     step1Desc: string;
@@ -231,6 +232,17 @@ export interface Translations {
     title: string;
     intro: string;
     buttonLabel: string;
+  };
+  pricingPage: {
+    title: string;
+    intro: string;
+    featureCol: string;
+    included: string;
+    notIncluded: string;
+    /** Each row: the feature, then Solo and Team (true/false, or a short text). */
+    groups: { title: string; rows: [string, boolean | string, boolean | string][] }[];
+    notesTitle: string;
+    notes: string[];
   };
   footer: {
     brandDesc: string;
@@ -1171,6 +1183,7 @@ home: {
       'Δημόσια σελίδα κρατήσεων',
       'Ημερολόγιο, υπηρεσίες και πελατολόγιο',
       'Email επιβεβαίωσης με σύνδεσμο ακύρωσης και αλλαγής',
+      'Email υπενθύμισης πριν από το ραντεβού',
       'Εισαγωγή και εξαγωγή πελατών',
     ],
     pricingTeamName: 'Team',
@@ -1182,6 +1195,7 @@ home: {
       'Ρόλοι και δικαιώματα',
       'Ωράριο ανά μέλος προσωπικού',
     ],
+    pricingDetailsLink: 'Δες αναλυτικά τι περιλαμβάνει κάθε πακέτο',
     previewHint: 'Έλα, κάνε κλικ τριγύρω — είναι διαδραστικό',
     step1Title: 'Δημιούργησε τον λογαριασμό σου',
     step1Desc: 'Εγγράψου σε δευτερόλεπτα με το email σου.',
@@ -1311,6 +1325,79 @@ home: {
     title: 'Ας μιλήσουμε!',
     intro: 'Βρήκες κάποιο bug, έχεις κάποια ερώτηση ή μια ιδέα για το BeBooked; Στείλε μου ένα μήνυμα και θα σου απαντήσω το συντομότερο δυνατό.',
     buttonLabel: 'Επικοινώνησε μαζί μου',
+  },
+  pricingPage: {
+    title: 'Τιμές',
+    intro: 'Δύο πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
+    featureCol: 'Δυνατότητα',
+    included: 'Περιλαμβάνεται',
+    notIncluded: 'Δεν περιλαμβάνεται',
+    groups: [
+      {
+        title: 'Σελίδα κρατήσεων',
+        rows: [
+          ['Δημόσια σελίδα κρατήσεων στον δικό σου σύνδεσμο', true, true],
+          ['Οι πελάτες κλείνουν χωρίς να φτιάξουν λογαριασμό', true, true],
+          ['Ακύρωση και αλλαγή ώρας από τον πελάτη, με όριο ωρών που ορίζεις', true, true],
+          ['Ελληνικά και Αγγλικά', true, true],
+        ],
+      },
+      {
+        title: 'Ημερολόγιο και ραντεβού',
+        rows: [
+          ['Ημερήσιο ημερολόγιο με στήλη ανά μέλος προσωπικού', true, true],
+          ['Ραντεβού που καταχωρείς εσύ, και εκτός ωραρίου', true, true],
+          ['Κλείδωμα ωρών στο ημερολόγιο', true, true],
+          ['Καταστάσεις ραντεβού: ολοκληρώθηκε, δεν εμφανίστηκε, ακυρώθηκε', true, true],
+          ['Προστασία από διπλές κρατήσεις', true, true],
+          ['Σύνοψη με αριθμό ραντεβού ανά εβδομάδα, μήνα και τρίμηνο', true, true],
+        ],
+      },
+      {
+        title: 'Υπηρεσίες και πελάτες',
+        rows: [
+          ['Υπηρεσίες με τιμή και διάρκεια', true, true],
+          ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true],
+          ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true],
+          ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true],
+          ['Εισαγωγή πελατών από αρχείο και εξαγωγή σε Excel', true, true],
+          ['Συγχώνευση διπλών πελατών', true, true],
+        ],
+      },
+      {
+        title: 'Email',
+        rows: [
+          ['Email επιβεβαίωσης ραντεβού', true, true],
+          ['Email υπενθύμισης, όσες ώρες πριν ορίσεις', true, true],
+          ['Email ακύρωσης και αλλαγής ώρας', true, true],
+          ['Ειδοποίηση στο κατάστημα για κάθε νέο ραντεβού', true, true],
+        ],
+      },
+      {
+        title: 'Ομάδα',
+        rows: [
+          ['Μέλη προσωπικού με κρατήσεις', '1', 'Έως 5'],
+          ['Ωράριο λειτουργίας', true, true],
+          ['Ξεχωριστό ωράριο ανά μέλος προσωπικού', false, true],
+          ['Προσκλήσεις ομάδας με email', false, true],
+          ['Ρόλοι και δικαιώματα (ιδιοκτήτης, διαχειριστής, προσωπικό)', false, true],
+        ],
+      },
+      {
+        title: 'Όρια',
+        rows: [
+          ['Κρατήσεις τον μήνα', 'Χωρίς όριο', 'Χωρίς όριο'],
+          ['Καταστήματα ανά συνδρομή', '1', '1'],
+        ],
+      },
+    ],
+    notesTitle: 'Καλό να γνωρίζεις',
+    notes: [
+      'Οι τιμές είναι ανά κατάστημα, τον μήνα, χωρίς ΦΠΑ.',
+      'Δεν υπάρχει προμήθεια στις κρατήσεις.',
+      'Οι επιβεβαιώσεις και οι υπενθυμίσεις στέλνονται με email. Δεν υπάρχουν SMS.',
+      'Δεν υπάρχουν online πληρωμές ή προκαταβολές από πελάτες.',
+    ],
   },
   footer: {
     brandDesc: 'Η πλατφόρμα κρατήσεων φτιαγμένη για κουρεία και σαλόνια ομορφιάς που παίρνουν την επιχείρησή τους στα σοβαρά.',
@@ -2275,6 +2362,7 @@ home: {
       'Public booking page',
       'Calendar, services and customer records',
       'Confirmation emails with cancel and reschedule links',
+      'Reminder emails before each appointment',
       'Customer import and export',
     ],
     pricingTeamName: 'Team',
@@ -2286,6 +2374,7 @@ home: {
       'Roles and permissions',
       'Working hours per staff member',
     ],
+    pricingDetailsLink: 'See everything each plan includes',
     previewHint: "Go ahead, click around — it's interactive",
     step1Title: 'Create your account',
     step1Desc: 'Sign up in seconds with your email.',
@@ -2415,6 +2504,79 @@ home: {
     title: 'Let’s talk!',
     intro: "Found a bug, have a question, or have an idea for BeBooked? I’d like to hear it. Send me a message and I’ll get back to you.",
     buttonLabel: 'Contact me',
+  },
+  pricingPage: {
+    title: 'Pricing',
+    intro: 'Two plans, priced per shop per month. Below is exactly what each one includes.',
+    featureCol: 'Feature',
+    included: 'Included',
+    notIncluded: 'Not included',
+    groups: [
+      {
+        title: 'Booking page',
+        rows: [
+          ['Public booking page at your own link', true, true],
+          ['Customers book without creating an account', true, true],
+          ['Customer cancel and reschedule links, with a cutoff you set', true, true],
+          ['Greek and English', true, true],
+        ],
+      },
+      {
+        title: 'Calendar and bookings',
+        rows: [
+          ['Daily calendar with a column per staff member', true, true],
+          ['Bookings you add yourself, including outside opening hours', true, true],
+          ['Block time slots in the calendar', true, true],
+          ['Booking statuses: completed, no-show, cancelled', true, true],
+          ['Double-booking protection', true, true],
+          ['Overview of booking counts by week, month and quarter', true, true],
+        ],
+      },
+      {
+        title: 'Services and customers',
+        rows: [
+          ['Services with price and duration', true, true],
+          ['Internal-only services', true, true],
+          ['Customer records with notes and history', true, true],
+          ['Custom service duration per customer', true, true],
+          ['Customer import from a file and export to Excel', true, true],
+          ['Merge duplicate customers', true, true],
+        ],
+      },
+      {
+        title: 'Emails',
+        rows: [
+          ['Booking confirmation emails', true, true],
+          ['Reminder emails, as many hours before as you choose', true, true],
+          ['Cancellation and reschedule emails', true, true],
+          ['New-booking notice to the shop', true, true],
+        ],
+      },
+      {
+        title: 'Team',
+        rows: [
+          ['Bookable staff members', '1', 'Up to 5'],
+          ['Opening hours', true, true],
+          ['Separate working hours per staff member', false, true],
+          ['Team invites by email', false, true],
+          ['Roles and permissions (owner, manager, staff)', false, true],
+        ],
+      },
+      {
+        title: 'Limits',
+        rows: [
+          ['Bookings per month', 'No limit', 'No limit'],
+          ['Shops per subscription', '1', '1'],
+        ],
+      },
+    ],
+    notesTitle: 'Good to know',
+    notes: [
+      'Prices are per shop, per month, excluding VAT.',
+      'There is no commission on bookings.',
+      'Confirmations and reminders are sent by email. There is no SMS.',
+      'There are no online payments or deposits from customers.',
+    ],
   },
   footer: {
     brandDesc: 'The booking platform built for barbershops and salons that take their business seriously.',

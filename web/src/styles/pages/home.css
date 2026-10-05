@@ -1867,6 +1867,8 @@
   list-style: none; padding: 0; margin: 0 0 2.5rem;
   display: flex; flex-direction: column; gap: 1rem;
 }
+/* The link to the full pricing page, under the cards. */
+.home-pricing-more { margin-top: var(--space-8); text-align: center; }
 /* The list closes the card when there is no button under it. */
 .home-price-features:last-child { margin-bottom: 0; }
 .home-price-features li { display: flex; align-items: center; gap: 1rem; font-size: 0.95rem; color: var(--text); font-weight: 500;}

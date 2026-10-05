@@ -46,6 +46,11 @@ export const PAGE_META: Record<string, PageMeta> = {
     'Η ιστορία του BeBooked: φτιάχτηκε για να βοηθήσει ένα κατάστημα να διαχειρίζεται τα ραντεβού του χωρίς χάος.',
     'The story behind BeBooked: built to help a real shop manage its bookings without the chaos.',
   ),
+  '/pricing': page(
+    'Τιμές', 'Pricing',
+    'Τα πακέτα Solo και Team του BeBooked: τιμή ανά κατάστημα τον μήνα και τι περιλαμβάνει το καθένα.',
+    'BeBooked Solo and Team plans: the monthly price per shop and what each one includes.',
+  ),
   '/contact': page(
     'Επικοινωνία', 'Contact',
     'Επικοινώνησε με την ομάδα του BeBooked για ερωτήσεις, προτάσεις ή αναφορά προβλήματος.',
