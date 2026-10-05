@@ -12,7 +12,7 @@ import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import PublicIdentityStep, { type PublicIdentity } from '../components/booking-wizard/PublicIdentityStep';
-import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
+import { buildISODateTime, formatDuration } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
@@ -254,7 +254,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
               <div className="public-wizard-panel">
                 {wizard.selectedService && (
                   <p className="t-body-sm t-muted">
-                    {t.public.serviceContext} <strong>{wizard.selectedService.name}</strong>
+                    {t.public.serviceContext} <strong>{wizard.selectedService.name}</strong> ({formatDuration(wizard.selectedService.duration)})
                     {selectedMember && (
                       <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
                     )}

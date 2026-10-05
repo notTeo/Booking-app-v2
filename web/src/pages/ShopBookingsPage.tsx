@@ -549,7 +549,14 @@ export default function ShopBookingsPage() {
         <Modal onClose={() => setSelectedBooking(null)} labelledBy="booking-detail-title">
           <div className="modal__header">
             <h2 id="booking-detail-title" className="modal__title">
-              {customerLabel(selectedBooking)}
+              {/* The name opens the customer's page; a blocked slot has no customer to open. */}
+              {slug && !selectedBooking.customer.isSystem ? (
+                <Link to={`/shops/${slug}/customers/${selectedBooking.customerId}`}>
+                  {customerLabel(selectedBooking)}
+                </Link>
+              ) : (
+                customerLabel(selectedBooking)
+              )}
             </h2>
             <button
               type="button"

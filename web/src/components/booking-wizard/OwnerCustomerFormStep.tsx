@@ -1,3 +1,4 @@
+import { formatDuration } from './wizardUtils';
 import { fillIfEmpty, isExactPhoneMatch, shouldLookUpCustomer } from './customerAutofill';
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
@@ -135,7 +136,7 @@ export default function OwnerCustomerFormStep({
     <div className="public-wizard-panel">
       {selectedService && (
         <p className="t-body-sm t-muted">
-          {t.public.serviceContext} <strong>{selectedService.name}</strong>
+          {t.public.serviceContext} <strong>{selectedService.name}</strong> ({formatDuration(selectedService.duration)})
           {selectedMember && (
             <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
           )}

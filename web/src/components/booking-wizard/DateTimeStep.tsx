@@ -6,7 +6,7 @@ import type { Service, ShopMember, SlotInfo, SlotsResponse } from '../../api/pub
 import { useLang } from '../../context/LanguageContext';
 import Alert from '../Alert';
 import Switch from '../Switch';
-import { groupSlotSections, type SlotSectionKey } from './wizardUtils';
+import { groupSlotSections, type SlotSectionKey, formatDuration } from './wizardUtils';
 
 const toMins = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number);
@@ -150,7 +150,7 @@ export default function DateTimeStep({
     <div className="public-wizard-panel">
       {selectedService && (
         <p className="t-body-sm t-muted">
-          {t.public.serviceContext} <strong>{selectedService.name}</strong>
+          {t.public.serviceContext} <strong>{selectedService.name}</strong> ({formatDuration(selectedService.duration)})
           {selectedMember && (
             <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
           )}
