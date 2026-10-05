@@ -618,6 +618,9 @@ export const getAvailableSlots = async (
           status: { notIn: SLOT_FREEING_STATUSES },
           startTime: { lt: dayEnd },
           endTime: { gt: dayStart },
+          // Rescheduling: the booking being moved never blocks its own new
+          // time (same exclusion as the update-time overlap check).
+          ...(options.forBookingId && { id: { not: options.forBookingId } }),
         },
         select: { startTime: true, endTime: true },
       });

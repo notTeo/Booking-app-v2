@@ -171,6 +171,41 @@ describe('GET /api/shops/:shopId/bookings/slots (authenticated owner slots)', ()
     expect(ten.available).toBe(false);
   });
 
+  it('forBookingId frees the booking being rescheduled, and only it', async () => {
+    const t = await internalOnlyShop();
+    const book = (startTime: string) =>
+      api
+        .post(`/api/shops/${t.shop.id}/bookings`)
+        .set(authHeader(t.token))
+        .send({
+          name: 'C',
+          phone: '6900000001',
+          serviceId: t.service.id,
+          staffId: t.staff.id,
+          startTime,
+        });
+    const moving = await book(`${DATE}T10:00:00+02:00`);
+    const other = await book(`${DATE}T12:00:00+02:00`);
+    expect(moving.status).toBe(201);
+    expect(other.status).toBe(201);
+    const at = (
+      res: {
+        body: { data: { slots: { time: string; available: boolean }[] } };
+      },
+      time: string,
+    ) => res.body.data.slots.find((s) => s.time === time)?.available;
+
+    const plain = await ownerSlots(t, `staffId=${t.staff.id}`);
+    expect(at(plain, '10:00')).toBe(false);
+
+    const resched = await ownerSlots(
+      t,
+      `staffId=${t.staff.id}&forBookingId=${moving.body.data.id}`,
+    );
+    expect(at(resched, '10:00')).toBe(true);
+    expect(at(resched, '12:00')).toBe(false);
+  });
+
   it('rejects a malformed date (400) and a missing serviceId (400)', async () => {
     const t = await internalOnlyShop();
     const bad = await api
