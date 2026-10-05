@@ -1,5 +1,6 @@
 import client from './client';
 import type { BookingStatus } from './booking.api';
+import type { Overview } from './overview.api';
 
 export interface Customer {
   id: string;
@@ -23,18 +24,28 @@ export interface CustomerListResult {
 export interface CustomerBooking {
   id: string;
   startTime: string;
+  endTime: string;
   status: BookingStatus;
   service: {
     name: string;
     duration: number;
     price: number;
   };
+  staff: { name: string };
+}
+
+export interface CustomerBookingsResult {
+  items: CustomerBooking[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface CustomerDetail extends Customer {
-  bookings: CustomerBooking[];
   totalVisits: number;
   totalSpent: number;
+  /** Lifetime booking counts by status, in the shop overview's shape. */
+  totals: Overview['totals'];
 }
 
 export interface UpdateCustomerDto {
@@ -53,6 +64,12 @@ export const getCustomers = (shopId: string, search?: string, page = 1, limit = 
 
 export const getCustomer = (shopId: string, customerId: string) =>
   client.get(`${base(shopId)}/${customerId}`).then((r) => r.data.data as CustomerDetail);
+
+/** The customer's booking history, newest first. */
+export const getCustomerBookings = (shopId: string, customerId: string, page = 1, limit = 10) =>
+  client
+    .get(`${base(shopId)}/${customerId}/bookings`, { params: { page, limit } })
+    .then((r) => r.data.data as CustomerBookingsResult);
 
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);

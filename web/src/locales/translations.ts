@@ -850,6 +850,11 @@ export interface Translations {
     mergeConfirmButton: string;
     mergeError: string;
     mergeSuccess: string;
+    bookingHistory: string;
+    bookingsErrorLoad: string;
+    providerCol: string;
+    prevPageLabel: string;
+    nextPageLabel: string;
     importButton: string;
     exportLabel: string;
     exportAllError: string;
@@ -1874,6 +1879,11 @@ home: {
       mergeConfirmButton: 'Συγχώνευση',
       mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
       mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      bookingHistory: 'Ραντεβού',
+      bookingsErrorLoad: 'Τα ραντεβού δεν φορτώθηκαν.',
+      providerCol: 'Προσωπικό',
+      prevPageLabel: 'Προηγούμενη σελίδα',
+      nextPageLabel: 'Επόμενη σελίδα',
       importButton: 'Εισαγωγή',
       exportLabel: 'Εξαγωγή',
       exportAllError: 'Η εξαγωγή απέτυχε. Δοκιμάστε ξανά.',
@@ -2907,6 +2917,11 @@ home: {
       mergeConfirmButton: 'Merge',
       mergeError: 'The merge failed. Please try again.',
       mergeSuccess: 'Customers merged. {count} bookings moved.',
+      bookingHistory: 'Bookings',
+      bookingsErrorLoad: 'The bookings could not be loaded.',
+      providerCol: 'Staff',
+      prevPageLabel: 'Previous page',
+      nextPageLabel: 'Next page',
       importButton: 'Import',
       exportLabel: 'Export',
       exportAllError: 'The export failed. Please try again.',
