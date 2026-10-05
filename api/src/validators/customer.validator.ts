@@ -58,3 +58,16 @@ export const mergeCustomersValidation = [
     .notEmpty()
     .withMessage('sourceCustomerId is required'),
 ];
+
+export const shopParamValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+];
+
+// Mirrors IMPORT_MAX_ROWS in customer.service.ts; each row is checked there,
+// so one bad row is reported instead of failing the whole batch.
+export const importCustomersValidation = [
+  ...shopParamValidation,
+  body('rows')
+    .isArray({ min: 1, max: 500 })
+    .withMessage('rows must be a list of 1 to 500 customers'),
+];

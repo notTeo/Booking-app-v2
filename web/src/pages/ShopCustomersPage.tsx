@@ -3,11 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { handleRowClick } from '../utils/a11y';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getCustomers, type Customer } from '../api/customer.api';
+import { exportAllCustomers, getCustomers, type Customer } from '../api/customer.api';
+import { buildExport, downloadBlob, type ExportFormat } from '../utils/customerFiles';
+import { canManageShop } from '../utils/roles';
+import ImportCustomersModal from '../components/ImportCustomersModal';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 
 const PAGE_SIZE = 20;
+
+const EXPORT_FORMATS: { format: ExportFormat; label: string }[] = [
+  { format: 'csv', label: 'CSV' },
+  { format: 'xlsx', label: 'Excel' },
+  { format: 'json', label: 'JSON' },
+];
 
 export default function ShopCustomersPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -20,10 +29,14 @@ export default function ShopCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [exportError, setExportError] = useState('');
+  // Bumped after an import so the list loads again.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!shop) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query
     setLoading(true);
     setError('');
     // search is applied server-side against every customer in the shop
@@ -36,11 +49,25 @@ export default function ShopCustomersPage() {
       })
       .catch(() => setError(t.customers.errorLoad))
       .finally(() => setLoading(false));
-  }, [shop?.id, search, page]);
+  }, [shop?.id, search, page, reloadKey]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const handleExport = async (format: ExportFormat) => {
+    if (!shop || exporting) return;
+    setExporting(format);
+    setExportError('');
+    try {
+      const blob = await buildExport(format, await exportAllCustomers(shop.id));
+      downloadBlob(blob, `customers-${shop.slug}.${format}`);
+    } catch {
+      setExportError(t.customers.exportAllError);
+    } finally {
+      setExporting(null);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -59,7 +86,31 @@ export default function ShopCustomersPage() {
     <div className="team-page">
       <div className="page-header">
         <h1 className="t-title">{t.customers.title}</h1>
+        {/* Owner and managers; the API enforces it too. */}
+        {canManageShop(shop?.role) && (
+          <div className="cluster cluster--tight">
+            <button className="btn btn--sm" onClick={() => setImportOpen(true)}>
+              {t.customers.importButton}
+            </button>
+            <span className="t-body-sm t-muted" id="customers-export-label">{t.customers.exportLabel}</span>
+            <div className="cluster cluster--tight" role="group" aria-labelledby="customers-export-label">
+              {EXPORT_FORMATS.map(({ format, label }) => (
+                <button
+                  key={format}
+                  className={`btn btn--secondary btn--sm${exporting === format ? ' is-loading' : ''}`}
+                  onClick={() => handleExport(format)}
+                  aria-busy={exporting === format}
+                  disabled={exporting !== null && exporting !== format}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {exportError && <Alert variant="danger">{exportError}</Alert>}
 
       {/* Search matches names and phones, so it is only offered to members who may see them. */}
       {shop?.canViewCustomerDetails !== false && (
@@ -146,6 +197,13 @@ export default function ShopCustomersPage() {
           </div>
         </div>
 
+      )}
+      {importOpen && shop && (
+        <ImportCustomersModal
+          shopId={shop.id}
+          onClose={() => setImportOpen(false)}
+          onImported={() => { setPage(1); setReloadKey((k) => k + 1); }}
+        />
       )}
     </div>
   );

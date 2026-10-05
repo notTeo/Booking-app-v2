@@ -28,12 +28,15 @@ const palette = (page: Page) => page.locator('html').getAttribute('data-palette'
 const pick = (page: Page, name: string) =>
   page.getByRole('group', { name: 'Colours' }).getByRole('button', { name, exact: true });
 /** Resolved colours of the logo's "Be" and of the page background. */
-const colours = (page: Page) =>
-  page.evaluate(() => ({
+const colours = async (page: Page) => {
+  // After a reload data-palette is set before React renders, so wait for the logo.
+  await page.locator('.wordmark__be').first().waitFor();
+  return page.evaluate(() => ({
     be: getComputedStyle(document.querySelector('.wordmark__be')!).color,
     bg: getComputedStyle(document.body).backgroundColor,
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
   }));
+};
 
 test('one click in Preferences changes the set at once, and it survives a reload', async ({ page }) => {
   await login(page);

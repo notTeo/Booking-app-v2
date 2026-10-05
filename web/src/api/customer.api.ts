@@ -87,3 +87,39 @@ export const mergeCustomer = (shopId: string, targetId: string, sourceId: string
   client
     .post(`${base(shopId)}/${targetId}/merge`, { sourceCustomerId: sourceId })
     .then((r) => r.data.data as MergedCustomer);
+
+export interface CustomerExportRow {
+  name: string;
+  phone: string;
+  email: string | null;
+  notes: string | null;
+  createdAt: string;
+  bookings: number;
+}
+
+/** Every customer of the shop (owner and managers). */
+export const exportAllCustomers = (shopId: string) =>
+  client.get(`${base(shopId)}/export-all`).then((r) => r.data.data as CustomerExportRow[]);
+
+export interface ImportRow {
+  name: string;
+  phone: string;
+  email?: string;
+  notes?: string;
+}
+
+export type ImportRowProblem = 'name_missing' | 'name_too_long' | 'phone_invalid' | 'email_invalid' | 'notes_too_long';
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  /** `row` is the position in the batch that was sent, from 0. */
+  errors: { row: number; reason: ImportRowProblem }[];
+}
+
+/** The API takes at most this many rows per request. */
+export const IMPORT_BATCH_SIZE = 500;
+
+export const importCustomers = (shopId: string, rows: ImportRow[]) =>
+  client.post(`${base(shopId)}/import`, { rows }).then((r) => r.data.data as ImportResult);
