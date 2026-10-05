@@ -2,6 +2,7 @@ import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
 import { todayInZone } from '../utils/shopTime';
 import type { DayOfWeek } from '../../dist/generated/prisma';
+import type { BookingContext } from './booking.service';
 
 const DAY_ORDER: DayOfWeek[] = [
   'MON',
@@ -55,13 +56,22 @@ export const deriveOpeningHours = (
   });
 };
 
-export const getShopInfoService = async (slug: string) => {
-  if (!slug) throw new AppError(404, 'Slug is required');
-  const shop = await prisma.shop.findUnique({
-    where: { slug, isActive: true },
+// What a booking wizard needs to start: the shop, its bookable services and
+// its team. The public page ('public') never sees internal-only services; the
+// owner/staff wizard ('internal') does.
+export const getShopInfoService = async (
+  by: { slug: string } | { id: string },
+  context: BookingContext = 'public',
+) => {
+  if ('slug' in by && !by.slug) throw new AppError(404, 'Slug is required');
+  const shop = await prisma.shop.findFirst({
+    where: { ...by, isActive: true },
     include: {
       services: {
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          ...(context === 'public' && { showOnPublicPage: true }),
+        },
         select: {
           id: true,
           name: true,

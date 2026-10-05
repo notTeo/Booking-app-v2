@@ -1,5 +1,5 @@
 import client from './client';
-import type { SlotsResponse } from './public.api';
+import type { ShopInfo, SlotsResponse } from './public.api';
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW';
 
@@ -90,6 +90,10 @@ export const getOwnerSlots = (
       params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId },
     })
     .then((r) => r.data.data as SlotsResponse);
+
+/** The owner/staff wizard's starting data: the shop info including internal-only services. */
+export const getWizardInfo = (shopId: string) =>
+  client.get(`${base(shopId)}/wizard-info`).then((r) => r.data.data as ShopInfo);
 
 export const getBooking = (shopId: string, bookingId: string) =>
   client.get(`${base(shopId)}/${bookingId}`).then((r) => r.data.data as Booking);

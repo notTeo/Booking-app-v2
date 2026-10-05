@@ -12,6 +12,7 @@ export type ServiceFormData = {
   duration: string;
   price: string;
   isActive: boolean;
+  showOnPublicPage: boolean;
 };
 
 interface Props {
@@ -108,6 +109,18 @@ export default function ServiceFormModal({ title, submitLabel, form, onChange, o
               checked={form.isActive}
               onChange={(v) => onChange('isActive', v)}
               label={t.services.isActive}
+              disabled={submitting}
+            />
+          </div>
+          <div className="setting-row">
+            <span className="setting-row__label">
+              <span className="setting-row__title">{t.services.showOnPublicPage}</span>
+              <span className="setting-row__text">{t.services.showOnPublicPageHint}</span>
+            </span>
+            <Switch
+              checked={form.showOnPublicPage}
+              onChange={(v) => onChange('showOnPublicPage', v)}
+              label={t.services.showOnPublicPage}
               disabled={submitting}
             />
           </div>

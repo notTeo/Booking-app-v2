@@ -341,7 +341,12 @@ export const createBooking = async (
     if (!shop) throw new AppError(404, 'Shop not found');
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId: shop.id, isActive: true },
+      where: {
+        id: data.serviceId,
+        shopId: shop.id,
+        isActive: true,
+        showOnPublicPage: true,
+      },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
@@ -577,7 +582,11 @@ export const getAvailableSlots = async (
       id: serviceId,
       shopId,
       OR: [
-        { isActive: true },
+        // Internal-only services are closed to the public page.
+        {
+          isActive: true,
+          ...(context === 'public' && { showOnPublicPage: true }),
+        },
         ...(options.forBookingId
           ? [{ bookings: { some: { id: options.forBookingId, shopId } } }]
           : []),

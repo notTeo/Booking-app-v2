@@ -35,7 +35,14 @@ router.get(
   validate,
   bookingController.getBookingStats,
 );
-// Declared before /:bookingId so 'slots' is not treated as a booking id.
+// Declared before /:bookingId so these are not treated as a booking id.
+router.get(
+  '/wizard-info',
+  authenticate,
+  shopIdParamValidation,
+  validate,
+  bookingController.getWizardInfo,
+);
 router.get(
   '/slots',
   authenticate,

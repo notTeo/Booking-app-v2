@@ -157,6 +157,9 @@ model Service {
   duration    Int // minutes
   price       Int // cents
   isActive    Boolean  @default(true)
+  // false = internal only: bookable by owner/staff, never shown or bookable
+  // on the public page.
+  showOnPublicPage Boolean @default(true)
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime @updatedAt @db.Timestamptz(3)
 

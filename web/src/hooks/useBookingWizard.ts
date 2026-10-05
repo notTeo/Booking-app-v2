@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getOwnerSlots } from '../api/booking.api';
+import { getOwnerSlots, getWizardInfo } from '../api/booking.api';
 import { getShopInfo, getPublicSlots, type ShopInfo, type Service, type ShopMember, type SlotsResponse } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 
@@ -118,7 +118,8 @@ export function useBookingWizard({
 
   useEffect(() => {
     if (!slug) return;
-    getShopInfo(slug)
+    // The shop's own wizard also offers internal-only services.
+    (internal && shopId ? getWizardInfo(shopId) : getShopInfo(slug))
       .then(setShop)
       .catch((err) => {
         setNotFound(err?.response?.status === 404);
