@@ -187,6 +187,11 @@ a { color: var(--accent); }
 .input-wrap { position: relative; }
 .input-wrap .spinner { position: absolute; right: var(--space-4); top: 50%; margin-top: -0.5rem; }
 .input-wrap.is-loading .input { padding-right: var(--space-12); }
+/* iOS Safari: date/time values sit at the top of the box; pad them to the middle like a text line (1px = border). */
+.input[type="date"], .input[type="time"] { height: var(--control-md); padding-block: calc((var(--control-md) - var(--lh-base)) / 2 - 1px); }
+.input--sm[type="date"], .input--sm[type="time"] { height: var(--control-sm); padding-block: calc((var(--control-sm) - var(--lh-sm)) / 2 - 1px); }
+.input::-webkit-date-and-time-value { min-height: var(--lh-base); margin: 0; }
+.input--sm::-webkit-date-and-time-value { min-height: var(--lh-sm); }
 
 /* ---------- 4. Checkbox ---------- */
 .checkbox {
