@@ -1,5 +1,6 @@
 import client from './client';
 import type { BookingStatus } from './booking.api';
+import type { Overview } from './overview.api';
 
 export interface Customer {
   id: string;
@@ -11,6 +12,14 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   contactHidden?: boolean;
+  /** Customer list only: at least one service has a custom duration for them. */
+  hasCustomDurations?: boolean;
+}
+
+/** How long one service takes for one customer, when not the service's standard time. */
+export interface CustomerServiceDuration {
+  serviceId: string;
+  duration: number; // minutes
 }
 
 export interface CustomerListResult {
@@ -23,18 +32,29 @@ export interface CustomerListResult {
 export interface CustomerBooking {
   id: string;
   startTime: string;
+  endTime: string;
   status: BookingStatus;
   service: {
     name: string;
     duration: number;
     price: number;
   };
+  staff: { name: string };
+}
+
+export interface CustomerBookingsResult {
+  items: CustomerBooking[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface CustomerDetail extends Customer {
-  bookings: CustomerBooking[];
   totalVisits: number;
   totalSpent: number;
+  /** Lifetime booking counts by status, in the shop overview's shape. */
+  totals: Overview['totals'];
+  serviceDurations: CustomerServiceDuration[];
 }
 
 export interface UpdateCustomerDto {
@@ -46,16 +66,37 @@ export interface UpdateCustomerDto {
 
 const base = (shopId: string) => `/api/shops/${shopId}/customers`;
 
-export const getCustomers = (shopId: string, search?: string, page = 1, limit = 20) =>
+export const getCustomers = (
+  shopId: string,
+  search?: string,
+  page = 1,
+  limit = 20,
+  /** Only customers with a custom duration for some service. */
+  hasCustomDurations = false,
+) =>
   client
-    .get(base(shopId), { params: { ...(search ? { search } : {}), page, limit } })
+    .get(base(shopId), {
+      params: { ...(search ? { search } : {}), ...(hasCustomDurations ? { hasCustomDurations: true } : {}), page, limit },
+    })
     .then((r) => r.data.data as CustomerListResult);
 
 export const getCustomer = (shopId: string, customerId: string) =>
   client.get(`${base(shopId)}/${customerId}`).then((r) => r.data.data as CustomerDetail);
 
+/** The customer's booking history, newest first. */
+export const getCustomerBookings = (shopId: string, customerId: string, page = 1, limit = 10) =>
+  client
+    .get(`${base(shopId)}/${customerId}/bookings`, { params: { page, limit } })
+    .then((r) => r.data.data as CustomerBookingsResult);
+
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);
+
+/** Replace the customer's custom service durations; a service left out goes back to its standard time. */
+export const setCustomerServiceDurations = (shopId: string, customerId: string, items: CustomerServiceDuration[]) =>
+  client
+    .put(`${base(shopId)}/${customerId}/service-durations`, { items })
+    .then((r) => r.data.data as CustomerServiceDuration[]);
 
 export interface CustomerExport {
   exportedAt: string;
@@ -77,3 +118,49 @@ export const exportCustomer = (shopId: string, customerId: string) =>
 
 export const deleteCustomer = (shopId: string, customerId: string) =>
   client.delete(`${base(shopId)}/${customerId}`).then(() => undefined);
+
+export interface MergedCustomer extends Customer {
+  movedBookings: number;
+}
+
+/** Merge `sourceId` into `targetId`: the source's bookings move over and the source is removed. */
+export const mergeCustomer = (shopId: string, targetId: string, sourceId: string) =>
+  client
+    .post(`${base(shopId)}/${targetId}/merge`, { sourceCustomerId: sourceId })
+    .then((r) => r.data.data as MergedCustomer);
+
+export interface CustomerExportRow {
+  name: string;
+  phone: string;
+  email: string | null;
+  notes: string | null;
+  createdAt: string;
+  bookings: number;
+}
+
+/** Every customer of the shop (owner and managers). */
+export const exportAllCustomers = (shopId: string) =>
+  client.get(`${base(shopId)}/export-all`).then((r) => r.data.data as CustomerExportRow[]);
+
+export interface ImportRow {
+  name: string;
+  phone: string;
+  email?: string;
+  notes?: string;
+}
+
+export type ImportRowProblem = 'name_missing' | 'name_too_long' | 'phone_invalid' | 'email_invalid' | 'notes_too_long';
+
+export interface ImportResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  /** `row` is the position in the batch that was sent, from 0. */
+  errors: { row: number; reason: ImportRowProblem }[];
+}
+
+/** The API takes at most this many rows per request. */
+export const IMPORT_BATCH_SIZE = 500;
+
+export const importCustomers = (shopId: string, rows: ImportRow[]) =>
+  client.post(`${base(shopId)}/import`, { rows }).then((r) => r.data.data as ImportResult);

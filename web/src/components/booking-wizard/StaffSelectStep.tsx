@@ -8,11 +8,14 @@ export default function StaffSelectStep({
   selectedService,
   onSelect,
   onBack,
+  hideNoPreference,
 }: {
   members: ShopMember[];
   selectedService: Service | null;
   onSelect: (memberId: string | null) => void;
   onBack: () => void;
+  /** Rescheduling moves the booking to one concrete provider, so "any staff" is not offered. */
+  hideNoPreference?: boolean;
 }) {
   const { t } = useLang();
 
@@ -50,19 +53,21 @@ export default function StaffSelectStep({
           </button>
         ))}
 
-        <button
-          type="button"
-          role="radio"
-          aria-checked="false"
-          className="staff-card"
-          onClick={() => onSelect(null)}
-        >
-          <span className="avatar avatar--lg" aria-hidden="true"><FontAwesomeIcon icon={faUsers} /></span>
-          <span className="staff-card__main">
-            <span className="staff-card__name">{t.public.noPreference}</span>
-            <span className="staff-card__role">{t.public.anyStaff}</span>
-          </span>
-        </button>
+        {!hideNoPreference && (
+          <button
+            type="button"
+            role="radio"
+            aria-checked="false"
+            className="staff-card"
+            onClick={() => onSelect(null)}
+          >
+            <span className="avatar avatar--lg" aria-hidden="true"><FontAwesomeIcon icon={faUsers} /></span>
+            <span className="staff-card__main">
+              <span className="staff-card__name">{t.public.noPreference}</span>
+              <span className="staff-card__role">{t.public.anyStaff}</span>
+            </span>
+          </button>
+        )}
       </div>
 
       <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>

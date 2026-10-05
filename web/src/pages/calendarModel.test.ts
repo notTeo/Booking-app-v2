@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   blockGeometry,
+  blockLanes,
   computeVisibleRange,
   filterBookings,
   hasActiveFilters,
@@ -148,5 +149,34 @@ describe('filterBookings', () => {
   it('counts any selected filter as active, including staff', () => {
     expect(hasActiveFilters({ ...NO_FILTERS, staffId: 'x' })).toBe(true);
     expect(hasActiveFilters({ ...NO_FILTERS, statuses: new Set(['PENDING']) })).toBe(true);
+  });
+});
+
+describe('blockLanes', () => {
+  const lanesOf = (blocks: [string, number, number][]) =>
+    Object.fromEntries(blockLanes(blocks.map(([id, startMin, endMin]) => ({ id, startMin, endMin }))));
+
+  it('gives every block the full width when nothing overlaps', () => {
+    expect(lanesOf([['a', h(9), h(10)], ['b', h(10), h(11)]])).toEqual({
+      a: { lane: 0, lanes: 1 },
+      b: { lane: 0, lanes: 1 },
+    });
+  });
+
+  it('puts a rescheduled reference and the booking that took its slot side by side', () => {
+    expect(lanesOf([['old', h(10), h(10, 30)], ['new', h(10), h(10, 30)], ['later', h(12), h(13)]])).toEqual({
+      old: { lane: 0, lanes: 2 },
+      new: { lane: 1, lanes: 2 },
+      later: { lane: 0, lanes: 1 },
+    });
+  });
+
+  it('reuses a lane once it is free, and sizes a group by its widest point', () => {
+    // a 9-11 | b 9-10, c 10-11 share the second lane
+    expect(lanesOf([['a', h(9), h(11)], ['b', h(9), h(10)], ['c', h(10), h(11)]])).toEqual({
+      a: { lane: 1, lanes: 2 },
+      b: { lane: 0, lanes: 2 },
+      c: { lane: 0, lanes: 2 },
+    });
   });
 });

@@ -14,8 +14,10 @@ const date = addDays(athensDate(), 14);
 const STORAGE_KEY = 'booking-details';
 const storedDetails = (page: Page) => page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY);
 
-async function goToDetailsStep(page: Page, time: string) {
+async function goToDetailsStep(page: Page, time: string, returning = false) {
   await page.goto(`/${E2E.shop.slug}`);
+  // With saved details the wizard first asks whether to continue as that customer.
+  if (returning) await page.getByRole('button', { name: 'Yes, continue' }).click();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
@@ -56,7 +58,7 @@ test('details are remembered only after the customer opts in, and forgotten when
   expect(stored).not.toHaveProperty('notes');
 
   // Next visit: prefilled, box already ticked.
-  await goToDetailsStep(page, '11:00');
+  await goToDetailsStep(page, '11:00', true);
   await expect(page.locator('#b-name')).toHaveValue('Remember Tester');
   await expect(page.locator('#b-phone')).toHaveValue('6900007777');
   await expect(page.locator('#b-email')).toHaveValue('remember@example.com');

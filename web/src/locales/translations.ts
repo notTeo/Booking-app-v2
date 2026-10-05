@@ -356,6 +356,8 @@ export interface Translations {
     newPasswordLabel: string;
     newPasswordOptionalLabel: string;
     updatePassword: string;
+    showPassword: string;
+    hidePassword: string;
     logout: string;
     logoutDesc: string;
     dangerZone: string;
@@ -562,6 +564,9 @@ export interface Translations {
     duration: string;
     price: string;
     isActive: string;
+    showOnPublicPage: string;
+    showOnPublicPageHint: string;
+    internalOnly: string;
     save: string;
     cancel: string;
     edit: string;
@@ -673,6 +678,14 @@ export interface Translations {
     maxAdvanceHint: string;
     slotIntervalLabel: string;
     slotIntervalHint: string;
+    customerChangesTitle: string;
+    customerChangesHint: string;
+    rescheduleEnabledLabel: string;
+    rescheduleEnabledDesc: string;
+    cancelCutoffLabel: string;
+    cancelCutoffHint: string;
+    rescheduleCutoffLabel: string;
+    rescheduleCutoffHint: string;
     slotIntervalOption: string;
   };
   sharing: {
@@ -683,6 +696,19 @@ export interface Translations {
     viewButton: string;
   };
   public: {
+    identity: {
+      askTitle: string;
+      askBody: string;
+      yes: string;
+      no: string;
+      knownAs: string;
+      notYou: string;
+      prompt: string;
+      phoneLabel: string;
+      phoneHint: string;
+      usePhone: string;
+      cancel: string;
+    };
     bookAppointment: string;
     service: string;
     staff: string;
@@ -792,6 +818,17 @@ export interface Translations {
     loadingLabel: string;
   };
   customers: {
+    durationsHeading: string;
+    durationsBody: string;
+    durationsStandard: string;
+    durationsUnit: string;
+    durationsNoServices: string;
+    durationsInvalid: string;
+    durationsErrorLoad: string;
+    durationsErrorSave: string;
+    durationsSaved: string;
+    filterCustomDurations: string;
+    customDurationsBadge: string;
     cancel: string;
     deleteConfirmButton: string;
     deleteTitle: string;
@@ -830,6 +867,42 @@ export interface Translations {
     serviceCol: string;
     dateTimeCol: string;
     statusCol: string;
+    mergeButton: string;
+    mergeHeading: string;
+    mergeBody: string;
+    mergeTitle: string;
+    mergeHint: string;
+    mergeSearchLabel: string;
+    mergeSelect: string;
+    mergeChange: string;
+    mergeSummary: string;
+    mergeConfirmButton: string;
+    mergeError: string;
+    mergeSuccess: string;
+    bookingHistory: string;
+    bookingsErrorLoad: string;
+    providerCol: string;
+    prevPageLabel: string;
+    nextPageLabel: string;
+    importButton: string;
+    exportLabel: string;
+    exportAllError: string;
+    importTitle: string;
+    importHint: string;
+    importFileLabel: string;
+    importUnsupported: string;
+    importUnreadable: string;
+    importMissingColumns: string;
+    importEmpty: string;
+    importPreview: string;
+    importConfirmButton: string;
+    importError: string;
+    importPartialError: string;
+    importResult: string;
+    importRowErrors: string;
+    importRowError: string;
+    importClose: string;
+    importProblems: Record<'name_missing' | 'name_too_long' | 'phone_invalid' | 'email_invalid' | 'notes_too_long', string>;
     successUpdate: string;
     errorUpdate: string;
     hiddenLabel: string;
@@ -839,6 +912,24 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    block: {
+      button: string;
+      bookCustomer: string;
+      name: string;
+      hint: string;
+      noteDefault: string;
+      confirm: string;
+      unblock: string;
+      unblocked: string;
+    };
+    customerPicker: {
+      label: string;
+      placeholder: string;
+      hint: string;
+      noMatch: string;
+      selected: string;
+      change: string;
+    };
     statusConflict: string;
     statusError: string;
     title: string;
@@ -857,6 +948,29 @@ export interface Translations {
     createError: string;
     /** The server is momentarily out of retry budget (503) — never shown as an error. */
     bookingBusy: string;
+    reschedule: {
+      button: string;
+      title: string;
+      from: string;
+      to: string;
+      submit: string;
+      /** The chosen time breaks rules the owner may override. */
+      submitAnyway: string;
+      /** Label of the wizard's last step in reschedule mode. */
+      confirmStep: string;
+      same: string;
+      error: string;
+      notFound: string;
+      notAllowed: string;
+      /** Shown in place of "Canceled" on the old half of a reschedule. */
+      rescheduledLabel: string;
+      /** {when} = the new booking's date and time. */
+      rescheduledTo: string;
+      /** {when} = the replaced booking's date and time. */
+      rescheduledFrom: string;
+      viewNew: string;
+      serviceWas: string;
+    };
     override: RuleMessages & {
       title: string;
       confirm: string;
@@ -924,6 +1038,31 @@ export interface Translations {
     confirmButton: string;
     keepButton: string;
     kept: string;
+    /** {n} = hours of notice the shop asks for. */
+    windowClosed: string;
+    rescheduled: string;
+  };
+  rescheduleBooking: {
+    invalidLink: string;
+    notFound: string;
+    title: string;
+    currentLabel: string;
+    keepButton: string;
+    kept: string;
+    done: string;
+    doneText: string;
+    doneEmail: string;
+    disabled: string;
+    /** {n} = hours of notice the shop asks for. */
+    windowClosed: string;
+    /** {when} = the new booking's date and time. */
+    rescheduled: string;
+    alreadyCancelled: string;
+    alreadyCompleted: string;
+    markedNoShow: string;
+    pastBooking: string;
+    staffUnavailable: string;
+    error: string;
   };
 }
 
@@ -1278,6 +1417,8 @@ home: {
       newPasswordLabel: 'Νέος Κωδικός',
       newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
       updatePassword: 'Ενημέρωση Κωδικού',
+      showPassword: 'Εμφάνιση κωδικού',
+      hidePassword: 'Απόκρυψη κωδικού',
       logout: 'Αποσύνδεση',
       logoutDesc: 'Αποσυνδεθείτε από τον λογαριασμό σας σε αυτή τη συσκευή.',
       dangerZone: 'Επικίνδυνη Ζώνη',
@@ -1484,6 +1625,9 @@ home: {
       duration: 'Διάρκεια',
       price: 'Τιμή',
       isActive: 'Ενεργή',
+      showOnPublicPage: 'Εμφάνιση στη δημόσια σελίδα',
+      showOnPublicPageHint: 'Όταν είναι κλειστό, μόνο η ομάδα μπορεί να κλείσει ραντεβού για αυτή την υπηρεσία.',
+      internalOnly: 'Εσωτερική',
       save: 'Αποθήκευση',
       cancel: 'Ακύρωση',
       edit: 'Επεξεργασία',
@@ -1595,6 +1739,14 @@ home: {
       maxAdvanceHint: 'Πόσες ημέρες μπροστά μπορούν οι πελάτες να κλείσουν ραντεβού.',
     slotIntervalLabel: 'Διάστημα ραντεβού',
     slotIntervalHint: 'Κάθε πόσα λεπτά εμφανίζεται διαθέσιμη ώρα ραντεβού (π.χ. κάθε 15 λεπτά).',
+    customerChangesTitle: 'Αλλαγές από πελάτες',
+    customerChangesHint: 'Τι μπορούν να κάνουν οι πελάτες από τους συνδέσμους στο email τους. Εσείς και οι υπεύθυνοι μπορείτε πάντα να αλλάξετε ένα ραντεβού από το ημερολόγιο.',
+    rescheduleEnabledLabel: 'Αλλαγή ώρας από τον πελάτη',
+    rescheduleEnabledDesc: 'Το email επιβεβαίωσης περιέχει σύνδεσμο για αλλαγή ώρας.',
+    cancelCutoffLabel: 'Ακύρωση έως (ώρες πριν)',
+    cancelCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να ακυρώσει μόνος του. 0 = μέχρι την έναρξη.',
+    rescheduleCutoffLabel: 'Αλλαγή ώρας έως (ώρες πριν)',
+    rescheduleCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να αλλάξει ώρα μόνος του. 0 = μέχρι την έναρξη.',
     slotIntervalOption: 'Κάθε {n} λεπτά',
     },
     sharing: {
@@ -1605,6 +1757,19 @@ home: {
       viewButton: 'Άνοιγμα',
     },
     public: {
+      identity: {
+        askTitle: 'Συνέχεια ως {name};',
+        askBody: 'Θα χρησιμοποιήσουμε τα αποθηκευμένα στοιχεία σας για να βρούμε τις ώρες που σας ταιριάζουν.',
+        yes: 'Ναι, συνέχεια',
+        no: 'Όχι, άλλος',
+        knownAs: 'Κράτηση ως',
+        notYou: 'Δεν είστε εσείς;',
+        prompt: 'Έχετε ξανακλείσει μαζί μας; Προσθέστε το τηλέφωνό σας για να βρείτε τις ώρες σας πιο εύκολα',
+        phoneLabel: 'Το τηλέφωνό σας',
+        phoneHint: 'Προαιρετικό. Χρησιμοποιείται μόνο για να βρούμε ώρες που σας ταιριάζουν.',
+        usePhone: 'Χρήση αριθμού',
+        cancel: 'Άκυρο',
+      },
       bookAppointment: 'Κλείστε Ραντεβού',
       service: 'Υπηρεσία',
       staff: 'Προσωπικό',
@@ -1729,6 +1894,17 @@ home: {
       loadingLabel: 'Φόρτωση επισκόπησης',
     },
     customers: {
+      durationsHeading: 'Διάρκεια υπηρεσιών',
+      durationsBody: 'Ορίστε πόσα λεπτά χρειάζεται αυτός ο πελάτης για μια υπηρεσία, αν διαφέρει από την κανονική διάρκεια. Ισχύει για τα νέα ραντεβού· τα υπάρχοντα δεν αλλάζουν.',
+      durationsStandard: 'Κανονική διάρκεια: {n} λεπτά',
+      durationsUnit: 'Λεπτά. Αφήστε το κενό για την κανονική διάρκεια.',
+      durationsNoServices: 'Δεν υπάρχουν ενεργές υπηρεσίες.',
+      durationsInvalid: 'Η διάρκεια πρέπει να είναι ακέραιος αριθμός λεπτών, από 1 έως 1440.',
+      durationsErrorLoad: 'Αποτυχία φόρτωσης υπηρεσιών.',
+      durationsErrorSave: 'Αποτυχία αποθήκευσης διάρκειας.',
+      durationsSaved: 'Η διάρκεια αποθηκεύτηκε.',
+      filterCustomDurations: 'Με δική τους διάρκεια',
+      customDurationsBadge: 'Δική του διάρκεια',
       cancel: 'Ακύρωση',
       deleteConfirmButton: 'Διαγραφή πελάτη',
       deleteTitle: 'Διαγραφή «{name}»;',
@@ -1767,6 +1943,48 @@ home: {
       serviceCol: 'Υπηρεσία',
       dateTimeCol: 'Ημερομηνία & Ώρα',
       statusCol: 'Κατάσταση',
+      mergeButton: 'Συγχώνευση με άλλον πελάτη',
+      mergeHeading: 'Διπλή εγγραφή;',
+      mergeBody: 'Αν ο ίδιος πελάτης υπάρχει δύο φορές, συγχωνεύστε την άλλη εγγραφή σε αυτήν. Τα ραντεβού της μεταφέρονται εδώ.',
+      mergeTitle: 'Συγχώνευση πελάτη',
+      mergeHint: 'Βρείτε τη διπλή εγγραφή. Θα συγχωνευθεί στον πελάτη {target}.',
+      mergeSearchLabel: 'Αναζήτηση πελάτη',
+      mergeSelect: 'Επιλογή',
+      mergeChange: 'Επιλογή άλλου πελάτη',
+      mergeSummary: 'Τα ραντεβού του {source} θα μεταφερθούν στον {target} και η διπλή εγγραφή θα διαγραφεί. Το όνομα και το τηλέφωνο του πελάτη που παραμένει δεν αλλάζουν· το email συμπληρώνεται αν λείπει και οι σημειώσεις ενώνονται. Η ενέργεια δεν αναιρείται.',
+      mergeConfirmButton: 'Συγχώνευση',
+      mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
+      mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      bookingHistory: 'Ραντεβού',
+      bookingsErrorLoad: 'Τα ραντεβού δεν φορτώθηκαν.',
+      providerCol: 'Προσωπικό',
+      prevPageLabel: 'Προηγούμενη σελίδα',
+      nextPageLabel: 'Επόμενη σελίδα',
+      importButton: 'Εισαγωγή',
+      exportLabel: 'Εξαγωγή',
+      exportAllError: 'Η εξαγωγή απέτυχε. Δοκιμάστε ξανά.',
+      importTitle: 'Εισαγωγή πελατών',
+      importHint: 'Αρχείο CSV, Excel (.xlsx) ή JSON με στήλες όνομα και τηλέφωνο, και προαιρετικά email και σημειώσεις. Αν το τηλέφωνο υπάρχει ήδη, ο πελάτης δεν αλλάζει· συμπληρώνονται μόνο το email και οι σημειώσεις που λείπουν.',
+      importFileLabel: 'Αρχείο',
+      importUnsupported: 'Αυτός ο τύπος αρχείου δεν υποστηρίζεται. Χρησιμοποιήστε CSV, .xlsx ή JSON.',
+      importUnreadable: 'Το αρχείο δεν μπόρεσε να διαβαστεί.',
+      importMissingColumns: 'Λείπει στήλη από το αρχείο: {columns}.',
+      importEmpty: 'Το αρχείο δεν έχει πελάτες.',
+      importPreview: 'Βρέθηκαν {count} γραμμές. Οι πρώτες:',
+      importConfirmButton: 'Εισαγωγή',
+      importError: 'Η εισαγωγή απέτυχε. Δεν αποθηκεύτηκε τίποτα.',
+      importPartialError: 'Η εισαγωγή διακόπηκε. Αποθηκεύτηκαν {count} πελάτες· δοκιμάστε ξανά με το ίδιο αρχείο για τους υπόλοιπους.',
+      importResult: 'Νέοι: {created}. Συμπληρώθηκαν: {updated}. Χωρίς αλλαγή: {skipped}.',
+      importRowErrors: '{count} γραμμές δεν εισήχθησαν:',
+      importRowError: 'Γραμμή {row}',
+      importClose: 'Κλείσιμο',
+      importProblems: {
+        name_missing: 'λείπει το όνομα',
+        name_too_long: 'το όνομα είναι πολύ μεγάλο',
+        phone_invalid: 'το τηλέφωνο λείπει ή δεν είναι έγκυρο',
+        email_invalid: 'το email δεν είναι έγκυρο',
+        notes_too_long: 'οι σημειώσεις είναι πολύ μεγάλες',
+      },
       successUpdate: 'Ο πελάτης ενημερώθηκε.',
       errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
       hiddenLabel: 'Πελάτης',
@@ -1776,6 +1994,24 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      block: {
+        button: 'Κλείδωμα ώρας',
+        bookCustomer: 'Κράτηση για πελάτη',
+        name: 'Κλειδωμένο',
+        hint: 'Η ώρα δεν θα είναι διαθέσιμη για κράτηση. Δεν χρειάζονται στοιχεία πελάτη.',
+        noteDefault: 'Κλειδωμένη ώρα',
+        confirm: 'Κλείδωμα',
+        unblock: 'Ξεκλείδωμα ώρας',
+        unblocked: 'Η ώρα ξεκλειδώθηκε και είναι ξανά διαθέσιμη.',
+      },
+      customerPicker: {
+        label: 'Πελάτης',
+        placeholder: 'Αναζήτηση με όνομα ή τηλέφωνο…',
+        hint: 'Επιλέξτε υπάρχοντα πελάτη για να δείτε τις δικές του διάρκειες και ώρες. Μπορείτε να το παραλείψετε.',
+        noMatch: 'Δεν βρέθηκε πελάτης. Συμπληρώστε τα στοιχεία στο τελευταίο βήμα.',
+        selected: 'Κράτηση για',
+        change: 'Αλλαγή',
+      },
       statusConflict: 'Αυτή η ώρα δεν είναι πλέον διαθέσιμη, οπότε η κατάσταση της κράτησης δεν μπορεί να αλλάξει.',
       statusError: 'Δεν ήταν δυνατή η ενημέρωση της κατάστασης της κράτησης. Δοκιμάστε ξανά.',
       title: 'Ραντεβού',
@@ -1793,6 +2029,24 @@ home: {
       createSuccess: 'Το ραντεβού δημιουργήθηκε!',
       createError: 'Αποτυχία δημιουργίας ραντεβού.',
       bookingBusy: 'Το σύστημα κρατήσεων είναι απασχολημένο — δοκιμάστε ξανά σε λίγο.',
+      reschedule: {
+        button: 'Αλλαγή ώρας',
+        title: 'Αλλαγή ώρας ραντεβού',
+        from: 'Από',
+        to: 'Σε',
+        submit: 'Αλλαγή ώρας',
+        submitAnyway: 'Αλλαγή ώρας παρ’ όλα αυτά',
+        confirmStep: 'Επιβεβαίωση',
+        same: 'Αυτή είναι η τρέχουσα ώρα του ραντεβού. Επιλέξτε άλλη ώρα ή άλλον συνεργάτη.',
+        error: 'Η αλλαγή ώρας απέτυχε.',
+        notFound: 'Το ραντεβού δεν βρέθηκε.',
+        notAllowed: 'Μόνο ραντεβού σε αναμονή ή επιβεβαιωμένα μπορούν να αλλάξουν ώρα.',
+        rescheduledLabel: 'Άλλαξε ώρα',
+        rescheduledTo: 'Το ραντεβού μεταφέρθηκε: {when}. Αυτή η ώρα είναι ξανά ελεύθερη.',
+        rescheduledFrom: 'Μεταφέρθηκε από: {when}.',
+        viewNew: 'Δείτε τη νέα ώρα',
+        serviceWas: 'Ήταν',
+      },
       override: {
         BOOKING_IN_PAST: 'Η ώρα αυτή βρίσκεται στο παρελθόν.',
         BOOKING_BEYOND_ADVANCE_WINDOW: 'Η ημερομηνία είναι πέρα από το επιτρεπόμενο διάστημα κρατήσεων.',
@@ -1873,6 +2127,28 @@ home: {
       confirmButton: 'Ναι, ακύρωση',
       keepButton: 'Διατήρηση ραντεβού',
       kept: 'Το ραντεβού σας διατηρήθηκε. Μπορείτε να κλείσετε αυτή τη σελίδα.',
+      windowClosed: 'Το ραντεβού είναι σε λιγότερο από {n} ώρες και δεν μπορεί πλέον να ακυρωθεί από εδώ. Επικοινωνήστε με το κατάστημα.',
+      rescheduled: 'Αυτό το ραντεβού έχει αλλάξει ώρα. Χρησιμοποιήστε τον σύνδεσμο στο πιο πρόσφατο email.',
+    },
+    rescheduleBooking: {
+      invalidLink: 'Μη έγκυρος σύνδεσμος αλλαγής ώρας.',
+      notFound: 'Το ραντεβού δεν βρέθηκε. Ο σύνδεσμος μπορεί να είναι άκυρος ή ληγμένος.',
+      title: 'Αλλαγή ώρας ραντεβού',
+      currentLabel: 'Τρέχουσα ώρα',
+      keepButton: 'Διατήρηση τρέχουσας ώρας',
+      kept: 'Το ραντεβού σας έμεινε όπως ήταν. Μπορείτε να κλείσετε αυτή τη σελίδα.',
+      done: 'Η ώρα άλλαξε',
+      doneText: 'Το ραντεβού σας είναι πλέον:',
+      doneEmail: 'Αν έχετε δώσει email, θα λάβετε τα νέα στοιχεία. Οι σύνδεσμοι σε παλαιότερα email δεν ισχύουν πλέον.',
+      disabled: 'Αυτό το κατάστημα δεν δέχεται αλλαγή ώρας online. Επικοινωνήστε με το κατάστημα.',
+      windowClosed: 'Το ραντεβού είναι σε λιγότερο από {n} ώρες και δεν μπορεί πλέον να αλλάξει ώρα από εδώ. Επικοινωνήστε με το κατάστημα.',
+      rescheduled: 'Αυτό το ραντεβού έχει ήδη μεταφερθεί: {when}. Χρησιμοποιήστε τον σύνδεσμο στο πιο πρόσφατο email.',
+      alreadyCancelled: 'Αυτό το ραντεβού έχει ακυρωθεί.',
+      alreadyCompleted: 'Αυτό το ραντεβού έχει ήδη ολοκληρωθεί.',
+      markedNoShow: 'Αυτό το ραντεβού έχει καταχωρηθεί ως απουσία.',
+      pastBooking: 'Αυτό το ραντεβού έχει ήδη ξεκινήσει ή περάσει. Επικοινωνήστε με το κατάστημα.',
+      staffUnavailable: 'Αυτός ο συνεργάτης δεν είναι διαθέσιμος. Επιλέξτε άλλον.',
+      error: 'Η αλλαγή ώρας απέτυχε. Δοκιμάστε ξανά ή επικοινωνήστε με το κατάστημα.',
     },
   },
 
@@ -2226,6 +2502,8 @@ home: {
       newPasswordLabel: 'New Password',
       newPasswordOptionalLabel: 'New Password (optional)',
       updatePassword: 'Update Password',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
       logout: 'Log out',
       logoutDesc: 'Sign out of your account on this device.',
       dangerZone: 'Danger Zone',
@@ -2432,6 +2710,9 @@ home: {
       duration: 'Duration',
       price: 'Price',
       isActive: 'Active',
+      showOnPublicPage: 'Show on public page',
+      showOnPublicPageHint: 'When off, only your team can book this service.',
+      internalOnly: 'Internal',
       save: 'Save',
       cancel: 'Cancel',
       edit: 'Edit',
@@ -2543,6 +2824,14 @@ home: {
       maxAdvanceHint: 'How many days ahead customers can book an appointment.',
     slotIntervalLabel: 'Slot interval',
     slotIntervalHint: 'How often a bookable time appears (e.g. every 15 minutes). Existing bookings are not changed.',
+    customerChangesTitle: 'Customer changes',
+    customerChangesHint: 'What customers can do from the links in their email. You and your managers can always change a booking from the calendar.',
+    rescheduleEnabledLabel: 'Let customers reschedule',
+    rescheduleEnabledDesc: 'The confirmation email includes a link to pick a new time.',
+    cancelCutoffLabel: 'Cancel up to (hours before)',
+    cancelCutoffHint: 'Closer than this, customers can no longer cancel by themselves. 0 = until the booking starts.',
+    rescheduleCutoffLabel: 'Reschedule up to (hours before)',
+    rescheduleCutoffHint: 'Closer than this, customers can no longer reschedule by themselves. 0 = until the booking starts.',
     slotIntervalOption: 'Every {n} minutes',
     },
     sharing: {
@@ -2553,6 +2842,19 @@ home: {
       viewButton: 'Open',
     },
     public: {
+      identity: {
+        askTitle: 'Continue as {name}?',
+        askBody: 'We will use your saved details to find the times that suit you.',
+        yes: 'Yes, continue',
+        no: 'No, someone else',
+        knownAs: 'Booking as',
+        notYou: 'Not you?',
+        prompt: 'Booked with us before? Add your phone to find your times faster',
+        phoneLabel: 'Your phone',
+        phoneHint: 'Optional. Only used to find times that suit you.',
+        usePhone: 'Use this number',
+        cancel: 'Cancel',
+      },
       bookAppointment: 'Book an Appointment',
       service: 'Service',
       staff: 'Staff',
@@ -2677,6 +2979,17 @@ home: {
       loadingLabel: 'Loading overview',
     },
     customers: {
+      durationsHeading: 'Service durations',
+      durationsBody: 'Set how many minutes this customer needs for a service when it differs from the standard duration. Applies to new bookings; existing ones are not changed.',
+      durationsStandard: 'Standard duration: {n} min',
+      durationsUnit: 'Minutes. Leave empty for the standard duration.',
+      durationsNoServices: 'There are no active services.',
+      durationsInvalid: 'A duration must be a whole number of minutes, 1 to 1440.',
+      durationsErrorLoad: 'Failed to load services.',
+      durationsErrorSave: 'Failed to save durations.',
+      durationsSaved: 'Durations saved.',
+      filterCustomDurations: 'Custom durations',
+      customDurationsBadge: 'Custom duration',
       cancel: 'Cancel',
       deleteConfirmButton: 'Delete customer',
       deleteTitle: 'Delete {name}?',
@@ -2715,6 +3028,48 @@ home: {
       serviceCol: 'Service',
       dateTimeCol: 'Date & Time',
       statusCol: 'Status',
+      mergeButton: 'Merge with another customer',
+      mergeHeading: 'Duplicate record?',
+      mergeBody: 'If the same customer exists twice, merge the other record into this one. Its bookings move here.',
+      mergeTitle: 'Merge customer',
+      mergeHint: 'Find the duplicate record. It will be merged into {target}.',
+      mergeSearchLabel: 'Search customers',
+      mergeSelect: 'Select',
+      mergeChange: 'Pick a different customer',
+      mergeSummary: '{source}\'s bookings will move to {target}, and that duplicate record will be deleted. The kept customer\'s name and phone stay as they are; the email is filled in if missing and the notes are joined. This cannot be undone.',
+      mergeConfirmButton: 'Merge',
+      mergeError: 'The merge failed. Please try again.',
+      mergeSuccess: 'Customers merged. {count} bookings moved.',
+      bookingHistory: 'Bookings',
+      bookingsErrorLoad: 'The bookings could not be loaded.',
+      providerCol: 'Staff',
+      prevPageLabel: 'Previous page',
+      nextPageLabel: 'Next page',
+      importButton: 'Import',
+      exportLabel: 'Export',
+      exportAllError: 'The export failed. Please try again.',
+      importTitle: 'Import customers',
+      importHint: 'A CSV, Excel (.xlsx) or JSON file with name and phone columns, and optionally email and notes. If a phone already exists, that customer is not changed; only a missing email or missing notes are filled in.',
+      importFileLabel: 'File',
+      importUnsupported: 'This file type is not supported. Use CSV, .xlsx or JSON.',
+      importUnreadable: 'The file could not be read.',
+      importMissingColumns: 'The file is missing a column: {columns}.',
+      importEmpty: 'The file has no customers.',
+      importPreview: '{count} rows found. The first ones:',
+      importConfirmButton: 'Import',
+      importError: 'The import failed. Nothing was saved.',
+      importPartialError: 'The import stopped part-way. {count} customers were saved; try again with the same file for the rest.',
+      importResult: 'New: {created}. Filled in: {updated}. Unchanged: {skipped}.',
+      importRowErrors: '{count} rows were not imported:',
+      importRowError: 'Row {row}',
+      importClose: 'Close',
+      importProblems: {
+        name_missing: 'the name is missing',
+        name_too_long: 'the name is too long',
+        phone_invalid: 'the phone is missing or not valid',
+        email_invalid: 'the email is not valid',
+        notes_too_long: 'the notes are too long',
+      },
       successUpdate: 'Customer updated.',
       errorUpdate: 'Failed to save changes.',
       hiddenLabel: 'Customer',
@@ -2724,6 +3079,24 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      block: {
+        button: 'Block this slot',
+        bookCustomer: 'Book a customer instead',
+        name: 'Blocked',
+        hint: 'This time will not be available to book. No customer details are needed.',
+        noteDefault: 'Blocked slot',
+        confirm: 'Block slot',
+        unblock: 'Unblock slot',
+        unblocked: 'This slot was unblocked and is available again.',
+      },
+      customerPicker: {
+        label: 'Customer',
+        placeholder: 'Search by name or phone…',
+        hint: 'Pick an existing customer to see their own durations and times. You can skip this.',
+        noMatch: 'No customer found. Enter their details on the last step.',
+        selected: 'Booking for',
+        change: 'Change',
+      },
       statusConflict: "That time is no longer free, so the booking status can't be changed.",
       statusError: "Couldn't update the booking status. Please try again.",
       title: 'Bookings',
@@ -2741,6 +3114,24 @@ home: {
       createSuccess: 'Booking created!',
       createError: 'Failed to create booking.',
       bookingBusy: 'The booking system is busy — please try again in a moment.',
+      reschedule: {
+        button: 'Reschedule',
+        title: 'Reschedule booking',
+        from: 'From',
+        to: 'To',
+        submit: 'Reschedule',
+        submitAnyway: 'Reschedule anyway',
+        confirmStep: 'Confirm',
+        same: 'That is the booking’s current time. Pick a different time or provider.',
+        error: 'Could not reschedule the booking.',
+        notFound: 'This booking no longer exists.',
+        notAllowed: 'Only pending or confirmed bookings can be rescheduled.',
+        rescheduledLabel: 'Rescheduled',
+        rescheduledTo: 'This booking was rescheduled to {when}. This time is free again.',
+        rescheduledFrom: 'Rescheduled from {when}.',
+        viewNew: 'Go to the new time',
+        serviceWas: 'Was',
+      },
       override: {
         BOOKING_IN_PAST: 'That time is in the past.',
         BOOKING_BEYOND_ADVANCE_WINDOW: "That date is beyond the shop's booking window.",
@@ -2821,6 +3212,28 @@ home: {
       confirmButton: 'Yes, cancel booking',
       keepButton: 'Keep booking',
       kept: 'Your booking is kept. You can close this page.',
+      windowClosed: 'Your booking is less than {n} hours away and can no longer be cancelled here. Please contact the shop.',
+      rescheduled: 'This booking was rescheduled. Use the link in your latest email.',
+    },
+    rescheduleBooking: {
+      invalidLink: 'Invalid reschedule link.',
+      notFound: 'Booking not found. The link may be invalid or expired.',
+      title: 'Reschedule your booking',
+      currentLabel: 'Current time',
+      keepButton: 'Keep current time',
+      kept: 'Your booking stays as it was. You can close this page.',
+      done: 'Booking rescheduled',
+      doneText: 'Your appointment is now on:',
+      doneEmail: 'If you gave an email, the new details are on their way. Links in earlier emails no longer work.',
+      disabled: 'This shop does not take reschedules online. Please contact the shop.',
+      windowClosed: 'Your booking is less than {n} hours away and can no longer be rescheduled here. Please contact the shop.',
+      rescheduled: 'This booking was already rescheduled to {when}. Use the link in your latest email.',
+      alreadyCancelled: 'This booking has been cancelled.',
+      alreadyCompleted: 'This booking has already been completed.',
+      markedNoShow: 'This booking was marked as a no-show.',
+      pastBooking: 'This booking has already started or passed. Please contact the shop.',
+      staffUnavailable: 'That team member is not available. Pick someone else.',
+      error: 'Could not reschedule your booking. Please try again or contact the shop.',
     },
   },
 };

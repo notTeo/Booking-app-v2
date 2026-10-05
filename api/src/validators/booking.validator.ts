@@ -28,16 +28,24 @@ const overrideRulesValidation = [
     ),
 ];
 
+// Owner/staff only: `block: true` holds the time as a blocked slot instead of
+// booking a customer, so no customer fields are needed.
+const isBlock = (req: { body?: { block?: unknown } }) =>
+  req.body?.block === true;
+
 // Shared by the public and owner/staff booking-creation bodies, which accept
-// identical customer fields.
-const customerFieldsValidation = [
+// identical customer fields. `exceptForBlock` (owner/staff) skips name and
+// phone for a blocked slot.
+const customerFieldsValidation = (exceptForBlock = false) => [
   body('name')
+    .if((_: unknown, { req }) => !(exceptForBlock && isBlock(req)))
     .notEmpty()
     .withMessage('Name is required')
     .trim()
     .isLength({ max: NAME_MAX_LENGTH })
     .withMessage(`Name must be ${NAME_MAX_LENGTH} characters or fewer`),
   body('phone')
+    .if((_: unknown, { req }) => !(exceptForBlock && isBlock(req)))
     .notEmpty()
     .withMessage('Phone is required')
     .trim()
@@ -61,7 +69,7 @@ const notesValidation = body('notes')
 
 export const createBookingValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
-  ...customerFieldsValidation,
+  ...customerFieldsValidation(),
   body('serviceId').notEmpty().withMessage('serviceId is required'),
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
@@ -79,6 +87,8 @@ export const getPublicSlotsValidation = [
     .withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  // A customer rescheduling from their email link: frees their own slot.
+  query('rescheduleToken').optional({ values: 'falsy' }).isUUID(),
 ];
 
 export const ownerSlotsValidation = [
@@ -93,6 +103,9 @@ export const ownerSlotsValidation = [
   // Rescheduling: lets this booking's own (possibly deactivated) service be
   // looked up. Has no effect for any other service.
   query('forBookingId').optional({ values: 'falsy' }).isString(),
+  // Who the booking is for: their own duration for the service, if any,
+  // decides which times fit. An id from another shop has no effect.
+  query('customerId').optional({ values: 'falsy' }).isString(),
   query('includeOutsideHours')
     .optional()
     .isBoolean()
@@ -111,7 +124,11 @@ export const ownerSlotsValidation = [
 
 export const ownerCreateBookingValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
-  ...customerFieldsValidation,
+  body('block')
+    .optional()
+    .isBoolean({ strict: true })
+    .withMessage('block must be true or false'),
+  ...customerFieldsValidation(true),
   body('serviceId').notEmpty().withMessage('serviceId is required'),
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')

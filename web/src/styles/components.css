@@ -187,6 +187,14 @@ a { color: var(--accent); }
 .input-wrap { position: relative; }
 .input-wrap .spinner { position: absolute; right: var(--space-4); top: 50%; margin-top: -0.5rem; }
 .input-wrap.is-loading .input { padding-right: var(--space-12); }
+/* A control inside the field's right edge (show/hide password). */
+.input-wrap--action .input { padding-right: var(--space-12); }
+.input-wrap__action { --btn-fg: var(--text-muted); position: absolute; right: var(--space-1); top: 50%; margin-top: calc(var(--control-sm) / -2); }
+/* iOS Safari: date/time values sit at the top of the box; pad them to the middle like a text line (1px = border). */
+.input[type="date"], .input[type="time"] { height: var(--control-md); padding-block: calc((var(--control-md) - var(--lh-base)) / 2 - 1px); }
+.input--sm[type="date"], .input--sm[type="time"] { height: var(--control-sm); padding-block: calc((var(--control-sm) - var(--lh-sm)) / 2 - 1px); }
+.input::-webkit-date-and-time-value { min-height: var(--lh-base); margin: 0; }
+.input--sm::-webkit-date-and-time-value { min-height: var(--lh-sm); }
 
 /* ---------- 4. Checkbox ---------- */
 .checkbox {
@@ -330,11 +338,16 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .chip--canceled[aria-pressed="true"] { --c-fg: var(--text-muted); --c-bg: var(--surface-sunken); --c-bd: var(--border); }
 .chip--canceled .chip__label { text-decoration: line-through; text-decoration-thickness: 1px; }
 .chip--lg { min-height: var(--control-md); padding: 0 var(--space-4); }
-/* Swatch: a colour dot in a chip, one per colour set (Preferences). Always that set's colour, whichever is active. */
+/* Swatch: a colour dot, one per colour set. Always that set's colour, whichever is active. */
 .swatch { flex: none; width: var(--space-3); height: var(--space-3); border-radius: var(--radius-full); background: var(--swatch, var(--accent)); border: 1px solid var(--border-strong); }
 .swatch--original { --swatch: var(--palette-original); }
 .swatch--mono { --swatch: var(--palette-mono); }
 .swatch--purple { --swatch: var(--palette-purple); }
+/* Swatch box: the colour set picker (Preferences). A rounded box of the set's colour; the chosen one gets a text-coloured border with a gap. */
+.swatch-box { flex: none; width: var(--control-sm); height: var(--control-sm); padding: var(--space-1); cursor: pointer; background: var(--swatch, var(--accent)) content-box; border: 2px solid transparent; border-radius: var(--radius-md); transition: border-color var(--motion-fast) var(--ease-standard); }
+.swatch-box:hover, .swatch-box.is-hover { border-color: var(--border-strong); }
+.swatch-box:focus-visible, .swatch-box.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.swatch-box[aria-pressed="true"] { border-color: var(--text); }
 .chip:disabled, .chip[aria-disabled="true"] { --c-fg: var(--text-muted); --c-bd: var(--border); opacity: 0.6; cursor: not-allowed; }
 
 /* ---------- 8. Alert ---------- */
@@ -793,6 +806,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* A wrapping row of buttons, badges or short texts. */
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .cluster--tight { gap: var(--space-2); }
+.cluster--nowrap { flex: none; flex-wrap: nowrap; }
 
 /* ---------- 30. Page hero ---------- */
 /* The band at the top of a booking page: the shop's name, a line about it, its contact badges. */
@@ -842,7 +856,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* Booking block. Status = fill + left bar + icon + (canceled) strike-through, same tokens as .badge--*. */
 .cal-block {
   --blk-bg: var(--surface-sunken); --blk-bd: var(--border); --blk-bar: var(--border-strong);
-  position: absolute; left: var(--space-1); width: calc(100% - var(--space-2)); display: flex; flex-direction: column; align-items: stretch;
+  /* --lane / --lanes: side-by-side placement when blocks share time (e.g. a rescheduled reference and the booking that took its slot). */
+  position: absolute; left: calc(var(--space-1) + (100% - var(--space-2)) * var(--lane, 0) / var(--lanes, 1)); width: calc((100% - var(--space-2)) / var(--lanes, 1)); display: flex; flex-direction: column; align-items: stretch;
   padding: var(--space-1) var(--space-2); overflow: hidden; text-align: left; font: inherit; color: var(--text); background: var(--blk-bg);
   border: 1px solid var(--blk-bd); border-left: 3px solid var(--blk-bar); border-radius: var(--radius-sm); cursor: pointer;
   transition: box-shadow var(--motion-fast) var(--ease-standard);
@@ -854,6 +869,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .cal-block--confirmed { --blk-bg: var(--success-bg); --blk-bd: var(--success-border); --blk-bar: var(--success); }
 .cal-block--completed { --blk-bg: var(--info-bg); --blk-bd: var(--info-border); --blk-bar: var(--info); }
 .cal-block--no-show { --blk-bg: var(--danger-bg); --blk-bd: var(--danger-border); --blk-bar: var(--danger); }
+/* Blocked slot (no customer): hatched like closed hours; the lock icon and the word are in the markup. */
+.cal-block--blocked {
+  --blk-bd: var(--border-strong); --blk-bar: var(--text-muted);
+  background-image: repeating-linear-gradient(135deg, transparent 0, transparent var(--cal-stripe), var(--border) var(--cal-stripe), var(--border) calc(var(--cal-stripe) * 2));
+}
 .cal-block--canceled { color: var(--text-muted); }
 .cal-block--canceled .cal-block__name { text-decoration: line-through; text-decoration-thickness: 1px; }
 /* Out-of-hours exception: dashed edge; the clock icon and a text tag are in the markup. */

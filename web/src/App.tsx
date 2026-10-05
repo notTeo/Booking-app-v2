@@ -25,6 +25,7 @@ import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
 import ShopNewBookingPage from './pages/ShopNewBookingPage';
+import ShopRescheduleBookingPage from './pages/ShopRescheduleBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
@@ -34,6 +35,7 @@ import ShopSettingsPage from './pages/ShopSettingsPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
+import RescheduleBookingPage from './pages/RescheduleBookingPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import DpaPage from './pages/DpaPage';
@@ -78,6 +80,7 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/invite" element={<AcceptInvitePage />} />
                 <Route path="/cancel" element={<CancelBookingPage />} />
+                <Route path="/reschedule" element={<RescheduleBookingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/dpa" element={<DpaPage />} />
@@ -99,6 +102,7 @@ export default function App() {
                         <Route path="services" element={<ShopServicesPage />} />
                         <Route element={<OwnerRoute />}>
                           <Route path="bookings/new" element={<ShopNewBookingPage />} />
+                          <Route path="bookings/:bookingId/reschedule" element={<ShopRescheduleBookingPage />} />
                           <Route path="team" element={<ShopTeamPage />} />
                           <Route path="team/:memberId" element={<ShopTeamMemberPage />} />
                           <Route path="customers" element={<ShopCustomersPage />} />

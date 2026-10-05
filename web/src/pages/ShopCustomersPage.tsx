@@ -3,11 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { handleRowClick } from '../utils/a11y';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getCustomers, type Customer } from '../api/customer.api';
+import { exportAllCustomers, getCustomers, type Customer } from '../api/customer.api';
+import { buildExport, downloadBlob, type ExportFormat } from '../utils/customerFiles';
+import { canManageShop } from '../utils/roles';
+import ImportCustomersModal from '../components/ImportCustomersModal';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
+
+const EXPORT_FORMATS: { format: ExportFormat; label: string }[] = [
+  { format: 'csv', label: 'CSV' },
+  { format: 'xlsx', label: 'Excel' },
+  { format: 'json', label: 'JSON' },
+];
 
 export default function ShopCustomersPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -20,27 +31,46 @@ export default function ShopCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [exportError, setExportError] = useState('');
+  // Bumped after an import so the list loads again.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!shop) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-change with a loading flag; move to react-query
     setLoading(true);
     setError('');
     // search is applied server-side against every customer in the shop
     // before pagination, so it always searches the full list, not just
     // whatever page happens to be loaded.
-    getCustomers(shop.id, search || undefined, page, PAGE_SIZE)
+    getCustomers(shop.id, search || undefined, page, PAGE_SIZE, onlyCustomDurations)
       .then((result) => {
         setCustomers(result.items);
         setTotal(result.total);
       })
       .catch(() => setError(t.customers.errorLoad))
       .finally(() => setLoading(false));
-  }, [shop?.id, search, page]);
+  }, [shop?.id, search, page, onlyCustomDurations, reloadKey]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const handleExport = async (format: ExportFormat) => {
+    if (!shop || exporting) return;
+    setExporting(format);
+    setExportError('');
+    try {
+      const blob = await buildExport(format, await exportAllCustomers(shop.id));
+      downloadBlob(blob, `customers-${shop.slug}.${format}`);
+    } catch {
+      setExportError(t.customers.exportAllError);
+    } finally {
+      setExporting(null);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -59,7 +89,31 @@ export default function ShopCustomersPage() {
     <div className="team-page">
       <div className="page-header">
         <h1 className="t-title">{t.customers.title}</h1>
+        {/* Owner and managers; the API enforces it too. */}
+        {canManageShop(shop?.role) && (
+          <div className="cluster cluster--tight">
+            <button className="btn btn--sm" onClick={() => setImportOpen(true)}>
+              {t.customers.importButton}
+            </button>
+            <span className="t-body-sm t-muted" id="customers-export-label">{t.customers.exportLabel}</span>
+            <div className="cluster cluster--tight" role="group" aria-labelledby="customers-export-label">
+              {EXPORT_FORMATS.map(({ format, label }) => (
+                <button
+                  key={format}
+                  className={`btn btn--secondary btn--sm${exporting === format ? ' is-loading' : ''}`}
+                  onClick={() => handleExport(format)}
+                  aria-busy={exporting === format}
+                  disabled={exporting !== null && exporting !== format}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {exportError && <Alert variant="danger">{exportError}</Alert>}
 
       {/* Search matches names and phones, so it is only offered to members who may see them. */}
       {shop?.canViewCustomerDetails !== false && (
@@ -77,6 +131,18 @@ export default function ShopCustomersPage() {
         </div>
       )}
 
+      <div className="cluster cluster--tight">
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={onlyCustomDurations}
+          onClick={() => { setOnlyCustomDurations((v) => !v); setPage(1); }}
+        >
+          <FontAwesomeIcon icon={faClock} aria-hidden="true" />
+          <span className="chip__label">{t.customers.filterCustomDurations}</span>
+        </button>
+      </div>
+
       {error && <Alert variant="danger">{error}</Alert>}
 
       {loading ? (
@@ -89,7 +155,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {search ? t.customers.noResults : t.customers.noCustomers}
+                  {search || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -106,9 +172,17 @@ export default function ShopCustomersPage() {
                   {customers.map((c) => (
                     <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
                       <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
-                        <Link to={c.id} className="data-table__link">
-                          {c.contactHidden ? t.customers.hiddenLabel : c.name}
-                        </Link>
+                        <span className="cluster cluster--tight">
+                          <Link to={c.id} className="data-table__link">
+                            {c.contactHidden ? t.customers.hiddenLabel : c.name}
+                          </Link>
+                          {c.hasCustomDurations && (
+                            <span className="badge badge--info">
+                              <FontAwesomeIcon icon={faClock} aria-hidden="true" />
+                              {t.customers.customDurationsBadge}
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
                       <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>
@@ -146,6 +220,13 @@ export default function ShopCustomersPage() {
           </div>
         </div>
 
+      )}
+      {importOpen && shop && (
+        <ImportCustomersModal
+          shopId={shop.id}
+          onClose={() => setImportOpen(false)}
+          onImported={() => { setPage(1); setReloadKey((k) => k + 1); }}
+        />
       )}
     </div>
   );

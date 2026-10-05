@@ -22,6 +22,10 @@ export const createServiceValidation = [
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
+  body('showOnPublicPage')
+    .optional()
+    .isBoolean()
+    .withMessage('showOnPublicPage must be a boolean'),
 ];
 
 export const updateServiceValidation = [
@@ -41,6 +45,10 @@ export const updateServiceValidation = [
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
+  body('showOnPublicPage')
+    .optional()
+    .isBoolean()
+    .withMessage('showOnPublicPage must be a boolean'),
 ];
 
 export const serviceParamsValidation = [

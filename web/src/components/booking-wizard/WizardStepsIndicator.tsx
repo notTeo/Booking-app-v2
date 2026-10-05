@@ -3,9 +3,23 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../../context/LanguageContext';
 import type { WizardStep } from '../../hooks/useBookingWizard';
 
-export default function WizardStepsIndicator({ currentStep }: { currentStep: WizardStep }) {
+export default function WizardStepsIndicator({
+  currentStep: wizardStep,
+  lastLabel,
+  firstStep = 1,
+}: {
+  currentStep: WizardStep;
+  /** The wizard's first step, when earlier ones don't exist (a customer reschedule has no service step). */
+  firstStep?: WizardStep;
+  /** Replaces "Your details" when the last step is something else (e.g. confirming a reschedule). */
+  lastLabel?: string;
+}) {
   const { t } = useLang();
-  const steps = [t.public.service, t.public.staff, t.public.dateTime, t.public.yourDetails];
+  const steps = [t.public.service, t.public.staff, t.public.dateTime, lastLabel ?? t.public.yourDetails].slice(
+    firstStep - 1,
+  );
+  // Numbered from 1 whatever the wizard's first step is.
+  const currentStep = wizardStep - (firstStep - 1);
   const state = (stepNum: number) =>
     currentStep > stepNum ? 'is-done' : currentStep === stepNum ? 'is-current' : '';
 

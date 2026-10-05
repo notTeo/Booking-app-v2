@@ -3,6 +3,7 @@ import { validate, validateAs } from '../middleware/validate';
 import {
   getShopInfoValidation,
   cancelBookingValidation,
+  rescheduleBookingValidation,
 } from '../validators/public.validator';
 import {
   createBookingValidation,
@@ -12,6 +13,8 @@ import {
   getShopInfo,
   createBooking,
   cancelBooking,
+  getBookingForCustomer,
+  rescheduleBooking,
   getPublicSlots,
 } from '../controllers/public.controller';
 import {
@@ -27,6 +30,20 @@ router.post(
   cancelBookingValidation,
   validateAs('INVALID_CANCEL_LINK'),
   cancelBooking,
+);
+router.post(
+  '/booking',
+  publicReadLimiter,
+  cancelBookingValidation,
+  validateAs('INVALID_CANCEL_LINK'),
+  getBookingForCustomer,
+);
+router.post(
+  '/reschedule',
+  publicWriteLimiter,
+  rescheduleBookingValidation,
+  validateAs('INVALID_RESCHEDULE_REQUEST'),
+  rescheduleBooking,
 );
 router.get(
   '/:slug/slots',

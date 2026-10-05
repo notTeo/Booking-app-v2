@@ -29,6 +29,10 @@ import {
   type DayHours,
 } from './bookingRules.service';
 import { lockProvider, serializableTransaction } from '../utils/serializable';
+import {
+  resolveDuration,
+  type DurationCustomer,
+} from './customerDuration.service';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
 // Only these statuses release a slot. COMPLETED does NOT — that time was
@@ -213,6 +217,13 @@ const pickAnyStaff = async (
   return leastLoaded[Math.floor(Math.random() * leastLoaded.length)];
 };
 
+// Both ends of a reschedule, for the "rescheduled from/to" reference shown on
+// the calendar. A booking with a rescheduledTo is the old, CANCELED one.
+const RESCHEDULE_LINKS = {
+  rescheduledFrom: { select: { id: true, startTime: true } },
+  rescheduledTo: { select: { id: true, startTime: true } },
+} as const;
+
 const BOOKING_INCLUDE = {
   customer: true,
   service: true,
@@ -249,6 +260,26 @@ const findOrCreateCustomer = (
         create: { shopId, ...customer },
       });
 
+// The placeholder a blocked slot is booked on: one per shop, created the
+// first time a slot is blocked. Its empty phone can never match a real
+// customer's (a booking's phone is validated), and the web app shows its name
+// translated.
+export const SYSTEM_CUSTOMER_PHONE = '';
+const findOrCreateSystemCustomer = (
+  tx: Prisma.TransactionClient,
+  shopId: string,
+) =>
+  tx.customer.upsert({
+    where: { shopId_phone: { shopId, phone: SYSTEM_CUSTOMER_PHONE } },
+    update: {},
+    create: {
+      shopId,
+      name: 'Blocked',
+      phone: SYSTEM_CUSTOMER_PHONE,
+      isSystem: true,
+    },
+  });
+
 /**
  * Overlap check + customer + insert, for a provider's time. Runs inside the
  * caller's serializable transaction. Never bypassable.
@@ -261,7 +292,8 @@ const claimSlotAndCreate = async (
     staffId: string;
     startTime: Date;
     endTime: Date;
-    customer: { name: string; phone: string; email?: string };
+    // null = a blocked slot, held by the shop's system customer.
+    customer: { name: string; phone: string; email?: string } | null;
     // Public bookings must never overwrite an existing customer's name/email;
     // owner/staff bookings may (see findOrCreateCustomer).
     overwriteCustomer: boolean;
@@ -282,12 +314,9 @@ const claimSlotAndCreate = async (
   if (conflict)
     throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  const customer = await findOrCreateCustomer(
-    tx,
-    p.shopId,
-    p.customer,
-    p.overwriteCustomer,
-  );
+  const customer = p.customer
+    ? await findOrCreateCustomer(tx, p.shopId, p.customer, p.overwriteCustomer)
+    : await findOrCreateSystemCustomer(tx, p.shopId);
 
   return tx.booking.create({
     data: {
@@ -334,11 +363,20 @@ export const createBooking = async (
     if (!shop) throw new AppError(404, 'Shop not found');
 
     const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId: shop.id, isActive: true },
+      where: {
+        id: data.serviceId,
+        shopId: shop.id,
+        isActive: true,
+        showOnPublicPage: true,
+      },
     });
     if (!service) throw new AppError(404, 'Service not found');
 
-    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+    // A returning customer (matched by phone) gets their own duration.
+    const duration = await resolveDuration(tx, shop.id, service, {
+      phone: data.phone,
+    });
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     // The requested staff member, or — with no preference — whichever free
     // team member working then has the fewest bookings that day.
@@ -389,6 +427,9 @@ export const createBookingForShop = async (
   userId: string,
   shopId: string,
   data: {
+    // Hold the time as a blocked slot instead of booking a customer; name,
+    // phone and email are then ignored.
+    block?: boolean;
     name: string;
     phone: string;
     email?: string;
@@ -415,7 +456,11 @@ export const createBookingForShop = async (
     });
     if (!service) throw new AppError(404, 'Service not found');
 
-    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+    // A blocked slot runs the service's standard length.
+    const duration = data.block
+      ? service.duration
+      : await resolveDuration(tx, shopId, service, { phone: data.phone });
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
@@ -464,7 +509,9 @@ export const createBookingForShop = async (
       staffId: staff.id,
       startTime,
       endTime,
-      customer: { name: data.name, phone: data.phone, email: data.email },
+      customer: data.block
+        ? null
+        : { name: data.name, phone: data.phone, email: data.email },
       // Owner/staff may correct a customer's details on the way (matches the
       // wizard's autofill UI); the public path never may (see
       // claimSlotAndCreate), and neither may a member who is not allowed to
@@ -540,6 +587,9 @@ export const getAvailableSlots = async (
     // Rescheduling an existing booking: its own service stays usable even if
     // the service has since been deactivated (only new bookings are blocked).
     forBookingId?: string;
+    // Who the booking is for, when known: their own duration for the service
+    // decides which times fit. A rescheduled booking's customer is implied.
+    customer?: DurationCustomer;
   } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
@@ -570,7 +620,11 @@ export const getAvailableSlots = async (
       id: serviceId,
       shopId,
       OR: [
-        { isActive: true },
+        // Internal-only services are closed to the public page.
+        {
+          isActive: true,
+          ...(context === 'public' && { showOnPublicPage: true }),
+        },
         ...(options.forBookingId
           ? [{ bookings: { some: { id: options.forBookingId, shopId } } }]
           : []),
@@ -578,6 +632,20 @@ export const getAvailableSlots = async (
     },
   });
   if (!service) return closed();
+
+  const forBooking =
+    !options.customer && options.forBookingId
+      ? await prisma.booking.findFirst({
+          where: { id: options.forBookingId, shopId },
+          select: { customerId: true },
+        })
+      : null;
+  const duration = await resolveDuration(
+    prisma,
+    shopId,
+    service,
+    options.customer ?? forBooking,
+  );
 
   const { timezone: zone, slotIntervalMinutes } =
     await getShopTimeSettings(shopId);
@@ -618,6 +686,9 @@ export const getAvailableSlots = async (
           status: { notIn: SLOT_FREEING_STATUSES },
           startTime: { lt: dayEnd },
           endTime: { gt: dayStart },
+          // Rescheduling: the booking being moved never blocks its own new
+          // time (same exclusion as the update-time overlap check).
+          ...(options.forBookingId && { id: { not: options.forBookingId } }),
         },
         select: { startTime: true, endTime: true },
       });
@@ -632,7 +703,7 @@ export const getAvailableSlots = async (
               date,
               zone,
               hours,
-              service.duration,
+              duration,
               slotIntervalMinutes,
             ).map((c) => ({
               time: c.time,
@@ -646,7 +717,7 @@ export const getAvailableSlots = async (
 
       // Owner/staff view: the usual in-hours grid plus the out-of-hours grid.
       const inHours = hours
-        ? buildSlotCandidates(date, zone, hours, service.duration, step)
+        ? buildSlotCandidates(date, zone, hours, duration, step)
         : [];
       const shopGridTimes = new Set(
         hours && step !== slotIntervalMinutes
@@ -654,7 +725,7 @@ export const getAvailableSlots = async (
               date,
               zone,
               hours,
-              service.duration,
+              duration,
               slotIntervalMinutes,
             ).map((c) => c.time)
           : inHours.map((c) => c.time),
@@ -664,7 +735,7 @@ export const getAvailableSlots = async (
         zone,
         hours ?? [],
         closedDayRanges,
-        service.duration,
+        duration,
         step,
       );
       const all = [
@@ -738,7 +809,7 @@ export const listBookings = async (
 
   const bookings = await prisma.booking.findMany({
     where,
-    include: { customer: true, service: true },
+    include: { customer: true, service: true, ...RESCHEDULE_LINKS },
     orderBy: { startTime: 'asc' },
   });
 
@@ -747,6 +818,10 @@ export const listBookings = async (
     customer: redactCustomer(b.customer, canViewCustomer),
   }));
 };
+
+// Blocked slots hold time but are not appointments: counts and "upcoming"
+// lists leave them out.
+const NOT_BLOCKED = { customer: { isSystem: false } } as const;
 
 export const getBookingStats = async (userId: string, shopId: string) => {
   const canViewCustomer = canViewCustomerDetails(
@@ -765,6 +840,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: startOfToday, lt: endOfToday },
         status: { notIn: ['CANCELED'] },
+        ...NOT_BLOCKED,
       },
     }),
     prisma.booking.count({
@@ -772,6 +848,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: now },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        ...NOT_BLOCKED,
       },
     }),
     prisma.booking.findMany({
@@ -779,6 +856,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: now },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        ...NOT_BLOCKED,
       },
       include: {
         customer: true,
@@ -809,7 +887,7 @@ const loadBooking = async (
 ) => {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
-    include: { customer: true, service: true },
+    include: { customer: true, service: true, ...RESCHEDULE_LINKS },
   });
   if (!booking || booking.shopId !== shopId)
     throw new AppError(404, 'Booking not found');
@@ -831,6 +909,80 @@ export const getBooking = async (
   };
 };
 
+const RESCHEDULABLE_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED'];
+
+/**
+ * Reschedule = the old booking stays at its old time as a CANCELED reference
+ * (so it frees that slot like any canceled booking) and a new one, linked back
+ * to it, is created at the new time. Runs inside the caller's transaction; the
+ * caller has already checked the booking rules for the new time.
+ */
+const rescheduleInTx = async (
+  tx: Prisma.TransactionClient,
+  existing: {
+    id: string;
+    shopId: string;
+    customerId: string;
+    status: BookingStatus;
+    notes: string | null;
+    createdById: string | null;
+  },
+  p: {
+    serviceId: string;
+    staffId: string;
+    startTime: Date;
+    endTime: Date;
+    notes?: string | null;
+    overriddenRules?: string[];
+  },
+) => {
+  const notReschedulable = () =>
+    new AppError(
+      409,
+      'Only an upcoming booking can be rescheduled',
+      'BOOKING_NOT_RESCHEDULABLE',
+    );
+  if (!RESCHEDULABLE_STATUSES.includes(existing.status))
+    throw notReschedulable();
+
+  assertBookingLength(p.startTime, p.endTime);
+  await lockProvider(tx, p.staffId); // queue behind other writes for this provider
+
+  // Conditional on the status so two reschedules of the same booking racing
+  // each other can't both win: the second one finds it already CANCELED.
+  const released = await tx.booking.updateMany({
+    where: { id: existing.id, status: { in: RESCHEDULABLE_STATUSES } },
+    data: { status: BookingStatus.CANCELED },
+  });
+  if (released.count === 0) throw notReschedulable();
+
+  // The old booking no longer holds its time, so it can't conflict with itself.
+  const conflict = await tx.booking.findFirst({
+    where: overlapWhere(p.staffId, p.startTime, p.endTime),
+  });
+  if (conflict)
+    throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
+
+  return tx.booking.create({
+    data: {
+      shopId: existing.shopId,
+      customerId: existing.customerId,
+      serviceId: p.serviceId,
+      staffId: p.staffId,
+      startTime: p.startTime,
+      endTime: p.endTime,
+      status: existing.status,
+      notes: p.notes !== undefined ? p.notes : existing.notes,
+      // A fresh link: the old booking's link must not act on the new one.
+      cancelToken: randomUUID(),
+      overriddenRules: p.overriddenRules ?? [],
+      createdById: existing.createdById,
+      rescheduledFromId: existing.id,
+    },
+    include: { ...BOOKING_INCLUDE, ...RESCHEDULE_LINKS },
+  });
+};
+
 export const updateBooking = async (
   userId: string,
   shopId: string,
@@ -848,13 +1000,24 @@ export const updateBooking = async (
   // Everything is read inside the (retried) transaction — see the note on the
   // create functions.
   serializableTransaction(async (tx) => {
-    const canViewCustomer = canViewCustomerDetails(
-      await requireShopAccess(userId, shopId, { db: tx }),
+    // Moving or editing a booking is a managing action: staff may change a
+    // booking's status, but only the owner or a manager may reschedule it.
+    const callerCanViewCustomer = canViewCustomerDetails(
+      await requireShopAccess(userId, shopId, {
+        db: tx,
+        role: 'manager',
+        forbiddenMessage:
+          'Only the shop owner or a manager can change a booking',
+      }),
     );
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
     // Any service/staff being referenced must belong to this shop.
-    let newService: { duration: number; isActive: boolean } | null = null;
+    let newService: {
+      id: string;
+      duration: number;
+      isActive: boolean;
+    } | null = null;
     if (data.serviceId) {
       newService = await tx.service.findFirst({
         where: { id: data.serviceId, shopId },
@@ -887,8 +1050,12 @@ export const updateBooking = async (
     // member, or a new service (which changes how long it runs) — is a
     // scheduling change: end time is recomputed and the overlap check re-runs.
     // Notes-only edits skip all of that.
-    const schedulingChanged =
-      !!data.startTime || serviceChanged || staffChanged;
+    // Re-sending the current start time (a form that always posts it) is not
+    // a reschedule and must not replace the booking.
+    const startChanged =
+      !!data.startTime &&
+      new Date(data.startTime).getTime() !== existing.startTime.getTime();
+    const schedulingChanged = startChanged || serviceChanged || staffChanged;
 
     if (!schedulingChanged) {
       const updated = await tx.booking.update({
@@ -897,19 +1064,21 @@ export const updateBooking = async (
           ...(data.notes !== undefined && { notes: data.notes }),
           ...(data.serviceId && { serviceId: data.serviceId }),
         },
-        include: { customer: true, service: true },
+        include: { ...BOOKING_INCLUDE, ...RESCHEDULE_LINKS },
       });
-      return {
-        ...updated,
-        customer: redactCustomer(updated.customer, canViewCustomer),
-      };
+      return { booking: updated, callerCanViewCustomer, previous: null };
     }
 
     const finalStaffId = data.staffId ?? existing.staffId;
     const finalStartTime = data.startTime
       ? new Date(data.startTime)
       : existing.startTime;
-    const duration = newService?.duration ?? existing.service.duration;
+    const duration = await resolveDuration(
+      tx,
+      shopId,
+      newService ?? existing.service,
+      { customerId: existing.customerId },
+    );
     const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
 
     // Same rules as creation; overlap never is bypassable. The stored codes
@@ -934,35 +1103,20 @@ export const updateBooking = async (
       overrideRules: data.overrideRules,
     });
 
-    // Same overlap check as creation, excluding this booking itself.
-    assertBookingLength(finalStartTime, finalEndTime);
-    await lockProvider(tx, finalStaffId); // queue behind other writes for this provider
-    const conflict = await tx.booking.findFirst({
-      where: overlapWhere(
-        finalStaffId,
-        finalStartTime,
-        finalEndTime,
-        bookingId,
-      ),
-    });
-    if (conflict)
-      throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
-
-    const updated = await tx.booking.update({
-      where: { id: bookingId },
-      data: {
-        startTime: finalStartTime,
-        endTime: finalEndTime,
-        staffId: finalStaffId,
-        overriddenRules,
-        ...(data.serviceId && { serviceId: data.serviceId }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-      },
-      include: { customer: true, service: true },
+    // The overlap check is in rescheduleInTx and is never bypassable.
+    const booking = await rescheduleInTx(tx, existing, {
+      serviceId: data.serviceId ?? existing.serviceId,
+      staffId: finalStaffId,
+      startTime: finalStartTime,
+      endTime: finalEndTime,
+      notes: data.notes,
+      overriddenRules,
     });
     return {
-      ...updated,
-      customer: redactCustomer(updated.customer, canViewCustomer),
+      booking,
+      callerCanViewCustomer,
+      // What the customer's "rescheduled" email compares against.
+      previous: { startTime: existing.startTime },
     };
   });
 
@@ -977,6 +1131,15 @@ export const updateBookingStatus = async (
       await requireShopAccess(userId, shopId, { db: tx }),
     );
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
+
+    // The old half of a reschedule is only a reference: re-opening it would
+    // put the customer in two slots at once.
+    if (existing.rescheduledTo)
+      throw new AppError(
+        409,
+        'This booking was rescheduled and can no longer be changed',
+        'BOOKING_RESCHEDULED',
+      );
 
     // Moving a booking from a slot-freeing status (CANCELED/NO_SHOW) back to
     // one that holds the provider's time re-occupies that slot. Someone else
@@ -998,7 +1161,7 @@ export const updateBookingStatus = async (
     const updated = await tx.booking.update({
       where: { id: bookingId },
       data: { status },
-      include: { customer: true, service: true },
+      include: { customer: true, service: true, ...RESCHEDULE_LINKS },
     });
     return {
       ...updated,
@@ -1006,39 +1169,186 @@ export const updateBookingStatus = async (
     };
   });
 
-export const cancelBookingByToken = async (token: string) => {
-  const booking = await prisma.booking.findUnique({
-    where: { cancelToken: token },
-    include: { customer: true, service: true, shop: true },
-  });
+// ── Customer self-service (token links in the confirmation email) ───────────
 
+const HOUR_MS = 60 * 60_000;
+
+type CustomerChangeBlock =
+  | 'BOOKING_RESCHEDULED'
+  | 'BOOKING_ALREADY_CANCELED'
+  | 'BOOKING_COMPLETED'
+  | 'BOOKING_NO_SHOW'
+  | 'BOOKING_IN_PAST'
+  | 'CANCEL_WINDOW_CLOSED'
+  | 'RESCHEDULE_DISABLED'
+  | 'RESCHEDULE_WINDOW_CLOSED';
+
+const BLOCK_MESSAGES: Record<CustomerChangeBlock, [number, string]> = {
+  BOOKING_RESCHEDULED: [409, 'Booking was rescheduled to a new time'],
+  BOOKING_ALREADY_CANCELED: [409, 'Booking is already cancelled'],
+  BOOKING_COMPLETED: [409, 'Booking is already completed'],
+  BOOKING_NO_SHOW: [409, 'Booking was marked as a no-show'],
+  BOOKING_IN_PAST: [409, 'Booking has already started or passed'],
+  CANCEL_WINDOW_CLOSED: [409, 'It is too close to the booking to cancel it'],
+  RESCHEDULE_DISABLED: [403, 'This shop does not allow rescheduling online'],
+  RESCHEDULE_WINDOW_CLOSED: [
+    409,
+    'It is too close to the booking to reschedule it',
+  ],
+};
+
+const blockError = (code: CustomerChangeBlock) =>
+  new AppError(BLOCK_MESSAGES[code][0], BLOCK_MESSAGES[code][1], code);
+
+type TokenBooking = {
+  status: BookingStatus;
+  startTime: Date;
+  rescheduledTo: { id: string } | null;
+  shop: {
+    isActive: boolean;
+    customerRescheduleEnabled: boolean;
+    cancelCutoffHours: number;
+    rescheduleCutoffHours: number;
+  };
+};
+
+// Why the customer can't change this booking at all, whatever the action.
+const stateBlock = (
+  b: TokenBooking,
+  now: number,
+): CustomerChangeBlock | null => {
+  // Checked first: a rescheduled booking is CANCELED too, but "it moved" is
+  // the useful thing to tell the customer.
+  if (b.rescheduledTo) return 'BOOKING_RESCHEDULED';
+  if (b.status === BookingStatus.CANCELED) return 'BOOKING_ALREADY_CANCELED';
+  if (b.status === BookingStatus.COMPLETED) return 'BOOKING_COMPLETED';
+  if (b.status === BookingStatus.NO_SHOW) return 'BOOKING_NO_SHOW';
+  if (b.startTime.getTime() <= now) return 'BOOKING_IN_PAST';
+  return null;
+};
+
+// The shop's cutoff: locked once the start is closer than `hours` away.
+const insideCutoff = (startTime: Date, hours: number, now: number) =>
+  startTime.getTime() - now < hours * HOUR_MS;
+
+/** Owners and managers are never subject to these; only the email links. */
+export const cancelBlock = (b: TokenBooking, now = Date.now()) =>
+  stateBlock(b, now) ??
+  (insideCutoff(b.startTime, b.shop.cancelCutoffHours, now)
+    ? 'CANCEL_WINDOW_CLOSED'
+    : null);
+
+export const rescheduleBlock = (b: TokenBooking, now = Date.now()) =>
+  stateBlock(b, now) ??
+  (!b.shop.customerRescheduleEnabled || !b.shop.isActive
+    ? 'RESCHEDULE_DISABLED'
+    : insideCutoff(b.startTime, b.shop.rescheduleCutoffHours, now)
+      ? 'RESCHEDULE_WINDOW_CLOSED'
+      : null);
+
+const TOKEN_INCLUDE = {
+  customer: true,
+  service: true,
+  shop: true,
+  staff: { select: { id: true, name: true, email: true } },
+  rescheduledTo: { select: { id: true, startTime: true } },
+} as const;
+
+const loadByToken = async (db: Prisma.TransactionClient, token: string) => {
+  const booking = await db.booking.findUnique({
+    where: { cancelToken: token },
+    include: TOKEN_INCLUDE,
+  });
   if (!booking)
     throw new AppError(404, 'Booking not found', 'BOOKING_NOT_FOUND');
-  if (booking.status === BookingStatus.CANCELED)
-    throw new AppError(
-      409,
-      'Booking is already cancelled',
-      'BOOKING_ALREADY_CANCELED',
+  return booking;
+};
+
+/** What the customer's cancel / reschedule pages show before acting. */
+export const getBookingByToken = async (token: string) => {
+  const booking = await loadByToken(prisma, token);
+  return {
+    booking,
+    cancelBlock: cancelBlock(booking),
+    rescheduleBlock: rescheduleBlock(booking),
+  };
+};
+
+/** The booking a public slots request is rescheduling, if the token is its. */
+export const findBookingIdByToken = async (shopId: string, token: string) => {
+  const booking = await prisma.booking.findUnique({
+    where: { cancelToken: token },
+    select: { id: true, shopId: true },
+  });
+  return booking?.shopId === shopId ? booking.id : undefined;
+};
+
+export const rescheduleBookingByToken = async (
+  token: string,
+  data: { startTime: string; staffId?: string | null },
+) => {
+  const startTime = new Date(data.startTime);
+
+  return serializableTransaction(async (tx) => {
+    const existing = await loadByToken(tx, token);
+    const block = rescheduleBlock(existing);
+    if (block) throw blockError(block);
+
+    // Staying with the same team member is always fine while they're active;
+    // switching needs someone customers may book.
+    const staffChanged = !!data.staffId && data.staffId !== existing.staffId;
+    const staff = staffChanged
+      ? await resolveBookableStaff(tx, existing.shopId, data.staffId!, 'public')
+      : await tx.userShop.findFirst({
+          where: {
+            id: existing.staffId,
+            shopId: existing.shopId,
+            active: true,
+          },
+        });
+    if (!staff) throw staffUnavailable(data.staffId ?? existing.staffId);
+
+    if (!staffChanged && startTime.getTime() === existing.startTime.getTime())
+      throw new AppError(
+        400,
+        'Pick a different time or team member',
+        'BOOKING_UNCHANGED',
+      );
+
+    const duration = await resolveDuration(
+      tx,
+      existing.shopId,
+      existing.service,
+      { customerId: existing.customerId },
     );
-  if (booking.status === BookingStatus.COMPLETED)
-    throw new AppError(
-      409,
-      'Booking is already completed',
-      'BOOKING_COMPLETED',
-    );
-  if (booking.status === BookingStatus.NO_SHOW)
-    throw new AppError(
-      409,
-      'Booking was marked as a no-show',
-      'BOOKING_NO_SHOW',
-    );
-  // No grace window: once the booking has started it can't be cancelled here.
-  if (booking.startTime.getTime() <= Date.now())
-    throw new AppError(
-      409,
-      'Booking has already started or passed',
-      'BOOKING_IN_PAST',
-    );
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
+
+    // Strict, like a public booking: no overrides.
+    await assertBookingRules({
+      db: tx,
+      shopId: existing.shopId,
+      timezone: existing.shop.timezone,
+      maxAdvanceDays: existing.shop.maxAdvanceDays,
+      slotIntervalMinutes: existing.shop.slotIntervalMinutes,
+      scheduleStaffId: staff.id,
+      startTime,
+      endTime,
+    });
+
+    const booking = await rescheduleInTx(tx, existing, {
+      serviceId: existing.serviceId,
+      staffId: staff.id,
+      startTime,
+      endTime,
+    });
+    return { booking, previous: { startTime: existing.startTime } };
+  });
+};
+
+export const cancelBookingByToken = async (token: string) => {
+  const booking = await loadByToken(prisma, token);
+  const block = cancelBlock(booking);
+  if (block) throw blockError(block);
 
   return prisma.booking.update({
     where: { id: booking.id },

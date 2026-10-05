@@ -6,6 +6,11 @@ import {
   updateCustomer as updateCustomerService,
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
+  mergeCustomers as mergeCustomersService,
+  listCustomerBookings as listCustomerBookingsService,
+  exportAllCustomers as exportAllCustomersService,
+  importCustomers as importCustomersService,
+  setCustomerServiceDurations as setCustomerServiceDurationsService,
 } from '../services/customer.service';
 
 export const listCustomers = async (
@@ -27,6 +32,7 @@ export const listCustomers = async (
       search,
       page,
       limit,
+      String(req.query.hasCustomDurations) === 'true',
     );
     successResponse(res, customers);
   } catch (err) {
@@ -71,6 +77,27 @@ export const updateCustomer = async (
   }
 };
 
+export const setCustomerServiceDurations = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const durations = await setCustomerServiceDurationsService(
+      userId,
+      shopId,
+      customerId,
+      req.body.items,
+    );
+    successResponse(res, durations);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const exportCustomer = async (
   req: Request,
   res: Response,
@@ -102,6 +129,86 @@ export const deleteCustomer = async (
     const customerId = req.params.customerId as string;
     await deleteCustomerService(userId, shopId, customerId);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const mergeCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const customer = await mergeCustomersService(
+      userId,
+      shopId,
+      customerId,
+      req.body.sourceCustomerId,
+    );
+    successResponse(res, customer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const exportAllCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    successResponse(res, await exportAllCustomersService(userId, shopId));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const importCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    successResponse(
+      res,
+      await importCustomersService(userId, shopId, req.body.rows),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listCustomerBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string, 10)
+      : 10;
+    successResponse(
+      res,
+      await listCustomerBookingsService(
+        userId,
+        shopId,
+        customerId,
+        page,
+        limit,
+      ),
+    );
   } catch (err) {
     next(err);
   }

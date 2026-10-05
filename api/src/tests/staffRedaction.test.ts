@@ -77,22 +77,8 @@ const ROUTES: [
     (c, h) => api.get(`${c.base}/bookings/${c.booking.id}`).set(h),
   ],
   ['GET bookings/stats', (c, h) => api.get(`${c.base}/bookings/stats`).set(h)],
-  [
-    'PATCH bookings/:id (notes)',
-    (c, h) =>
-      api
-        .patch(`${c.base}/bookings/${c.booking.id}`)
-        .set(h)
-        .send({ notes: 'n' }),
-  ],
-  [
-    'PATCH bookings/:id (reschedule)',
-    (c, h) =>
-      api
-        .patch(`${c.base}/bookings/${c.booking.id}`)
-        .set(h)
-        .send({ startTime: '2026-12-08T10:30:00+02:00' }),
-  ],
+  // PATCH bookings/:id is not here: staff get 403 before any customer is
+  // read (bookingUpdatePermission.test.ts), and managers always see contacts.
   [
     'PATCH bookings/:id/status',
     (c, h) =>

@@ -24,6 +24,7 @@ import {
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import PasswordInput from '../components/PasswordInput';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -237,9 +238,8 @@ export default function AccountPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
-            <input className="input"
+            <PasswordInput
               id="settings-password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -297,18 +297,17 @@ export default function AccountPage() {
             <span className="setting-row__title" id="palette-label">{t.settings.paletteLabel}</span>
             <span className="setting-row__text">{t.settings.paletteDesc}</span>
           </div>
-          <div className="cluster cluster--tight" role="group" aria-labelledby="palette-label">
+          <div className="cluster cluster--tight cluster--nowrap" role="group" aria-labelledby="palette-label">
             {PALETTES.map((p) => (
               <button
                 key={p}
                 type="button"
-                className="chip"
+                className={`swatch-box swatch--${p}`}
                 aria-pressed={palette === p}
+                aria-label={t.settings.palettes[p]}
+                title={t.settings.palettes[p]}
                 onClick={() => setPalette(p)}
-              >
-                <span className={`swatch swatch--${p}`} aria-hidden="true" />
-                {t.settings.palettes[p]}
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -392,7 +391,7 @@ export default function AccountPage() {
             <span className="setting-row__text">{t.settings.logoutDesc}</span>
           </div>
           <button
-            className="btn btn--secondary btn--sm"
+            className="btn btn--danger btn--sm"
             type="button"
             onClick={async () => { await logout(); navigate('/login'); }}
           >
@@ -440,9 +439,8 @@ export default function AccountPage() {
             >
               <div className="field">
                 <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-                <input className="input"
+                <PasswordInput
                   id="delete-password"
-                  type="password"
                   autoComplete="current-password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}

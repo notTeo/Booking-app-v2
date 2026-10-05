@@ -1,9 +1,9 @@
-import { formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
+import { dateInZone, formatDateTimeInZone, formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays, faLockOpen } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -20,6 +20,7 @@ import Modal from '../components/Modal';
 import OwnerBookingWizard from '../components/booking-wizard/OwnerBookingWizard';
 import {
   blockGeometry,
+  blockLanes,
   computeVisibleRange,
   filterBookings,
   hasActiveFilters,
@@ -29,7 +30,7 @@ import {
 } from './calendarModel';
 import '../styles/pages/bookings.css';
 import Alert from '../components/Alert';
-import { BOOKING_STATUS } from '../components/bookingStatus';
+import { BOOKING_STATUS, bookingDisplay } from '../components/bookingStatus';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,8 @@ const COMPACT_BLOCK_H = 56;                       // below this, time and name s
 const OTHER_COLUMN_ID = '__other__';
 
 const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED', 'NO_SHOW'];
+// Only bookings that still hold their slot can be moved.
+const RESCHEDULABLE: ReadonlySet<BookingStatus> = new Set(['PENDING', 'CONFIRMED']);
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -151,14 +154,28 @@ export default function ShopBookingsPage() {
     try {
       const updated = await updateBookingStatus(shop.id, bookingId, status);
       setBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+      return true;
     } catch (err) {
       // State stays as it was; tell the user why. A 409 is the slot being
       // taken meanwhile (e.g. re-opening a canceled booking).
       setStatusError(getApiError(err).status === 409 ? t.bookings.statusConflict : t.bookings.statusError);
+      return false;
     } finally {
       setUpdatingId(null);
     }
   };
+
+  const statusLabel = (b: Booking) =>
+    b.rescheduledTo ? t.bookings.reschedule.rescheduledLabel : t.bookings.filters.status[b.status];
+
+  // Who a booking is for, as shown: a blocked slot reads "Blocked" in the
+  // user's language, never the placeholder's stored name.
+  const customerLabel = (b: Booking) =>
+    b.customer.isSystem
+      ? t.bookings.block.name
+      : b.customer.contactHidden
+        ? t.customers.hiddenLabel
+        : b.customer.name;
 
   const openBookingDetail = (b: Booking, isSelected: boolean) => {
     setSelectedBooking(isSelected ? null : b);
@@ -225,6 +242,20 @@ export default function ShopBookingsPage() {
     const { startMin, durationMin } = bookingMinutes.get(b.id)!;
     return blockGeometry(startMin, durationMin, range, PX_PER_MIN, MIN_BLOCK_H);
   };
+
+  // Blocks sharing time in a column (a canceled or rescheduled booking whose
+  // slot was booked again) sit side by side instead of on top of each other.
+  const lanesByCol = Object.fromEntries(
+    Object.entries(bookingsByStaff).map(([colId, list]) => [
+      colId,
+      blockLanes(
+        list.map((b) => {
+          const { startMin, durationMin } = bookingMinutes.get(b.id)!;
+          return { id: b.id, startMin, endMin: startMin + durationMin };
+        }),
+      ),
+    ]),
+  );
 
   const outsideRangeCount = bookings.filter(b => geometryOf(b).outsideView).length;
 
@@ -455,6 +486,7 @@ export default function ShopBookingsPage() {
                       {/* Booking blocks */}
                       {(bookingsByStaff[col.id] ?? []).map(b => {
                         const geom = geometryOf(b);
+                        const lane = lanesByCol[col.id]?.get(b.id);
                         const tags = overrideTags(b.overriddenRules ?? []);
                         const isSelected = selectedBooking?.id === b.id;
 
@@ -464,27 +496,35 @@ export default function ShopBookingsPage() {
                             type="button"
                             className={[
                               'cal-block',
-                              `cal-block--${BOOKING_STATUS[b.status].cls}`,
+                              `cal-block--${bookingDisplay(b).cls}`,
                               tags.length > 0 ? 'cal-block--override' : '',
                               isSelected ? 'cal-block--selected' : '',
                               geom.height < COMPACT_BLOCK_H ? 'cal-block--compact' : '',
                             ].join(' ').trim()}
-                            style={{ top: geom.top, height: geom.height }}
+                            style={{
+                              top: geom.top,
+                              height: geom.height,
+                              ...(lane && lane.lanes > 1 && { '--lane': lane.lane, '--lanes': lane.lanes }),
+                            } as CSSProperties}
                             onClick={(e) => {
                               e.stopPropagation();
                               openBookingDetail(b, isSelected);
                             }}
                           >
                             <span className="cal-block__time">
-                              <FontAwesomeIcon icon={BOOKING_STATUS[b.status].icon} aria-hidden="true" />
+                              <FontAwesomeIcon icon={bookingDisplay(b).icon} aria-hidden="true" />
                               {tags.length > 0 && <FontAwesomeIcon icon={faClock} aria-hidden="true" />}
                               {formatTimeInZone(b.startTime, zone)}
-                              <span className="visually-hidden">{t.bookings.filters.status[b.status]}</span>
+                              <span className="visually-hidden">{statusLabel(b)}</span>
                             </span>
                             <span className="cal-block__name">
-                              {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                              {customerLabel(b)}
                             </span>
-                            <span className="cal-block__service">{b.service.name}</span>
+                            <span className="cal-block__service">
+                              {b.rescheduledTo
+                                ? t.bookings.reschedule.rescheduledLabel
+                                : (b.customer.isSystem && b.notes) || b.service.name}
+                            </span>
                             {tags.length > 0 && (
                               <span className="cal-block__tag label-caps">{tags.map(tagLabel).join(' · ')}</span>
                             )}
@@ -509,7 +549,7 @@ export default function ShopBookingsPage() {
         <Modal onClose={() => setSelectedBooking(null)} labelledBy="booking-detail-title">
           <div className="modal__header">
             <h2 id="booking-detail-title" className="modal__title">
-              {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
+              {customerLabel(selectedBooking)}
             </h2>
             <button
               type="button"
@@ -526,32 +566,105 @@ export default function ShopBookingsPage() {
               <span aria-hidden="true">·</span>
               <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
               <span aria-hidden="true">·</span>
-              <span>{formatDuration(selectedBooking.service.duration)}</span>
+              {/* The booking's own length: a customer may have a custom duration for the service. */}
+              <span>
+                {formatDuration(
+                  (new Date(selectedBooking.endTime).getTime() - new Date(selectedBooking.startTime).getTime()) / 60_000,
+                )}
+              </span>
             </div>
 
-            {!selectedBooking.customer.contactHidden && (
+            {!selectedBooking.customer.contactHidden && !selectedBooking.customer.isSystem && (
               <div className="t-body-sm">{selectedBooking.customer.phone}</div>
             )}
             {selectedBooking.notes && (
               <div className="t-body-sm"><em>{selectedBooking.notes}</em></div>
             )}
 
-            <div className="cluster cluster--tight" role="group" aria-label={t.bookings.filters.statusLabel}>
-              {ALL_STATUSES.map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={selectedBooking.status === s}
-                  className={`chip chip--${BOOKING_STATUS[s].cls}`}
-                  onClick={() => handleStatusUpdate(selectedBooking.id, s)}
-                  disabled={updatingId === selectedBooking.id}
-                >
-                  <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
-                  <span className="chip__label">{t.bookings.filters.status[s]}</span>
-                </button>
-              ))}
-            </div>
+            {selectedBooking.rescheduledFrom && (
+              <Alert variant="info">
+                {t.bookings.reschedule.rescheduledFrom.replace(
+                  '{when}',
+                  formatDateTimeInZone(selectedBooking.rescheduledFrom.startTime, zone),
+                )}
+              </Alert>
+            )}
+
+            {selectedBooking.rescheduledTo ? (
+              // The old half of a reschedule is only a reference: its status
+              // can't change, so it gets a note and a way to the new booking.
+              <>
+                <Alert variant="info" title={t.bookings.reschedule.rescheduledLabel}>
+                  {t.bookings.reschedule.rescheduledTo.replace(
+                    '{when}',
+                    formatDateTimeInZone(selectedBooking.rescheduledTo.startTime, zone),
+                  )}
+                </Alert>
+                <div className="cluster">
+                  <button
+                    type="button"
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => {
+                      const to = selectedBooking.rescheduledTo!;
+                      setSelectedBooking(null);
+                      setDateOverride(dateInZone(to.startTime, zone));
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faCalendarDays} aria-hidden="true" />
+                    {t.bookings.reschedule.viewNew}
+                  </button>
+                </div>
+              </>
+            ) : selectedBooking.customer.isSystem ? (
+              // A blocked slot has no customer and no status to track: it is
+              // either holding the time or unblocked.
+              selectedBooking.status === 'CANCELED' ? (
+                <Alert variant="info">{t.bookings.block.unblocked}</Alert>
+              ) : (
+                <div className="cluster">
+                  <button
+                    type="button"
+                    className={`btn btn--secondary btn--sm${updatingId === selectedBooking.id ? ' is-loading' : ''}`}
+                    aria-busy={updatingId === selectedBooking.id}
+                    onClick={async () => {
+                      if (await handleStatusUpdate(selectedBooking.id, 'CANCELED')) setSelectedBooking(null);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faLockOpen} aria-hidden="true" />
+                    {t.bookings.block.unblock}
+                  </button>
+                </div>
+              )
+            ) : (
+              <div className="cluster cluster--tight" role="group" aria-label={t.bookings.filters.statusLabel}>
+                {ALL_STATUSES.map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={selectedBooking.status === s}
+                    className={`chip chip--${BOOKING_STATUS[s].cls}`}
+                    onClick={() => handleStatusUpdate(selectedBooking.id, s)}
+                    disabled={updatingId === selectedBooking.id}
+                  >
+                    <FontAwesomeIcon icon={BOOKING_STATUS[s].icon} aria-hidden="true" />
+                    <span className="chip__label">{t.bookings.filters.status[s]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {statusError && <Alert variant="danger">{statusError}</Alert>}
+
+            {canManage && slug && !selectedBooking.customer.isSystem && RESCHEDULABLE.has(selectedBooking.status) && (
+              <div className="cluster">
+                <Link
+                  className="btn btn--secondary btn--sm"
+                  to={`/shops/${slug}/bookings/${selectedBooking.id}/reschedule`}
+                >
+                  <FontAwesomeIcon icon={faCalendarDays} aria-hidden="true" />
+                  {t.bookings.reschedule.button}
+                </Link>
+              </div>
+            )}
           </div>
         </Modal>
       )}

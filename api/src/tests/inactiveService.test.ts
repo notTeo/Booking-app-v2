@@ -136,7 +136,9 @@ describe('existing bookings on an inactive service stay manageable', () => {
       overrideRules: ALL_OVERRIDABLE_RULES,
     });
     expect(a.status, JSON.stringify(a.body)).toBe(200);
-    const b = await patch(t, booking.id, {
+    // Each reschedule replaces the booking, so the second one moves the first
+    // one's result.
+    const b = await patch(t, a.body.data.id, {
       serviceId: t.service.id,
       startTime: '2026-12-08T12:00:00.000Z',
       overrideRules: ALL_OVERRIDABLE_RULES,
@@ -144,7 +146,9 @@ describe('existing bookings on an inactive service stay manageable', () => {
     expect(b.status, JSON.stringify(b.body)).toBe(200);
     expect(
       (
-        await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } })
+        await prisma.booking.findUniqueOrThrow({
+          where: { id: b.body.data.id },
+        })
       ).startTime.toISOString(),
     ).toBe('2026-12-08T12:00:00.000Z');
   });

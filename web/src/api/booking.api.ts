@@ -1,5 +1,5 @@
 import client from './client';
-import type { SlotsResponse } from './public.api';
+import type { ShopInfo, SlotsResponse } from './public.api';
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW';
 
@@ -9,6 +9,8 @@ export interface BookingCustomer {
   phone: string;
   email: string | null;
   contactHidden?: boolean;
+  /** The shop's "Blocked" placeholder: this booking is a blocked slot, not an appointment. */
+  isSystem?: boolean;
 }
 
 export interface BookingService {
@@ -36,6 +38,15 @@ export interface Booking {
   updatedAt: string;
   customer: BookingCustomer;
   service: BookingService;
+  /** The booking this one replaced when it was rescheduled. */
+  rescheduledFrom?: BookingLink | null;
+  /** Set on the old half of a reschedule: it stays CANCELED as a reference. */
+  rescheduledTo?: BookingLink | null;
+}
+
+export interface BookingLink {
+  id: string;
+  startTime: string;
 }
 
 export interface ListBookingsParams {
@@ -73,12 +84,35 @@ export const getOwnerSlots = (
   staffId: string | null,
   serviceId: string,
   intervalMinutes?: number,
+  /** Rescheduling: this booking doesn't block its own new time, and its own (possibly deactivated) service still resolves. */
+  forBookingId?: string,
+  /** Who the booking is for, when already picked: their own duration for the service decides which times fit. */
+  customerId?: string,
 ) =>
   client
     .get(`${base(shopId)}/slots`, {
-      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes },
+      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId, customerId },
     })
     .then((r) => r.data.data as SlotsResponse);
+
+/** The owner/staff wizard's starting data: the shop info including internal-only services. */
+export const getWizardInfo = (shopId: string) =>
+  client.get(`${base(shopId)}/wizard-info`).then((r) => r.data.data as ShopInfo);
+
+export const getBooking = (shopId: string, bookingId: string) =>
+  client.get(`${base(shopId)}/${bookingId}`).then((r) => r.data.data as Booking);
+
+export interface ReschedulePayload {
+  startTime: string; // ISO 8601
+  staffId?: string;
+  /** Only when the service changes; the booking's length follows it. */
+  serviceId?: string;
+  /** Same contract as on creation: only codes the user explicitly accepted. */
+  overrideRules?: BookingRuleCode[];
+}
+
+export const rescheduleBooking = (shopId: string, bookingId: string, payload: ReschedulePayload) =>
+  client.patch(`${base(shopId)}/${bookingId}`, payload).then((r) => r.data.data as Booking);
 
 export const updateBookingStatus = (shopId: string, bookingId: string, status: BookingStatus) =>
   client
@@ -86,8 +120,10 @@ export const updateBookingStatus = (shopId: string, bookingId: string, status: B
     .then((r) => r.data.data as Booking);
 
 export interface OwnerCreateBookingPayload {
-  name: string;
-  phone: string;
+  /** Hold the time as a blocked slot instead of booking a customer; name and phone are then left out. */
+  block?: boolean;
+  name?: string;
+  phone?: string;
   email?: string;
   serviceId: string;
   staffId?: string;

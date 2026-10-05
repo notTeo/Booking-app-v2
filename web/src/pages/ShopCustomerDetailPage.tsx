@@ -5,11 +5,27 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
+import {
+  getCustomer,
+  getCustomerBookings,
+  updateCustomer,
+  exportCustomer,
+  deleteCustomer,
+  type CustomerBookingsResult,
+  type CustomerDetail,
+} from '../api/customer.api';
+import StatCards from '../components/overview/StatCards';
+import StatusDonut from '../components/overview/StatusDonut';
 import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
+import '../styles/pages/shop-overview.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import MergeCustomerModal from '../components/MergeCustomerModal';
+import CustomerServiceDurations from '../components/CustomerServiceDurations';
+import { canManageShop } from '../utils/roles';
+
+const BOOKINGS_PAGE_SIZE = 10;
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -35,6 +51,11 @@ export default function ShopCustomerDetailPage() {
   const [privacyBusy, setPrivacyBusy] = useState<'export' | 'delete' | null>(null);
   const [privacyError, setPrivacyError] = useState('');
 
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeSuccess, setMergeSuccess] = useState('');
+  // Bumped after a merge so the customer (bookings, totals) loads again.
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
     if (!shop || !customerId) return;
     setLoading(true);
@@ -48,7 +69,23 @@ export default function ShopCustomerDetailPage() {
       })
       .catch(() => setError(t.customers.customerErrorLoad))
       .finally(() => setLoading(false));
-  }, [shop?.id, customerId]);
+  }, [shop?.id, customerId, reloadKey]);
+
+  // The booking history, a page at a time. `bookings` keeps the previous page
+  // on screen while the next one loads.
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookings, setBookings] = useState<CustomerBookingsResult | null>(null);
+  const [bookingsError, setBookingsError] = useState(false);
+
+  const shopId = shop?.id;
+  useEffect(() => {
+    if (!shopId || !customerId) return;
+    let stale = false;
+    getCustomerBookings(shopId, customerId, bookingsPage, BOOKINGS_PAGE_SIZE)
+      .then((result) => { if (!stale) { setBookings(result); setBookingsError(false); } })
+      .catch(() => { if (!stale) setBookingsError(true); });
+    return () => { stale = true; };
+  }, [shopId, customerId, bookingsPage, reloadKey]);
 
   const handleSave = async () => {
     if (!shop || !customerId || saving) return;
@@ -108,6 +145,8 @@ export default function ShopCustomerDetailPage() {
     }
   };
 
+  const bookingsPages = Math.max(1, Math.ceil((bookings?.total ?? 0) / BOOKINGS_PAGE_SIZE));
+
   const isDirty =
     customer &&
     (editName !== customer.name ||
@@ -117,7 +156,7 @@ export default function ShopCustomerDetailPage() {
 
   if (shopLoading || loading) {
     return (
-      <div className="team-member-page">
+      <div className="customer-page">
         <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
@@ -127,7 +166,7 @@ export default function ShopCustomerDetailPage() {
 
   if (error || !customer) {
     return (
-      <div className="team-member-page">
+      <div className="customer-page">
         <div className="cluster">
           <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
             <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
@@ -140,7 +179,7 @@ export default function ShopCustomerDetailPage() {
   }
 
   return (
-    <div className="team-member-page">
+    <div className="customer-page">
       <div className="cluster">
         <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
           <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
@@ -148,17 +187,94 @@ export default function ShopCustomerDetailPage() {
         </Link>
       </div>
 
-      {/* Customer info */}
-      <div className="card team-member-card">
-        <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
-        <div className="cluster">
-          <span className="t-body-sm t-muted">
-            {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
-          </span>
+      {/* Customer info, with this customer's lifetime numbers in a column beside it */}
+      <div className="customer-head">
+        <div className="card team-member-card">
+          <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
+          <div className="cluster">
+            <span className="t-body-sm t-muted">
+              {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="cluster">
+            <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+          </div>
         </div>
-        <div className="cluster">
-          <span className="t-body-sm t-muted">{t.customers.totalVisitsLabel}: {customer.totalVisits}</span>
-          <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+        <StatCards totals={customer.totals} tiles />
+      </div>
+
+      {customer.totals.all + customer.totals.canceled > 0 && <StatusDonut totals={customer.totals} />}
+
+      {/* Booking history: every booking, ten at a time */}
+      <div className="card">
+        <h2 className="card__title">{t.customers.bookingHistory}</h2>
+        {bookingsError && <Alert variant="danger">{t.customers.bookingsErrorLoad}</Alert>}
+        <div className="table-wrap">
+          <div className="table-surface">
+            {!bookings ? (
+              !bookingsError && (
+                <div className="spinner-wrap">
+                  <div className="spinner" />
+                </div>
+              )
+            ) : bookings.total === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.customers.noBookings}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
+                <thead>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.providerCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.items.map((b) => (
+                    <tr key={b.id} role="row">
+                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
+                      <td role="cell" data-label={t.customers.dateTimeCol}>
+                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
+                      </td>
+                      <td role="cell" data-label={t.customers.providerCol}>{b.staff.name}</td>
+                      <td role="cell" data-label={t.customers.statusCol}>
+                        <StatusBadge status={b.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {bookings && bookings.total > BOOKINGS_PAGE_SIZE && (
+              <div className="data-table__foot">
+                <span>
+                  {t.customers.pageOf
+                    .replace('{page}', String(bookings.page))
+                    .replace('{total}', String(bookingsPages))}
+                </span>
+                <div className="cluster cluster--tight">
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setBookingsPage((p) => Math.max(1, p - 1))}
+                    disabled={bookingsPage <= 1}
+                    aria-label={t.customers.prevPageLabel}
+                  >
+                    {t.customers.prevPage}
+                  </button>
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setBookingsPage((p) => Math.min(bookingsPages, p + 1))}
+                    disabled={bookingsPage >= bookingsPages}
+                    aria-label={t.customers.nextPageLabel}
+                  >
+                    {t.customers.nextPage}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -216,6 +332,31 @@ export default function ShopCustomerDetailPage() {
         </div>
       )}
 
+      {shop && (
+        <CustomerServiceDurations
+          // Remount after a merge, which can bring durations over.
+          key={reloadKey}
+          shopId={shop.id}
+          customerId={customer.id}
+          durations={customer.serviceDurations}
+          onSaved={(serviceDurations) => setCustomer((prev) => (prev ? { ...prev, serviceDurations } : prev))}
+        />
+      )}
+
+      {/* Merge a duplicate record into this one (owner and managers; the API enforces it too) */}
+      {canManageShop(shop?.role) && !customer.contactHidden && (
+        <div className="card">
+          <h2 className="card__title">{t.customers.mergeHeading}</h2>
+          <p className="card__text">{t.customers.mergeBody}</p>
+          {mergeSuccess && <Alert variant="success">{mergeSuccess}</Alert>}
+          <div className="cluster">
+            <button className="btn btn--secondary" onClick={() => { setMergeSuccess(''); setMergeOpen(true); }}>
+              {t.customers.mergeButton}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
       {shop?.role === 'owner' && (
         <div className="card">
@@ -243,42 +384,19 @@ export default function ShopCustomerDetailPage() {
         </div>
       )}
 
-      {/* Recent bookings */}
-      <div className="card">
-        <h2 className="card__title">{t.customers.recentBookings}</h2>
-        <div className="table-wrap">
-          <div className="table-surface">
-            {customer.bookings.length === 0 ? (
-              <div className="empty empty--sm">
-                <p className="empty__text">{t.customers.noBookings}</p>
-              </div>
-            ) : (
-              <table className="data-table" role="table">
-                <thead>
-                  <tr role="row">
-                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
-                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
-                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customer.bookings.map((b) => (
-                    <tr key={b.id} role="row">
-                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
-                      <td role="cell" data-label={t.customers.dateTimeCol}>
-                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
-                      </td>
-                      <td role="cell" data-label={t.customers.statusCol}>
-                        <StatusBadge status={b.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </div>
+      {mergeOpen && shop && (
+        <MergeCustomerModal
+          shopId={shop.id}
+          target={customer}
+          onClose={() => setMergeOpen(false)}
+          onMerged={(merged) => {
+            setMergeOpen(false);
+            setMergeSuccess(t.customers.mergeSuccess.replace('{count}', String(merged.movedBookings)));
+            setBookingsPage(1);
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
 
       {confirmDelete && customer && (
         <ConfirmDialog

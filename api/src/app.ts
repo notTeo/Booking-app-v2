@@ -55,6 +55,11 @@ app.use(
   }),
 );
 app.use(cookieParser());
+// A customer import carries up to 500 rows, more than the default 100kb body.
+app.use(
+  /^\/api\/shops\/[^/]+\/customers\/import\/?$/,
+  express.json({ limit: '2mb' }),
+);
 app.use(express.json());
 
 // Liveness + DB reachability. 503 (no detail) when the DB is down so a

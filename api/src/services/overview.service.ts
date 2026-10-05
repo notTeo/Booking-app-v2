@@ -167,6 +167,10 @@ export const computeOverview = async (
   );
   const shopsCte = Prisma.sql`WITH s(id, tz, p_start, p_end, d_start, d_end) AS (VALUES ${shopRows})`;
 
+  // Blocked slots (bookings on the shop's system customer) are not
+  // appointments, so no figure counts them.
+  const notBlocked = Prisma.sql`NOT EXISTS (SELECT 1 FROM "Customer" c WHERE c.id = b."customerId" AND c."isSystem")`;
+
   // Prisma's groupBy cannot bucket by a timezone or take per-shop bounds, so
   // both aggregations are raw SQL joined to the shop list above.
   const [byStatus, byBucket] = await Promise.all([
@@ -181,6 +185,7 @@ export const computeOverview = async (
       JOIN s ON s.id = b."shopId"
       WHERE b."startTime" >= LEAST(s.p_start, s.d_start)
         AND b."startTime" < GREATEST(s.p_end, s.d_end)
+        AND ${notBlocked}
       GROUP BY b."shopId", b."status"
     `),
     // AT TIME ZONE turns the timestamptz into the shop's wall-clock, so
@@ -195,6 +200,7 @@ export const computeOverview = async (
       WHERE b."status" <> 'CANCELED'
         AND b."startTime" >= s.p_start
         AND b."startTime" < s.p_end
+        AND ${notBlocked}
       GROUP BY 1
     `),
   ]);
@@ -228,7 +234,10 @@ export const computeOverview = async (
   const hasAnyBookings =
     inPeriod > 0 ||
     (await prisma.booking.findFirst({
-      where: { shopId: { in: shops.map((s) => s.id) } },
+      where: {
+        shopId: { in: shops.map((s) => s.id) },
+        customer: { isSystem: false },
+      },
       select: { id: true },
     })) !== null;
 
@@ -318,6 +327,7 @@ export const getMyUpcoming = async (userId: string, now: Date = new Date()) => {
       shopId: { in: [...canView.keys()] },
       startTime: { gte: now },
       status: { notIn: ['CANCELED', 'NO_SHOW'] },
+      customer: { isSystem: false },
     },
     include: {
       customer: true,

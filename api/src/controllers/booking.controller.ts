@@ -2,10 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
-import { sendBookingConfirmationEmail } from '../services/email.service';
+import {
+  sendBookingConfirmationEmail,
+  sendBookingRescheduledEmail,
+} from '../services/email.service';
+import { bookingEmailParams } from '../utils/bookingEmail';
 import * as bookingService from '../services/booking.service';
 import { requireShopAccess } from '../utils/shopAccess';
 import { redactCustomer } from '../utils/customerVisibility';
+import { getShopInfoService } from '../services/public.service';
 
 export const createBooking = async (
   req: Request,
@@ -30,22 +35,29 @@ export const createBooking = async (
 
     // Owner/staff created this booking themselves, so only the customer needs
     // a confirmation email — no "new booking" notification back to the owner.
-    if (booking.customer.email && booking.cancelToken) {
-      sendBookingConfirmationEmail({
-        email: booking.customer.email,
-        customerName: booking.customer.name,
-        shopName: booking.shop.name,
-        serviceName: booking.service.name,
-        staffName: booking.staff.name ?? 'Your staff member',
-        startTime: booking.startTime,
-        endTime: booking.endTime,
-        timezone: booking.shop.timezone,
-        formattedAddress: booking.shop.formattedAddress,
-        cancelToken: booking.cancelToken,
-      }).catch((err) =>
+    const emailParams = bookingEmailParams(booking);
+    if (emailParams) {
+      sendBookingConfirmationEmail(emailParams).catch((err) =>
         logger.error(err, 'Failed to send booking confirmation email'),
       );
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+// The owner/staff booking wizard's starting data: the public shop info plus
+// internal-only services.
+export const getWizardInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params['shopId'] as string;
+    await requireShopAccess(userId, shopId);
+    successResponse(res, await getShopInfoService({ id: shopId }, 'internal'));
   } catch (err) {
     next(err);
   }
@@ -78,6 +90,9 @@ export const getAvailableSlots = async (
           : undefined,
         forBookingId:
           (req.query['forBookingId'] as string | undefined) || undefined,
+        customer: req.query['customerId']
+          ? { customerId: req.query['customerId'] as string }
+          : undefined,
       },
     );
     successResponse(res, slots);
@@ -148,13 +163,26 @@ export const updateBooking = async (
     const userId = req.user!.userId!;
     const shopId = req.params['shopId'] as string;
     const bookingId = req.params['bookingId'] as string;
-    const booking = await bookingService.updateBooking(
-      userId,
-      shopId,
-      bookingId,
-      req.body,
-    );
-    successResponse(res, booking);
+    const { booking, callerCanViewCustomer, previous } =
+      await bookingService.updateBooking(userId, shopId, bookingId, req.body);
+    // The shop and staff rows are only loaded for the email below.
+    const { shop: _shop, staff: _staff, ...row } = booking;
+    successResponse(res, {
+      ...row,
+      customer: redactCustomer(booking.customer, callerCanViewCustomer),
+    });
+
+    // A reschedule replaced the booking (and its links), so the customer is
+    // told the new time. Notes-only edits send nothing.
+    const emailParams = previous && bookingEmailParams(booking);
+    if (emailParams) {
+      sendBookingRescheduledEmail({
+        ...emailParams,
+        previousStartTime: previous.startTime,
+      }).catch((err) =>
+        logger.error(err, 'Failed to send booking rescheduled email'),
+      );
+    }
   } catch (err) {
     next(err);
   }

@@ -81,7 +81,6 @@ In development. A pilot deployment for a barbershop is in preparation. Deploymen
 
 ## Known limitations
 
-- Bookings can be created and cancelled, but there is no reschedule flow in the UI.
 - No shop closures or holidays beyond working-hours schedules.
 - The data-processing agreement page is placeholder text until launch.
 - The page-level CSS is still being migrated to the design system ([docs/design-system/migration.md](docs/design-system/migration.md)).

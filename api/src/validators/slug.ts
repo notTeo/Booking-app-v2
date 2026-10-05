@@ -23,6 +23,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   'invite',
   'invites',
   'cancel',
+  'reschedule',
   'privacy',
   'terms',
   'about',

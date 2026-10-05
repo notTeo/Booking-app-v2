@@ -7,9 +7,12 @@ import { formatDuration, formatPrice } from './wizardUtils';
 export default function ServiceSelectStep({
   services,
   onSelect,
+  customDurations,
 }: {
   services: Service[];
   onSelect: (serviceId: string) => void;
+  /** Shop wizard: the picked customer's own minutes per service id, shown in place of the standard duration. */
+  customDurations?: Record<string, number>;
 }) {
   const { t } = useLang();
 
@@ -32,7 +35,10 @@ export default function ServiceSelectStep({
                 <span className="service-card__name">{s.name}</span>
                 {s.description && <span className="service-card__desc">{s.description}</span>}
                 <span className="service-card__meta">
-                  <FontAwesomeIcon icon={faClock} aria-hidden="true" /> {formatDuration(s.duration)}
+                  <FontAwesomeIcon icon={faClock} aria-hidden="true" /> {formatDuration(customDurations?.[s.id] ?? s.duration)}
+                  {customDurations?.[s.id] !== undefined && customDurations[s.id] !== s.duration && (
+                    <span className="badge badge--info">{t.customers.customDurationsBadge}</span>
+                  )}
                 </span>
               </span>
               <span className="service-card__price">{formatPrice(s.price)}</span>
