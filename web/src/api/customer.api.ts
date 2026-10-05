@@ -12,6 +12,14 @@ export interface Customer {
   createdAt: string;
   updatedAt: string;
   contactHidden?: boolean;
+  /** Customer list only: at least one service has a custom duration for them. */
+  hasCustomDurations?: boolean;
+}
+
+/** How long one service takes for one customer, when not the service's standard time. */
+export interface CustomerServiceDuration {
+  serviceId: string;
+  duration: number; // minutes
 }
 
 export interface CustomerListResult {
@@ -46,6 +54,7 @@ export interface CustomerDetail extends Customer {
   totalSpent: number;
   /** Lifetime booking counts by status, in the shop overview's shape. */
   totals: Overview['totals'];
+  serviceDurations: CustomerServiceDuration[];
 }
 
 export interface UpdateCustomerDto {
@@ -57,9 +66,18 @@ export interface UpdateCustomerDto {
 
 const base = (shopId: string) => `/api/shops/${shopId}/customers`;
 
-export const getCustomers = (shopId: string, search?: string, page = 1, limit = 20) =>
+export const getCustomers = (
+  shopId: string,
+  search?: string,
+  page = 1,
+  limit = 20,
+  /** Only customers with a custom duration for some service. */
+  hasCustomDurations = false,
+) =>
   client
-    .get(base(shopId), { params: { ...(search ? { search } : {}), page, limit } })
+    .get(base(shopId), {
+      params: { ...(search ? { search } : {}), ...(hasCustomDurations ? { hasCustomDurations: true } : {}), page, limit },
+    })
     .then((r) => r.data.data as CustomerListResult);
 
 export const getCustomer = (shopId: string, customerId: string) =>
@@ -73,6 +91,12 @@ export const getCustomerBookings = (shopId: string, customerId: string, page = 1
 
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);
+
+/** Replace the customer's custom service durations; a service left out goes back to its standard time. */
+export const setCustomerServiceDurations = (shopId: string, customerId: string, items: CustomerServiceDuration[]) =>
+  client
+    .put(`${base(shopId)}/${customerId}/service-durations`, { items })
+    .then((r) => r.data.data as CustomerServiceDuration[]);
 
 export interface CustomerExport {
   exportedAt: string;

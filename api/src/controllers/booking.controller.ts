@@ -90,6 +90,9 @@ export const getAvailableSlots = async (
           : undefined,
         forBookingId:
           (req.query['forBookingId'] as string | undefined) || undefined,
+        customer: req.query['customerId']
+          ? { customerId: req.query['customerId'] as string }
+          : undefined,
       },
     );
     successResponse(res, slots);

@@ -553,7 +553,12 @@ export default function ShopBookingsPage() {
               <span aria-hidden="true">·</span>
               <span>{formatTimeInZone(selectedBooking.startTime, zone)}</span>
               <span aria-hidden="true">·</span>
-              <span>{formatDuration(selectedBooking.service.duration)}</span>
+              {/* The booking's own length: a customer may have a custom duration for the service. */}
+              <span>
+                {formatDuration(
+                  (new Date(selectedBooking.endTime).getTime() - new Date(selectedBooking.startTime).getTime()) / 60_000,
+                )}
+              </span>
             </div>
 
             {!selectedBooking.customer.contactHidden && (

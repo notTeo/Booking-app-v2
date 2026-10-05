@@ -22,6 +22,7 @@ import '../styles/pages/shop-overview.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
+import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
 
 const BOOKINGS_PAGE_SIZE = 10;
@@ -329,6 +330,17 @@ export default function ShopCustomerDetailPage() {
             {t.customers.save}
           </button>
         </div>
+      )}
+
+      {shop && (
+        <CustomerServiceDurations
+          // Remount after a merge, which can bring durations over.
+          key={reloadKey}
+          shopId={shop.id}
+          customerId={customer.id}
+          durations={customer.serviceDurations}
+          onSaved={(serviceDurations) => setCustomer((prev) => (prev ? { ...prev, serviceDurations } : prev))}
+        />
       )}
 
       {/* Merge a duplicate record into this one (owner and managers; the API enforces it too) */}
