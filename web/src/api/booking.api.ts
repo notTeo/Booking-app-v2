@@ -36,6 +36,15 @@ export interface Booking {
   updatedAt: string;
   customer: BookingCustomer;
   service: BookingService;
+  /** The booking this one replaced when it was rescheduled. */
+  rescheduledFrom?: BookingLink | null;
+  /** Set on the old half of a reschedule: it stays CANCELED as a reference. */
+  rescheduledTo?: BookingLink | null;
+}
+
+export interface BookingLink {
+  id: string;
+  startTime: string;
 }
 
 export interface ListBookingsParams {
@@ -88,6 +97,8 @@ export const getBooking = (shopId: string, bookingId: string) =>
 export interface ReschedulePayload {
   startTime: string; // ISO 8601
   staffId?: string;
+  /** Only when the service changes; the booking's length follows it. */
+  serviceId?: string;
   /** Same contract as on creation: only codes the user explicitly accepted. */
   overrideRules?: BookingRuleCode[];
 }

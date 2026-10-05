@@ -1,16 +1,18 @@
-import type { Booking, BookingRuleCode } from '../../api/booking.api';
+import type { BookingRuleCode } from '../../api/booking.api';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
 import { formatDateTimeInZone } from '../../utils/shopTime';
 import Alert from '../Alert';
 
 /**
- * Last step of the owner wizard in reschedule mode: the customer is already
- * known, so instead of the customer form it shows the old and the new time and
- * submits the move.
+ * Last step of a reschedule (owner wizard and the customer's own page): the
+ * customer is already known, so instead of the customer form it shows the old
+ * and the new time and submits the move.
  */
 export default function RescheduleConfirmStep({
-  booking,
+  customerName,
+  currentStartISO,
+  previousServiceName,
   zone,
   newStartISO,
   selectedService,
@@ -24,7 +26,11 @@ export default function RescheduleConfirmStep({
   error,
   notice,
 }: {
-  booking: Booking;
+  /** Shown above the times; omitted on the customer's own page. */
+  customerName?: string;
+  currentStartISO: string;
+  /** The booking's current service, when the reschedule also changes it. */
+  previousServiceName?: string;
   zone: string;
   newStartISO: string;
   selectedService: Service | null;
@@ -48,6 +54,9 @@ export default function RescheduleConfirmStep({
       {selectedService && (
         <p className="t-body-sm t-muted">
           {t.public.serviceContext} <strong>{selectedService.name}</strong>
+          {previousServiceName && (
+            <> ({t.bookings.reschedule.serviceWas} <s>{previousServiceName}</s>)</>
+          )}
           {selectedMember && (
             <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
           )}
@@ -55,12 +64,14 @@ export default function RescheduleConfirmStep({
       )}
 
       <div>
-        <p className="t-body">
-          <strong>{booking.customer.contactHidden ? t.customers.hiddenLabel : booking.customer.name}</strong>
-        </p>
+        {customerName && (
+          <p className="t-body">
+            <strong>{customerName}</strong>
+          </p>
+        )}
         <p className="t-body-sm">
           <span className="t-muted">{t.bookings.reschedule.from}</span>{' '}
-          <s>{formatDateTimeInZone(booking.startTime, zone)}</s>
+          <s>{formatDateTimeInZone(currentStartISO, zone)}</s>
         </p>
         <p className="t-body-sm">
           <span className="t-muted">{t.bookings.reschedule.to}</span>{' '}

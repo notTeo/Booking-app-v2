@@ -145,6 +145,7 @@ export const getBookingForCustomer = async (
         id: booking.service.id,
         name: booking.service.name,
         duration: booking.service.duration,
+        price: booking.service.price,
       },
       staff: { id: booking.staff.id, name: booking.staff.name },
       rescheduledTo: booking.rescheduledTo

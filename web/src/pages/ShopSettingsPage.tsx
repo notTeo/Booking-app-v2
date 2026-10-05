@@ -56,6 +56,9 @@ export default function ShopSettingsPage() {
   const [maxAdvanceDays, setMaxAdvanceDays] = useState('60');
   const [slotInterval, setSlotInterval] = useState('30');
   const [isActive, setIsActive] = useState(true);
+  const [rescheduleEnabled, setRescheduleEnabled] = useState(true);
+  const [cancelCutoff, setCancelCutoff] = useState('1');
+  const [rescheduleCutoff, setRescheduleCutoff] = useState('1');
 
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -82,6 +85,9 @@ export default function ShopSettingsPage() {
           setMaxAdvanceDays(String(found.maxAdvanceDays));
           setSlotInterval(String(found.slotIntervalMinutes));
           setIsActive(found.isActive);
+          setRescheduleEnabled(found.customerRescheduleEnabled);
+          setCancelCutoff(String(found.cancelCutoffHours));
+          setRescheduleCutoff(String(found.rescheduleCutoffHours));
         }
       })
       .catch(() => setLoadError(t.shopSettings.errorLoad))
@@ -104,6 +110,9 @@ export default function ShopSettingsPage() {
         timezone,
         maxAdvanceDays: Number(maxAdvanceDays),
         slotIntervalMinutes: Number(slotInterval),
+        customerRescheduleEnabled: rescheduleEnabled,
+        cancelCutoffHours: Number(cancelCutoff),
+        rescheduleCutoffHours: Number(rescheduleCutoff),
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
@@ -298,6 +307,64 @@ export default function ShopSettingsPage() {
               label={t.shopSettings.activeLabel}
               disabled={shop.role !== 'owner'}
             />
+          </div>
+
+          <div className="card__section">
+            <div>
+              <h3 className="card__title">{t.shopSettings.customerChangesTitle}</h3>
+              <p className="card__text">{t.shopSettings.customerChangesHint}</p>
+            </div>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <label htmlFor="detail-reschedule" className="setting-row__title">
+                  {t.shopSettings.rescheduleEnabledLabel}
+                </label>
+                <span className="setting-row__text">{t.shopSettings.rescheduleEnabledDesc}</span>
+              </div>
+              <Switch
+                id="detail-reschedule"
+                checked={rescheduleEnabled}
+                onChange={setRescheduleEnabled}
+                label={t.shopSettings.rescheduleEnabledLabel}
+              />
+            </div>
+            <div className="field-row field-row--wrap">
+              <div className="field">
+                <label className="field__label" htmlFor="detail-cancel-cutoff">{t.shopSettings.cancelCutoffLabel}</label>
+                <input
+                  className="input"
+                  id="detail-cancel-cutoff"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={168}
+                  step={1}
+                  value={cancelCutoff}
+                  onChange={(e) => setCancelCutoff(e.target.value)}
+                  aria-describedby="detail-cancel-cutoff-hint"
+                  required
+                />
+                <small className="field__hint" id="detail-cancel-cutoff-hint">{t.shopSettings.cancelCutoffHint}</small>
+              </div>
+              <div className="field">
+                <label className="field__label" htmlFor="detail-reschedule-cutoff">{t.shopSettings.rescheduleCutoffLabel}</label>
+                <input
+                  className="input"
+                  id="detail-reschedule-cutoff"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={168}
+                  step={1}
+                  value={rescheduleCutoff}
+                  onChange={(e) => setRescheduleCutoff(e.target.value)}
+                  aria-describedby="detail-reschedule-cutoff-hint"
+                  disabled={!rescheduleEnabled}
+                  required
+                />
+                <small className="field__hint" id="detail-reschedule-cutoff-hint">{t.shopSettings.rescheduleCutoffHint}</small>
+              </div>
+            </div>
           </div>
         </div>
         </fieldset>

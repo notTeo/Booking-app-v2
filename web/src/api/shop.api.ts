@@ -12,6 +12,11 @@ export interface Shop {
   timezone: string;
   maxAdvanceDays: number;
   slotIntervalMinutes: number;
+  /** Customers may reschedule from the link in their confirmation email. */
+  customerRescheduleEnabled: boolean;
+  /** Hours before the start after which the customer links lock (0 = until it starts). */
+  cancelCutoffHours: number;
+  rescheduleCutoffHours: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -35,6 +40,9 @@ export interface CreateShopDto {
   slotIntervalMinutes?: number;
 }
 export interface UpdateShopDto extends Partial<CreateShopDto> {
+  customerRescheduleEnabled?: boolean;
+  cancelCutoffHours?: number;
+  rescheduleCutoffHours?: number;
   isActive?: boolean;
 }
 

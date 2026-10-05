@@ -94,6 +94,37 @@ export function blockGeometry(
   };
 }
 
+/**
+ * Side-by-side placement for blocks that share time in one column. Live
+ * bookings never overlap, but a canceled, no-show or rescheduled one stays on
+ * the calendar after its slot is booked again, and both must stay visible.
+ * Each block gets a lane and the lane count of its overlapping group.
+ */
+export function blockLanes(
+  blocks: { id: string; startMin: number; endMin: number }[],
+): Map<string, { lane: number; lanes: number }> {
+  const out = new Map<string, { lane: number; lanes: number }>();
+  const sorted = [...blocks].sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+  let group: { id: string; lane: number }[] = [];
+  let laneEnds: number[] = []; // per lane, when its last block ends
+  let groupEnd = -Infinity;
+  const flush = () => {
+    for (const g of group) out.set(g.id, { lane: g.lane, lanes: laneEnds.length });
+    group = [];
+    laneEnds = [];
+  };
+  for (const b of sorted) {
+    if (b.startMin >= groupEnd) flush(); // nothing before this block reaches it
+    let lane = laneEnds.findIndex((end) => end <= b.startMin);
+    if (lane === -1) lane = laneEnds.length;
+    laneEnds[lane] = b.endMin;
+    group.push({ id: b.id, lane });
+    groupEnd = Math.max(groupEnd, b.endMin);
+  }
+  flush();
+  return out;
+}
+
 /** What the calendar's filter bar has selected. */
 export interface BookingFilters {
   /** Empty = every status. */

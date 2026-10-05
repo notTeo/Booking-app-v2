@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { cancelBooking, type CancelBookingResult } from '../api/public.api';
+import { cancelBooking, getManagedBooking, type CancelBookingResult } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { apiErrorField } from '../utils/apiError';
 import Alert from '../components/Alert';
@@ -29,8 +29,17 @@ export default function CancelBookingPage() {
           BOOKING_IN_PAST: t.cancelBooking.pastBooking,
           BOOKING_NOT_FOUND: t.cancelBooking.notFound,
           INVALID_CANCEL_LINK: t.cancelBooking.notFound,
+          BOOKING_RESCHEDULED: t.cancelBooking.rescheduled,
         };
-        setError(messages[apiErrorField(err, 'code')] ?? t.cancelBooking.errorCancel);
+        const code = apiErrorField(err, 'code');
+        if (code === 'CANCEL_WINDOW_CLOSED') {
+          // The notice the shop asks for isn't in the error; the booking says.
+          getManagedBooking(token)
+            .then((b) => setError(t.cancelBooking.windowClosed.replace('{n}', String(b.cancel.cutoffHours))))
+            .catch(() => setError(t.cancelBooking.errorCancel));
+          return;
+        }
+        setError(messages[code] ?? t.cancelBooking.errorCancel);
       })
       .finally(() => setLoading(false));
   };

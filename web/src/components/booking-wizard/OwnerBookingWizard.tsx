@@ -33,6 +33,7 @@ export default function OwnerBookingWizard({
   onDone,
   hideTitle,
   reschedule,
+  onCancel,
 }: {
   shopId: string;
   slug: string;
@@ -46,6 +47,8 @@ export default function OwnerBookingWizard({
   hideTitle?: boolean;
   /** Move this booking (PATCH) instead of creating one. Needs `zone` for its shop-local date. */
   reschedule?: { booking: Booking; zone: string };
+  /** Shows a Cancel button on every step, for flows with no other way out (the reschedule page). */
+  onCancel?: () => void;
 }) {
   const { t } = useLang();
   const wizard = useBookingWizard({
@@ -57,6 +60,7 @@ export default function OwnerBookingWizard({
     reschedule: reschedule && {
       bookingId: reschedule.booking.id,
       service: { ...reschedule.booking.service, description: null },
+      onExit: onCancel,
     },
   });
   const [submitting, setSubmitting] = useState(false);
@@ -165,12 +169,15 @@ export default function OwnerBookingWizard({
     );
   }
 
+  const serviceChanged = !!reschedule && wizard.selectedServiceId !== reschedule.booking.serviceId;
+
   function handleReschedule(acceptedRules?: BookingRuleCode[]) {
-    if (!reschedule || !wizard.selectedMemberId) return;
+    if (!reschedule || !wizard.selectedMemberId || !wizard.selectedServiceId) return;
     return submitWith(() =>
       rescheduleBooking(shopId, reschedule.booking.id, {
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         staffId: wizard.selectedMemberId!,
+        ...(serviceChanged && { serviceId: wizard.selectedServiceId! }),
         ...(acceptedRules && { overrideRules: acceptedRules }),
       }),
     );
@@ -184,8 +191,17 @@ export default function OwnerBookingWizard({
 
   return (
     <section className="public-section">
-      {!hideTitle && (
-        <h2 className="t-heading">{reschedule ? t.bookings.reschedule.title : t.bookings.newBookingTitle}</h2>
+      {(!hideTitle || onCancel) && (
+        <div className="page-header">
+          {!hideTitle && (
+            <h2 className="t-heading">{reschedule ? t.bookings.reschedule.title : t.bookings.newBookingTitle}</h2>
+          )}
+          {onCancel && (
+            <button type="button" className="btn btn--ghost btn--sm" onClick={onCancel} disabled={submitting}>
+              {t.bookings.cancel}
+            </button>
+          )}
+        </div>
       )}
 
       <WizardStepsIndicator
@@ -194,7 +210,7 @@ export default function OwnerBookingWizard({
       />
 
       {wizard.step === 1 && (
-        <ServiceSelectStep services={wizard.shop.services} onSelect={wizard.handleSelectService} />
+        <ServiceSelectStep services={wizard.services} onSelect={wizard.handleSelectService} />
       )}
 
       {wizard.step === 2 && (
@@ -238,13 +254,18 @@ export default function OwnerBookingWizard({
 
       {wizard.step === 4 && reschedule && newStartISO && (
         <RescheduleConfirmStep
-          booking={reschedule.booking}
+          customerName={
+            reschedule.booking.customer.contactHidden ? t.customers.hiddenLabel : reschedule.booking.customer.name
+          }
+          currentStartISO={reschedule.booking.startTime}
+          previousServiceName={serviceChanged ? reschedule.booking.service.name : undefined}
           zone={wizard.shop.timezone}
           newStartISO={newStartISO}
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           outsideRules={anticipated ?? []}
           unchanged={
+            !serviceChanged &&
             wizard.selectedMemberId === reschedule.booking.staffId &&
             new Date(newStartISO).getTime() === new Date(reschedule.booking.startTime).getTime()
           }
