@@ -10,6 +10,7 @@ import {
   listCustomerBookings as listCustomerBookingsService,
   exportAllCustomers as exportAllCustomersService,
   importCustomers as importCustomersService,
+  setCustomerServiceDurations as setCustomerServiceDurationsService,
 } from '../services/customer.service';
 
 export const listCustomers = async (
@@ -31,6 +32,7 @@ export const listCustomers = async (
       search,
       page,
       limit,
+      String(req.query.hasCustomDurations) === 'true',
     );
     successResponse(res, customers);
   } catch (err) {
@@ -70,6 +72,27 @@ export const updateCustomer = async (
       req.body,
     );
     successResponse(res, customer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setCustomerServiceDurations = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const durations = await setCustomerServiceDurationsService(
+      userId,
+      shopId,
+      customerId,
+      req.body.items,
+    );
+    successResponse(res, durations);
   } catch (err) {
     next(err);
   }

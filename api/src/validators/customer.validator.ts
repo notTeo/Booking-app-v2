@@ -17,6 +17,25 @@ export const listCustomersValidation = [
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('limit must be between 1 and 100'),
+  query('hasCustomDurations')
+    .optional()
+    .isBoolean()
+    .withMessage('hasCustomDurations must be true or false'),
+];
+
+// The whole list is replaced; an empty list clears every custom duration.
+export const setServiceDurationsValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  param('customerId').notEmpty().withMessage('customerId is required'),
+  body('items').isArray({ max: 200 }).withMessage('items must be a list'),
+  body('items.*.serviceId')
+    .isString()
+    .notEmpty()
+    .withMessage('serviceId is required'),
+  body('items.*.duration')
+    .isInt({ min: 1, max: 1440 })
+    .withMessage('Duration must be a whole number of minutes, 1 to 1440')
+    .toInt(),
 ];
 
 export const updateCustomerValidation = [

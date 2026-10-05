@@ -95,6 +95,9 @@ export const ownerSlotsValidation = [
   // Rescheduling: lets this booking's own (possibly deactivated) service be
   // looked up. Has no effect for any other service.
   query('forBookingId').optional({ values: 'falsy' }).isString(),
+  // Who the booking is for: their own duration for the service, if any,
+  // decides which times fit. An id from another shop has no effect.
+  query('customerId').optional({ values: 'falsy' }).isString(),
   query('includeOutsideHours')
     .optional()
     .isBoolean()

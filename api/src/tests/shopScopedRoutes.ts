@@ -160,6 +160,9 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   'PATCH /api/shops/:shopId/customers/:customerId': {
     body: () => ({ name: 'Renamed Customer' }),
   },
+  'PUT /api/shops/:shopId/customers/:customerId/service-durations': {
+    body: (w) => ({ items: [{ serviceId: w.t.service.id, duration: 45 }] }),
+  },
   'GET /api/shops/:shopId/customers/:customerId/export': { minRole: 'owner' },
   'DELETE /api/shops/:shopId/customers/:customerId': { minRole: 'owner' },
   'GET /api/shops/:shopId/customers/export-all': { minRole: 'manager' },

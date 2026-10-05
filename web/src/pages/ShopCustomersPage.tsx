@@ -9,6 +9,8 @@ import { canManageShop } from '../utils/roles';
 import ImportCustomersModal from '../components/ImportCustomersModal';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
 
@@ -29,6 +31,7 @@ export default function ShopCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
   const [exportError, setExportError] = useState('');
@@ -42,14 +45,14 @@ export default function ShopCustomersPage() {
     // search is applied server-side against every customer in the shop
     // before pagination, so it always searches the full list, not just
     // whatever page happens to be loaded.
-    getCustomers(shop.id, search || undefined, page, PAGE_SIZE)
+    getCustomers(shop.id, search || undefined, page, PAGE_SIZE, onlyCustomDurations)
       .then((result) => {
         setCustomers(result.items);
         setTotal(result.total);
       })
       .catch(() => setError(t.customers.errorLoad))
       .finally(() => setLoading(false));
-  }, [shop?.id, search, page, reloadKey]);
+  }, [shop?.id, search, page, onlyCustomDurations, reloadKey]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -128,6 +131,18 @@ export default function ShopCustomersPage() {
         </div>
       )}
 
+      <div className="cluster cluster--tight">
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={onlyCustomDurations}
+          onClick={() => { setOnlyCustomDurations((v) => !v); setPage(1); }}
+        >
+          <FontAwesomeIcon icon={faClock} aria-hidden="true" />
+          <span className="chip__label">{t.customers.filterCustomDurations}</span>
+        </button>
+      </div>
+
       {error && <Alert variant="danger">{error}</Alert>}
 
       {loading ? (
@@ -140,7 +155,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {search ? t.customers.noResults : t.customers.noCustomers}
+                  {search || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -157,9 +172,17 @@ export default function ShopCustomersPage() {
                   {customers.map((c) => (
                     <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
                       <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
-                        <Link to={c.id} className="data-table__link">
-                          {c.contactHidden ? t.customers.hiddenLabel : c.name}
-                        </Link>
+                        <span className="cluster cluster--tight">
+                          <Link to={c.id} className="data-table__link">
+                            {c.contactHidden ? t.customers.hiddenLabel : c.name}
+                          </Link>
+                          {c.hasCustomDurations && (
+                            <span className="badge badge--info">
+                              <FontAwesomeIcon icon={faClock} aria-hidden="true" />
+                              {t.customers.customDurationsBadge}
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
                       <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>

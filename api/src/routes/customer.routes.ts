@@ -9,6 +9,7 @@ import {
   importCustomersValidation,
   shopParamValidation,
   updateCustomerValidation,
+  setServiceDurationsValidation,
 } from '../validators/customer.validator';
 import {
   listCustomers,
@@ -20,6 +21,7 @@ import {
   listCustomerBookings,
   exportAllCustomers,
   importCustomers,
+  setCustomerServiceDurations,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
@@ -61,6 +63,13 @@ router.patch(
   updateCustomerValidation,
   validate,
   updateCustomer,
+);
+router.put(
+  '/:customerId/service-durations',
+  authenticate,
+  setServiceDurationsValidation,
+  validate,
+  setCustomerServiceDurations,
 );
 
 router.get(

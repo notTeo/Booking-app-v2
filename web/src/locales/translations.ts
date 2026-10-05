@@ -805,6 +805,17 @@ export interface Translations {
     loadingLabel: string;
   };
   customers: {
+    durationsHeading: string;
+    durationsBody: string;
+    durationsStandard: string;
+    durationsUnit: string;
+    durationsNoServices: string;
+    durationsInvalid: string;
+    durationsErrorLoad: string;
+    durationsErrorSave: string;
+    durationsSaved: string;
+    filterCustomDurations: string;
+    customDurationsBadge: string;
     cancel: string;
     deleteConfirmButton: string;
     deleteTitle: string;
@@ -1839,6 +1850,17 @@ home: {
       loadingLabel: 'Φόρτωση επισκόπησης',
     },
     customers: {
+      durationsHeading: 'Διάρκεια υπηρεσιών',
+      durationsBody: 'Ορίστε πόσα λεπτά χρειάζεται αυτός ο πελάτης για μια υπηρεσία, αν διαφέρει από την κανονική διάρκεια. Ισχύει για τα νέα ραντεβού· τα υπάρχοντα δεν αλλάζουν.',
+      durationsStandard: 'Κανονική διάρκεια: {n} λεπτά',
+      durationsUnit: 'Λεπτά. Αφήστε το κενό για την κανονική διάρκεια.',
+      durationsNoServices: 'Δεν υπάρχουν ενεργές υπηρεσίες.',
+      durationsInvalid: 'Η διάρκεια πρέπει να είναι ακέραιος αριθμός λεπτών, από 1 έως 1440.',
+      durationsErrorLoad: 'Αποτυχία φόρτωσης υπηρεσιών.',
+      durationsErrorSave: 'Αποτυχία αποθήκευσης διάρκειας.',
+      durationsSaved: 'Η διάρκεια αποθηκεύτηκε.',
+      filterCustomDurations: 'Με δική τους διάρκεια',
+      customDurationsBadge: 'Δική του διάρκεια',
       cancel: 'Ακύρωση',
       deleteConfirmButton: 'Διαγραφή πελάτη',
       deleteTitle: 'Διαγραφή «{name}»;',
@@ -2882,6 +2904,17 @@ home: {
       loadingLabel: 'Loading overview',
     },
     customers: {
+      durationsHeading: 'Service durations',
+      durationsBody: 'Set how many minutes this customer needs for a service when it differs from the standard duration. Applies to new bookings; existing ones are not changed.',
+      durationsStandard: 'Standard duration: {n} min',
+      durationsUnit: 'Minutes. Leave empty for the standard duration.',
+      durationsNoServices: 'There are no active services.',
+      durationsInvalid: 'A duration must be a whole number of minutes, 1 to 1440.',
+      durationsErrorLoad: 'Failed to load services.',
+      durationsErrorSave: 'Failed to save durations.',
+      durationsSaved: 'Durations saved.',
+      filterCustomDurations: 'Custom durations',
+      customDurationsBadge: 'Custom duration',
       cancel: 'Cancel',
       deleteConfirmButton: 'Delete customer',
       deleteTitle: 'Delete {name}?',

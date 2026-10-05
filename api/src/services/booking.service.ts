@@ -29,6 +29,10 @@ import {
   type DayHours,
 } from './bookingRules.service';
 import { lockProvider, serializableTransaction } from '../utils/serializable';
+import {
+  resolveDuration,
+  type DurationCustomer,
+} from './customerDuration.service';
 
 // Hard rule: two bookings that hold a provider's time can never overlap.
 // Only these statuses release a slot. COMPLETED does NOT — that time was
@@ -350,7 +354,11 @@ export const createBooking = async (
     });
     if (!service) throw new AppError(404, 'Service not found');
 
-    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+    // A returning customer (matched by phone) gets their own duration.
+    const duration = await resolveDuration(tx, shop.id, service, {
+      phone: data.phone,
+    });
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     // The requested staff member, or — with no preference — whichever free
     // team member working then has the fewest bookings that day.
@@ -427,7 +435,10 @@ export const createBookingForShop = async (
     });
     if (!service) throw new AppError(404, 'Service not found');
 
-    const endTime = new Date(startTime.getTime() + service.duration * 60_000);
+    const duration = await resolveDuration(tx, shopId, service, {
+      phone: data.phone,
+    });
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
@@ -552,6 +563,9 @@ export const getAvailableSlots = async (
     // Rescheduling an existing booking: its own service stays usable even if
     // the service has since been deactivated (only new bookings are blocked).
     forBookingId?: string;
+    // Who the booking is for, when known: their own duration for the service
+    // decides which times fit. A rescheduled booking's customer is implied.
+    customer?: DurationCustomer;
   } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
@@ -594,6 +608,20 @@ export const getAvailableSlots = async (
     },
   });
   if (!service) return closed();
+
+  const forBooking =
+    !options.customer && options.forBookingId
+      ? await prisma.booking.findFirst({
+          where: { id: options.forBookingId, shopId },
+          select: { customerId: true },
+        })
+      : null;
+  const duration = await resolveDuration(
+    prisma,
+    shopId,
+    service,
+    options.customer ?? forBooking,
+  );
 
   const { timezone: zone, slotIntervalMinutes } =
     await getShopTimeSettings(shopId);
@@ -651,7 +679,7 @@ export const getAvailableSlots = async (
               date,
               zone,
               hours,
-              service.duration,
+              duration,
               slotIntervalMinutes,
             ).map((c) => ({
               time: c.time,
@@ -665,7 +693,7 @@ export const getAvailableSlots = async (
 
       // Owner/staff view: the usual in-hours grid plus the out-of-hours grid.
       const inHours = hours
-        ? buildSlotCandidates(date, zone, hours, service.duration, step)
+        ? buildSlotCandidates(date, zone, hours, duration, step)
         : [];
       const shopGridTimes = new Set(
         hours && step !== slotIntervalMinutes
@@ -673,7 +701,7 @@ export const getAvailableSlots = async (
               date,
               zone,
               hours,
-              service.duration,
+              duration,
               slotIntervalMinutes,
             ).map((c) => c.time)
           : inHours.map((c) => c.time),
@@ -683,7 +711,7 @@ export const getAvailableSlots = async (
         zone,
         hours ?? [],
         closedDayRanges,
-        service.duration,
+        duration,
         step,
       );
       const all = [
@@ -954,7 +982,11 @@ export const updateBooking = async (
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
     // Any service/staff being referenced must belong to this shop.
-    let newService: { duration: number; isActive: boolean } | null = null;
+    let newService: {
+      id: string;
+      duration: number;
+      isActive: boolean;
+    } | null = null;
     if (data.serviceId) {
       newService = await tx.service.findFirst({
         where: { id: data.serviceId, shopId },
@@ -1010,7 +1042,12 @@ export const updateBooking = async (
     const finalStartTime = data.startTime
       ? new Date(data.startTime)
       : existing.startTime;
-    const duration = newService?.duration ?? existing.service.duration;
+    const duration = await resolveDuration(
+      tx,
+      shopId,
+      newService ?? existing.service,
+      { customerId: existing.customerId },
+    );
     const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
 
     // Same rules as creation; overlap never is bypassable. The stored codes
@@ -1247,9 +1284,13 @@ export const rescheduleBookingByToken = async (
         'BOOKING_UNCHANGED',
       );
 
-    const endTime = new Date(
-      startTime.getTime() + existing.service.duration * 60_000,
+    const duration = await resolveDuration(
+      tx,
+      existing.shopId,
+      existing.service,
+      { customerId: existing.customerId },
     );
+    const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     // Strict, like a public booking: no overrides.
     await assertBookingRules({

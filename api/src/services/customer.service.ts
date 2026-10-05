@@ -29,6 +29,8 @@ export const listCustomers = async (
   search?: string,
   page = 1,
   limit = 20,
+  // Only customers with a custom duration for at least one service.
+  hasCustomDurations = false,
 ) => {
   const membership = await requireShopAccess(userId, shopId);
 
@@ -39,6 +41,7 @@ export const listCustomers = async (
 
   const where = {
     shopId,
+    ...(hasCustomDurations && { serviceDurations: { some: {} } }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: 'insensitive' as const } },
@@ -53,13 +56,17 @@ export const listCustomers = async (
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
+      include: { _count: { select: { serviceDurations: true } } },
     }),
     prisma.customer.count({ where }),
   ]);
 
   return {
-    items: items.map((c) =>
-      redactCustomer(c, canViewCustomerDetails(membership)),
+    items: items.map(({ _count, ...c }) =>
+      redactCustomer(
+        { ...c, hasCustomDurations: _count.serviceDurations > 0 },
+        canViewCustomerDetails(membership),
+      ),
     ),
     total,
     page,
@@ -75,7 +82,7 @@ export const getCustomer = async (
   const membership = await requireShopAccess(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
-  const [customer, allBookings] = await Promise.all([
+  const [customer, allBookings, serviceDurations] = await Promise.all([
     // The bookings themselves are served a page at a time by
     // listCustomerBookings; a full Booking row must not go out here (it
     // carries the customer's private cancel-link token).
@@ -83,6 +90,10 @@ export const getCustomer = async (
     prisma.booking.findMany({
       where: { customerId, shopId },
       select: { status: true, service: { select: { price: true } } },
+    }),
+    prisma.customerServiceDuration.findMany({
+      where: { customerId },
+      select: { serviceId: true, duration: true },
     }),
   ]);
 
@@ -112,7 +123,37 @@ export const getCustomer = async (
     totalVisits,
     totalSpent,
     totals,
+    serviceDurations,
   };
+};
+
+// Replace the customer's custom service durations with `items` (a service
+// left out goes back to its standard duration). Applies to bookings made from
+// now on; existing bookings keep their times.
+export const setCustomerServiceDurations = async (
+  userId: string,
+  shopId: string,
+  customerId: string,
+  items: { serviceId: string; duration: number }[],
+) => {
+  await requireShopAccess(userId, shopId);
+  await requireCustomerInShop(customerId, shopId);
+
+  const serviceIds = items.map((i) => i.serviceId);
+  if (new Set(serviceIds).size !== serviceIds.length)
+    throw new AppError(400, 'A service can only be listed once');
+  const known = await prisma.service.count({
+    where: { shopId, id: { in: serviceIds } },
+  });
+  if (known !== serviceIds.length) throw new AppError(404, 'Service not found');
+
+  await prisma.$transaction([
+    prisma.customerServiceDuration.deleteMany({ where: { customerId } }),
+    prisma.customerServiceDuration.createMany({
+      data: items.map((i) => ({ customerId, ...i })),
+    }),
+  ]);
+  return items.map(({ serviceId, duration }) => ({ serviceId, duration }));
 };
 
 // The customer's whole booking history, newest first, a page at a time.
@@ -215,6 +256,19 @@ export const mergeCustomers = async (
     // Bookings first: deleting the source would cascade to any still on it.
     const { count } = await tx.booking.updateMany({
       where: { customerId: sourceId, shopId },
+      data: { customerId: targetId },
+    });
+    // Custom durations too; where both have one for a service, the target's
+    // stays and the source's goes with the source.
+    const kept = await tx.customerServiceDuration.findMany({
+      where: { customerId: targetId },
+      select: { serviceId: true },
+    });
+    await tx.customerServiceDuration.updateMany({
+      where: {
+        customerId: sourceId,
+        serviceId: { notIn: kept.map((d) => d.serviceId) },
+      },
       data: { customerId: targetId },
     });
     await tx.customer.delete({ where: { id: sourceId } });
@@ -388,6 +442,10 @@ export const exportCustomer = async (
       staff: { select: { name: true } },
     },
   });
+  const serviceDurations = await prisma.customerServiceDuration.findMany({
+    where: { customerId },
+    select: { duration: true, service: { select: { name: true } } },
+  });
 
   logger.info(`Customer exported: ${customerId} shop ${shopId} by ${userId}`);
   return {
@@ -401,6 +459,10 @@ export const exportCustomer = async (
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt,
     },
+    serviceDurations: serviceDurations.map((d) => ({
+      service: d.service.name,
+      minutes: d.duration,
+    })),
     bookings: bookings.map((b) => ({
       id: b.id,
       startTime: b.startTime,
