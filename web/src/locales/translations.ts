@@ -688,6 +688,10 @@ export interface Translations {
     cancelCutoffHint: string;
     rescheduleCutoffLabel: string;
     rescheduleCutoffHint: string;
+    reminderEnabledLabel: string;
+    reminderEnabledDesc: string;
+    reminderHoursLabel: string;
+    reminderHoursHint: string;
     slotIntervalOption: string;
   };
   sharing: {
@@ -1764,6 +1768,10 @@ home: {
     cancelCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να ακυρώσει μόνος του. 0 = μέχρι την έναρξη.',
     rescheduleCutoffLabel: 'Αλλαγή ώρας έως (ώρες πριν)',
     rescheduleCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να αλλάξει ώρα μόνος του. 0 = μέχρι την έναρξη.',
+    reminderEnabledLabel: 'Email υπενθύμισης',
+    reminderEnabledDesc: 'Οι πελάτες με email λαμβάνουν υπενθύμιση πριν από το ραντεβού τους.',
+    reminderHoursLabel: 'Αποστολή (ώρες πριν)',
+    reminderHoursHint: 'Από 1 έως 72 ώρες. Ραντεβού που κλείνονται πιο κοντά από αυτό δεν λαμβάνουν υπενθύμιση.',
     slotIntervalOption: 'Κάθε {n} λεπτά',
     },
     sharing: {
@@ -2864,6 +2872,10 @@ home: {
     cancelCutoffHint: 'Closer than this, customers can no longer cancel by themselves. 0 = until the booking starts.',
     rescheduleCutoffLabel: 'Reschedule up to (hours before)',
     rescheduleCutoffHint: 'Closer than this, customers can no longer reschedule by themselves. 0 = until the booking starts.',
+    reminderEnabledLabel: 'Reminder emails',
+    reminderEnabledDesc: 'Customers with an email get a reminder before their appointment.',
+    reminderHoursLabel: 'Send (hours before)',
+    reminderHoursHint: 'From 1 to 72 hours. Bookings made closer than this get no reminder.',
     slotIntervalOption: 'Every {n} minutes',
     },
     sharing: {

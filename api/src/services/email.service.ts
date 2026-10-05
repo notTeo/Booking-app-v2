@@ -1,6 +1,8 @@
 import { Resend } from 'resend';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
+import { currentLocale } from '../utils/locale';
+import { emailStrings, type EmailLocale } from './emailStrings';
 
 const resend = new Resend(env.resend.apiKey);
 
@@ -96,13 +98,14 @@ const makeKit = (theme: EmailTheme) => {
 
   /** `header` is the left cell of the top row: the wordmark or the shop's name. */
   const template = (
+    lang: EmailLocale,
     title: string,
     header: string,
     pageLabel: string,
     content: string,
   ) => `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -131,9 +134,15 @@ const accountKit = makeKit(ACCOUNT_THEME);
 const customerKit = makeKit(CUSTOMER_THEME);
 
 /** Emails to BeBooked users: the wordmark on top. */
-const accountTemplate = (title: string, pageLabel: string, content: string) =>
+const accountTemplate = (
+  lang: EmailLocale,
+  title: string,
+  pageLabel: string,
+  content: string,
+) =>
   accountKit.template(
-    title,
+    lang,
+    escapeHtml(title),
     wordmarkImg(ACCOUNT_THEME, 22),
     pageLabel,
     content,
@@ -141,11 +150,19 @@ const accountTemplate = (title: string, pageLabel: string, content: string) =>
 
 /** Emails to a shop's customers: the shop's name on top, no BeBooked heading. */
 const customerTemplate = (
+  lang: EmailLocale,
   title: string,
   shopName: string,
   pageLabel: string,
   content: string,
-) => customerKit.template(title, escapeHtml(shopName), pageLabel, content);
+) =>
+  customerKit.template(
+    lang,
+    escapeHtml(title),
+    escapeHtml(shopName),
+    pageLabel,
+    content,
+  );
 
 /** Google Calendar "add event" link — no attachment/dependency needed, same
  * pattern as the existing Google Maps "Get Directions" link below. */
@@ -168,117 +185,135 @@ const buildCalendarUrl = (params: {
   return `https://calendar.google.com/calendar/render?${search.toString()}`;
 };
 
+const formatDate = (date: Date, timezone: string, lang: EmailLocale) =>
+  new Intl.DateTimeFormat(emailStrings[lang].intlLocale, {
+    timeZone: timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+
+const formatTime = (date: Date, timezone: string, lang: EmailLocale) =>
+  new Intl.DateTimeFormat(emailStrings[lang].intlLocale, {
+    timeZone: timezone,
+    hour: emailStrings[lang].hour12 ? 'numeric' : '2-digit',
+    minute: '2-digit',
+    hour12: emailStrings[lang].hour12,
+  }).format(date);
+
+const DETAILS_TABLE =
+  '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">';
+
+/** Send one email; a failure is logged and thrown under the email's name. */
+const deliver = async (
+  name: string,
+  mail: { to: string; subject: string; html: string },
+) => {
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    ...mail,
+  });
+  if (error) {
+    logger.error(error, `Failed to send ${name} email`);
+    throw new Error(`Failed to send ${name} email`);
+  }
+  logger.info(`Sent ${name} email`);
+};
+
+/** The button, then the same link as text for clients that hide buttons. */
+const linkBlock = (url: string, label: string, lang: EmailLocale) => {
+  const { styles, btnOutline } = accountKit;
+  return `
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(url, label)}
+      </div>
+      <p style="${styles.note}">${emailStrings[lang].fallbackLink}</p>
+      <p style="${styles.fallbackLink}">${url}</p>
+    `;
+};
+
+const strong = (text: string) =>
+  `<strong style="${accountKit.styles.strong}">${text}</strong>`;
+
 export const sendVerificationEmail = async (
   email: string,
   token: string,
   name?: string,
+  lang: EmailLocale = currentLocale(),
 ) => {
-  const { styles, btnOutline } = accountKit;
-  const verificationUrl = `${env.clientUrl}/verify-email?token=${token}`;
-  const heading = name
-    ? `Verify your email, ${escapeHtml(name)}.`
-    : 'Verify your email.';
+  const { styles } = accountKit;
+  const t = emailStrings[lang];
+  const url = `${env.clientUrl}/verify-email?token=${token}`;
 
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('verification', {
     to: email,
-    subject: 'Verify your email',
+    subject: t.verify.subject,
     html: accountTemplate(
-      'Verify your email',
-      'Verify',
+      lang,
+      t.verify.subject,
+      t.verify.page,
       `
-      <h1 style="${styles.h1}">${heading}</h1>
-      <p style="${styles.p}">Confirm this email to activate your account and keep your access secure.</p>
-      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>. If you didn't create a BeBooked account, you can ignore this email.</p>
-      <div style="margin:28px 0 16px;">
-        ${btnOutline(verificationUrl, 'Verify email')}
-      </div>
-      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
-      <p style="${styles.fallbackLink}">${verificationUrl}</p>
+      <h1 style="${styles.h1}">${t.verify.heading(name && escapeHtml(name))}</h1>
+      <p style="${styles.p}">${t.verify.body}</p>
+      <p style="${styles.note}">${t.expires(strong(t.span24h))} ${t.verify.ignore}</p>
+      ${linkBlock(url, t.verify.button, lang)}
     `,
     ),
   });
-
-  if (error) {
-    logger.error(error, `Failed to send verification email`);
-    throw new Error('Failed to send verification email');
-  }
-
-  logger.info(`Verification email sent`);
 };
 
 export const sendEmailChangeVerification = async (
   newEmail: string,
   token: string,
+  lang: EmailLocale = currentLocale(),
 ) => {
-  const { styles, btnOutline } = accountKit;
-  const verifyUrl = `${env.clientUrl}/verify-email-change?token=${token}`;
+  const { styles } = accountKit;
+  const t = emailStrings[lang];
+  const url = `${env.clientUrl}/verify-email-change?token=${token}`;
 
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('email change verification', {
     to: newEmail,
-    subject: 'Verify your new email address',
+    subject: t.emailChange.subject,
     html: accountTemplate(
-      'Verify your new email address',
-      'Verify email change',
+      lang,
+      t.emailChange.subject,
+      t.emailChange.page,
       `
-      <h1 style="${styles.h1}">Verify your new email.</h1>
-      <p style="${styles.p}">You requested to change your account's email address. Confirm this address to complete the change.</p>
-      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">24 hours</strong>.</p>
-      <div style="margin:28px 0 16px;">
-        ${btnOutline(verifyUrl, 'Verify new email')}
-      </div>
-      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
-      <p style="${styles.fallbackLink}">${verifyUrl}</p>
+      <h1 style="${styles.h1}">${t.emailChange.heading}</h1>
+      <p style="${styles.p}">${t.emailChange.body}</p>
+      <p style="${styles.note}">${t.expires(strong(t.span24h))}</p>
+      ${linkBlock(url, t.emailChange.button, lang)}
     `,
     ),
   });
-
-  if (error) {
-    logger.error(error, `Failed to send email change verification`);
-    throw new Error('Failed to send email change verification');
-  }
-
-  logger.info(`Email change verification sent`);
 };
 
 export const sendPasswordResetEmail = async (
   email: string,
   token: string,
   name?: string,
+  lang: EmailLocale = currentLocale(),
 ) => {
-  const { styles, btnOutline } = accountKit;
-  const resetUrl = `${env.clientUrl}/reset-password?token=${token}`;
-  const heading = name
-    ? `Reset your password, ${escapeHtml(name)}.`
-    : 'Reset your password.';
+  const { styles } = accountKit;
+  const t = emailStrings[lang];
+  const url = `${env.clientUrl}/reset-password?token=${token}`;
 
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('password reset', {
     to: email,
-    subject: 'Reset your password',
+    subject: t.reset.subject,
     html: accountTemplate(
-      'Reset your password',
-      'Reset password',
+      lang,
+      t.reset.subject,
+      t.reset.page,
       `
-      <h1 style="${styles.h1}">${heading}</h1>
-      <p style="${styles.p}">We received a request to reset your password. Set a new one below.</p>
-      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">1 hour</strong>. If you didn't request this, you can ignore this email.</p>
-      <div style="margin:28px 0 16px;">
-        ${btnOutline(resetUrl, 'Reset password')}
-      </div>
-      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
-      <p style="${styles.fallbackLink}">${resetUrl}</p>
+      <h1 style="${styles.h1}">${t.reset.heading(name && escapeHtml(name))}</h1>
+      <p style="${styles.p}">${t.reset.body}</p>
+      <p style="${styles.note}">${t.expires(strong(t.span1h))} ${t.reset.ignore}</p>
+      ${linkBlock(url, t.reset.button, lang)}
     `,
     ),
   });
-
-  if (error) {
-    logger.error(error, `Failed to send reset email`);
-    throw new Error('Failed to send password reset email');
-  }
-
-  logger.info(`Password reset email sent`);
 };
 
 export interface BookingEmailParams {
@@ -296,208 +331,153 @@ export interface BookingEmailParams {
   canReschedule: boolean;
   cancelCutoffHours: number;
   rescheduleCutoffHours: number;
+  // The language the customer booked in; the request's when not given.
+  locale?: EmailLocale;
 }
 
-const hoursLabel = (hours: number) => `${hours} hour${hours === 1 ? '' : 's'}`;
-
 /** One line telling the customer until when the links below still work. */
-const changePolicyNote = (p: BookingEmailParams) => {
+const changePolicyNote = (p: BookingEmailParams, lang: EmailLocale) => {
+  const t = emailStrings[lang];
   const cancel = p.cancelCutoffHours;
   const reschedule = p.rescheduleCutoffHours;
   if (!p.canReschedule)
-    return cancel > 0
-      ? `You can cancel up to ${hoursLabel(cancel)} before your appointment.`
-      : '';
+    return cancel > 0 ? t.policy.cancel(t.hours(cancel)) : '';
   if (cancel === reschedule)
-    return cancel > 0
-      ? `You can cancel or reschedule up to ${hoursLabel(cancel)} before your appointment.`
-      : '';
+    return cancel > 0 ? t.policy.both(t.hours(cancel)) : '';
   return [
-    cancel > 0
-      ? `You can cancel up to ${hoursLabel(cancel)} before your appointment.`
-      : '',
-    reschedule > 0
-      ? `You can reschedule up to ${hoursLabel(reschedule)} before.`
-      : '',
+    cancel > 0 ? t.policy.cancel(t.hours(cancel)) : '',
+    reschedule > 0 ? t.policy.reschedule(t.hours(reschedule)) : '',
   ]
     .filter(Boolean)
     .join(' ');
 };
 
 /** Calendar, directions, reschedule and cancel buttons for a booking email. */
-const bookingActions = (p: BookingEmailParams) => {
+const bookingActions = (p: BookingEmailParams, lang: EmailLocale) => {
   const { styles, btnOutline } = customerKit;
+  const t = emailStrings[lang];
   const mapsUrl = p.formattedAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.formattedAddress)}`
     : null;
   const calendarUrl = buildCalendarUrl({
-    title: `${p.serviceName} at ${p.shopName}`,
+    title: t.actions.calendarTitle(p.serviceName, p.shopName),
     startTime: p.startTime,
     endTime: p.endTime,
-    details: `Appointment with ${p.staffName} at ${p.shopName}.`,
+    details: t.actions.calendarDetails(p.staffName, p.shopName),
     location: p.formattedAddress,
   });
   const rescheduleUrl = `${env.clientUrl}/reschedule?token=${p.cancelToken}`;
   const cancelUrl = `${env.clientUrl}/cancel?token=${p.cancelToken}`;
-  const policy = changePolicyNote(p);
+  const policy = changePolicyNote(p, lang);
 
   return `
       <div style="margin:28px 0 16px;">
-        ${btnOutline(calendarUrl, 'Save to calendar')}
-        ${mapsUrl ? btnOutline(mapsUrl, 'Get directions') : ''}
-        ${p.canReschedule ? btnOutline(rescheduleUrl, 'Reschedule booking') : ''}
-        ${btnOutline(cancelUrl, 'Cancel booking')}
+        ${btnOutline(calendarUrl, t.actions.calendar)}
+        ${mapsUrl ? btnOutline(mapsUrl, t.actions.directions) : ''}
+        ${p.canReschedule ? btnOutline(rescheduleUrl, t.actions.reschedule) : ''}
+        ${btnOutline(cancelUrl, t.actions.cancel)}
       </div>
       ${policy ? `<p style="${styles.note}">${policy}</p>` : ''}
-      ${mapsUrl ? `<p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>` : ''}
+      ${mapsUrl ? `<p style="${styles.note}">${t.actions.directionsNote}</p>` : ''}
     `;
 };
 
-const formatDate = (date: Date, timezone: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-
-const formatTime = (date: Date, timezone: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
-
-export const sendBookingRescheduledEmail = async (
-  params: BookingEmailParams & { previousStartTime: Date },
-) => {
-  const { styles, detailRow } = customerKit;
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
-    to: params.email,
-    subject: `Your booking at ${params.shopName} has been rescheduled`,
-    html: customerTemplate(
-      `Booking rescheduled — ${params.shopName}`,
-      params.shopName,
-      'Rescheduled',
-      `
-      <h1 style="${styles.h1}">Booking rescheduled, ${escapeHtml(params.customerName)}.</h1>
-      <p style="${styles.p}">Your appointment has moved to a new time. The old time is no longer reserved for you.</p>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
-        ${detailRow('New date', formatDate(params.startTime, params.timezone))}
-        ${detailRow('New time', formatTime(params.startTime, params.timezone))}
-        ${detailRow('Was', `${formatDate(params.previousStartTime, params.timezone)}, ${formatTime(params.previousStartTime, params.timezone)}`)}
-        ${detailRow('Service', escapeHtml(params.serviceName))}
-        ${detailRow('Provider', escapeHtml(params.staffName))}
-        ${detailRow('Location', escapeHtml(params.formattedAddress ?? params.shopName))}
-      </table>
-      ${bookingActions(params)}
-      <p style="${styles.note}">The links in earlier emails about this booking no longer work.</p>
-    `,
-    ),
-  });
-
-  if (error) {
-    logger.error(error, `Failed to send booking rescheduled email`);
-    throw new Error('Failed to send booking rescheduled email');
-  }
-
-  logger.info(`Booking rescheduled email sent`);
-};
-
-export const sendBookingRescheduledNotificationEmail = async (params: {
-  email: string;
-  customerName: string;
-  customerPhone: string;
-  shopName: string;
-  serviceName: string;
-  staffName: string;
-  startTime: Date;
-  previousStartTime: Date;
-  timezone: string;
-}) => {
-  const { styles, detailRow } = accountKit;
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
-    to: params.email,
-    subject: `Booking rescheduled at ${params.shopName}`,
-    html: accountTemplate(
-      `Booking rescheduled — ${params.shopName}`,
-      'Rescheduled',
-      `
-      <h1 style="${styles.h1}">A customer rescheduled a booking.</h1>
-      <p style="${styles.p}">The old time is free again and shows as rescheduled in your calendar.</p>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
-        ${detailRow('Customer', escapeHtml(params.customerName))}
-        ${detailRow('Phone', escapeHtml(params.customerPhone))}
-        ${detailRow('Service', escapeHtml(params.serviceName))}
-        ${detailRow('Provider', escapeHtml(params.staffName))}
-        ${detailRow('New date', formatDate(params.startTime, params.timezone))}
-        ${detailRow('New time', formatTime(params.startTime, params.timezone))}
-        ${detailRow('Was', `${formatDate(params.previousStartTime, params.timezone)}, ${formatTime(params.previousStartTime, params.timezone)}`)}
-      </table>
-    `,
-    ),
-  });
-
-  if (error) {
-    logger.error(error, `Failed to send booking rescheduled notification`);
-    throw new Error('Failed to send booking rescheduled notification email');
-  }
-
-  logger.info(`Booking rescheduled notification sent`);
+/** Date, time, service, provider and place of one appointment. */
+const appointmentRows = (p: BookingEmailParams, lang: EmailLocale) => {
+  const { detailRow } = customerKit;
+  const { labels } = emailStrings[lang];
+  return `
+        ${detailRow(labels.date, formatDate(p.startTime, p.timezone, lang))}
+        ${detailRow(labels.time, formatTime(p.startTime, p.timezone, lang))}
+        ${detailRow(labels.service, escapeHtml(p.serviceName))}
+        ${detailRow(labels.provider, escapeHtml(p.staffName))}
+        ${detailRow(labels.location, escapeHtml(p.formattedAddress ?? p.shopName))}`;
 };
 
 export const sendBookingConfirmationEmail = async (
   params: BookingEmailParams,
 ) => {
-  const { styles, detailRow } = customerKit;
-  const dateStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(params.startTime);
+  const { styles } = customerKit;
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
 
-  const timeStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(params.startTime);
-
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('booking confirmation', {
     to: params.email,
-    subject: `Your booking at ${params.shopName} is confirmed`,
+    subject: t.confirmation.subject(params.shopName),
     html: customerTemplate(
-      `Booking at ${params.shopName}`,
+      lang,
+      t.confirmation.title(params.shopName),
       params.shopName,
-      'Booked',
+      t.confirmation.page,
       `
-      <h1 style="${styles.h1}">Booking confirmed, ${escapeHtml(params.customerName)}.</h1>
-      <p style="${styles.p}">Your appointment is locked in. We'll see you soon.</p>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
-        ${detailRow('Date', dateStr)}
-        ${detailRow('Time', timeStr)}
-        ${detailRow('Service', escapeHtml(params.serviceName))}
-        ${detailRow('Provider', escapeHtml(params.staffName))}
-        ${detailRow('Location', escapeHtml(params.formattedAddress ?? params.shopName))}
+      <h1 style="${styles.h1}">${t.confirmation.heading(escapeHtml(params.customerName))}</h1>
+      <p style="${styles.p}">${t.confirmation.body}</p>
+      ${DETAILS_TABLE}${appointmentRows(params, lang)}
       </table>
-      ${bookingActions(params)}
+      ${bookingActions(params, lang)}
     `,
     ),
   });
+};
 
-  if (error) {
-    logger.error(error, `Failed to send booking confirmation email`);
-    throw new Error('Failed to send booking confirmation email');
-  }
+/** Sent ahead of the appointment, as many hours before as the shop chose. */
+export const sendBookingReminderEmail = async (params: BookingEmailParams) => {
+  const { styles } = customerKit;
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
 
-  logger.info(`Booking confirmation email sent`);
+  await deliver('booking reminder', {
+    to: params.email,
+    subject: t.reminder.subject(params.shopName),
+    html: customerTemplate(
+      lang,
+      t.reminder.title(params.shopName),
+      params.shopName,
+      t.reminder.page,
+      `
+      <h1 style="${styles.h1}">${t.reminder.heading(escapeHtml(params.customerName))}</h1>
+      <p style="${styles.p}">${t.reminder.body}</p>
+      ${DETAILS_TABLE}${appointmentRows(params, lang)}
+      </table>
+      ${bookingActions(params, lang)}
+    `,
+    ),
+  });
+};
+
+export const sendBookingRescheduledEmail = async (
+  params: BookingEmailParams & { previousStartTime: Date },
+) => {
+  const { styles, detailRow } = customerKit;
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
+  const { labels } = t;
+  const { timezone } = params;
+
+  await deliver('booking rescheduled', {
+    to: params.email,
+    subject: t.rescheduled.subject(params.shopName),
+    html: customerTemplate(
+      lang,
+      t.rescheduled.title(params.shopName),
+      params.shopName,
+      t.rescheduled.page,
+      `
+      <h1 style="${styles.h1}">${t.rescheduled.heading(escapeHtml(params.customerName))}</h1>
+      <p style="${styles.p}">${t.rescheduled.body}</p>
+      ${DETAILS_TABLE}
+        ${detailRow(labels.newDate, formatDate(params.startTime, timezone, lang))}
+        ${detailRow(labels.newTime, formatTime(params.startTime, timezone, lang))}
+        ${detailRow(labels.was, `${formatDate(params.previousStartTime, timezone, lang)}, ${formatTime(params.previousStartTime, timezone, lang)}`)}
+        ${detailRow(labels.service, escapeHtml(params.serviceName))}
+        ${detailRow(labels.provider, escapeHtml(params.staffName))}
+        ${detailRow(labels.location, escapeHtml(params.formattedAddress ?? params.shopName))}
+      </table>
+      ${bookingActions(params, lang)}
+      <p style="${styles.note}">${t.rescheduled.oldLinks}</p>
+    `,
+    ),
+  });
 };
 
 export const sendCancellationConfirmationEmail = async (params: {
@@ -507,54 +487,38 @@ export const sendCancellationConfirmationEmail = async (params: {
   serviceName: string;
   startTime: Date;
   timezone: string;
+  locale?: EmailLocale;
 }) => {
   const { styles, detailRow } = customerKit;
-  const dateStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(params.startTime);
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
+  const { labels } = t;
 
-  const timeStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(params.startTime);
-
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('cancellation confirmation', {
     to: params.email,
-    subject: `Your booking at ${params.shopName} has been cancelled`,
+    subject: t.cancelled.subject(params.shopName),
     html: customerTemplate(
-      `Booking Cancelled — ${params.shopName}`,
+      lang,
+      t.cancelled.title(params.shopName),
       params.shopName,
-      'Cancelled',
+      t.cancelled.page,
       `
-      <h1 style="${styles.h1}">Booking cancelled, ${escapeHtml(params.customerName)}.</h1>
-      <p style="${styles.p}">Your appointment has been successfully cancelled.</p>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
-        ${detailRow('Date', dateStr)}
-        ${detailRow('Time', timeStr)}
-        ${detailRow('Service', escapeHtml(params.serviceName))}
-        ${detailRow('Location', escapeHtml(params.shopName))}
+      <h1 style="${styles.h1}">${t.cancelled.heading(escapeHtml(params.customerName))}</h1>
+      <p style="${styles.p}">${t.cancelled.body}</p>
+      ${DETAILS_TABLE}
+        ${detailRow(labels.date, formatDate(params.startTime, params.timezone, lang))}
+        ${detailRow(labels.time, formatTime(params.startTime, params.timezone, lang))}
+        ${detailRow(labels.service, escapeHtml(params.serviceName))}
+        ${detailRow(labels.location, escapeHtml(params.shopName))}
       </table>
-      <p style="${styles.note}">If you'd like to book again, visit the shop's booking page.</p>
+      <p style="${styles.note}">${t.cancelled.again}</p>
     `,
     ),
   });
-
-  if (error) {
-    logger.error(error, `Failed to send cancellation email`);
-    throw new Error('Failed to send cancellation confirmation email');
-  }
-
-  logger.info(`Cancellation confirmation email sent`);
 };
 
-export const sendNewBookingNotificationEmail = async (params: {
+/** What a shop is told about one of its bookings. */
+interface BookingNoticeParams {
   email: string;
   customerName: string;
   customerPhone: string;
@@ -563,51 +527,71 @@ export const sendNewBookingNotificationEmail = async (params: {
   staffName: string;
   startTime: Date;
   timezone: string;
-}) => {
+  locale?: EmailLocale;
+}
+
+export const sendNewBookingNotificationEmail = async (
+  params: BookingNoticeParams,
+) => {
   const { styles, detailRow } = accountKit;
-  const dateStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(params.startTime);
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
+  const { labels } = t;
 
-  const timeStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: params.timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(params.startTime);
-
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('new booking notification', {
     to: params.email,
-    subject: `New booking at ${params.shopName}`,
+    subject: t.newBooking.subject(params.shopName),
     html: accountTemplate(
-      `New Booking — ${params.shopName}`,
-      'New booking',
+      lang,
+      t.newBooking.title(params.shopName),
+      t.newBooking.page,
       `
-      <h1 style="${styles.h1}">New booking at ${escapeHtml(params.shopName)}.</h1>
-      <p style="${styles.p}">A new appointment has just been made.</p>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
-        ${detailRow('Customer', escapeHtml(params.customerName))}
-        ${detailRow('Phone', escapeHtml(params.customerPhone))}
-        ${detailRow('Service', escapeHtml(params.serviceName))}
-        ${detailRow('Provider', escapeHtml(params.staffName))}
-        ${detailRow('Date', dateStr)}
-        ${detailRow('Time', timeStr)}
+      <h1 style="${styles.h1}">${t.newBooking.heading(escapeHtml(params.shopName))}</h1>
+      <p style="${styles.p}">${t.newBooking.body}</p>
+      ${DETAILS_TABLE}
+        ${detailRow(labels.customer, escapeHtml(params.customerName))}
+        ${detailRow(labels.phone, escapeHtml(params.customerPhone))}
+        ${detailRow(labels.service, escapeHtml(params.serviceName))}
+        ${detailRow(labels.provider, escapeHtml(params.staffName))}
+        ${detailRow(labels.date, formatDate(params.startTime, params.timezone, lang))}
+        ${detailRow(labels.time, formatTime(params.startTime, params.timezone, lang))}
       </table>
     `,
     ),
   });
+};
 
-  if (error) {
-    logger.error(error, `Failed to send new booking notification`);
-    throw new Error('Failed to send new booking notification email');
-  }
+export const sendBookingRescheduledNotificationEmail = async (
+  params: BookingNoticeParams & { previousStartTime: Date },
+) => {
+  const { styles, detailRow } = accountKit;
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
+  const { labels } = t;
+  const { timezone } = params;
 
-  logger.info(`New booking notification sent`);
+  await deliver('booking rescheduled notification', {
+    to: params.email,
+    subject: t.rescheduledNotice.subject(params.shopName),
+    html: accountTemplate(
+      lang,
+      t.rescheduledNotice.title(params.shopName),
+      t.rescheduledNotice.page,
+      `
+      <h1 style="${styles.h1}">${t.rescheduledNotice.heading}</h1>
+      <p style="${styles.p}">${t.rescheduledNotice.body}</p>
+      ${DETAILS_TABLE}
+        ${detailRow(labels.customer, escapeHtml(params.customerName))}
+        ${detailRow(labels.phone, escapeHtml(params.customerPhone))}
+        ${detailRow(labels.service, escapeHtml(params.serviceName))}
+        ${detailRow(labels.provider, escapeHtml(params.staffName))}
+        ${detailRow(labels.newDate, formatDate(params.startTime, timezone, lang))}
+        ${detailRow(labels.newTime, formatTime(params.startTime, timezone, lang))}
+        ${detailRow(labels.was, `${formatDate(params.previousStartTime, timezone, lang)}, ${formatTime(params.previousStartTime, timezone, lang)}`)}
+      </table>
+    `,
+    ),
+  });
 };
 
 export const sendInviteEmail = async (
@@ -616,35 +600,27 @@ export const sendInviteEmail = async (
   shopName: string,
   inviterEmail: string,
   role: string,
+  lang: EmailLocale = currentLocale(),
 ) => {
-  const { styles, btnOutline } = accountKit;
+  const { styles } = accountKit;
+  const t = emailStrings[lang];
   const to = env.inviteEmailOverride ?? recipientEmail;
-  const inviteUrl = `${env.clientUrl}/invite?token=${plainToken}`;
+  const url = `${env.clientUrl}/invite?token=${plainToken}`;
+  const [before, between, after] = t.invite.body;
 
-  const { error } = await resend.emails.send({
-    from: env.resend.emailFrom,
+  await deliver('invite', {
     to,
-    subject: `You've been invited to join ${shopName}`,
+    subject: t.invite.subject(shopName),
     html: accountTemplate(
-      `Invitation to ${shopName}`,
-      'Invite',
+      lang,
+      t.invite.title(shopName),
+      t.invite.page,
       `
-      <h1 style="${styles.h1}">You're invited to ${escapeHtml(shopName)}.</h1>
-      <p style="${styles.p}"><strong style="${styles.strong}">${escapeHtml(inviterEmail)}</strong> has invited you to join as a <strong style="${styles.strong}">${escapeHtml(role)}</strong>.</p>
-      <p style="${styles.note}">This link expires in <strong style="${styles.strong}">7 days</strong>.</p>
-      <div style="margin:28px 0 16px;">
-        ${btnOutline(inviteUrl, 'Accept invitation')}
-      </div>
-      <p style="${styles.note}">If the button doesn't work, copy and paste this link:</p>
-      <p style="${styles.fallbackLink}">${inviteUrl}</p>
+      <h1 style="${styles.h1}">${t.invite.heading(escapeHtml(shopName))}</h1>
+      <p style="${styles.p}">${before}${strong(escapeHtml(inviterEmail))}${between}${strong(escapeHtml(t.roles[role] ?? role))}${after}</p>
+      <p style="${styles.note}">${t.expires(strong(t.span7d))}</p>
+      ${linkBlock(url, t.invite.button, lang)}
     `,
     ),
   });
-
-  if (error) {
-    logger.error(error, `Failed to send invite email`);
-    throw new Error('Failed to send invite email');
-  }
-
-  logger.info(`Invite email sent`);
 };

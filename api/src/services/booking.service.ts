@@ -1,3 +1,4 @@
+import { currentLocale } from '../utils/locale';
 import { randomUUID } from 'crypto';
 import {
   BookingStatus,
@@ -330,6 +331,7 @@ const claimSlotAndCreate = async (
       cancelToken: p.cancelToken,
       overriddenRules: p.overriddenRules ?? [],
       createdById: p.createdById ?? null,
+      locale: currentLocale(),
     },
     include: BOOKING_INCLUDE,
   });
@@ -926,6 +928,7 @@ const rescheduleInTx = async (
     status: BookingStatus;
     notes: string | null;
     createdById: string | null;
+    locale: string;
   },
   p: {
     serviceId: string;
@@ -978,6 +981,7 @@ const rescheduleInTx = async (
       overriddenRules: p.overriddenRules ?? [],
       createdById: existing.createdById,
       rescheduledFromId: existing.id,
+      locale: existing.locale,
     },
     include: { ...BOOKING_INCLUDE, ...RESCHEDULE_LINKS },
   });

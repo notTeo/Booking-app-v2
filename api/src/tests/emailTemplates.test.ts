@@ -69,6 +69,7 @@ const CUSTOMER: Record<string, () => Promise<void>> = {
   'booking-rescheduled': () =>
     email.sendBookingRescheduledEmail({ ...booking, ...previous }),
   'booking-cancelled': () => email.sendCancellationConfirmationEmail(booking),
+  'booking-reminder': () => email.sendBookingReminderEmail(booking),
 };
 
 // EMAIL_PREVIEW_DIR=some/dir npm run preview:emails writes each email there
@@ -118,4 +119,46 @@ describe('email templates', () => {
       expect(html).not.toContain('BEBOOKED');
     },
   );
+
+  it('is Greek unless the recipient uses English', async () => {
+    const greek = await render('booking-confirmation-el', () =>
+      email.sendBookingConfirmationEmail(booking),
+    );
+    expect(sent[0].subject).toBe(
+      'Το ραντεβού σου στο Hairology & Co επιβεβαιώθηκε',
+    );
+    expect(greek).toContain('<html lang="el">');
+    expect(greek).toContain('Τρίτη 8 Δεκεμβρίου 2026');
+    expect(greek).toContain('10:00');
+    expect(greek).toContain('Ακύρωση ραντεβού');
+    expect(greek).toContain('έως 2 ώρες πριν');
+
+    const english = await render('booking-confirmation-en', () =>
+      email.sendBookingConfirmationEmail({ ...booking, locale: 'en' }),
+    );
+    expect(sent[0].subject).toBe('Your booking at Hairology & Co is confirmed');
+    expect(english).toContain('<html lang="en">');
+    expect(english).toContain('Tuesday, December 8, 2026');
+    expect(english).toContain('10:00 AM');
+    expect(english).toContain('Cancel booking');
+  });
+
+  it('writes account emails in the language passed in', async () => {
+    const english = await render('verification-en', () =>
+      email.sendVerificationEmail('user@example.com', 'tok', 'Nick', 'en'),
+    );
+    expect(english).toContain('Verify your email, Nick.');
+    const greek = await render('invite-el', () =>
+      email.sendInviteEmail(
+        'staff@example.com',
+        'tok',
+        booking.shopName,
+        'owner@example.com',
+        'staff',
+        'el',
+      ),
+    );
+    expect(greek).toContain('μέλος προσωπικού');
+    expect(greek).toContain('Αποδοχή πρόσκλησης');
+  });
 });
