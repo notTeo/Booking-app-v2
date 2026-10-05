@@ -75,6 +75,8 @@ test('block a slot from the wizard, see it on the calendar, then unblock it', as
   await page.locator('.cal-block--blocked').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: 'Blocked' })).toBeVisible();
+  // There is no customer page behind a blocked slot.
+  await expect(dialog.getByRole('link', { name: 'Blocked' })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Unblock slot' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('.cal-block--blocked')).toHaveCount(0);
