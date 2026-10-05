@@ -155,7 +155,7 @@ export default function ShopCustomerDetailPage() {
 
   if (shopLoading || loading) {
     return (
-      <div className="team-member-page">
+      <div className="customer-page">
         <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
@@ -165,7 +165,7 @@ export default function ShopCustomerDetailPage() {
 
   if (error || !customer) {
     return (
-      <div className="team-member-page">
+      <div className="customer-page">
         <div className="cluster">
           <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
             <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
@@ -178,7 +178,7 @@ export default function ShopCustomerDetailPage() {
   }
 
   return (
-    <div className="team-member-page">
+    <div className="customer-page">
       <div className="cluster">
         <Link className="btn btn--secondary btn--sm" to={`/shops/${slug}/customers`}>
           <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
@@ -186,21 +186,22 @@ export default function ShopCustomerDetailPage() {
         </Link>
       </div>
 
-      {/* Customer info */}
-      <div className="card team-member-card">
-        <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
-        <div className="cluster">
-          <span className="t-body-sm t-muted">
-            {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
-          </span>
+      {/* Customer info, with this customer's lifetime numbers in a column beside it */}
+      <div className="customer-head">
+        <div className="card team-member-card">
+          <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
+          <div className="cluster">
+            <span className="t-body-sm t-muted">
+              {t.customers.customerSince} {new Date(customer.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="cluster">
+            <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+          </div>
         </div>
-        <div className="cluster">
-          <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
-        </div>
+        <StatCards totals={customer.totals} tiles />
       </div>
 
-      {/* This customer's lifetime numbers, in the shop overview's tiles and breakdown */}
-      <StatCards totals={customer.totals} />
       {customer.totals.all + customer.totals.canceled > 0 && <StatusDonut totals={customer.totals} />}
 
       {/* Booking history: every booking, ten at a time */}
