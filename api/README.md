@@ -122,3 +122,7 @@ npm test
 ```
 
 Migrations are applied automatically before the suite runs. Browser tests live in `../e2e`.
+
+## Email previews
+
+`npm run preview:emails` renders all nine emails to `api/email-previews/*.html` (set `EMAIL_PREVIEW_DIR` to write elsewhere). Open them in a browser with the web dev server running, so the wordmark images load.

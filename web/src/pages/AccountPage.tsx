@@ -24,6 +24,7 @@ import {
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import PasswordInput from '../components/PasswordInput';
 
 function getInitials(email: string) {
   return email.charAt(0).toUpperCase();
@@ -237,9 +238,8 @@ export default function AccountPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="settings-password">{t.settings.newPasswordOptionalLabel}</label>
-            <input className="input"
+            <PasswordInput
               id="settings-password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -439,9 +439,8 @@ export default function AccountPage() {
             >
               <div className="field">
                 <label className="field__label" htmlFor="delete-password">{t.settings.confirmPasswordLabel}</label>
-                <input className="input"
+                <PasswordInput
                   id="delete-password"
-                  type="password"
                   autoComplete="current-password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}

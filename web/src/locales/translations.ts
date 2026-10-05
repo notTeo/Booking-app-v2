@@ -356,6 +356,8 @@ export interface Translations {
     newPasswordLabel: string;
     newPasswordOptionalLabel: string;
     updatePassword: string;
+    showPassword: string;
+    hidePassword: string;
     logout: string;
     logoutDesc: string;
     dangerZone: string;
@@ -1365,6 +1367,8 @@ home: {
       newPasswordLabel: 'Νέος Κωδικός',
       newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
       updatePassword: 'Ενημέρωση Κωδικού',
+      showPassword: 'Εμφάνιση κωδικού',
+      hidePassword: 'Απόκρυψη κωδικού',
       logout: 'Αποσύνδεση',
       logoutDesc: 'Αποσυνδεθείτε από τον λογαριασμό σας σε αυτή τη συσκευή.',
       dangerZone: 'Επικίνδυνη Ζώνη',
@@ -2398,6 +2402,8 @@ home: {
       newPasswordLabel: 'New Password',
       newPasswordOptionalLabel: 'New Password (optional)',
       updatePassword: 'Update Password',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
       logout: 'Log out',
       logoutDesc: 'Sign out of your account on this device.',
       dangerZone: 'Danger Zone',
