@@ -19,12 +19,12 @@ import {
   faEnvelope,
   faSun,
   faMoon,
-  faChevronLeft,
   faPlusCircle,
   faClock,
   faMagnifyingGlass,
   faArrowUp,
-  faRightFromBracket,
+  faHouse,
+  faUser,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -39,7 +39,7 @@ import BrandText from '../components/BrandText';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
-// real app, matching components/Sidebar.tsx's link set and classes.
+// real app, built from components/Sidebar.tsx's link set and classes.
 type PreviewPageId = 'overview' | 'bookings' | 'newBooking' | 'services' | 'team' | 'invites' | 'customers' | 'settings';
 
 type T = ReturnType<typeof useLang>['t'];
@@ -57,19 +57,22 @@ const getFaqs = (t: T) => [
   { q: t.home.faq4Q, a: t.home.faq4A },
 ];
 
-const getPreviewNavSections = (t: T): { label: string; items: { id: PreviewPageId; label: string; icon: typeof faTableCells }[] }[] => [
-  { label: t.sidebar.shopSection, items: [
-    { id: 'overview', label: t.sidebar.overview, icon: faTableCells },
-    { id: 'bookings', label: t.sidebar.bookings, icon: faCalendar },
-    { id: 'newBooking', label: t.sidebar.bookAppointment, icon: faPlusCircle },
-    { id: 'services', label: t.sidebar.services, icon: faScissors },
-  ]},
-  { label: t.sidebar.manageSection, items: [
-    { id: 'team', label: t.sidebar.team, icon: faUsers },
-    { id: 'invites', label: t.sidebar.invites, icon: faUserPlus },
-    { id: 'customers', label: t.sidebar.customers, icon: faMagnifyingGlass },
-  ]},
+// The app sidebar's in-shop links for an owner, in the same order and with the same icons.
+const getPreviewNavItems = (t: T): { id: PreviewPageId; label: string; icon: typeof faTableCells }[] => [
+  { id: 'overview', label: t.sidebar.overview, icon: faTableCells },
+  { id: 'bookings', label: t.sidebar.bookings, icon: faCalendar },
+  { id: 'services', label: t.sidebar.services, icon: faScissors },
+  { id: 'team', label: t.sidebar.team, icon: faUsers },
+  { id: 'customers', label: t.sidebar.customers, icon: faMagnifyingGlass },
+  { id: 'settings', label: t.sidebar.shopSettings, icon: faGear },
 ];
+
+// Which sidebar link is current on each mock page: the booking wizard and the
+// invite form have no link of their own, they open from Bookings and Team.
+const PREVIEW_NAV_PARENT: Record<PreviewPageId, PreviewPageId> = {
+  overview: 'overview', bookings: 'bookings', newBooking: 'bookings', services: 'services',
+  team: 'team', invites: 'team', customers: 'customers', settings: 'settings',
+};
 
 // Fake but believable shop data for the mockup — not translated (except
 // where noted), since digits/emails/names read the same in every language.
@@ -97,7 +100,7 @@ const getPreviewPages = (t: T): Record<PreviewPageId, { title: string; subtitle:
   settings: { title: t.sidebar.shopSettings, subtitle: t.home.previewSettingsSubtitle },
 });
 
-// Same icon as ShopSidebarLayout.tsx's MenuIcon, so the mockup's mobile header
+// Same icon as AppSidebarLayout.tsx's MenuIcon, so the mockup's mobile header
 // matches the real one exactly (not FontAwesome's evenly-spaced bars icon).
 function PreviewMenuIcon() {
   return (
@@ -186,7 +189,7 @@ export default function HomePage() {
 
   const steps = getSteps(t);
   const faqs = getFaqs(t);
-  const previewNavSections = getPreviewNavSections(t);
+  const previewNavItems = getPreviewNavItems(t);
   const previewPages = getPreviewPages(t);
   const wizardServices = [
     { name: t.home.previewService1Name, duration: t.home.previewService1Duration, price: PREVIEW_SERVICE_PRICES[0] },
@@ -417,7 +420,7 @@ export default function HomePage() {
 
             <div className="home-preview-card-body">
               {/* Mobile-only — the real app's own mobile top header
-                  (components/ShopSidebarLayout.tsx), reused exactly: hamburger button +
+                  (the old shell), reused exactly: hamburger button +
                   BeBooked wordmark in a pill rounded only on the right, flush left.
                   Positioned so the drawer (below) can overlap it, same as the
                   real app's z-index relationship between the two. */}
@@ -433,54 +436,39 @@ export default function HomePage() {
                 <span className="app-mobile-brand"><Wordmark /></span>
               </header>
 
-              {/* Clickable, non-functional mockup of the real app sidebar — same
-                  classes/CSS as components/Sidebar.tsx, for visual accuracy. */}
-              <div className={`home-preview-sidebar${previewMenuOpen ? ' is-open' : ''}`}>
-                <div className="sidebar-header">
-                  <h4 className="sidebar-link-label"><Wordmark /></h4>
-                  <button
-                    className="sidebar-back-link"
-                    aria-label="Close menu"
-                    onClick={() => setPreviewMenuOpen(false)}
-                  >
-                    <FontAwesomeIcon icon={faChevronLeft} />
+              {/* Clickable, non-functional copy of the app sidebar in a shop: the same
+                  markup and classes as components/Sidebar.tsx, so it takes its colours
+                  from the same tokens. Home and Account lead nowhere. */}
+              <aside className={`sidebar${previewMenuOpen ? ' is-open' : ''}`}>
+                <div className="sidebar__brand">
+                  <span className="wordmark"><Wordmark /></span>
+                </div>
+                <button type="button" className="nav-item">
+                  <FontAwesomeIcon icon={faHouse} aria-hidden="true" />
+                  <span className="nav-item__label">{t.sidebar.home}</span>
+                </button>
+                <div className="sidebar__title">{PREVIEW_SHOP_NAME}</div>
+                <nav className="sidebar__nav" aria-label={t.sidebar.mainNav}>
+                  {previewNavItems.map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="nav-item"
+                      aria-current={PREVIEW_NAV_PARENT[previewPage] === item.id ? 'page' : undefined}
+                      onClick={() => { setPreviewPage(item.id); setPreviewMenuOpen(false); }}
+                    >
+                      <FontAwesomeIcon icon={item.icon} aria-hidden="true" />
+                      <span className="nav-item__label">{item.label}</span>
+                    </button>
+                  ))}
+                </nav>
+                <div className="sidebar__footer sidebar__nav">
+                  <button type="button" className="nav-item">
+                    <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+                    <span className="nav-item__label">{t.sidebar.account}</span>
                   </button>
                 </div>
-
-                <div className="sidebar-shop-name">{PREVIEW_SHOP_NAME}</div>
-
-                {previewNavSections.map(section => (
-                  <div key={section.label}>
-                    <span className="sidebar-section-label">{section.label}</span>
-                    {section.items.map(item => (
-                      <button
-                        key={item.id}
-                        className={`sidebar-link${previewPage === item.id ? ' active' : ''}`}
-                        onClick={() => {
-                          setPreviewPage(item.id);
-                          setPreviewMenuOpen(false);
-                          if (item.id === 'newBooking') resetWizard();
-                        }}
-                      >
-                        <FontAwesomeIcon icon={item.icon} />
-                        <span className="sidebar-link-label">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                ))}
-
-                <button
-                  className={`sidebar-link sidebar-bottom${previewPage === 'settings' ? ' active' : ''}`}
-                  onClick={() => { setPreviewPage('settings'); setPreviewMenuOpen(false); }}
-                >
-                  <FontAwesomeIcon icon={faGear} />
-                  <span className="sidebar-link-label">{t.sidebar.shopSettings}</span>
-                </button>
-                <button className="sidebar-logout sidebar-link">
-                  <FontAwesomeIcon icon={faRightFromBracket} />
-                  <span className="sidebar-link-label">{t.sidebar.logout}</span>
-                </button>
-              </div>
+              </aside>
 
               {/* Backdrop — mobile only, closes the drawer on click. */}
               {previewMenuOpen && (
@@ -496,6 +484,16 @@ export default function HomePage() {
                     <h3>{previewPages[previewPage].title}</h3>
                     <p><BrandText text={previewPages[previewPage].subtitle} muted /></p>
                   </div>
+                  {previewPage === 'bookings' && (
+                    <button type="button" className="btn btn--sm home-preview-greeting-action" onClick={() => { setPreviewPage('newBooking'); resetWizard(); }}>
+                      <FontAwesomeIcon icon={faPlusCircle} aria-hidden="true" /> {t.sidebar.bookAppointment}
+                    </button>
+                  )}
+                  {previewPage === 'team' && (
+                    <button type="button" className="btn btn--sm home-preview-greeting-action" onClick={() => setPreviewPage('invites')}>
+                      <FontAwesomeIcon icon={faUserPlus} aria-hidden="true" /> {t.sidebar.invites}
+                    </button>
+                  )}
                 </div>
                 {previewPage === 'overview' ? (
                   // Mirrors the real ShopOverviewPage.tsx: shop header + role/status
