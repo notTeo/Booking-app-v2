@@ -79,6 +79,8 @@ export const getPublicSlotsValidation = [
     .withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  // A customer rescheduling from their email link: frees their own slot.
+  query('rescheduleToken').optional({ values: 'falsy' }).isUUID(),
 ];
 
 export const ownerSlotsValidation = [

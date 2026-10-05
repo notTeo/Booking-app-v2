@@ -2,6 +2,9 @@ import { body, param } from 'express-validator';
 import { checkSlug, SLUG_MESSAGES } from './slug';
 import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
 
+// One week: the longest notice a shop may demand for a customer change.
+export const MAX_CUTOFF_HOURS = 168;
+
 export const createShopValidation = [
   body('name').notEmpty().withMessage('Name is required').trim(),
   body('slug')
@@ -85,6 +88,20 @@ export const updateShopValidation = [
     .withMessage(
       `slotIntervalMinutes must be one of ${SLOT_INTERVAL_OPTIONS.join(', ')}`,
     ),
+  body('customerRescheduleEnabled')
+    .optional()
+    .isBoolean()
+    .withMessage('customerRescheduleEnabled must be a boolean')
+    .toBoolean(),
+  ...(['cancelCutoffHours', 'rescheduleCutoffHours'] as const).map((field) =>
+    body(field)
+      .optional()
+      .isInt({ min: 0, max: MAX_CUTOFF_HOURS })
+      .withMessage(
+        `${field} must be a whole number between 0 and ${MAX_CUTOFF_HOURS}`,
+      )
+      .toInt(),
+  ),
   body('isActive')
     .optional()
     .isBoolean()

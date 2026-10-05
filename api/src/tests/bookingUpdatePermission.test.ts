@@ -69,9 +69,18 @@ describe('PATCH bookings/:id is for the owner and managers only', () => {
     const { t, patch, stored } = await setup();
     const res = await patch(await tokenOf(t), { startTime: TO });
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect((await stored()).startTime.toISOString()).toBe(
-      new Date(TO).toISOString(),
-    );
+    // The old booking stays at its time as a canceled reference; a new one,
+    // linked back to it, holds the new time.
+    const old = await stored();
+    expect(old.status).toBe('CANCELED');
+    expect(old.startTime.toISOString()).toBe(FROM);
+    const moved = await prisma.booking.findUniqueOrThrow({
+      where: { id: res.body.data.id },
+    });
+    expect(moved.rescheduledFromId).toBe(old.id);
+    expect(moved.startTime.toISOString()).toBe(new Date(TO).toISOString());
+    expect(moved.status).toBe('CONFIRMED');
+    expect(moved.cancelToken).not.toBe(old.cancelToken);
   });
 
   it('staff can still change the status', async () => {

@@ -85,12 +85,20 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-04T10:00:00.000Z',
     });
 
-    const updated = await updateBooking(owner.id, shop.id, booking.id, {
-      overrideRules: ALL_OVERRIDABLE_RULES,
-      startTime: '2027-01-04T14:00:00.000Z',
-    });
+    const { booking: updated } = await updateBooking(
+      owner.id,
+      shop.id,
+      booking.id,
+      {
+        overrideRules: ALL_OVERRIDABLE_RULES,
+        startTime: '2027-01-04T14:00:00.000Z',
+      },
+    );
 
     expect(updated.startTime.toISOString()).toBe('2027-01-04T14:00:00.000Z');
+    // A reschedule is a new booking; the old one stays as a reference.
+    expect(updated.id).not.toBe(booking.id);
+    expect(updated.rescheduledFrom?.id).toBe(booking.id);
   });
 
   it('rejects rescheduling into a slot already occupied by another booking with a 409', async () => {
@@ -137,11 +145,16 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-06T10:00:00.000Z',
     });
 
-    const updated = await updateBooking(owner.id, shop.id, booking.id, {
-      overrideRules: ALL_OVERRIDABLE_RULES,
-      startTime: '2027-01-06T10:00:00.000Z',
-      notes: 'Confirmed by phone',
-    });
+    const { booking: updated } = await updateBooking(
+      owner.id,
+      shop.id,
+      booking.id,
+      {
+        overrideRules: ALL_OVERRIDABLE_RULES,
+        startTime: '2027-01-06T10:00:00.000Z',
+        notes: 'Confirmed by phone',
+      },
+    );
 
     expect(updated.id).toBe(booking.id);
     expect(updated.notes).toBe('Confirmed by phone');
@@ -169,9 +182,12 @@ describe('updateBooking overlap protection (reschedule)', () => {
       startTime: '2027-01-07T12:00:00.000Z',
     });
 
-    const updated = await updateBooking(owner.id, shop.id, bookingA.id, {
-      notes: 'Client requested extra time',
-    });
+    const { booking: updated } = await updateBooking(
+      owner.id,
+      shop.id,
+      bookingA.id,
+      { notes: 'Client requested extra time' },
+    );
 
     expect(updated.notes).toBe('Client requested extra time');
     expect(updated.startTime.toISOString()).toBe('2027-01-07T10:00:00.000Z');
