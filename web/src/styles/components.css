@@ -335,11 +335,16 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .chip--canceled[aria-pressed="true"] { --c-fg: var(--text-muted); --c-bg: var(--surface-sunken); --c-bd: var(--border); }
 .chip--canceled .chip__label { text-decoration: line-through; text-decoration-thickness: 1px; }
 .chip--lg { min-height: var(--control-md); padding: 0 var(--space-4); }
-/* Swatch: a colour dot in a chip, one per colour set (Preferences). Always that set's colour, whichever is active. */
+/* Swatch: a colour dot, one per colour set. Always that set's colour, whichever is active. */
 .swatch { flex: none; width: var(--space-3); height: var(--space-3); border-radius: var(--radius-full); background: var(--swatch, var(--accent)); border: 1px solid var(--border-strong); }
 .swatch--original { --swatch: var(--palette-original); }
 .swatch--mono { --swatch: var(--palette-mono); }
 .swatch--purple { --swatch: var(--palette-purple); }
+/* Swatch box: the colour set picker (Preferences). A rounded box of the set's colour; the chosen one gets a text-coloured border with a gap. */
+.swatch-box { flex: none; width: var(--control-sm); height: var(--control-sm); padding: var(--space-1); cursor: pointer; background: var(--swatch, var(--accent)) content-box; border: 2px solid transparent; border-radius: var(--radius-md); transition: border-color var(--motion-fast) var(--ease-standard); }
+.swatch-box:hover, .swatch-box.is-hover { border-color: var(--border-strong); }
+.swatch-box:focus-visible, .swatch-box.is-focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.swatch-box[aria-pressed="true"] { border-color: var(--text); }
 .chip:disabled, .chip[aria-disabled="true"] { --c-fg: var(--text-muted); --c-bd: var(--border); opacity: 0.6; cursor: not-allowed; }
 
 /* ---------- 8. Alert ---------- */
@@ -798,6 +803,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* A wrapping row of buttons, badges or short texts. */
 .cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .cluster--tight { gap: var(--space-2); }
+.cluster--nowrap { flex: none; flex-wrap: nowrap; }
 
 /* ---------- 30. Page hero ---------- */
 /* The band at the top of a booking page: the shop's name, a line about it, its contact badges. */
