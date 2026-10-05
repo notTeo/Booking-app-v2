@@ -4,6 +4,7 @@ import { validate } from '../middleware/validate';
 import {
   customerParamsValidation,
   listCustomersValidation,
+  mergeCustomersValidation,
   updateCustomerValidation,
 } from '../validators/customer.validator';
 import {
@@ -12,6 +13,7 @@ import {
   updateCustomer,
   exportCustomer,
   deleteCustomer,
+  mergeCustomers,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
@@ -46,6 +48,13 @@ router.delete(
   customerParamsValidation,
   validate,
   deleteCustomer,
+);
+router.post(
+  '/:customerId/merge',
+  authenticate,
+  mergeCustomersValidation,
+  validate,
+  mergeCustomers,
 );
 
 export default router;

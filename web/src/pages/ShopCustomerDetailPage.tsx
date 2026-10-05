@@ -10,6 +10,8 @@ import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import MergeCustomerModal from '../components/MergeCustomerModal';
+import { canManageShop } from '../utils/roles';
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -35,6 +37,11 @@ export default function ShopCustomerDetailPage() {
   const [privacyBusy, setPrivacyBusy] = useState<'export' | 'delete' | null>(null);
   const [privacyError, setPrivacyError] = useState('');
 
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeSuccess, setMergeSuccess] = useState('');
+  // Bumped after a merge so the customer (bookings, totals) loads again.
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
     if (!shop || !customerId) return;
     setLoading(true);
@@ -48,7 +55,7 @@ export default function ShopCustomerDetailPage() {
       })
       .catch(() => setError(t.customers.customerErrorLoad))
       .finally(() => setLoading(false));
-  }, [shop?.id, customerId]);
+  }, [shop?.id, customerId, reloadKey]);
 
   const handleSave = async () => {
     if (!shop || !customerId || saving) return;
@@ -216,6 +223,20 @@ export default function ShopCustomerDetailPage() {
         </div>
       )}
 
+      {/* Merge a duplicate record into this one (owner and managers; the API enforces it too) */}
+      {canManageShop(shop?.role) && !customer.contactHidden && (
+        <div className="card">
+          <h2 className="card__title">{t.customers.mergeHeading}</h2>
+          <p className="card__text">{t.customers.mergeBody}</p>
+          {mergeSuccess && <Alert variant="success">{mergeSuccess}</Alert>}
+          <div className="cluster">
+            <button className="btn btn--secondary" onClick={() => { setMergeSuccess(''); setMergeOpen(true); }}>
+              {t.customers.mergeButton}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* GDPR: access + erasure requests (owner only; the API enforces it too) */}
       {shop?.role === 'owner' && (
         <div className="card">
@@ -279,6 +300,19 @@ export default function ShopCustomerDetailPage() {
           </div>
         </div>
       </div>
+
+      {mergeOpen && shop && (
+        <MergeCustomerModal
+          shopId={shop.id}
+          target={customer}
+          onClose={() => setMergeOpen(false)}
+          onMerged={(merged) => {
+            setMergeOpen(false);
+            setMergeSuccess(t.customers.mergeSuccess.replace('{count}', String(merged.movedBookings)));
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
 
       {confirmDelete && customer && (
         <ConfirmDialog

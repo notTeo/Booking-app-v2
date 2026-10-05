@@ -160,4 +160,8 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
   'GET /api/shops/:shopId/customers/:customerId/export': { minRole: 'owner' },
   'DELETE /api/shops/:shopId/customers/:customerId': { minRole: 'owner' },
+  'POST /api/shops/:shopId/customers/:customerId/merge': {
+    minRole: 'manager',
+    body: () => ({ sourceCustomerId: 'missing' }),
+  },
 };
