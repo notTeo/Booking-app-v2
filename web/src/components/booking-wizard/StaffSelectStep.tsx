@@ -1,3 +1,4 @@
+import { formatDuration } from './wizardUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import type { Service, ShopMember } from '../../api/public.api';
@@ -23,7 +24,7 @@ export default function StaffSelectStep({
     <div className="public-wizard-panel">
       {selectedService && (
         <p className="t-body-sm t-muted">
-          {t.public.serviceContext} <strong>{selectedService.name}</strong>
+          {t.public.serviceContext} <strong>{selectedService.name}</strong> ({formatDuration(selectedService.duration)})
         </p>
       )}
 

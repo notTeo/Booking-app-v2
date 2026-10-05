@@ -60,6 +60,8 @@ const saveDetails = (page: Page) =>
 
 async function pickServiceAndDate(page: Page, day = date) {
   await page.getByRole('radio', { name: /Identity Service/ }).click();
+  // The public page shows the service's standard duration.
+  await expect(page.getByText('Service: Identity Service (30m)')).toBeVisible();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(day);
   await expect(page.getByRole('button', { name: '22:30', exact: true })).toBeVisible();
@@ -140,6 +142,8 @@ test('shop wizard: picking the customer first shows their duration and times', a
   await expect(service).toContainText('Custom duration');
   await service.click();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
+  // The steps after it keep showing the service with the customer's duration.
+  await expect(page.getByText('Service: Identity Service (1h)')).toBeVisible();
   await page.locator('#booking-date').fill(nextDate);
   await expect(page.getByRole('button', { name: '21:30', exact: true })).toBeVisible();
   // In-hours 23:00 no longer fits a 60-minute booking.

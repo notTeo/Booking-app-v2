@@ -112,6 +112,11 @@ export default function OwnerBookingWizard({
   }
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
+  // The service as the steps show it: with the picked customer's own duration, when they have one.
+  const shownService = wizard.selectedService && {
+    ...wizard.selectedService,
+    duration: customDurations[wizard.selectedService.id] ?? wizard.selectedService.duration,
+  };
   // Rules the chosen slot is known to break, confirmed on the last step. null
   // (a typed-in "Other time") = unknown; a 422 then falls back to the dialog.
   const anticipated = anticipatedRuleCodes(wizard.slots, wizard.time);
@@ -255,7 +260,7 @@ export default function OwnerBookingWizard({
       {wizard.step === 2 && (
         <StaffSelectStep
           members={wizard.eligibleMembers}
-          selectedService={wizard.selectedService}
+          selectedService={shownService}
           onSelect={wizard.handleSelectMember}
           onBack={wizard.goBack}
           hideNoPreference={!!reschedule}
@@ -269,7 +274,7 @@ export default function OwnerBookingWizard({
           slots={wizard.slots}
           slotsError={wizard.slotsError}
           onRetrySlots={wizard.retrySlots}
-          selectedService={wizard.selectedService}
+          selectedService={shownService}
           selectedMember={selectedMember}
           timeHint={timeHint}
           defaultShowOutside={defaultShowOutside}
@@ -321,7 +326,7 @@ export default function OwnerBookingWizard({
         <OwnerCustomerFormStep
           shopId={shopId}
           initialCustomer={customer}
-          selectedService={wizard.selectedService}
+          selectedService={shownService}
           selectedMember={selectedMember}
           date={wizard.date}
           time={wizard.time}
