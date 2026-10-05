@@ -912,6 +912,16 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    block: {
+      button: string;
+      bookCustomer: string;
+      name: string;
+      hint: string;
+      noteDefault: string;
+      confirm: string;
+      unblock: string;
+      unblocked: string;
+    };
     customerPicker: {
       label: string;
       placeholder: string;
@@ -1984,6 +1994,16 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      block: {
+        button: 'Κλείδωμα ώρας',
+        bookCustomer: 'Κράτηση για πελάτη',
+        name: 'Κλειδωμένο',
+        hint: 'Η ώρα δεν θα είναι διαθέσιμη για κράτηση. Δεν χρειάζονται στοιχεία πελάτη.',
+        noteDefault: 'Κλειδωμένη ώρα',
+        confirm: 'Κλείδωμα',
+        unblock: 'Ξεκλείδωμα ώρας',
+        unblocked: 'Η ώρα ξεκλειδώθηκε και είναι ξανά διαθέσιμη.',
+      },
       customerPicker: {
         label: 'Πελάτης',
         placeholder: 'Αναζήτηση με όνομα ή τηλέφωνο…',
@@ -3059,6 +3079,16 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      block: {
+        button: 'Block this slot',
+        bookCustomer: 'Book a customer instead',
+        name: 'Blocked',
+        hint: 'This time will not be available to book. No customer details are needed.',
+        noteDefault: 'Blocked slot',
+        confirm: 'Block slot',
+        unblock: 'Unblock slot',
+        unblocked: 'This slot was unblocked and is available again.',
+      },
       customerPicker: {
         label: 'Customer',
         placeholder: 'Search by name or phone…',

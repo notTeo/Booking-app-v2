@@ -6,12 +6,16 @@ import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
 import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 
 export interface OwnerCustomerFormValues {
   name: string;
   phone: string;
   email?: string;
   notes?: string;
+  /** Block the slot instead of booking a customer; name, phone and email are then unused. */
+  block?: boolean;
 }
 
 export default function OwnerCustomerFormStep({
@@ -60,6 +64,14 @@ export default function OwnerCustomerFormStep({
   const [name, setName] = useState(initialCustomer?.name ?? '');
   const [email, setEmail] = useState(initialCustomer?.email ?? '');
   const [notes, setNotes] = useState('');
+  // "Block this slot": the time is held with no customer, only a note.
+  const [blocking, setBlocking] = useState(false);
+
+  function handleToggleBlock(next: boolean) {
+    setBlocking(next);
+    // The note starts as "Blocked slot" and is dropped again if left untouched.
+    setNotes((n) => (next ? n || t.bookings.block.noteDefault : n === t.bookings.block.noteDefault ? '' : n));
+  }
 
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -115,7 +127,8 @@ export default function OwnerCustomerFormStep({
 
   function handleSubmit() {
     if (submitting) return;
-    onSubmit({ name, phone, email: email || undefined, notes: notes || undefined });
+    if (blocking) onSubmit({ block: true, name: '', phone: '', notes: notes || undefined });
+    else onSubmit({ name, phone, email: email || undefined, notes: notes || undefined });
   }
 
   return (
@@ -131,7 +144,28 @@ export default function OwnerCustomerFormStep({
       )}
 
       <div className="public-booking-form">
+        <div className="cluster">
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm"
+            onClick={() => handleToggleBlock(!blocking)}
+            disabled={submitting}
+          >
+            <FontAwesomeIcon icon={blocking ? faUser : faLock} aria-hidden="true" />
+            {blocking ? t.bookings.block.bookCustomer : t.bookings.block.button}
+          </button>
+        </div>
+
+        {blocking && (
+          <div className="field">
+            <label className="field__label" htmlFor="b-blocked">{t.public.nameLabel}</label>
+            <input id="b-blocked" className="input" type="text" value={t.bookings.block.name} disabled readOnly />
+            <p className="field__hint">{t.bookings.block.hint}</p>
+          </div>
+        )}
+
         {/* Phone first — with customer search dropdown */}
+        {!blocking && (<>
         <div className="field field--anchor">
           <label className="field__label" htmlFor="b-phone">
             {t.public.phoneLabel} <span className="field__required">*</span>
@@ -194,6 +228,7 @@ export default function OwnerCustomerFormStep({
             autoComplete="off"
           />
         </div>
+        </>)}
 
         <div className="field">
           <label className="field__label" htmlFor="b-notes">
@@ -231,9 +266,11 @@ export default function OwnerCustomerFormStep({
           className={`btn${submitting && !cooling ? ' is-loading' : ''}`}
           onClick={handleSubmit}
           aria-busy={submitting && !cooling}
-          disabled={cooling || name.trim() === '' || phone.trim() === ''}
+          disabled={cooling || (!blocking && (name.trim() === '' || phone.trim() === ''))}
         >
-          {outsideRules.length > 0
+          {blocking
+            ? t.bookings.block.confirm
+            : outsideRules.length > 0
             ? onlyOffGrid
               ? t.bookings.intervalPicker.confirmButton
               : t.bookings.outsideHours.confirmButton

@@ -210,6 +210,9 @@ model Customer {
   phone     String
   email     String?
   notes     String?
+  // The shop's one "Blocked" placeholder: bookings on it are blocked slots,
+  // not appointments. Never listed, edited, merged or deleted as a customer.
+  isSystem  Boolean  @default(false)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 

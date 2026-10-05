@@ -869,6 +869,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .cal-block--confirmed { --blk-bg: var(--success-bg); --blk-bd: var(--success-border); --blk-bar: var(--success); }
 .cal-block--completed { --blk-bg: var(--info-bg); --blk-bd: var(--info-border); --blk-bar: var(--info); }
 .cal-block--no-show { --blk-bg: var(--danger-bg); --blk-bd: var(--danger-border); --blk-bar: var(--danger); }
+/* Blocked slot (no customer): hatched like closed hours; the lock icon and the word are in the markup. */
+.cal-block--blocked {
+  --blk-bd: var(--border-strong); --blk-bar: var(--text-muted);
+  background-image: repeating-linear-gradient(135deg, transparent 0, transparent var(--cal-stripe), var(--border) var(--cal-stripe), var(--border) calc(var(--cal-stripe) * 2));
+}
 .cal-block--canceled { color: var(--text-muted); }
 .cal-block--canceled .cal-block__name { text-decoration: line-through; text-decoration-thickness: 1px; }
 /* Out-of-hours exception: dashed edge; the clock icon and a text tag are in the markup. */

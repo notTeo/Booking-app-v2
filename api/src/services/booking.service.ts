@@ -260,6 +260,26 @@ const findOrCreateCustomer = (
         create: { shopId, ...customer },
       });
 
+// The placeholder a blocked slot is booked on: one per shop, created the
+// first time a slot is blocked. Its empty phone can never match a real
+// customer's (a booking's phone is validated), and the web app shows its name
+// translated.
+export const SYSTEM_CUSTOMER_PHONE = '';
+const findOrCreateSystemCustomer = (
+  tx: Prisma.TransactionClient,
+  shopId: string,
+) =>
+  tx.customer.upsert({
+    where: { shopId_phone: { shopId, phone: SYSTEM_CUSTOMER_PHONE } },
+    update: {},
+    create: {
+      shopId,
+      name: 'Blocked',
+      phone: SYSTEM_CUSTOMER_PHONE,
+      isSystem: true,
+    },
+  });
+
 /**
  * Overlap check + customer + insert, for a provider's time. Runs inside the
  * caller's serializable transaction. Never bypassable.
@@ -272,7 +292,8 @@ const claimSlotAndCreate = async (
     staffId: string;
     startTime: Date;
     endTime: Date;
-    customer: { name: string; phone: string; email?: string };
+    // null = a blocked slot, held by the shop's system customer.
+    customer: { name: string; phone: string; email?: string } | null;
     // Public bookings must never overwrite an existing customer's name/email;
     // owner/staff bookings may (see findOrCreateCustomer).
     overwriteCustomer: boolean;
@@ -293,12 +314,9 @@ const claimSlotAndCreate = async (
   if (conflict)
     throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  const customer = await findOrCreateCustomer(
-    tx,
-    p.shopId,
-    p.customer,
-    p.overwriteCustomer,
-  );
+  const customer = p.customer
+    ? await findOrCreateCustomer(tx, p.shopId, p.customer, p.overwriteCustomer)
+    : await findOrCreateSystemCustomer(tx, p.shopId);
 
   return tx.booking.create({
     data: {
@@ -409,6 +427,9 @@ export const createBookingForShop = async (
   userId: string,
   shopId: string,
   data: {
+    // Hold the time as a blocked slot instead of booking a customer; name,
+    // phone and email are then ignored.
+    block?: boolean;
     name: string;
     phone: string;
     email?: string;
@@ -435,9 +456,10 @@ export const createBookingForShop = async (
     });
     if (!service) throw new AppError(404, 'Service not found');
 
-    const duration = await resolveDuration(tx, shopId, service, {
-      phone: data.phone,
-    });
+    // A blocked slot runs the service's standard length.
+    const duration = data.block
+      ? service.duration
+      : await resolveDuration(tx, shopId, service, { phone: data.phone });
     const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     const shop = await tx.shop.findUniqueOrThrow({
@@ -487,7 +509,9 @@ export const createBookingForShop = async (
       staffId: staff.id,
       startTime,
       endTime,
-      customer: { name: data.name, phone: data.phone, email: data.email },
+      customer: data.block
+        ? null
+        : { name: data.name, phone: data.phone, email: data.email },
       // Owner/staff may correct a customer's details on the way (matches the
       // wizard's autofill UI); the public path never may (see
       // claimSlotAndCreate), and neither may a member who is not allowed to
@@ -795,6 +819,10 @@ export const listBookings = async (
   }));
 };
 
+// Blocked slots hold time but are not appointments: counts and "upcoming"
+// lists leave them out.
+const NOT_BLOCKED = { customer: { isSystem: false } } as const;
+
 export const getBookingStats = async (userId: string, shopId: string) => {
   const canViewCustomer = canViewCustomerDetails(
     await requireShopAccess(userId, shopId),
@@ -812,6 +840,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: startOfToday, lt: endOfToday },
         status: { notIn: ['CANCELED'] },
+        ...NOT_BLOCKED,
       },
     }),
     prisma.booking.count({
@@ -819,6 +848,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: now },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        ...NOT_BLOCKED,
       },
     }),
     prisma.booking.findMany({
@@ -826,6 +856,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         shopId,
         startTime: { gte: now },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        ...NOT_BLOCKED,
       },
       include: {
         customer: true,

@@ -3,7 +3,7 @@ import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays, faLockOpen } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -154,10 +154,12 @@ export default function ShopBookingsPage() {
     try {
       const updated = await updateBookingStatus(shop.id, bookingId, status);
       setBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+      return true;
     } catch (err) {
       // State stays as it was; tell the user why. A 409 is the slot being
       // taken meanwhile (e.g. re-opening a canceled booking).
       setStatusError(getApiError(err).status === 409 ? t.bookings.statusConflict : t.bookings.statusError);
+      return false;
     } finally {
       setUpdatingId(null);
     }
@@ -165,6 +167,15 @@ export default function ShopBookingsPage() {
 
   const statusLabel = (b: Booking) =>
     b.rescheduledTo ? t.bookings.reschedule.rescheduledLabel : t.bookings.filters.status[b.status];
+
+  // Who a booking is for, as shown: a blocked slot reads "Blocked" in the
+  // user's language, never the placeholder's stored name.
+  const customerLabel = (b: Booking) =>
+    b.customer.isSystem
+      ? t.bookings.block.name
+      : b.customer.contactHidden
+        ? t.customers.hiddenLabel
+        : b.customer.name;
 
   const openBookingDetail = (b: Booking, isSelected: boolean) => {
     setSelectedBooking(isSelected ? null : b);
@@ -507,10 +518,12 @@ export default function ShopBookingsPage() {
                               <span className="visually-hidden">{statusLabel(b)}</span>
                             </span>
                             <span className="cal-block__name">
-                              {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                              {customerLabel(b)}
                             </span>
                             <span className="cal-block__service">
-                              {b.rescheduledTo ? t.bookings.reschedule.rescheduledLabel : b.service.name}
+                              {b.rescheduledTo
+                                ? t.bookings.reschedule.rescheduledLabel
+                                : (b.customer.isSystem && b.notes) || b.service.name}
                             </span>
                             {tags.length > 0 && (
                               <span className="cal-block__tag label-caps">{tags.map(tagLabel).join(' · ')}</span>
@@ -536,7 +549,7 @@ export default function ShopBookingsPage() {
         <Modal onClose={() => setSelectedBooking(null)} labelledBy="booking-detail-title">
           <div className="modal__header">
             <h2 id="booking-detail-title" className="modal__title">
-              {selectedBooking.customer.contactHidden ? t.customers.hiddenLabel : selectedBooking.customer.name}
+              {customerLabel(selectedBooking)}
             </h2>
             <button
               type="button"
@@ -561,7 +574,7 @@ export default function ShopBookingsPage() {
               </span>
             </div>
 
-            {!selectedBooking.customer.contactHidden && (
+            {!selectedBooking.customer.contactHidden && !selectedBooking.customer.isSystem && (
               <div className="t-body-sm">{selectedBooking.customer.phone}</div>
             )}
             {selectedBooking.notes && (
@@ -602,6 +615,26 @@ export default function ShopBookingsPage() {
                   </button>
                 </div>
               </>
+            ) : selectedBooking.customer.isSystem ? (
+              // A blocked slot has no customer and no status to track: it is
+              // either holding the time or unblocked.
+              selectedBooking.status === 'CANCELED' ? (
+                <Alert variant="info">{t.bookings.block.unblocked}</Alert>
+              ) : (
+                <div className="cluster">
+                  <button
+                    type="button"
+                    className={`btn btn--secondary btn--sm${updatingId === selectedBooking.id ? ' is-loading' : ''}`}
+                    aria-busy={updatingId === selectedBooking.id}
+                    onClick={async () => {
+                      if (await handleStatusUpdate(selectedBooking.id, 'CANCELED')) setSelectedBooking(null);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faLockOpen} aria-hidden="true" />
+                    {t.bookings.block.unblock}
+                  </button>
+                </div>
+              )
             ) : (
               <div className="cluster cluster--tight" role="group" aria-label={t.bookings.filters.statusLabel}>
                 {ALL_STATUSES.map(s => (
@@ -621,7 +654,7 @@ export default function ShopBookingsPage() {
             )}
             {statusError && <Alert variant="danger">{statusError}</Alert>}
 
-            {canManage && slug && RESCHEDULABLE.has(selectedBooking.status) && (
+            {canManage && slug && !selectedBooking.customer.isSystem && RESCHEDULABLE.has(selectedBooking.status) && (
               <div className="cluster">
                 <Link
                   className="btn btn--secondary btn--sm"
