@@ -9,6 +9,8 @@ export interface BookingCustomer {
   phone: string;
   email: string | null;
   contactHidden?: boolean;
+  /** The shop's "Blocked" placeholder: this booking is a blocked slot, not an appointment. */
+  isSystem?: boolean;
 }
 
 export interface BookingService {
@@ -118,8 +120,10 @@ export const updateBookingStatus = (shopId: string, bookingId: string, status: B
     .then((r) => r.data.data as Booking);
 
 export interface OwnerCreateBookingPayload {
-  name: string;
-  phone: string;
+  /** Hold the time as a blocked slot instead of booking a customer; name and phone are then left out. */
+  block?: boolean;
+  name?: string;
+  phone?: string;
   email?: string;
   serviceId: string;
   staffId?: string;

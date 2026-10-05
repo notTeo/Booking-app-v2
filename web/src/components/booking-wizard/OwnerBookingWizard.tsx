@@ -181,9 +181,9 @@ export default function OwnerBookingWizard({
     return submitWith(
       () =>
         createOwnerBooking(shopId, {
-          name: values.name,
-          phone: values.phone,
-          email: values.email,
+          ...(values.block
+            ? { block: true }
+            : { name: values.name, phone: values.phone, email: values.email }),
           serviceId: wizard.selectedServiceId!,
           staffId: wizard.selectedMemberId ?? undefined,
           startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),

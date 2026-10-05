@@ -18,7 +18,8 @@ async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
     where: { id: customerId },
   });
-  if (!customer || customer.shopId !== shopId)
+  // The "Blocked" placeholder is not a customer anyone can open or change.
+  if (!customer || customer.shopId !== shopId || customer.isSystem)
     throw new AppError(404, 'Customer not found');
   return customer;
 }
@@ -41,6 +42,7 @@ export const listCustomers = async (
 
   const where = {
     shopId,
+    isSystem: false,
     ...(hasCustomDurations && { serviceDurations: { some: {} } }),
     ...(search && {
       OR: [
@@ -249,7 +251,9 @@ export const mergeCustomers = async (
       !target ||
       !source ||
       target.shopId !== shopId ||
-      source.shopId !== shopId
+      source.shopId !== shopId ||
+      target.isSystem ||
+      source.isSystem
     )
       throw new AppError(404, 'Customer not found');
 
@@ -297,7 +301,7 @@ export const exportAllCustomers = async (userId: string, shopId: string) => {
   await requireShopAccess(userId, shopId, MANAGER_ONLY);
 
   const customers = await prisma.customer.findMany({
-    where: { shopId },
+    where: { shopId, isSystem: false },
     orderBy: { createdAt: 'asc' },
     include: { _count: { select: { bookings: true } } },
   });
