@@ -851,8 +851,15 @@ export const updateBooking = async (
   // Everything is read inside the (retried) transaction — see the note on the
   // create functions.
   serializableTransaction(async (tx) => {
+    // Moving or editing a booking is a managing action: staff may change a
+    // booking's status, but only the owner or a manager may reschedule it.
     const canViewCustomer = canViewCustomerDetails(
-      await requireShopAccess(userId, shopId, { db: tx }),
+      await requireShopAccess(userId, shopId, {
+        db: tx,
+        role: 'manager',
+        forbiddenMessage:
+          'Only the shop owner or a manager can change a booking',
+      }),
     );
     const existing = await loadBooking(tx, shopId, bookingId); // 404 if gone
 
