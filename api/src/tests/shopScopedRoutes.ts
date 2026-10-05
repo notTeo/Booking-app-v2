@@ -146,6 +146,7 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
   'GET /api/shops/:shopId/bookings/:bookingId': {},
   'PATCH /api/shops/:shopId/bookings/:bookingId': {
+    minRole: 'manager',
     body: () => ({ notes: 'edited' }),
   },
   'PATCH /api/shops/:shopId/bookings/:bookingId/status': {

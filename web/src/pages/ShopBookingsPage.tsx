@@ -3,7 +3,7 @@ import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -40,6 +40,8 @@ const COMPACT_BLOCK_H = 56;                       // below this, time and name s
 const OTHER_COLUMN_ID = '__other__';
 
 const ALL_STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED', 'NO_SHOW'];
+// Only bookings that still hold their slot can be moved.
+const RESCHEDULABLE: ReadonlySet<BookingStatus> = new Set(['PENDING', 'CONFIRMED']);
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -552,6 +554,18 @@ export default function ShopBookingsPage() {
               ))}
             </div>
             {statusError && <Alert variant="danger">{statusError}</Alert>}
+
+            {canManage && slug && RESCHEDULABLE.has(selectedBooking.status) && (
+              <div className="cluster">
+                <Link
+                  className="btn btn--secondary btn--sm"
+                  to={`/shops/${slug}/bookings/${selectedBooking.id}/reschedule`}
+                >
+                  <FontAwesomeIcon icon={faCalendarDays} aria-hidden="true" />
+                  {t.bookings.reschedule.button}
+                </Link>
+              </div>
+            )}
           </div>
         </Modal>
       )}

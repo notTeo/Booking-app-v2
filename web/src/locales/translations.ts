@@ -857,6 +857,21 @@ export interface Translations {
     createError: string;
     /** The server is momentarily out of retry budget (503) — never shown as an error. */
     bookingBusy: string;
+    reschedule: {
+      button: string;
+      title: string;
+      from: string;
+      to: string;
+      submit: string;
+      /** The chosen time breaks rules the owner may override. */
+      submitAnyway: string;
+      /** Label of the wizard's last step in reschedule mode. */
+      confirmStep: string;
+      same: string;
+      error: string;
+      notFound: string;
+      notAllowed: string;
+    };
     override: RuleMessages & {
       title: string;
       confirm: string;
@@ -1793,6 +1808,19 @@ home: {
       createSuccess: 'Το ραντεβού δημιουργήθηκε!',
       createError: 'Αποτυχία δημιουργίας ραντεβού.',
       bookingBusy: 'Το σύστημα κρατήσεων είναι απασχολημένο — δοκιμάστε ξανά σε λίγο.',
+      reschedule: {
+        button: 'Αλλαγή ώρας',
+        title: 'Αλλαγή ώρας ραντεβού',
+        from: 'Από',
+        to: 'Σε',
+        submit: 'Αλλαγή ώρας',
+        submitAnyway: 'Αλλαγή ώρας παρ’ όλα αυτά',
+        confirmStep: 'Επιβεβαίωση',
+        same: 'Αυτή είναι η τρέχουσα ώρα του ραντεβού. Επιλέξτε άλλη ώρα ή άλλον συνεργάτη.',
+        error: 'Η αλλαγή ώρας απέτυχε.',
+        notFound: 'Το ραντεβού δεν βρέθηκε.',
+        notAllowed: 'Μόνο ραντεβού σε αναμονή ή επιβεβαιωμένα μπορούν να αλλάξουν ώρα.',
+      },
       override: {
         BOOKING_IN_PAST: 'Η ώρα αυτή βρίσκεται στο παρελθόν.',
         BOOKING_BEYOND_ADVANCE_WINDOW: 'Η ημερομηνία είναι πέρα από το επιτρεπόμενο διάστημα κρατήσεων.',
@@ -2741,6 +2769,19 @@ home: {
       createSuccess: 'Booking created!',
       createError: 'Failed to create booking.',
       bookingBusy: 'The booking system is busy — please try again in a moment.',
+      reschedule: {
+        button: 'Reschedule',
+        title: 'Reschedule booking',
+        from: 'From',
+        to: 'To',
+        submit: 'Reschedule',
+        submitAnyway: 'Reschedule anyway',
+        confirmStep: 'Confirm',
+        same: 'That is the booking’s current time. Pick a different time or provider.',
+        error: 'Could not reschedule the booking.',
+        notFound: 'This booking no longer exists.',
+        notAllowed: 'Only pending or confirmed bookings can be rescheduled.',
+      },
       override: {
         BOOKING_IN_PAST: 'That time is in the past.',
         BOOKING_BEYOND_ADVANCE_WINDOW: "That date is beyond the shop's booking window.",

@@ -73,12 +73,27 @@ export const getOwnerSlots = (
   staffId: string | null,
   serviceId: string,
   intervalMinutes?: number,
+  /** Rescheduling: this booking doesn't block its own new time, and its own (possibly deactivated) service still resolves. */
+  forBookingId?: string,
 ) =>
   client
     .get(`${base(shopId)}/slots`, {
-      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes },
+      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId },
     })
     .then((r) => r.data.data as SlotsResponse);
+
+export const getBooking = (shopId: string, bookingId: string) =>
+  client.get(`${base(shopId)}/${bookingId}`).then((r) => r.data.data as Booking);
+
+export interface ReschedulePayload {
+  startTime: string; // ISO 8601
+  staffId?: string;
+  /** Same contract as on creation: only codes the user explicitly accepted. */
+  overrideRules?: BookingRuleCode[];
+}
+
+export const rescheduleBooking = (shopId: string, bookingId: string, payload: ReschedulePayload) =>
+  client.patch(`${base(shopId)}/${bookingId}`, payload).then((r) => r.data.data as Booking);
 
 export const updateBookingStatus = (shopId: string, bookingId: string, status: BookingStatus) =>
   client

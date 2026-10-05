@@ -4,6 +4,7 @@ import {
   createOwnerBooking,
   getApiError,
   isBookingRuleViolation,
+  rescheduleBooking,
   type Booking,
   type BookingRuleCode,
 } from '../../api/booking.api';
@@ -16,7 +17,8 @@ import ServiceSelectStep from './ServiceSelectStep';
 import StaffSelectStep from './StaffSelectStep';
 import DateTimeStep from './DateTimeStep';
 import OwnerCustomerFormStep, { type OwnerCustomerFormValues } from './OwnerCustomerFormStep';
-import { shiftDate, todayInZone } from '../../utils/shopTime';
+import RescheduleConfirmStep from './RescheduleConfirmStep';
+import { dateInZone, shiftDate, todayInZone } from '../../utils/shopTime';
 import { anticipatedRuleCodes, buildISODateTime } from './wizardUtils';
 
 const SLOT_INTERVAL_OPTIONS = [10, 15, 20, 30] as const;
@@ -30,6 +32,7 @@ export default function OwnerBookingWizard({
   defaultShowOutside,
   onDone,
   hideTitle,
+  reschedule,
 }: {
   shopId: string;
   slug: string;
@@ -41,9 +44,21 @@ export default function OwnerBookingWizard({
   onDone: (booking: Booking) => void;
   /** Skip the internal heading when the wizard is embedded under a panel that already shows its own title (e.g. the calendar's quick-create panel). */
   hideTitle?: boolean;
+  /** Move this booking (PATCH) instead of creating one. Needs `zone` for its shop-local date. */
+  reschedule?: { booking: Booking; zone: string };
 }) {
   const { t } = useLang();
-  const wizard = useBookingWizard({ slug, shopId, initialMemberId, initialDate, internal: true });
+  const wizard = useBookingWizard({
+    slug,
+    shopId,
+    initialMemberId: reschedule ? reschedule.booking.staffId : initialMemberId,
+    initialDate: reschedule ? dateInZone(reschedule.booking.startTime, reschedule.zone) : initialDate,
+    internal: true,
+    reschedule: reschedule && {
+      bookingId: reschedule.booking.id,
+      service: { ...reschedule.booking.service, description: null },
+    },
+  });
   const [submitting, setSubmitting] = useState(false);
   // After a 503 BOOKING_BUSY the submit button stays disabled (not spinning) for the Retry-After window.
   const [cooling, setCooling] = useState(false);
@@ -54,9 +69,9 @@ export default function OwnerBookingWizard({
   const [busyNotice, setBusyNotice] = useState<string | null>(null);
   // Set when the server rejected the booking for a rule violation (422). The
   // form values are kept so "book anyway" can resend them, accepting exactly
-  // the violations the server listed.
+  // the violations the server listed (a reschedule has no form values).
   const [pendingOverride, setPendingOverride] = useState<{
-    values: OwnerCustomerFormValues;
+    values?: OwnerCustomerFormValues;
     codes: BookingRuleCode[];
   } | null>(null);
 
@@ -71,65 +86,94 @@ export default function OwnerBookingWizard({
   // Rules the chosen slot is known to break, confirmed on the last step. null
   // (a typed-in "Other time") = unknown; a 422 then falls back to the dialog.
   const anticipated = anticipatedRuleCodes(wizard.slots, wizard.time);
+  const newStartISO =
+    wizard.date && wizard.time ? buildISODateTime(wizard.date, wizard.time, wizard.shop.timezone) : null;
 
-  async function handleSubmit(
-    values: OwnerCustomerFormValues,
-    acceptedRules?: BookingRuleCode[],
-  ) {
-    if (!wizard.selectedServiceId || submitting) return;
+  // Shared by create and reschedule: one place decides what a failed submit
+  // means, so the two flows can never disagree on overrides or busy handling.
+  function handleSubmitError(err: unknown, values?: OwnerCustomerFormValues) {
+    const info = getApiError(err);
+    if (info.status === 503 && info.code === 'BOOKING_BUSY') {
+      // Not a rejection — the system is momentarily out of retry budget.
+      // Never offered as an override; keep the button disabled for the
+      // server's Retry-After window instead of resetting immediately.
+      setPendingOverride(null);
+      setBusyNotice(t.bookings.bookingBusy);
+      setCooling(true);
+      setTimeout(() => {
+        setCooling(false);
+        setSubmitting(false);
+      }, (info.retryAfterSeconds ?? 1) * 1000);
+      return;
+    }
+    const fallback = reschedule ? t.bookings.reschedule.error : t.bookings.createError;
+    const acceptable = acceptableRuleCodes(info);
+    if (acceptable) {
+      // Ask before breaking a rule; overlap (409) is never offered an override.
+      setPendingOverride({ values, codes: acceptable });
+    } else if (isBookingRuleViolation(info)) {
+      // A rule that can never be overridden (the booking window): say so,
+      // don't offer "book anyway".
+      setPendingOverride(null);
+      setSubmitError(t.public.ruleErrors[info.code] ?? info.message ?? fallback);
+    } else if (info.code === 'BOOKING_TOO_LONG') {
+      setPendingOverride(null);
+      setSubmitError(t.bookings.override.BOOKING_TOO_LONG);
+    } else if (info.code === 'SLOT_TAKEN') {
+      setPendingOverride(null);
+      setSubmitError(t.bookings.override.SLOT_TAKEN);
+    } else if (reschedule && info.status === 404) {
+      setPendingOverride(null);
+      setSubmitError(t.bookings.reschedule.notFound);
+    } else {
+      setPendingOverride(null);
+      setSubmitError(info.message ?? fallback);
+    }
+    setSubmitting(false);
+  }
+
+  async function submitWith(request: () => Promise<Booking>, values?: OwnerCustomerFormValues) {
+    if (submitting) return;
     setSubmitting(true);
     setSubmitError(null);
     setBusyNotice(null);
     try {
-      const booking = await createOwnerBooking(shopId, {
-        name: values.name,
-        phone: values.phone,
-        email: values.email,
-        serviceId: wizard.selectedServiceId,
-        staffId: wizard.selectedMemberId ?? undefined,
-        startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
-        notes: values.notes,
-        ...(acceptedRules && { overrideRules: acceptedRules }),
-      });
+      const booking = await request();
       setPendingOverride(null);
       onDone(booking);
       setSubmitting(false);
     } catch (err: unknown) {
-      const info = getApiError(err);
-      if (info.status === 503 && info.code === 'BOOKING_BUSY') {
-        // Not a rejection — the system is momentarily out of retry budget.
-        // Never offered as an override; keep the button disabled for the
-        // server's Retry-After window instead of resetting immediately.
-        setPendingOverride(null);
-        setBusyNotice(t.bookings.bookingBusy);
-        setCooling(true);
-        setTimeout(() => {
-          setCooling(false);
-          setSubmitting(false);
-        }, (info.retryAfterSeconds ?? 1) * 1000);
-        return;
-      }
-      const acceptable = acceptableRuleCodes(info);
-      if (acceptable) {
-        // Ask before breaking a rule; overlap (409) is never offered an override.
-        setPendingOverride({ values, codes: acceptable });
-      } else if (isBookingRuleViolation(info)) {
-        // A rule that can never be overridden (the booking window): say so,
-        // don't offer "book anyway".
-        setPendingOverride(null);
-        setSubmitError(t.public.ruleErrors[info.code] ?? info.message ?? t.bookings.createError);
-      } else if (info.code === 'BOOKING_TOO_LONG') {
-        setPendingOverride(null);
-        setSubmitError(t.bookings.override.BOOKING_TOO_LONG);
-      } else if (info.code === 'SLOT_TAKEN') {
-        setPendingOverride(null);
-        setSubmitError(t.bookings.override.SLOT_TAKEN);
-      } else {
-        setPendingOverride(null);
-        setSubmitError(info.message ?? t.bookings.createError);
-      }
-      setSubmitting(false);
+      handleSubmitError(err, values);
     }
+  }
+
+  function handleSubmit(values: OwnerCustomerFormValues, acceptedRules?: BookingRuleCode[]) {
+    if (!wizard.selectedServiceId) return;
+    return submitWith(
+      () =>
+        createOwnerBooking(shopId, {
+          name: values.name,
+          phone: values.phone,
+          email: values.email,
+          serviceId: wizard.selectedServiceId!,
+          staffId: wizard.selectedMemberId ?? undefined,
+          startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
+          notes: values.notes,
+          ...(acceptedRules && { overrideRules: acceptedRules }),
+        }),
+      values,
+    );
+  }
+
+  function handleReschedule(acceptedRules?: BookingRuleCode[]) {
+    if (!reschedule || !wizard.selectedMemberId) return;
+    return submitWith(() =>
+      rescheduleBooking(shopId, reschedule.booking.id, {
+        startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
+        staffId: wizard.selectedMemberId!,
+        ...(acceptedRules && { overrideRules: acceptedRules }),
+      }),
+    );
   }
 
   function handleBackFromForm() {
@@ -140,9 +184,14 @@ export default function OwnerBookingWizard({
 
   return (
     <section className="public-section">
-      {!hideTitle && <h2 className="t-heading">{t.bookings.newBookingTitle}</h2>}
+      {!hideTitle && (
+        <h2 className="t-heading">{reschedule ? t.bookings.reschedule.title : t.bookings.newBookingTitle}</h2>
+      )}
 
-      <WizardStepsIndicator currentStep={wizard.step} />
+      <WizardStepsIndicator
+        currentStep={wizard.step}
+        lastLabel={reschedule ? t.bookings.reschedule.confirmStep : undefined}
+      />
 
       {wizard.step === 1 && (
         <ServiceSelectStep services={wizard.shop.services} onSelect={wizard.handleSelectService} />
@@ -154,6 +203,7 @@ export default function OwnerBookingWizard({
           selectedService={wizard.selectedService}
           onSelect={wizard.handleSelectMember}
           onBack={wizard.goBack}
+          hideNoPreference={!!reschedule}
         />
       )}
 
@@ -186,7 +236,28 @@ export default function OwnerBookingWizard({
         />
       )}
 
-      {wizard.step === 4 && (
+      {wizard.step === 4 && reschedule && newStartISO && (
+        <RescheduleConfirmStep
+          booking={reschedule.booking}
+          zone={wizard.shop.timezone}
+          newStartISO={newStartISO}
+          selectedService={wizard.selectedService}
+          selectedMember={selectedMember}
+          outsideRules={anticipated ?? []}
+          unchanged={
+            wizard.selectedMemberId === reschedule.booking.staffId &&
+            new Date(newStartISO).getTime() === new Date(reschedule.booking.startTime).getTime()
+          }
+          onSubmit={() => handleReschedule(anticipated && anticipated.length > 0 ? anticipated : undefined)}
+          onBack={handleBackFromForm}
+          submitting={submitting}
+          cooling={cooling}
+          error={submitError}
+          notice={busyNotice}
+        />
+      )}
+
+      {wizard.step === 4 && !reschedule && (
         <OwnerCustomerFormStep
           shopId={shopId}
           selectedService={wizard.selectedService}
@@ -207,11 +278,15 @@ export default function OwnerBookingWizard({
         <ConfirmDialog
           title={t.bookings.override.title}
           message={pendingOverride.codes.map((c) => t.bookings.override[c]).join(' ')}
-          confirmLabel={t.bookings.override.confirm}
+          confirmLabel={reschedule ? t.bookings.reschedule.submitAnyway : t.bookings.override.confirm}
           cancelLabel={t.bookings.override.cancel}
           tone="warning"
           busy={submitting}
-          onConfirm={() => handleSubmit(pendingOverride.values, pendingOverride.codes)}
+          onConfirm={() =>
+            reschedule
+              ? handleReschedule(pendingOverride.codes)
+              : pendingOverride.values && handleSubmit(pendingOverride.values, pendingOverride.codes)
+          }
           onCancel={() => setPendingOverride(null)}
         />
       )}
