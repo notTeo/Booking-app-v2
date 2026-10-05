@@ -83,6 +83,8 @@ const PREVIEW_CUSTOMERS_COUNT = 312;
 const PREVIEW_UPCOMING_COUNT = 4;
 
 const PREVIEW_SERVICE_PRICES = ['€25', '€12'];
+// Monthly plan prices in euro, excluding VAT.
+const PLAN_PRICES = { solo: 15, team: 25 };
 
 // ─── Booking wizard mock demo data ─────────────────────────────────────────
 type WizardStep = 1 | 2 | 3 | 4;
@@ -194,6 +196,10 @@ export default function HomePage() {
   const wizardServices = [
     { name: t.home.previewService1Name, duration: t.home.previewService1Duration, price: PREVIEW_SERVICE_PRICES[0] },
     { name: t.home.previewService2Name, duration: t.home.previewService2Duration, price: PREVIEW_SERVICE_PRICES[1] },
+  ];
+  const pricingPlans = [
+    { name: t.home.pricingSoloName, price: PLAN_PRICES.solo, desc: t.home.pricingSoloDesc, features: t.home.pricingSoloFeatures, featured: false },
+    { name: t.home.pricingTeamName, price: PLAN_PRICES.team, desc: t.home.pricingTeamDesc, features: t.home.pricingTeamFeatures, featured: true },
   ];
   const wizardStaff = [t.home.previewCalStaff1, t.home.previewCalStaff2, t.home.previewCalStaff3];
 
@@ -1216,20 +1222,24 @@ export default function HomePage() {
             <h2 className="home-section-title">{t.home.pricingTitle}</h2>
             <p className="home-section-sub">{t.home.pricingSub}</p>
           </div>
-          <div className="home-pricing-single">
-            <div className="home-price-card home-price-card--pro">
-              <h3 className="home-price-tier">{t.home.pricingPlanName}</h3>
-              <p className="home-price-desc">{t.home.pricingPlanDesc}</p>
-              <hr className="home-price-divider" />
-              <ul className="home-price-features">
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature1}</li>
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature2}</li>
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature3}</li>
-              </ul>
-              <a href="mailto:nikostheodosis05@gmail.com" className="home-btn-primary home-price-cta">
-                {t.home.pricingCta}
-              </a>
-            </div>
+          <div className="home-pricing-grid">
+            {pricingPlans.map((plan) => (
+              <div key={plan.name} className={`home-price-card${plan.featured ? ' home-price-card--pro' : ''}`}>
+                <h3 className="home-price-tier">{plan.name}</h3>
+                <div className="home-price-amount">
+                  <span className="currency">€</span>
+                  <span className="amount">{plan.price}</span>
+                  <span className="period">{t.home.pricingPerMonth} · {t.home.pricingExclVat}</span>
+                </div>
+                <p className="home-price-desc">{plan.desc}</p>
+                <hr className="home-price-divider" />
+                <ul className="home-price-features">
+                  {plan.features.map((feature) => (
+                    <li key={feature}><FontAwesomeIcon icon={faCheck} className="feat-check" /> {feature}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>

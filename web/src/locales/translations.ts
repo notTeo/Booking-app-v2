@@ -94,12 +94,14 @@ export interface Translations {
     pricingBadge: string;
     pricingTitle: string;
     pricingSub: string;
-    pricingPlanName: string;
-    pricingPlanDesc: string;
-    pricingFeature1: string;
-    pricingFeature2: string;
-    pricingFeature3: string;
-    pricingCta: string;
+    pricingPerMonth: string;
+    pricingExclVat: string;
+    pricingSoloName: string;
+    pricingSoloDesc: string;
+    pricingSoloFeatures: string[];
+    pricingTeamName: string;
+    pricingTeamDesc: string;
+    pricingTeamFeatures: string[];
     previewHint: string;
     step1Title: string;
     step1Desc: string;
@@ -1140,7 +1142,7 @@ export const translations: Record<Language, Translations> = {
 home: {
     headline: 'Το πρόγραμμά σου,',
     headlineAccent: 'οργανωμένο.',
-    cta: 'Ξεκίνα Δωρεάν',
+    cta: 'Ξεκίνα',
     signIn: 'Σύνδεση',
     heroBadge: 'Η πλατφόρμα κρατήσεων για κουρεία & σαλόνια ομορφιάς',
     featuresBadge: 'Χαρακτηριστικά',
@@ -1154,16 +1156,31 @@ home: {
     contactBadge: 'Επικοινωνία',
     pricingBadge: 'Τιμές',
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
-    pricingSub: 'Είμαστε ακόμα στα πρώτα βήματα — επικοινωνήστε μαζί μας για να ξεκινήσετε.',
-    pricingPlanName: 'Δωρεάν κατά τη διάρκεια του beta',
-    pricingPlanDesc: 'Πλήρη πρόσβαση σε όλα τα χαρακτηριστικά όσο βρισκόμαστε σε πρώιμο στάδιο. Καμία χρέωση, καμία δέσμευση.',
-    pricingFeature1: 'Απεριόριστες κρατήσεις',
-    pricingFeature2: 'Δημόσια σελίδα κρατήσεων για τους πελάτες σου',
-    pricingFeature3: 'Διαχείριση ομάδας, υπηρεσιών και πελατών',
-    pricingCta: 'Επικοινωνήστε μαζί μας',
+    pricingSub: 'Δύο πακέτα, με τιμή ανά κατάστημα. Χωρίς προμήθεια στις κρατήσεις.',
+    pricingPerMonth: '/μήνα',
+    pricingExclVat: 'χωρίς ΦΠΑ',
+    pricingSoloName: 'Solo',
+    pricingSoloDesc: 'Για όποιον δουλεύει μόνος του.',
+    pricingSoloFeatures: [
+      '1 μέλος προσωπικού με κρατήσεις',
+      'Απεριόριστες κρατήσεις',
+      'Δημόσια σελίδα κρατήσεων',
+      'Ημερολόγιο, υπηρεσίες και πελατολόγιο',
+      'Email επιβεβαίωσης με σύνδεσμο ακύρωσης και αλλαγής',
+      'Εισαγωγή και εξαγωγή πελατών',
+    ],
+    pricingTeamName: 'Team',
+    pricingTeamDesc: 'Για καταστήματα με 2 έως 5 άτομα.',
+    pricingTeamFeatures: [
+      'Έως 5 μέλη προσωπικού με κρατήσεις',
+      'Όλα όσα έχει το Solo',
+      'Προσκλήσεις ομάδας με email',
+      'Ρόλοι και δικαιώματα',
+      'Ωράριο ανά μέλος προσωπικού',
+    ],
     previewHint: 'Έλα, κάνε κλικ τριγύρω — είναι διαδραστικό',
     step1Title: 'Δημιούργησε τον λογαριασμό σου',
-    step1Desc: 'Εγγράψου σε δευτερόλεπτα — είναι δωρεάν, χωρίς πιστωτική κάρτα.',
+    step1Desc: 'Εγγράψου σε δευτερόλεπτα με το email σου.',
     step2Title: 'Στήσε το κατάστημά σου',
     step2Desc: 'Πρόσθεσε τις υπηρεσίες σου, όρισε το ωράριό σου και κάλεσε την ομάδα σου — όλα σε λιγότερο από 10 λεπτά.',
     step3Title: 'Δέξου κρατήσεις',
@@ -1171,8 +1188,8 @@ home: {
     faqHeading: 'Συχνές Ερωτήσεις',
     faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
     faqContact: 'Επικοινώνησε μαζί μας',
-    faq1Q: 'Είναι πραγματικά δωρεάν;',
-    faq1A: 'Ναι. Όσο βρισκόμαστε σε beta, κάθε δυνατότητα είναι δωρεάν — χωρίς πιστωτική κάρτα. Μπορείς να καλέσεις την ομάδα σου και να ξεκινήσεις να δέχεσαι πραγματικά ραντεβού αμέσως.',
+    faq1Q: 'Πόσο κοστίζει το BeBooked;',
+    faq1A: 'Το Solo κοστίζει €15 τον μήνα και το Team €25 τον μήνα, ανά κατάστημα και χωρίς ΦΠΑ. Δεν υπάρχει προμήθεια στις κρατήσεις.',
     faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
     faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
     faq3Q: 'Πώς διαγράφω τον λογαριασμό μου;',
@@ -2225,7 +2242,7 @@ home: {
     home: {
     headline: "It's okay to {brand}.",
     headlineAccent: 'Just manage it.',
-    cta: 'Start Free',
+    cta: 'Get started',
     signIn: 'Sign In',
     heroBadge: 'Booking platform for barbershops & salons',
     featuresBadge: 'Features',
@@ -2239,16 +2256,31 @@ home: {
     contactBadge: 'Contact',
     pricingBadge: 'Pricing',
     pricingTitle: 'Simple, with no surprises',
-    pricingSub: "We're still early — reach out and we'll get you set up.",
-    pricingPlanName: 'Free during beta',
-    pricingPlanDesc: "Full access to every feature while we're in early access. No charge, no commitment.",
-    pricingFeature1: 'Unlimited bookings',
-    pricingFeature2: 'A public booking page for your clients',
-    pricingFeature3: 'Team, service, and customer management',
-    pricingCta: 'Contact us',
+    pricingSub: 'Two plans, priced per shop. No commission on bookings.',
+    pricingPerMonth: '/month',
+    pricingExclVat: 'excl. VAT',
+    pricingSoloName: 'Solo',
+    pricingSoloDesc: 'For anyone working on their own.',
+    pricingSoloFeatures: [
+      '1 bookable staff member',
+      'Unlimited bookings',
+      'Public booking page',
+      'Calendar, services and customer records',
+      'Confirmation emails with cancel and reschedule links',
+      'Customer import and export',
+    ],
+    pricingTeamName: 'Team',
+    pricingTeamDesc: 'For shops with 2 to 5 people.',
+    pricingTeamFeatures: [
+      'Up to 5 bookable staff',
+      'Everything in Solo',
+      'Team invites by email',
+      'Roles and permissions',
+      'Working hours per staff member',
+    ],
     previewHint: "Go ahead, click around — it's interactive",
     step1Title: 'Create your account',
-    step1Desc: "Sign up in seconds — it's free, no credit card required.",
+    step1Desc: 'Sign up in seconds with your email.',
     step2Title: 'Set up your shop',
     step2Desc: 'Add your services, set your hours, and invite your team — all in under 10 minutes.',
     step3Title: 'Accept bookings',
@@ -2256,8 +2288,8 @@ home: {
     faqHeading: 'Frequently Asked Questions',
     faqSub: 'Find answers to frequently asked questions.',
     faqContact: 'Contact us',
-    faq1Q: 'Is BeBooked really free?',
-    faq1A: 'Yes. While we are in beta, every feature is free — no credit card required. You can invite your team and start taking real bookings right away.',
+    faq1Q: 'How much does BeBooked cost?',
+    faq1A: 'Solo is €15 a month and Team is €25 a month, per shop and excluding VAT. There is no commission on bookings.',
     faq2Q: 'Can my clients book without creating an account?',
     faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
     faq3Q: 'How do I delete my account?',
