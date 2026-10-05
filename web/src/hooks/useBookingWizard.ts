@@ -44,6 +44,12 @@ export interface UseBookingWizardOptions {
     /** Back on the first step leaves the wizard. */
     onExit?: () => void;
   };
+  /**
+   * Who the booking is for, when known before the date/time step: slot
+   * lookups then fit that customer's own duration for the service. The public
+   * page identifies by phone, the shop's wizard by customer id.
+   */
+  slotCustomer?: { phone?: string; customerId?: string } | null;
 }
 
 export interface UseBookingWizardResult {
@@ -96,6 +102,7 @@ export function useBookingWizard({
   initialDate,
   internal,
   reschedule,
+  slotCustomer,
 }: UseBookingWizardOptions): UseBookingWizardResult {
   const { t } = useLang();
 
@@ -154,8 +161,8 @@ export function useBookingWizard({
   ) {
     const request =
       internal && shopId
-        ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId)
-        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token);
+        ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId, slotCustomer?.customerId)
+        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token, slotCustomer?.phone);
     const seq = ++slotsSeq.current;
     lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceId, interval);
     setSlotsError(false);

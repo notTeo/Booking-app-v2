@@ -16,6 +16,7 @@ export interface OwnerCustomerFormValues {
 
 export default function OwnerCustomerFormStep({
   shopId,
+  initialCustomer,
   selectedService,
   selectedMember,
   date,
@@ -29,6 +30,8 @@ export default function OwnerCustomerFormStep({
   notice,
 }: {
   shopId: string;
+  /** The customer picked on the first step, if any: the form starts filled in with them. */
+  initialCustomer?: Customer | null;
   selectedService: Service | null;
   selectedMember: ShopMember | null;
   date: string;
@@ -53,9 +56,9 @@ export default function OwnerCustomerFormStep({
   // out-of-hours one, so the panel and button say that instead.
   const onlyOffGrid = outsideRules.length > 0 && outsideRules.every((c) => c === 'OFF_SLOT_GRID');
 
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(initialCustomer?.phone ?? '');
+  const [name, setName] = useState(initialCustomer?.name ?? '');
+  const [email, setEmail] = useState(initialCustomer?.email ?? '');
   const [notes, setNotes] = useState('');
 
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
@@ -67,7 +70,7 @@ export default function OwnerCustomerFormStep({
 
   // The latest phone text, so a slow look-up that returns after the user kept
   // typing is discarded instead of filling in for a number no longer shown.
-  const phoneRef = useRef('');
+  const phoneRef = useRef(initialCustomer?.phone ?? '');
 
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;

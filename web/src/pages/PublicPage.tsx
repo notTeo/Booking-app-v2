@@ -11,6 +11,7 @@ import WizardStepsIndicator from '../components/booking-wizard/WizardStepsIndica
 import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
+import PublicIdentityStep, { type PublicIdentity } from '../components/booking-wizard/PublicIdentityStep';
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation } from '../api/booking.api';
@@ -31,7 +32,19 @@ export default function PublicPage() {
 
 function PublicBookingPage({ slug }: { slug: string }) {
   const { t, language } = useLang();
-  const wizard = useBookingWizard({ slug });
+
+  // ── Customer form state (step 4 — plain form, no autocomplete) ──
+  // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
+  const [saved] = useState(readSavedCustomer);
+  const [name, setName] = useState(saved?.name ?? '');
+  const [phone, setPhone] = useState(saved?.phone ?? '');
+  const [email, setEmail] = useState(saved?.email ?? '');
+  const [notes, setNotes] = useState('');
+  const [remember, setRemember] = useState(saved !== null);
+  // Saved details are only used to find the customer's own times once they confirm them.
+  const [identity, setIdentity] = useState<PublicIdentity>(saved ? 'ask' : 'anonymous');
+
+  const wizard = useBookingWizard({ slug, slotCustomer: identity === 'known' ? { phone } : null });
 
   usePageMeta(
     wizard.shop
@@ -47,15 +60,6 @@ function PublicBookingPage({ slug }: { slug: string }) {
         }
       : null,
   );
-
-  // ── Customer form state (step 4 — plain form, no autocomplete) ──
-  // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
-  const [saved] = useState(readSavedCustomer);
-  const [name, setName] = useState(saved?.name ?? '');
-  const [phone, setPhone] = useState(saved?.phone ?? '');
-  const [email, setEmail] = useState(saved?.email ?? '');
-  const [notes, setNotes] = useState('');
-  const [remember, setRemember] = useState(saved !== null);
 
   // ── Submission state ──
   const [submitting, setSubmitting] = useState(false);
@@ -136,6 +140,22 @@ function PublicBookingPage({ slug }: { slug: string }) {
     if (!checked) clearSavedCustomer();
   }
 
+  // "Someone else" / "Not you?": book as a new person with the standard times.
+  // The stored copy is left alone; it goes when a booking completes without
+  // "remember" ticked, as before.
+  function handleDeclineIdentity() {
+    setIdentity('anonymous');
+    setName('');
+    setPhone('');
+    setEmail('');
+    setRemember(false);
+  }
+
+  function handleUsePhone(value: string) {
+    setPhone(value);
+    setIdentity('known');
+  }
+
   function handleBackFromForm() {
     setSubmitError(null);
     setBusyNotice(null);
@@ -187,6 +207,18 @@ function PublicBookingPage({ slug }: { slug: string }) {
             <WizardStepsIndicator currentStep={wizard.step} />
 
             {wizard.step === 1 && (
+              <PublicIdentityStep
+                identity={identity}
+                name={name}
+                phone={phone}
+                onConfirm={() => setIdentity('known')}
+                onDecline={handleDeclineIdentity}
+                onUsePhone={handleUsePhone}
+              />
+            )}
+
+            {/* Saved details found: the customer says who is booking before anything else. */}
+            {wizard.step === 1 && identity !== 'ask' && (
               <ServiceSelectStep services={shop.services} onSelect={wizard.handleSelectService} />
             )}
 

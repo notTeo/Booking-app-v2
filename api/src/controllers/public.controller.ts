@@ -20,6 +20,7 @@ import {
 import { bookingEmailParams } from '../utils/bookingEmail';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
+import { isPlausiblePhone } from '../validators/common';
 
 export const getShopInfo = async (
   req: Request,
@@ -233,6 +234,7 @@ export const getPublicSlots = async (
     const staffId = (req.query['staffId'] as string) ?? null;
     const serviceId = req.query['serviceId'] as string;
     const rescheduleToken = req.query['rescheduleToken'] as string | undefined;
+    const phone = req.get('x-customer-phone')?.trim();
     const shop = await prisma.shop.findUnique({
       where: { slug, isActive: true },
       select: { id: true },
@@ -248,9 +250,15 @@ export const getPublicSlots = async (
       // authenticated GET /api/shops/:shopId/bookings/slots.
       'public',
       // A customer rescheduling: their own booking must not block its slot.
+      // Otherwise a returning customer may say who they are, so the times
+      // offered fit their own duration for the service. Sent as a header to
+      // keep the phone out of URLs and access logs; whether it is known is
+      // never revealed, and a malformed one is ignored.
       rescheduleToken
         ? { forBookingId: await findBookingIdByToken(shop.id, rescheduleToken) }
-        : {},
+        : isPlausiblePhone(phone)
+          ? { customer: { phone: phone as string } }
+          : {},
     );
     successResponse(res, slots);
   } catch (err) {
