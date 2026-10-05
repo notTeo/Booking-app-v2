@@ -36,7 +36,7 @@ Every page outside the landing page now uses only classes from `components.css`,
 
 Left:
 
-- **Landing page** (`home.css`, `HomePage.tsx`, `Footer.tsx`, and the label and buttons on About and Contact): the one standing exception. It keeps its own `.home-btn-primary` / `.home-btn-ghost` buttons, its fake-preview `clamp()` values and class names, and a few `rgba()` shadows and scrims.
+- **Landing page** (`home.css`, `HomePage.tsx`, `Footer.tsx`, and the label and buttons on About and Contact): the one standing exception. It keeps its own `.home-btn-primary` / `.home-btn-ghost` buttons, its fake-preview `clamp()` values and class names, and a few `rgba()` shadows and scrims. The preview's sidebar is no longer part of the exception: it is built from the real `.sidebar` / `.nav-item` classes with the in-shop link set of `Sidebar.tsx`, and `home.css` only sets its sizes (scaled to the card), never its colours.
 - **Open UI work:** convert the remaining saving buttons to `.is-loading` + `aria-busy`.
 
 ## Decisions on the section 5 issues

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
-   HOME PAGE — uses global CSS variables from variables.css
+   HOME PAGE — uses global CSS variables from tokens.css
    Light + dark mode handled entirely by :root / [data-theme="dark"]
 ═══════════════════════════════════════════════════════════════════════════════ */
 
@@ -545,10 +545,10 @@
 .home-preview-dot--green  { background: var(--success); }
 
 /* ─── Landing-page mockup base ───
-   The mockup below (HomePage.tsx) is a picture of the old app shell and keeps
-   the old class names. These are the base rules it used to inherit from the
-   removed styles/pages/sidebar.css, at :where() specificity so the
-   .home-preview-* overrides after them still win. */
+   The mockup's phone header (HomePage.tsx) keeps its own class names; these
+   are its base rules, at :where() specificity so the .home-preview-*
+   overrides after them still win. The sidebar itself uses the app's real
+   .sidebar / .nav-item classes from components.css. */
 :where(.home-preview-card) .app-mobile-header {
   display: none; align-items: center; gap: 0.6rem; width: 240px; padding: 0.75rem;
   background: var(--surface); border-bottom: 1px solid var(--border);
@@ -559,34 +559,6 @@
   background: none; border: none; cursor: pointer; color: var(--text); width: 32px; height: 32px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);
 }
-:where(.home-preview-card) .sidebar-section-label {
-  font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
-  padding: 0 0.75rem; margin-bottom: 0.4rem; margin-top: 0.75rem; white-space: nowrap;
-}
-:where(.home-preview-card) .sidebar-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
-:where(.home-preview-card) .sidebar-header h4 {
-  white-space: nowrap; font-family: var(--font-logo); font-weight: 400; font-size: 1.3rem; color: var(--accent); padding: 0;
-}
-:where(.home-preview-card) .sidebar-link,
-:where(.home-preview-card) .sidebar-logout {
-  display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.75rem; border-radius: var(--radius-md);
-  font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap;
-}
-:where(.home-preview-card) .sidebar-link svg { flex-shrink: 0; opacity: 0.8; }
-:where(.home-preview-card) .sidebar-link.active svg { opacity: 1; }
-:where(.home-preview-card) .sidebar-logout { font-family: var(--font-body); padding-top: 0.75rem; }
-:where(.home-preview-card) .sidebar-back-link {
-  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0;
-  margin-left: auto; border-radius: var(--radius-md); background: var(--surface-sunken); color: var(--text-muted);
-  font-size: 0.85rem; text-decoration: none;
-}
-:where(.home-preview-card) .sidebar-shop-name {
-  padding: 0.25rem 0.75rem 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-:where(.home-preview-card) .sidebar-bottom {
-  border-radius: 0 0 var(--radius-md) var(--radius-md); border-top: 1px solid var(--border); margin-top: auto;
-}
 
 /* Mobile-only — the real app's own mobile header (old account-level AppLayout shell),
    reused exactly for visual accuracy, just repositioned for the card context
@@ -594,7 +566,7 @@
 .home-preview-card .app-mobile-header {
   display: none;
   position: static;
-  width: 190px; /* matches .home-preview-sidebar's mobile drawer width */
+  width: 190px; /* matches the sidebar's mobile drawer width */
   z-index: auto;
   gap: clamp(0.35rem, 1cqw, 0.6rem);
   padding: clamp(0.45rem, 1.3cqw, 0.75rem);
@@ -613,7 +585,7 @@
   height: clamp(20px, 2.9cqw, 32px);
   /* Draws the eye to the mockup's own hamburger — scoped to the preview
      card only, so the real app's sidebar toggle (same .hamburger-btn
-     class, in ShopSidebarLayout.tsx) is unaffected. */
+     class) is unaffected. */
   animation: home-preview-hamburger-pulse 1.8s ease-in-out infinite;
 }
 
@@ -638,90 +610,34 @@
   min-height: 505px;
 }
 
-/* Clickable, non-functional mockup of the real sidebar (components/Sidebar.tsx)
-   — reuses its CSS classes (.sidebar-header, .sidebar-link, etc. from
-   old shell CSS) for visual accuracy, just not the root .sidebar positioning. */
-.home-preview-sidebar {
+/* Clickable, non-functional copy of the app sidebar (components/Sidebar.tsx).
+   It is built from the same .sidebar / .nav-item classes in components.css, so
+   its colours and states are the app's. Only sizes are set here: they scale
+   with the card (container query units) so the picture reads the same at any
+   width. No colours in this block. */
+.home-preview-card .sidebar {
+  flex: none;
   width: clamp(140px, 18cqw, 200px);
-  flex-shrink: 0;
+  height: auto;
   padding: clamp(0.6rem, 1.8cqw, 1.25rem) clamp(0.4rem, 1.1cqw, 0.75rem);
-  border-right: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
-  border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.1rem, 0.3cqw, 0.2rem);
-  overflow-y: hidden;
-  border-radius: 0 calc(var(--radius-md) * 2) calc(var(--radius-md) * 2) 0; /* same as the real .sidebar */
+  gap: clamp(0.4rem, 1.1cqw, 0.75rem);
+  overflow: hidden;
 }
-
-/* Without this, a short card (mobile aspect-ratio) squashes every row to
-   fit instead of scrolling — flex items shrink by default in a column
-   flex container that's shorter than its content. */
-.home-preview-sidebar > * {
-  flex-shrink: 0;
-}
-
-.home-preview-sidebar .sidebar-link {
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  cursor: pointer;
-  /* Scales off the card's own width (container query units) so the mockup
-     reads the same whether the card renders huge or shrunk on mobile —
-     both the text and the row's own padding/gap. Font sizes use a low cqw
-     coefficient (relative to padding/gap) so they drift gradually across
-     the card's width range instead of visibly jumping as it resizes. */
-  font-size: clamp(0.80rem, 0.76cqw, 1.02rem);
-  padding: clamp(0.32rem, 0.9cqw, 0.5rem) clamp(0.45rem, 1.1cqw, 0.75rem);
+/* A short card must crop the rail, not squash its rows. */
+.home-preview-card .sidebar > * { flex-shrink: 0; }
+.home-preview-card .sidebar .wordmark { font-size: clamp(1rem, 1.05cqw, 1.45rem); }
+.home-preview-card .sidebar__brand,
+.home-preview-card .sidebar__title { padding: 0 clamp(0.45rem, 1.1cqw, 0.75rem); }
+.home-preview-card .sidebar__title { font-size: clamp(0.74rem, 0.76cqw, 1.08rem); }
+.home-preview-card .sidebar__nav { gap: clamp(0.1rem, 0.3cqw, 0.25rem); }
+.home-preview-card .sidebar__footer { padding-top: clamp(0.4rem, 1.1cqw, 0.75rem); }
+.home-preview-card .nav-item {
+  min-height: clamp(1.75rem, 3.4cqw, 2.5rem);
+  padding: 0 clamp(0.45rem, 1.1cqw, 0.75rem);
   gap: clamp(0.35rem, 1cqw, 0.6rem);
+  font-size: clamp(0.8rem, 0.76cqw, 1.02rem);
 }
-
-.home-preview-sidebar .sidebar-section-label {
-  font-size: clamp(0.62rem, 0.56cqw, 0.81rem);
-  padding: 0 clamp(0.4rem, 1.1cqw, 0.75rem);
-  margin: clamp(0.4rem, 1.1cqw, 0.75rem) 0 clamp(0.2rem, 0.6cqw, 0.4rem);
-}
-
-.home-preview-sidebar .sidebar-shop-name {
-  font-size: clamp(0.74rem, 0.76cqw, 1.08rem);
-  padding: clamp(0.15rem, 0.4cqw, 0.25rem) clamp(0.4rem, 1.1cqw, 0.75rem) clamp(0.3rem, 0.8cqw, 0.5rem);
-}
-
-.home-preview-sidebar .sidebar-header {
-  gap: clamp(0.35rem, 1cqw, 0.6rem);
-  margin-bottom: clamp(0.55rem, 1.6cqw, 1rem);
-}
-
-.home-preview-sidebar .sidebar-header h4 {
-  font-size: clamp(1rem, 1.05cqw, 1.45rem);
-}
-
-/* Re-declared at higher specificity than the plain reset above — its equal
-   specificity to the base :hover/.active rules meant load order
-   alone decided the winner, which silently cancelled both states. */
-.home-preview-sidebar .sidebar-link:hover {
-  background: var(--surface-sunken);
-  color: var(--text);
-}
-.home-preview-sidebar .sidebar-link.active {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent);
-}
-.home-preview-sidebar .sidebar-logout:hover {
-  background: var(--surface-sunken);
-  color: var(--danger);
-}
-
-.home-preview-sidebar .sidebar-back-link {
-  border: none;
-  font-family: inherit;
-  cursor: pointer;
-  width: clamp(20px, 2.9cqw, 32px);
-  height: clamp(20px, 2.9cqw, 32px);
-  font-size: clamp(0.55rem, 1.2cqw, 0.85rem);
-}
+.home-preview-card .nav-item > svg { font-size: inherit; }
 
 .home-preview-main {
   background: var(--surface);
@@ -749,6 +665,9 @@
   gap: clamp(0.5rem, 1.45cqw, 1rem);
   margin-bottom: clamp(1rem, 2.9cqw, 2rem);
 }
+
+/* The page's one action (opens the booking wizard / the invite form). */
+.home-preview-greeting-action { flex: none; margin-left: auto; }
 
 .home-preview-avatar {
   width: clamp(28px, 4.4cqw, 48px);
@@ -2210,7 +2129,7 @@
    own mobile header) at 767px. */
 @media (max-width: 767px) {
   /* Sidebar becomes a toggleable drawer instead of disappearing, matching
-     the real app's mobile pattern (components/Sidebar.tsx + ShopSidebarLayout.tsx).
+     the real app's mobile pattern (components/Sidebar.tsx + AppSidebarLayout.tsx).
      The header is taken out of flow (position:absolute) so the drawer,
      sitting above it in z-index, can slide out and overlap it completely —
      same relationship as the real app's sidebar (z-index 200) covering its
@@ -2226,28 +2145,23 @@
     left: 0;
     z-index: 10;
   }
-  .home-preview-sidebar {
+  .home-preview-card .sidebar {
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
     z-index: 20;
     width: 190px;
-    background: var(--surface);
     transform: translateX(-100%);
     transition: transform 0.25s ease;
   }
-  .home-preview-sidebar.is-open {
-    transform: translateX(0);
-    border-top-right-radius: calc(var(--radius-md) * 2);
-    border-bottom-right-radius: calc(var(--radius-md) * 2);
-  }
+  .home-preview-card .sidebar.is-open { transform: translateX(0); }
 
   .home-preview-backdrop {
     position: absolute;
     inset: 0;
     z-index: 15;
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--scrim);
   }
 
   /* Extra top padding clears the absolutely-positioned mobile header
