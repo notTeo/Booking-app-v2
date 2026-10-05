@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';
+import PasswordInput from '../components/PasswordInput';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -47,9 +48,8 @@ export default function LoginPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="password">Password</label>
-            <input className="input"
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

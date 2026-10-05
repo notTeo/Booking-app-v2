@@ -5,6 +5,7 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import { apiErrorMessage } from '../utils/apiError';
 import Wordmark from '../components/Wordmark';
 import Alert from '../components/Alert';
+import PasswordInput from '../components/PasswordInput';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -50,9 +51,8 @@ export default function ResetPasswordPage() {
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label className="field__label" htmlFor="password">New Password</label>
-            <input className="input"
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -68,9 +68,8 @@ export default function ResetPasswordPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor="confirm">Confirm Password</label>
-            <input className="input"
+            <PasswordInput
               id="confirm"
-              type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required

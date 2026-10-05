@@ -14,73 +14,138 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-// Email clients are unreliable with <style> blocks and never load external
-// fonts (Gmail strips the <link> tags), so every visual property below is
-// inlined and font stacks stick to system-safe fallbacks. Gmail also forces
-// its own blue/underline on <a> tags unless the inline color is marked
-// !important — that's why every link/button color below has it.
-const FONT = 'Helvetica, Arial, sans-serif';
-const TEXT = '#064e3b';
-const MUTED = '#475569';
-const ACCENT = '#166534';
-const BORDER = '#e2e8e2';
+// Email clients are unreliable with <style> blocks, so every visual property
+// below is inlined. The one <style> block in the template only loads Poppins:
+// Apple Mail and iOS Mail use it, Gmail and Outlook drop it and fall back to
+// Helvetica/Arial. Gmail also forces its own blue/underline on <a> tags unless
+// the inline color is marked !important — that's why every link/button color
+// below has it.
+const FONT = `'Poppins', Helvetica, Arial, sans-serif`;
+const FONT_IMPORT =
+  "@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');";
 
-const styles = {
-  body: `background:#ffffff;color:${TEXT};font-family:${FONT};margin:0;padding:0;`,
-  wrapper: `max-width:520px;margin:0 auto;padding:40px 24px;`,
-  brand: `font-family:${FONT};font-weight:800;font-size:20px;color:${ACCENT};letter-spacing:0.5px;`,
-  pageLabel: `font-family:${FONT};font-size:15px;color:${MUTED};padding-left:10px;`,
-  h1: `font-family:${FONT};font-size:26px;font-weight:700;line-height:1.3;color:${TEXT};margin:0 0 14px;`,
-  p: `font-family:${FONT};color:${MUTED};font-size:15px;line-height:1.6;margin:0 0 20px;`,
-  note: `font-family:${FONT};font-size:13px;color:${MUTED};line-height:1.5;margin:0 0 12px;`,
-  fallbackLink: `font-family:${FONT};font-size:13px;color:${ACCENT} !important;word-break:break-all;`,
-  detailLabel: `padding:9px 0;font-size:14px;color:${MUTED};border-bottom:1px solid ${BORDER};font-family:${FONT};`,
-  detailValue: `padding:9px 0;font-size:14px;font-weight:700;color:${TEXT};text-align:right;border-bottom:1px solid ${BORDER};font-family:${FONT};`,
-  footer: `font-family:${FONT};color:${MUTED};font-size:13px;margin-top:40px;`,
-  strong: `color:${TEXT};`,
+interface EmailTheme {
+  text: string;
+  muted: string;
+  accent: string;
+  border: string;
+  /** The wordmark image for this theme, under the web app's /email/ folder. */
+  wordmark: string;
+}
+
+// Emails to BeBooked's own users (owners, managers, staff): the brand green.
+const ACCOUNT_THEME: EmailTheme = {
+  text: '#064e3b',
+  muted: '#475569',
+  accent: '#166534',
+  border: '#e2e8e2',
+  wordmark: 'wordmark.png',
 };
 
-/** Outlined pill button — text lives in a nested <span> with its own
- * !important color, since some Gmail contexts only override the anchor
- * element's own color and leave a child element alone. */
-const btnOutline = (href: string, label: string) => `
-  <a href="${href}" style="display:inline-block;border:1.5px solid ${ACCENT};border-radius:50px;padding:10px 22px;margin:0 10px 10px 0;text-decoration:none;background:#ffffff;">
-    <span style="font-family:${FONT};font-size:14px;font-weight:700;color:${ACCENT} !important;">${label}</span>
+// Emails to a shop's customers: black and white, headed by the shop's name.
+// BeBooked only appears in the "Powered by" footer.
+const CUSTOMER_THEME: EmailTheme = {
+  text: '#111111',
+  muted: '#555555',
+  accent: '#111111',
+  border: '#e2e2e2',
+  wordmark: 'wordmark-mono.png',
+};
+
+// The wordmark is an image because Gasoek One cannot be loaded in most email
+// clients. The files are 488x96; they are shown much smaller, so they stay
+// sharp on high-density screens.
+const wordmarkImg = (theme: EmailTheme, height: number) => {
+  const width = Math.round((height * 488) / 96);
+  return `<img src="${env.clientUrl}/email/${theme.wordmark}" alt="BeBooked" height="${height}" width="${width}" style="display:inline-block;height:${height}px;width:${width}px;border:0;vertical-align:middle;" />`;
+};
+
+const makeKit = (theme: EmailTheme) => {
+  const { text, muted, accent, border } = theme;
+
+  const styles = {
+    body: `background:#ffffff;color:${text};font-family:${FONT};margin:0;padding:0;`,
+    wrapper: `max-width:520px;margin:0 auto;padding:40px 24px;`,
+    shopName: `font-family:${FONT};font-weight:700;font-size:20px;color:${text};`,
+    pageLabel: `font-family:${FONT};font-size:15px;color:${muted};padding-left:10px;`,
+    h1: `font-family:${FONT};font-size:26px;font-weight:700;line-height:1.3;color:${text};margin:0 0 14px;`,
+    p: `font-family:${FONT};color:${muted};font-size:15px;line-height:1.6;margin:0 0 20px;`,
+    note: `font-family:${FONT};font-size:13px;color:${muted};line-height:1.5;margin:0 0 12px;`,
+    fallbackLink: `font-family:${FONT};font-size:13px;color:${accent} !important;word-break:break-all;`,
+    detailLabel: `padding:9px 0;font-size:14px;color:${muted};border-bottom:1px solid ${border};font-family:${FONT};`,
+    detailValue: `padding:9px 0;font-size:14px;font-weight:700;color:${text};text-align:right;border-bottom:1px solid ${border};font-family:${FONT};`,
+    footer: `font-family:${FONT};color:${muted};font-size:13px;margin:40px 0 0;padding-top:20px;border-top:1px solid ${border};`,
+    strong: `color:${text};`,
+  };
+
+  /** Outlined pill button — text lives in a nested <span> with its own
+   * !important color, since some Gmail contexts only override the anchor
+   * element's own color and leave a child element alone. */
+  const btnOutline = (href: string, label: string) => `
+  <a href="${href}" style="display:inline-block;border:1.5px solid ${accent};border-radius:50px;padding:10px 22px;margin:0 10px 10px 0;text-decoration:none;background:#ffffff;">
+    <span style="font-family:${FONT};font-size:14px;font-weight:700;color:${accent} !important;">${label}</span>
   </a>
 `;
 
-const inlineLink = (href: string, label: string) =>
-  `<a href="${href}" style="color:${ACCENT} !important;font-weight:700;text-decoration:underline;">${label}</a>`;
-
-const detailRow = (label: string, value: string) => `
+  const detailRow = (label: string, value: string) => `
   <tr>
     <td style="${styles.detailLabel}">${label}</td>
     <td style="${styles.detailValue}">${value}</td>
   </tr>
 `;
 
-const baseTemplate = (title: string, pageLabel: string, content: string) => `
+  /** `header` is the left cell of the top row: the wordmark or the shop's name. */
+  const template = (
+    title: string,
+    header: string,
+    pageLabel: string,
+    content: string,
+  ) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
+  <style>${FONT_IMPORT}</style>
 </head>
 <body style="${styles.body}">
   <div style="${styles.wrapper}">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
       <tr>
-        <td style="${styles.brand}">BEBOOKED</td>
+        <td style="${styles.shopName}">${header}</td>
         <td style="${styles.pageLabel}">${pageLabel}</td>
       </tr>
     </table>
     ${content}
-    <p style="${styles.footer}">&copy; ${new Date().getFullYear()} BeBooked. All rights reserved.</p>
+    <p style="${styles.footer}">Powered by <a href="${env.clientUrl}" style="text-decoration:none;">${wordmarkImg(theme, 14)}</a></p>
   </div>
 </body>
 </html>
 `;
+
+  return { styles, btnOutline, detailRow, template };
+};
+
+const accountKit = makeKit(ACCOUNT_THEME);
+const customerKit = makeKit(CUSTOMER_THEME);
+
+/** Emails to BeBooked users: the wordmark on top. */
+const accountTemplate = (title: string, pageLabel: string, content: string) =>
+  accountKit.template(
+    title,
+    wordmarkImg(ACCOUNT_THEME, 22),
+    pageLabel,
+    content,
+  );
+
+/** Emails to a shop's customers: the shop's name on top, no BeBooked heading. */
+const customerTemplate = (
+  title: string,
+  shopName: string,
+  pageLabel: string,
+  content: string,
+) => customerKit.template(title, escapeHtml(shopName), pageLabel, content);
 
 /** Google Calendar "add event" link — no attachment/dependency needed, same
  * pattern as the existing Google Maps "Get Directions" link below. */
@@ -108,6 +173,7 @@ export const sendVerificationEmail = async (
   token: string,
   name?: string,
 ) => {
+  const { styles, btnOutline } = accountKit;
   const verificationUrl = `${env.clientUrl}/verify-email?token=${token}`;
   const heading = name
     ? `Verify your email, ${escapeHtml(name)}.`
@@ -117,7 +183,7 @@ export const sendVerificationEmail = async (
     from: env.resend.emailFrom,
     to: email,
     subject: 'Verify your email',
-    html: baseTemplate(
+    html: accountTemplate(
       'Verify your email',
       'Verify',
       `
@@ -145,13 +211,14 @@ export const sendEmailChangeVerification = async (
   newEmail: string,
   token: string,
 ) => {
+  const { styles, btnOutline } = accountKit;
   const verifyUrl = `${env.clientUrl}/verify-email-change?token=${token}`;
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: newEmail,
     subject: 'Verify your new email address',
-    html: baseTemplate(
+    html: accountTemplate(
       'Verify your new email address',
       'Verify email change',
       `
@@ -180,6 +247,7 @@ export const sendPasswordResetEmail = async (
   token: string,
   name?: string,
 ) => {
+  const { styles, btnOutline } = accountKit;
   const resetUrl = `${env.clientUrl}/reset-password?token=${token}`;
   const heading = name
     ? `Reset your password, ${escapeHtml(name)}.`
@@ -189,7 +257,7 @@ export const sendPasswordResetEmail = async (
     from: env.resend.emailFrom,
     to: email,
     subject: 'Reset your password',
-    html: baseTemplate(
+    html: accountTemplate(
       'Reset your password',
       'Reset password',
       `
@@ -258,6 +326,7 @@ const changePolicyNote = (p: BookingEmailParams) => {
 
 /** Calendar, directions, reschedule and cancel buttons for a booking email. */
 const bookingActions = (p: BookingEmailParams) => {
+  const { styles, btnOutline } = customerKit;
   const mapsUrl = p.formattedAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.formattedAddress)}`
     : null;
@@ -304,12 +373,14 @@ const formatTime = (date: Date, timezone: string) =>
 export const sendBookingRescheduledEmail = async (
   params: BookingEmailParams & { previousStartTime: Date },
 ) => {
+  const { styles, detailRow } = customerKit;
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} has been rescheduled`,
-    html: baseTemplate(
+    html: customerTemplate(
       `Booking rescheduled — ${params.shopName}`,
+      params.shopName,
       'Rescheduled',
       `
       <h1 style="${styles.h1}">Booking rescheduled, ${escapeHtml(params.customerName)}.</h1>
@@ -347,11 +418,12 @@ export const sendBookingRescheduledNotificationEmail = async (params: {
   previousStartTime: Date;
   timezone: string;
 }) => {
+  const { styles, detailRow } = accountKit;
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Booking rescheduled at ${params.shopName}`,
-    html: baseTemplate(
+    html: accountTemplate(
       `Booking rescheduled — ${params.shopName}`,
       'Rescheduled',
       `
@@ -381,6 +453,7 @@ export const sendBookingRescheduledNotificationEmail = async (params: {
 export const sendBookingConfirmationEmail = async (
   params: BookingEmailParams,
 ) => {
+  const { styles, detailRow } = customerKit;
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: params.timezone,
     weekday: 'long',
@@ -400,8 +473,9 @@ export const sendBookingConfirmationEmail = async (
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} is confirmed`,
-    html: baseTemplate(
+    html: customerTemplate(
       `Booking at ${params.shopName}`,
+      params.shopName,
       'Booked',
       `
       <h1 style="${styles.h1}">Booking confirmed, ${escapeHtml(params.customerName)}.</h1>
@@ -434,6 +508,7 @@ export const sendCancellationConfirmationEmail = async (params: {
   startTime: Date;
   timezone: string;
 }) => {
+  const { styles, detailRow } = customerKit;
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: params.timezone,
     weekday: 'long',
@@ -453,8 +528,9 @@ export const sendCancellationConfirmationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `Your booking at ${params.shopName} has been cancelled`,
-    html: baseTemplate(
+    html: customerTemplate(
       `Booking Cancelled — ${params.shopName}`,
+      params.shopName,
       'Cancelled',
       `
       <h1 style="${styles.h1}">Booking cancelled, ${escapeHtml(params.customerName)}.</h1>
@@ -488,6 +564,7 @@ export const sendNewBookingNotificationEmail = async (params: {
   startTime: Date;
   timezone: string;
 }) => {
+  const { styles, detailRow } = accountKit;
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: params.timezone,
     weekday: 'long',
@@ -507,7 +584,7 @@ export const sendNewBookingNotificationEmail = async (params: {
     from: env.resend.emailFrom,
     to: params.email,
     subject: `New booking at ${params.shopName}`,
-    html: baseTemplate(
+    html: accountTemplate(
       `New Booking — ${params.shopName}`,
       'New booking',
       `
@@ -540,6 +617,7 @@ export const sendInviteEmail = async (
   inviterEmail: string,
   role: string,
 ) => {
+  const { styles, btnOutline } = accountKit;
   const to = env.inviteEmailOverride ?? recipientEmail;
   const inviteUrl = `${env.clientUrl}/invite?token=${plainToken}`;
 
@@ -547,7 +625,7 @@ export const sendInviteEmail = async (
     from: env.resend.emailFrom,
     to,
     subject: `You've been invited to join ${shopName}`,
-    html: baseTemplate(
+    html: accountTemplate(
       `Invitation to ${shopName}`,
       'Invite',
       `
