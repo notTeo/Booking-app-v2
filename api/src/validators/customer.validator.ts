@@ -50,3 +50,11 @@ export const updateCustomerValidation = [
     .isLength({ max: NOTES_MAX_LENGTH })
     .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`),
 ];
+
+export const mergeCustomersValidation = [
+  ...customerParamsValidation,
+  body('sourceCustomerId')
+    .isString()
+    .notEmpty()
+    .withMessage('sourceCustomerId is required'),
+];

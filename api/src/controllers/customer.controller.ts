@@ -6,6 +6,7 @@ import {
   updateCustomer as updateCustomerService,
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
+  mergeCustomers as mergeCustomersService,
 } from '../services/customer.service';
 
 export const listCustomers = async (
@@ -102,6 +103,27 @@ export const deleteCustomer = async (
     const customerId = req.params.customerId as string;
     await deleteCustomerService(userId, shopId, customerId);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const mergeCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const customer = await mergeCustomersService(
+      userId,
+      shopId,
+      customerId,
+      req.body.sourceCustomerId,
+    );
+    successResponse(res, customer);
   } catch (err) {
     next(err);
   }

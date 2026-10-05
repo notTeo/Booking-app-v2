@@ -838,6 +838,18 @@ export interface Translations {
     serviceCol: string;
     dateTimeCol: string;
     statusCol: string;
+    mergeButton: string;
+    mergeHeading: string;
+    mergeBody: string;
+    mergeTitle: string;
+    mergeHint: string;
+    mergeSearchLabel: string;
+    mergeSelect: string;
+    mergeChange: string;
+    mergeSummary: string;
+    mergeConfirmButton: string;
+    mergeError: string;
+    mergeSuccess: string;
     successUpdate: string;
     errorUpdate: string;
     hiddenLabel: string;
@@ -1831,6 +1843,18 @@ home: {
       serviceCol: 'Υπηρεσία',
       dateTimeCol: 'Ημερομηνία & Ώρα',
       statusCol: 'Κατάσταση',
+      mergeButton: 'Συγχώνευση με άλλον πελάτη',
+      mergeHeading: 'Διπλή εγγραφή;',
+      mergeBody: 'Αν ο ίδιος πελάτης υπάρχει δύο φορές, συγχωνεύστε την άλλη εγγραφή σε αυτήν. Τα ραντεβού της μεταφέρονται εδώ.',
+      mergeTitle: 'Συγχώνευση πελάτη',
+      mergeHint: 'Βρείτε τη διπλή εγγραφή. Θα συγχωνευθεί στον πελάτη {target}.',
+      mergeSearchLabel: 'Αναζήτηση πελάτη',
+      mergeSelect: 'Επιλογή',
+      mergeChange: 'Επιλογή άλλου πελάτη',
+      mergeSummary: 'Τα ραντεβού του {source} θα μεταφερθούν στον {target} και η διπλή εγγραφή θα διαγραφεί. Το όνομα και το τηλέφωνο του πελάτη που παραμένει δεν αλλάζουν· το email συμπληρώνεται αν λείπει και οι σημειώσεις ενώνονται. Η ενέργεια δεν αναιρείται.',
+      mergeConfirmButton: 'Συγχώνευση',
+      mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
+      mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
       successUpdate: 'Ο πελάτης ενημερώθηκε.',
       errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
       hiddenLabel: 'Πελάτης',
@@ -2827,6 +2851,18 @@ home: {
       serviceCol: 'Service',
       dateTimeCol: 'Date & Time',
       statusCol: 'Status',
+      mergeButton: 'Merge with another customer',
+      mergeHeading: 'Duplicate record?',
+      mergeBody: 'If the same customer exists twice, merge the other record into this one. Its bookings move here.',
+      mergeTitle: 'Merge customer',
+      mergeHint: 'Find the duplicate record. It will be merged into {target}.',
+      mergeSearchLabel: 'Search customers',
+      mergeSelect: 'Select',
+      mergeChange: 'Pick a different customer',
+      mergeSummary: '{source}\'s bookings will move to {target}, and that duplicate record will be deleted. The kept customer\'s name and phone stay as they are; the email is filled in if missing and the notes are joined. This cannot be undone.',
+      mergeConfirmButton: 'Merge',
+      mergeError: 'The merge failed. Please try again.',
+      mergeSuccess: 'Customers merged. {count} bookings moved.',
       successUpdate: 'Customer updated.',
       errorUpdate: 'Failed to save changes.',
       hiddenLabel: 'Customer',

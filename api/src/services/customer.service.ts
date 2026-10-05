@@ -3,7 +3,12 @@ import { prisma } from '../utils/prisma';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { redactCustomer } from '../utils/customerVisibility';
 import { logger } from '../utils/logger';
-import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
+import {
+  MANAGER_ONLY,
+  canViewCustomerDetails,
+  requireShopAccess,
+} from '../utils/shopAccess';
+import { NOTES_MAX_LENGTH } from '../validators/common';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
@@ -133,6 +138,58 @@ export const updateCustomer = async (
     },
   });
   return redactCustomer(updated, canViewCustomerDetails(membership));
+};
+
+// Two records for the same person (usually the same phone typed two ways):
+// the source's bookings move to the target and the source is removed. The
+// target keeps its own name and phone; an empty email is filled from the
+// source and the notes of both are kept.
+export const mergeCustomers = async (
+  userId: string,
+  shopId: string,
+  targetId: string,
+  sourceId: string,
+) => {
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
+  if (targetId === sourceId)
+    throw new AppError(400, 'A customer cannot be merged with itself');
+
+  const { merged, moved } = await prisma.$transaction(async (tx) => {
+    const [target, source] = await Promise.all([
+      tx.customer.findUnique({ where: { id: targetId } }),
+      tx.customer.findUnique({ where: { id: sourceId } }),
+    ]);
+    if (
+      !target ||
+      !source ||
+      target.shopId !== shopId ||
+      source.shopId !== shopId
+    )
+      throw new AppError(404, 'Customer not found');
+
+    // Bookings first: deleting the source would cascade to any still on it.
+    const { count } = await tx.booking.updateMany({
+      where: { customerId: sourceId, shopId },
+      data: { customerId: targetId },
+    });
+    await tx.customer.delete({ where: { id: sourceId } });
+
+    const notes =
+      [target.notes, source.notes]
+        .filter(Boolean)
+        .join('\n')
+        .slice(0, NOTES_MAX_LENGTH) || null;
+    const updated = await tx.customer.update({
+      where: { id: targetId },
+      data: { email: target.email ?? source.email, notes },
+    });
+    return { merged: updated, moved: count };
+  });
+
+  logger.info(
+    `Customer merged: ${sourceId} into ${targetId} shop ${shopId} by ${userId} (${moved} bookings)`,
+  );
+  return { ...merged, movedBookings: moved };
 };
 
 // GDPR access/erasure requests are handled by the shop (the data controller),

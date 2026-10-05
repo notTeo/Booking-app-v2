@@ -77,3 +77,13 @@ export const exportCustomer = (shopId: string, customerId: string) =>
 
 export const deleteCustomer = (shopId: string, customerId: string) =>
   client.delete(`${base(shopId)}/${customerId}`).then(() => undefined);
+
+export interface MergedCustomer extends Customer {
+  movedBookings: number;
+}
+
+/** Merge `sourceId` into `targetId`: the source's bookings move over and the source is removed. */
+export const mergeCustomer = (shopId: string, targetId: string, sourceId: string) =>
+  client
+    .post(`${base(shopId)}/${targetId}/merge`, { sourceCustomerId: sourceId })
+    .then((r) => r.data.data as MergedCustomer);
