@@ -564,6 +564,9 @@ export interface Translations {
     duration: string;
     price: string;
     isActive: string;
+    showOnPublicPage: string;
+    showOnPublicPageHint: string;
+    internalOnly: string;
     save: string;
     cancel: string;
     edit: string;
@@ -1580,6 +1583,9 @@ home: {
       duration: 'Διάρκεια',
       price: 'Τιμή',
       isActive: 'Ενεργή',
+      showOnPublicPage: 'Εμφάνιση στη δημόσια σελίδα',
+      showOnPublicPageHint: 'Όταν είναι κλειστό, μόνο η ομάδα μπορεί να κλείσει ραντεβού για αυτή την υπηρεσία.',
+      internalOnly: 'Εσωτερική',
       save: 'Αποθήκευση',
       cancel: 'Ακύρωση',
       edit: 'Επεξεργασία',
@@ -2620,6 +2626,9 @@ home: {
       duration: 'Duration',
       price: 'Price',
       isActive: 'Active',
+      showOnPublicPage: 'Show on public page',
+      showOnPublicPageHint: 'When off, only your team can book this service.',
+      internalOnly: 'Internal',
       save: 'Save',
       cancel: 'Cancel',
       edit: 'Edit',

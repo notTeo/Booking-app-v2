@@ -141,6 +141,7 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
   'GET /api/shops/:shopId/bookings': {},
   'GET /api/shops/:shopId/bookings/stats': {},
+  'GET /api/shops/:shopId/bookings/wizard-info': {},
   'GET /api/shops/:shopId/bookings/slots': {
     query: 'date=2027-01-04&serviceId=SERVICE',
   },

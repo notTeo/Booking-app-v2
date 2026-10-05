@@ -8,6 +8,8 @@ export interface Service {
   duration: number; // minutes
   price: number; // cents
   isActive: boolean;
+  /** false = internal only: bookable by the team, hidden from the public page. */
+  showOnPublicPage: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +36,7 @@ export interface CreateServiceDto {
   duration: number;
   price: number;
   isActive?: boolean;
+  showOnPublicPage?: boolean;
 }
 
 export type UpdateServiceDto = Partial<CreateServiceDto>;

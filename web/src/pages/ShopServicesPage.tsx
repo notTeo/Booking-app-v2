@@ -35,7 +35,7 @@ const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 type FormData = ServiceFormData;
 
-const emptyForm: FormData = { name: '', description: '', duration: '', price: '', isActive: true };
+const emptyForm: FormData = { name: '', description: '', duration: '', price: '', isActive: true, showOnPublicPage: true };
 
 const serviceToForm = (s: Service): FormData => ({
   name: s.name,
@@ -43,6 +43,7 @@ const serviceToForm = (s: Service): FormData => ({
   duration: String(s.duration),
   price: (s.price / 100).toFixed(2),
   isActive: s.isActive,
+  showOnPublicPage: s.showOnPublicPage,
 });
 
 const formToDto = (f: FormData) => ({
@@ -51,6 +52,7 @@ const formToDto = (f: FormData) => ({
   duration: parseInt(f.duration, 10),
   price: Math.round(parseFloat(f.price) * 100),
   isActive: f.isActive,
+  showOnPublicPage: f.showOnPublicPage,
 });
 
 // ── component ──────────────────────────────────────────────
@@ -288,6 +290,9 @@ export default function ShopServicesPage() {
                     >
                       {service.isActive ? t.services.active : t.services.inactive}
                     </span>
+                    {!service.showOnPublicPage && (
+                      <span className="badge badge--neutral">{t.services.internalOnly}</span>
+                    )}
                   </div>
                   {service.description && (
                     <div className="service-card__desc">{service.description}</div>

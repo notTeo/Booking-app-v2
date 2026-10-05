@@ -28,7 +28,7 @@ export const getShopInfo = async (
 ) => {
   try {
     const slug = req.params.slug as string;
-    const data = await getShopInfoService(slug);
+    const data = await getShopInfoService({ slug });
     successResponse(res, data, 200);
   } catch (err) {
     next(err);

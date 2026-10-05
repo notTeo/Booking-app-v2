@@ -10,6 +10,7 @@ import { bookingEmailParams } from '../utils/bookingEmail';
 import * as bookingService from '../services/booking.service';
 import { requireShopAccess } from '../utils/shopAccess';
 import { redactCustomer } from '../utils/customerVisibility';
+import { getShopInfoService } from '../services/public.service';
 
 export const createBooking = async (
   req: Request,
@@ -40,6 +41,23 @@ export const createBooking = async (
         logger.error(err, 'Failed to send booking confirmation email'),
       );
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+// The owner/staff booking wizard's starting data: the public shop info plus
+// internal-only services.
+export const getWizardInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params['shopId'] as string;
+    await requireShopAccess(userId, shopId);
+    successResponse(res, await getShopInfoService({ id: shopId }, 'internal'));
   } catch (err) {
     next(err);
   }
