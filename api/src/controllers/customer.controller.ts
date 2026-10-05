@@ -7,6 +7,8 @@ import {
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
   mergeCustomers as mergeCustomersService,
+  exportAllCustomers as exportAllCustomersService,
+  importCustomers as importCustomersService,
 } from '../services/customer.service';
 
 export const listCustomers = async (
@@ -124,6 +126,37 @@ export const mergeCustomers = async (
       req.body.sourceCustomerId,
     );
     successResponse(res, customer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const exportAllCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    successResponse(res, await exportAllCustomersService(userId, shopId));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const importCustomers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    successResponse(
+      res,
+      await importCustomersService(userId, shopId, req.body.rows),
+    );
   } catch (err) {
     next(err);
   }

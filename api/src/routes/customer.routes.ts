@@ -5,6 +5,8 @@ import {
   customerParamsValidation,
   listCustomersValidation,
   mergeCustomersValidation,
+  importCustomersValidation,
+  shopParamValidation,
   updateCustomerValidation,
 } from '../validators/customer.validator';
 import {
@@ -14,12 +16,29 @@ import {
   exportCustomer,
   deleteCustomer,
   mergeCustomers,
+  exportAllCustomers,
+  importCustomers,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
 const router = Router({ mergeParams: true });
 
 router.get('/', authenticate, listCustomersValidation, validate, listCustomers);
+// Before /:customerId, which would otherwise take 'export-all' for an id.
+router.get(
+  '/export-all',
+  authenticate,
+  shopParamValidation,
+  validate,
+  exportAllCustomers,
+);
+router.post(
+  '/import',
+  authenticate,
+  importCustomersValidation,
+  validate,
+  importCustomers,
+);
 router.get(
   '/:customerId',
   authenticate,

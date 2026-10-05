@@ -852,6 +852,25 @@ export interface Translations {
     mergeConfirmButton: string;
     mergeError: string;
     mergeSuccess: string;
+    importButton: string;
+    exportLabel: string;
+    exportAllError: string;
+    importTitle: string;
+    importHint: string;
+    importFileLabel: string;
+    importUnsupported: string;
+    importUnreadable: string;
+    importMissingColumns: string;
+    importEmpty: string;
+    importPreview: string;
+    importConfirmButton: string;
+    importError: string;
+    importPartialError: string;
+    importResult: string;
+    importRowErrors: string;
+    importRowError: string;
+    importClose: string;
+    importProblems: Record<'name_missing' | 'name_too_long' | 'phone_invalid' | 'email_invalid' | 'notes_too_long', string>;
     successUpdate: string;
     errorUpdate: string;
     hiddenLabel: string;
@@ -1859,6 +1878,31 @@ home: {
       mergeConfirmButton: 'Συγχώνευση',
       mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
       mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      importButton: 'Εισαγωγή',
+      exportLabel: 'Εξαγωγή',
+      exportAllError: 'Η εξαγωγή απέτυχε. Δοκιμάστε ξανά.',
+      importTitle: 'Εισαγωγή πελατών',
+      importHint: 'Αρχείο CSV, Excel (.xlsx) ή JSON με στήλες όνομα και τηλέφωνο, και προαιρετικά email και σημειώσεις. Αν το τηλέφωνο υπάρχει ήδη, ο πελάτης δεν αλλάζει· συμπληρώνονται μόνο το email και οι σημειώσεις που λείπουν.',
+      importFileLabel: 'Αρχείο',
+      importUnsupported: 'Αυτός ο τύπος αρχείου δεν υποστηρίζεται. Χρησιμοποιήστε CSV, .xlsx ή JSON.',
+      importUnreadable: 'Το αρχείο δεν μπόρεσε να διαβαστεί.',
+      importMissingColumns: 'Λείπει στήλη από το αρχείο: {columns}.',
+      importEmpty: 'Το αρχείο δεν έχει πελάτες.',
+      importPreview: 'Βρέθηκαν {count} γραμμές. Οι πρώτες:',
+      importConfirmButton: 'Εισαγωγή',
+      importError: 'Η εισαγωγή απέτυχε. Δεν αποθηκεύτηκε τίποτα.',
+      importPartialError: 'Η εισαγωγή διακόπηκε. Αποθηκεύτηκαν {count} πελάτες· δοκιμάστε ξανά με το ίδιο αρχείο για τους υπόλοιπους.',
+      importResult: 'Νέοι: {created}. Συμπληρώθηκαν: {updated}. Χωρίς αλλαγή: {skipped}.',
+      importRowErrors: '{count} γραμμές δεν εισήχθησαν:',
+      importRowError: 'Γραμμή {row}',
+      importClose: 'Κλείσιμο',
+      importProblems: {
+        name_missing: 'λείπει το όνομα',
+        name_too_long: 'το όνομα είναι πολύ μεγάλο',
+        phone_invalid: 'το τηλέφωνο λείπει ή δεν είναι έγκυρο',
+        email_invalid: 'το email δεν είναι έγκυρο',
+        notes_too_long: 'οι σημειώσεις είναι πολύ μεγάλες',
+      },
       successUpdate: 'Ο πελάτης ενημερώθηκε.',
       errorUpdate: 'Αποτυχία αποθήκευσης αλλαγών.',
       hiddenLabel: 'Πελάτης',
@@ -2869,6 +2913,31 @@ home: {
       mergeConfirmButton: 'Merge',
       mergeError: 'The merge failed. Please try again.',
       mergeSuccess: 'Customers merged. {count} bookings moved.',
+      importButton: 'Import',
+      exportLabel: 'Export',
+      exportAllError: 'The export failed. Please try again.',
+      importTitle: 'Import customers',
+      importHint: 'A CSV, Excel (.xlsx) or JSON file with name and phone columns, and optionally email and notes. If a phone already exists, that customer is not changed; only a missing email or missing notes are filled in.',
+      importFileLabel: 'File',
+      importUnsupported: 'This file type is not supported. Use CSV, .xlsx or JSON.',
+      importUnreadable: 'The file could not be read.',
+      importMissingColumns: 'The file is missing a column: {columns}.',
+      importEmpty: 'The file has no customers.',
+      importPreview: '{count} rows found. The first ones:',
+      importConfirmButton: 'Import',
+      importError: 'The import failed. Nothing was saved.',
+      importPartialError: 'The import stopped part-way. {count} customers were saved; try again with the same file for the rest.',
+      importResult: 'New: {created}. Filled in: {updated}. Unchanged: {skipped}.',
+      importRowErrors: '{count} rows were not imported:',
+      importRowError: 'Row {row}',
+      importClose: 'Close',
+      importProblems: {
+        name_missing: 'the name is missing',
+        name_too_long: 'the name is too long',
+        phone_invalid: 'the phone is missing or not valid',
+        email_invalid: 'the email is not valid',
+        notes_too_long: 'the notes are too long',
+      },
       successUpdate: 'Customer updated.',
       errorUpdate: 'Failed to save changes.',
       hiddenLabel: 'Customer',

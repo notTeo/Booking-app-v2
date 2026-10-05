@@ -8,7 +8,11 @@ import {
   canViewCustomerDetails,
   requireShopAccess,
 } from '../utils/shopAccess';
-import { NOTES_MAX_LENGTH } from '../validators/common';
+import {
+  NAME_MAX_LENGTH,
+  NOTES_MAX_LENGTH,
+  isPlausiblePhone,
+} from '../validators/common';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
@@ -190,6 +194,132 @@ export const mergeCustomers = async (
     `Customer merged: ${sourceId} into ${targetId} shop ${shopId} by ${userId} (${moved} bookings)`,
   );
   return { ...merged, movedBookings: moved };
+};
+
+// Every customer of the shop in one list, for the owner or a manager to
+// download (the web app turns it into CSV, Excel or JSON).
+export const exportAllCustomers = async (userId: string, shopId: string) => {
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
+
+  const customers = await prisma.customer.findMany({
+    where: { shopId },
+    orderBy: { createdAt: 'asc' },
+    include: { _count: { select: { bookings: true } } },
+  });
+
+  logger.info(
+    `Customers exported: shop ${shopId} by ${userId} (${customers.length})`,
+  );
+  return customers.map((c) => ({
+    name: c.name,
+    phone: c.phone,
+    email: c.email,
+    notes: c.notes,
+    createdAt: c.createdAt,
+    bookings: c._count.bookings,
+  }));
+};
+
+export const IMPORT_MAX_ROWS = 500;
+
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const text = (value: unknown) =>
+  typeof value === 'string' ? value.trim() : '';
+
+/** Why a row cannot be imported (a code the web app translates), or null when it is fine. */
+const importRowProblem = (row: {
+  name: string;
+  phone: string;
+  email: string;
+  notes: string;
+}) => {
+  if (!row.name) return 'name_missing';
+  if (row.name.length > NAME_MAX_LENGTH) return 'name_too_long';
+  if (!isPlausiblePhone(row.phone)) return 'phone_invalid';
+  if (row.email && (!EMAIL_SHAPE.test(row.email) || row.email.length > 254))
+    return 'email_invalid';
+  if (row.notes.length > NOTES_MAX_LENGTH) return 'notes_too_long';
+  return null;
+};
+
+// Import a batch of customers. A phone the shop does not have yet becomes a
+// new customer. For one it already has, the existing record wins: only an
+// empty email or empty notes are filled in, nothing is overwritten. Rows
+// that cannot be imported are reported by their position in the batch and
+// do not stop the rest.
+export const importCustomers = async (
+  userId: string,
+  shopId: string,
+  rows: unknown[],
+) => {
+  await requireShopAccess(userId, shopId, MANAGER_ONLY);
+
+  const parsed = rows.map((raw) => {
+    const r = (raw ?? {}) as Record<string, unknown>;
+    return {
+      name: text(r.name),
+      phone: text(r.phone),
+      email: text(r.email),
+      notes: text(r.notes),
+    };
+  });
+
+  const existing = await prisma.customer.findMany({
+    where: { shopId, phone: { in: parsed.map((r) => r.phone) } },
+  });
+  // Also holds the customers created below, so a phone repeated in the file
+  // is treated like one the shop already has.
+  const byPhone = new Map(existing.map((c) => [c.phone, c]));
+
+  const result = {
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: [] as { row: number; reason: string }[],
+  };
+
+  for (const [index, row] of parsed.entries()) {
+    const problem = importRowProblem(row);
+    if (problem) {
+      result.errors.push({ row: index, reason: problem });
+      continue;
+    }
+
+    const current = byPhone.get(row.phone);
+    if (!current) {
+      const created = await prisma.customer.create({
+        data: {
+          shopId,
+          name: row.name,
+          phone: row.phone,
+          email: row.email || null,
+          notes: row.notes || null,
+        },
+      });
+      byPhone.set(row.phone, created);
+      result.created++;
+      continue;
+    }
+
+    const fill = {
+      ...(!current.email && row.email && { email: row.email }),
+      ...(!current.notes && row.notes && { notes: row.notes }),
+    };
+    if (Object.keys(fill).length === 0) {
+      result.skipped++;
+      continue;
+    }
+    byPhone.set(
+      row.phone,
+      await prisma.customer.update({ where: { id: current.id }, data: fill }),
+    );
+    result.updated++;
+  }
+
+  logger.info(
+    `Customers imported: shop ${shopId} by ${userId} (${result.created} created, ${result.updated} updated, ${result.skipped} skipped, ${result.errors.length} errors)`,
+  );
+  return result;
 };
 
 // GDPR access/erasure requests are handled by the shop (the data controller),
