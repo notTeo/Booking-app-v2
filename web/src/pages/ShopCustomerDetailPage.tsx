@@ -5,13 +5,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
-import { getCustomer, updateCustomer, exportCustomer, deleteCustomer, type CustomerDetail } from '../api/customer.api';
+import {
+  getCustomer,
+  getCustomerBookings,
+  updateCustomer,
+  exportCustomer,
+  deleteCustomer,
+  type CustomerBookingsResult,
+  type CustomerDetail,
+} from '../api/customer.api';
+import StatCards from '../components/overview/StatCards';
+import StatusDonut from '../components/overview/StatusDonut';
 import StatusBadge from '../components/StatusBadge';
 import '../styles/pages/team.css';
+import '../styles/pages/shop-overview.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
 import { canManageShop } from '../utils/roles';
+
+const BOOKINGS_PAGE_SIZE = 10;
 
 const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
@@ -56,6 +69,22 @@ export default function ShopCustomerDetailPage() {
       .catch(() => setError(t.customers.customerErrorLoad))
       .finally(() => setLoading(false));
   }, [shop?.id, customerId, reloadKey]);
+
+  // The booking history, a page at a time. `bookings` keeps the previous page
+  // on screen while the next one loads.
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [bookings, setBookings] = useState<CustomerBookingsResult | null>(null);
+  const [bookingsError, setBookingsError] = useState(false);
+
+  const shopId = shop?.id;
+  useEffect(() => {
+    if (!shopId || !customerId) return;
+    let stale = false;
+    getCustomerBookings(shopId, customerId, bookingsPage, BOOKINGS_PAGE_SIZE)
+      .then((result) => { if (!stale) { setBookings(result); setBookingsError(false); } })
+      .catch(() => { if (!stale) setBookingsError(true); });
+    return () => { stale = true; };
+  }, [shopId, customerId, bookingsPage, reloadKey]);
 
   const handleSave = async () => {
     if (!shop || !customerId || saving) return;
@@ -115,6 +144,8 @@ export default function ShopCustomerDetailPage() {
     }
   };
 
+  const bookingsPages = Math.max(1, Math.ceil((bookings?.total ?? 0) / BOOKINGS_PAGE_SIZE));
+
   const isDirty =
     customer &&
     (editName !== customer.name ||
@@ -164,8 +195,84 @@ export default function ShopCustomerDetailPage() {
           </span>
         </div>
         <div className="cluster">
-          <span className="t-body-sm t-muted">{t.customers.totalVisitsLabel}: {customer.totalVisits}</span>
           <span className="t-body-sm t-muted">{t.customers.totalSpentLabel}: {formatPrice(customer.totalSpent)}</span>
+        </div>
+      </div>
+
+      {/* This customer's lifetime numbers, in the shop overview's tiles and breakdown */}
+      <StatCards totals={customer.totals} />
+      {customer.totals.all + customer.totals.canceled > 0 && <StatusDonut totals={customer.totals} />}
+
+      {/* Booking history: every booking, ten at a time */}
+      <div className="card">
+        <h2 className="card__title">{t.customers.bookingHistory}</h2>
+        {bookingsError && <Alert variant="danger">{t.customers.bookingsErrorLoad}</Alert>}
+        <div className="table-wrap">
+          <div className="table-surface">
+            {!bookings ? (
+              !bookingsError && (
+                <div className="spinner-wrap">
+                  <div className="spinner" />
+                </div>
+              )
+            ) : bookings.total === 0 ? (
+              <div className="empty empty--sm">
+                <p className="empty__text">{t.customers.noBookings}</p>
+              </div>
+            ) : (
+              <table className="data-table" role="table">
+                <thead>
+                  <tr role="row">
+                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.providerCol}</th>
+                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.items.map((b) => (
+                    <tr key={b.id} role="row">
+                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
+                      <td role="cell" data-label={t.customers.dateTimeCol}>
+                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
+                      </td>
+                      <td role="cell" data-label={t.customers.providerCol}>{b.staff.name}</td>
+                      <td role="cell" data-label={t.customers.statusCol}>
+                        <StatusBadge status={b.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {bookings && bookings.total > BOOKINGS_PAGE_SIZE && (
+              <div className="data-table__foot">
+                <span>
+                  {t.customers.pageOf
+                    .replace('{page}', String(bookings.page))
+                    .replace('{total}', String(bookingsPages))}
+                </span>
+                <div className="cluster cluster--tight">
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setBookingsPage((p) => Math.max(1, p - 1))}
+                    disabled={bookingsPage <= 1}
+                    aria-label={t.customers.prevPageLabel}
+                  >
+                    {t.customers.prevPage}
+                  </button>
+                  <button
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => setBookingsPage((p) => Math.min(bookingsPages, p + 1))}
+                    disabled={bookingsPage >= bookingsPages}
+                    aria-label={t.customers.nextPageLabel}
+                  >
+                    {t.customers.nextPage}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -264,43 +371,6 @@ export default function ShopCustomerDetailPage() {
         </div>
       )}
 
-      {/* Recent bookings */}
-      <div className="card">
-        <h2 className="card__title">{t.customers.recentBookings}</h2>
-        <div className="table-wrap">
-          <div className="table-surface">
-            {customer.bookings.length === 0 ? (
-              <div className="empty empty--sm">
-                <p className="empty__text">{t.customers.noBookings}</p>
-              </div>
-            ) : (
-              <table className="data-table" role="table">
-                <thead>
-                  <tr role="row">
-                    <th scope="col" role="columnheader">{t.customers.serviceCol}</th>
-                    <th scope="col" role="columnheader">{t.customers.dateTimeCol}</th>
-                    <th scope="col" role="columnheader">{t.customers.statusCol}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customer.bookings.map((b) => (
-                    <tr key={b.id} role="row">
-                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
-                      <td role="cell" data-label={t.customers.dateTimeCol}>
-                        {formatDateTimeInZone(b.startTime, shop!.timezone)}
-                      </td>
-                      <td role="cell" data-label={t.customers.statusCol}>
-                        <StatusBadge status={b.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </div>
-
       {mergeOpen && shop && (
         <MergeCustomerModal
           shopId={shop.id}
@@ -309,6 +379,7 @@ export default function ShopCustomerDetailPage() {
           onMerged={(merged) => {
             setMergeOpen(false);
             setMergeSuccess(t.customers.mergeSuccess.replace('{count}', String(merged.movedBookings)));
+            setBookingsPage(1);
             setReloadKey((k) => k + 1);
           }}
         />

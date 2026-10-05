@@ -7,6 +7,7 @@ import {
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
   mergeCustomers as mergeCustomersService,
+  listCustomerBookings as listCustomerBookingsService,
   exportAllCustomers as exportAllCustomersService,
   importCustomers as importCustomersService,
 } from '../services/customer.service';
@@ -156,6 +157,34 @@ export const importCustomers = async (
     successResponse(
       res,
       await importCustomersService(userId, shopId, req.body.rows),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listCustomerBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string, 10)
+      : 10;
+    successResponse(
+      res,
+      await listCustomerBookingsService(
+        userId,
+        shopId,
+        customerId,
+        page,
+        limit,
+      ),
     );
   } catch (err) {
     next(err);

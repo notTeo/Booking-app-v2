@@ -71,3 +71,15 @@ export const importCustomersValidation = [
     .isArray({ min: 1, max: 500 })
     .withMessage('rows must be a list of 1 to 500 customers'),
 ];
+
+export const listCustomerBookingsValidation = [
+  ...customerParamsValidation,
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('page must be a positive integer'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('limit must be between 1 and 50'),
+];

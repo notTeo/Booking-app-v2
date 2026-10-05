@@ -155,6 +155,7 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
 
   'GET /api/shops/:shopId/customers': {},
   'GET /api/shops/:shopId/customers/:customerId': {},
+  'GET /api/shops/:shopId/customers/:customerId/bookings': {},
   'PATCH /api/shops/:shopId/customers/:customerId': {
     body: () => ({ name: 'Renamed Customer' }),
   },

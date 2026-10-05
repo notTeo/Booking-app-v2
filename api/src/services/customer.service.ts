@@ -76,16 +76,10 @@ export const getCustomer = async (
   await requireCustomerInShop(customerId, shopId);
 
   const [customer, allBookings] = await Promise.all([
-    prisma.customer.findUnique({
-      where: { id: customerId },
-      include: {
-        bookings: {
-          include: { service: true },
-          orderBy: { startTime: 'desc' },
-          take: 5,
-        },
-      },
-    }),
+    // The bookings themselves are served a page at a time by
+    // listCustomerBookings; a full Booking row must not go out here (it
+    // carries the customer's private cancel-link token).
+    prisma.customer.findUnique({ where: { id: customerId } }),
     prisma.booking.findMany({
       where: { customerId, shopId },
       select: { status: true, service: { select: { price: true } } },
@@ -98,12 +92,59 @@ export const getCustomer = async (
   const totalVisits = completed.length;
   const totalSpent = completed.reduce((sum, b) => sum + b.service.price, 0);
 
+  // Lifetime counts by status, in the shape of the shop overview's totals
+  // (`all` leaves canceled bookings out), so the same stat tiles can show them.
+  const count = (status: BookingStatus) =>
+    allBookings.filter((b) => b.status === status).length;
+  const canceled = count(BookingStatus.CANCELED);
+  const totals = {
+    all: allBookings.length - canceled,
+    pending: count(BookingStatus.PENDING),
+    confirmed: count(BookingStatus.CONFIRMED),
+    completed: totalVisits,
+    canceled,
+    noShow: count(BookingStatus.NO_SHOW),
+  };
+
   if (!customer) return customer;
   return {
     ...redactCustomer(customer, canViewCustomerDetails(membership)),
     totalVisits,
     totalSpent,
+    totals,
   };
+};
+
+// The customer's whole booking history, newest first, a page at a time.
+export const listCustomerBookings = async (
+  userId: string,
+  shopId: string,
+  customerId: string,
+  page = 1,
+  limit = 10,
+) => {
+  await requireShopAccess(userId, shopId);
+  await requireCustomerInShop(customerId, shopId);
+
+  const where = { customerId, shopId };
+  const [items, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      orderBy: { startTime: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        service: { select: { name: true, duration: true, price: true } },
+        staff: { select: { name: true } },
+      },
+    }),
+    prisma.booking.count({ where }),
+  ]);
+  return { items, total, page, limit };
 };
 
 export const updateCustomer = async (

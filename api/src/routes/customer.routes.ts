@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
 import {
   customerParamsValidation,
+  listCustomerBookingsValidation,
   listCustomersValidation,
   mergeCustomersValidation,
   importCustomersValidation,
@@ -16,6 +17,7 @@ import {
   exportCustomer,
   deleteCustomer,
   mergeCustomers,
+  listCustomerBookings,
   exportAllCustomers,
   importCustomers,
 } from '../controllers/customer.controller';
@@ -45,6 +47,13 @@ router.get(
   customerParamsValidation,
   validate,
   getCustomer,
+);
+router.get(
+  '/:customerId/bookings',
+  authenticate,
+  listCustomerBookingsValidation,
+  validate,
+  listCustomerBookings,
 );
 router.patch(
   '/:customerId',
