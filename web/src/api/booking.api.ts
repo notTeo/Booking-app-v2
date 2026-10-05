@@ -84,10 +84,12 @@ export const getOwnerSlots = (
   intervalMinutes?: number,
   /** Rescheduling: this booking doesn't block its own new time, and its own (possibly deactivated) service still resolves. */
   forBookingId?: string,
+  /** Who the booking is for, when already picked: their own duration for the service decides which times fit. */
+  customerId?: string,
 ) =>
   client
     .get(`${base(shopId)}/slots`, {
-      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId },
+      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId, customerId },
     })
     .then((r) => r.data.data as SlotsResponse);
 

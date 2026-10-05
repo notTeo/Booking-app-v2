@@ -166,6 +166,28 @@ describe('a custom duration decides which slots fit', () => {
   });
 });
 
+describe('public slots for a returning customer', () => {
+  it('fit their duration when they send their phone, and reveal nothing otherwise', async () => {
+    const { t } = await shopWithSlowCustomer();
+    const slots = (phone?: string) => {
+      const req = api.get(
+        `/public/${t.shop.slug}/slots?date=${DATE}&serviceId=${t.service.id}&staffId=${t.staff.id}`,
+      );
+      return phone === undefined ? req : req.set('X-Customer-Phone', phone);
+    };
+
+    expect(lastSlot((await slots()).body)).toBe('12:30');
+    expect(lastSlot((await slots(PHONE)).body)).toBe('12:00');
+
+    // An unknown or malformed phone gets the standard times, same shape.
+    for (const phone of ['6900000099', 'not-a-phone', '']) {
+      const res = await slots(phone);
+      expect(res.status).toBe(200);
+      expect(lastSlot(res.body)).toBe('12:30');
+    }
+  });
+});
+
 describe('rescheduling keeps the customer’s own duration', () => {
   it('owner reschedule and the customer’s own link both do', async () => {
     const { t } = await shopWithSlowCustomer();

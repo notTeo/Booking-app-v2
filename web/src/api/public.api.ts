@@ -1,5 +1,6 @@
 import client from './client';
 import type { ShopRole } from './shop.api';
+import { isPlausiblePhone } from '../utils/phone';
 
 export interface OpeningRange {
   startTime: string;
@@ -168,7 +169,15 @@ export const getPublicSlots = (
   serviceId: string | null,
   /** A customer rescheduling: their own booking doesn't block its slot. */
   rescheduleToken?: string,
+  /**
+   * A returning customer's phone: the times offered then fit their own
+   * duration for the service. A header, so it stays out of URLs and logs.
+   */
+  customerPhone?: string,
 ) =>
   client
-    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId, rescheduleToken } })
+    .get(`/public/${slug}/slots`, {
+      params: { date, staffId, serviceId, rescheduleToken },
+      ...(customerPhone && isPlausiblePhone(customerPhone) && { headers: { 'X-Customer-Phone': customerPhone.trim() } }),
+    })
     .then((r) => r.data.data as SlotsResponse);

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { getCustomer, type Customer } from '../../api/customer.api';
+import { useShop } from '../../context/ShopContext';
+import OwnerCustomerPicker from './OwnerCustomerPicker';
 import {
   acceptableRuleCodes,
   createOwnerBooking,
@@ -51,9 +54,15 @@ export default function OwnerBookingWizard({
   onCancel?: () => void;
 }) {
   const { t } = useLang();
+  const { shop: memberShop } = useShop();
+  // Who the booking is for, when picked on the first step (optional). Their
+  // own service durations then show on the service cards and decide the slots.
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customDurations, setCustomDurations] = useState<Record<string, number>>({});
   const wizard = useBookingWizard({
     slug,
     shopId,
+    slotCustomer: customer && { customerId: customer.id },
     initialMemberId: reschedule ? reschedule.booking.staffId : initialMemberId,
     initialDate: reschedule ? dateInZone(reschedule.booking.startTime, reschedule.zone) : initialDate,
     internal: true,
@@ -84,6 +93,22 @@ export default function OwnerBookingWizard({
   }
   if (wizard.error || !wizard.shop) {
     return <Alert variant="danger">{wizard.error ?? t.public.somethingWrong}</Alert>;
+  }
+
+  function handlePickCustomer(picked: Customer) {
+    setCustomer(picked);
+    setCustomDurations({});
+    getCustomer(shopId, picked.id)
+      .then((detail) =>
+        setCustomDurations(Object.fromEntries(detail.serviceDurations.map((d) => [d.serviceId, d.duration]))),
+      )
+      // Display only: the server applies the customer's durations either way.
+      .catch(() => {});
+  }
+
+  function handleClearCustomer() {
+    setCustomer(null);
+    setCustomDurations({});
   }
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
@@ -209,8 +234,22 @@ export default function OwnerBookingWizard({
         lastLabel={reschedule ? t.bookings.reschedule.confirmStep : undefined}
       />
 
+      {/* Searching customers needs permission to see them; the API returns nothing otherwise. */}
+      {wizard.step === 1 && !reschedule && memberShop?.canViewCustomerDetails !== false && (
+        <OwnerCustomerPicker
+          shopId={shopId}
+          customer={customer}
+          onPick={handlePickCustomer}
+          onClear={handleClearCustomer}
+        />
+      )}
+
       {wizard.step === 1 && (
-        <ServiceSelectStep services={wizard.services} onSelect={wizard.handleSelectService} />
+        <ServiceSelectStep
+          services={wizard.services}
+          onSelect={wizard.handleSelectService}
+          customDurations={customDurations}
+        />
       )}
 
       {wizard.step === 2 && (
@@ -281,6 +320,7 @@ export default function OwnerBookingWizard({
       {wizard.step === 4 && !reschedule && (
         <OwnerCustomerFormStep
           shopId={shopId}
+          initialCustomer={customer}
           selectedService={wizard.selectedService}
           selectedMember={selectedMember}
           date={wizard.date}

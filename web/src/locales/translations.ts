@@ -696,6 +696,19 @@ export interface Translations {
     viewButton: string;
   };
   public: {
+    identity: {
+      askTitle: string;
+      askBody: string;
+      yes: string;
+      no: string;
+      knownAs: string;
+      notYou: string;
+      prompt: string;
+      phoneLabel: string;
+      phoneHint: string;
+      usePhone: string;
+      cancel: string;
+    };
     bookAppointment: string;
     service: string;
     staff: string;
@@ -899,6 +912,14 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    customerPicker: {
+      label: string;
+      placeholder: string;
+      hint: string;
+      noMatch: string;
+      selected: string;
+      change: string;
+    };
     statusConflict: string;
     statusError: string;
     title: string;
@@ -1726,6 +1747,19 @@ home: {
       viewButton: 'Άνοιγμα',
     },
     public: {
+      identity: {
+        askTitle: 'Συνέχεια ως {name};',
+        askBody: 'Θα χρησιμοποιήσουμε τα αποθηκευμένα στοιχεία σας για να βρούμε τις ώρες που σας ταιριάζουν.',
+        yes: 'Ναι, συνέχεια',
+        no: 'Όχι, άλλος',
+        knownAs: 'Κράτηση ως',
+        notYou: 'Δεν είστε εσείς;',
+        prompt: 'Έχετε ξανακλείσει μαζί μας; Προσθέστε το τηλέφωνό σας για να βρείτε τις ώρες σας πιο εύκολα',
+        phoneLabel: 'Το τηλέφωνό σας',
+        phoneHint: 'Προαιρετικό. Χρησιμοποιείται μόνο για να βρούμε ώρες που σας ταιριάζουν.',
+        usePhone: 'Χρήση αριθμού',
+        cancel: 'Άκυρο',
+      },
       bookAppointment: 'Κλείστε Ραντεβού',
       service: 'Υπηρεσία',
       staff: 'Προσωπικό',
@@ -1950,6 +1984,14 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      customerPicker: {
+        label: 'Πελάτης',
+        placeholder: 'Αναζήτηση με όνομα ή τηλέφωνο…',
+        hint: 'Επιλέξτε υπάρχοντα πελάτη για να δείτε τις δικές του διάρκειες και ώρες. Μπορείτε να το παραλείψετε.',
+        noMatch: 'Δεν βρέθηκε πελάτης. Συμπληρώστε τα στοιχεία στο τελευταίο βήμα.',
+        selected: 'Κράτηση για',
+        change: 'Αλλαγή',
+      },
       statusConflict: 'Αυτή η ώρα δεν είναι πλέον διαθέσιμη, οπότε η κατάσταση της κράτησης δεν μπορεί να αλλάξει.',
       statusError: 'Δεν ήταν δυνατή η ενημέρωση της κατάστασης της κράτησης. Δοκιμάστε ξανά.',
       title: 'Ραντεβού',
@@ -2780,6 +2822,19 @@ home: {
       viewButton: 'Open',
     },
     public: {
+      identity: {
+        askTitle: 'Continue as {name}?',
+        askBody: 'We will use your saved details to find the times that suit you.',
+        yes: 'Yes, continue',
+        no: 'No, someone else',
+        knownAs: 'Booking as',
+        notYou: 'Not you?',
+        prompt: 'Booked with us before? Add your phone to find your times faster',
+        phoneLabel: 'Your phone',
+        phoneHint: 'Optional. Only used to find times that suit you.',
+        usePhone: 'Use this number',
+        cancel: 'Cancel',
+      },
       bookAppointment: 'Book an Appointment',
       service: 'Service',
       staff: 'Staff',
@@ -3004,6 +3059,14 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      customerPicker: {
+        label: 'Customer',
+        placeholder: 'Search by name or phone…',
+        hint: 'Pick an existing customer to see their own durations and times. You can skip this.',
+        noMatch: 'No customer found. Enter their details on the last step.',
+        selected: 'Booking for',
+        change: 'Change',
+      },
       statusConflict: "That time is no longer free, so the booking status can't be changed.",
       statusError: "Couldn't update the booking status. Please try again.",
       title: 'Bookings',
