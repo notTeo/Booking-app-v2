@@ -847,7 +847,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* Booking block. Status = fill + left bar + icon + (canceled) strike-through, same tokens as .badge--*. */
 .cal-block {
   --blk-bg: var(--surface-sunken); --blk-bd: var(--border); --blk-bar: var(--border-strong);
-  position: absolute; left: var(--space-1); width: calc(100% - var(--space-2)); display: flex; flex-direction: column; align-items: stretch;
+  /* --lane / --lanes: side-by-side placement when blocks share time (e.g. a rescheduled reference and the booking that took its slot). */
+  position: absolute; left: calc(var(--space-1) + (100% - var(--space-2)) * var(--lane, 0) / var(--lanes, 1)); width: calc((100% - var(--space-2)) / var(--lanes, 1)); display: flex; flex-direction: column; align-items: stretch;
   padding: var(--space-1) var(--space-2); overflow: hidden; text-align: left; font: inherit; color: var(--text); background: var(--blk-bg);
   border: 1px solid var(--blk-bd); border-left: 3px solid var(--blk-bar); border-radius: var(--radius-sm); cursor: pointer;
   transition: box-shadow var(--motion-fast) var(--ease-standard);

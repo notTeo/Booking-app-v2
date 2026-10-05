@@ -91,6 +91,57 @@ export interface CancelBookingResult {
 export const cancelBooking = (token: string) =>
   client.post('/public/cancel', { token }).then((r) => r.data.data as CancelBookingResult);
 
+/** Why a customer link is locked; the API's error `code` for the same action. */
+export type CustomerChangeBlock =
+  | 'BOOKING_RESCHEDULED'
+  | 'BOOKING_ALREADY_CANCELED'
+  | 'BOOKING_COMPLETED'
+  | 'BOOKING_NO_SHOW'
+  | 'BOOKING_IN_PAST'
+  | 'CANCEL_WINDOW_CLOSED'
+  | 'RESCHEDULE_DISABLED'
+  | 'RESCHEDULE_WINDOW_CLOSED';
+
+interface CustomerAction {
+  allowed: boolean;
+  reason: CustomerChangeBlock | null;
+  cutoffHours: number;
+}
+
+/** A booking as its customer sees it from the link in their email. */
+export interface ManagedBooking {
+  id: string;
+  status: string;
+  startTime: string;
+  endTime: string;
+  customerName: string;
+  shop: { slug: string; name: string; timezone: string };
+  service: { id: string; name: string; duration: number; price: number };
+  staff: { id: string; name: string | null };
+  rescheduledTo: { startTime: string } | null;
+  cancel: CustomerAction;
+  reschedule: CustomerAction;
+}
+
+export const getManagedBooking = (token: string) =>
+  client.post('/public/booking', { token }).then((r) => r.data.data as ManagedBooking);
+
+export interface RescheduleResult {
+  id: string;
+  status: string;
+  startTime: string;
+  endTime: string;
+  shopName: string;
+  serviceName: string;
+  staffName: string | null;
+}
+
+export const rescheduleBookingByToken = (
+  token: string,
+  payload: { startTime: string; staffId?: string },
+) =>
+  client.post('/public/reschedule', { token, ...payload }).then((r) => r.data.data as RescheduleResult);
+
 /** Why a slot is outside working hours (owner/staff view only). */
 export type OutsideReason = 'BEFORE_OPENING' | 'BREAK' | 'AFTER_CLOSING' | 'CLOSED_DAY';
 
@@ -115,7 +166,9 @@ export const getPublicSlots = (
   date: string,
   staffId: string | null,
   serviceId: string | null,
+  /** A customer rescheduling: their own booking doesn't block its slot. */
+  rescheduleToken?: string,
 ) =>
   client
-    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId } })
+    .get(`/public/${slug}/slots`, { params: { date, staffId, serviceId, rescheduleToken } })
     .then((r) => r.data.data as SlotsResponse);

@@ -27,13 +27,23 @@ export interface UseBookingWizardOptions {
    */
   internal?: boolean;
   /**
-   * Owner wizard only: move this existing booking instead of creating one.
-   * The service is fixed (it is the booking's own, possibly deactivated), the
-   * wizard opens on the date/time step, and slot lookups pass `forBookingId`
-   * so the booking never blocks its own new time. Pair with `initialMemberId`
-   * (the booking's provider) and `initialDate` (its shop-local date).
+   * Move an existing booking instead of creating one. The wizard opens on the
+   * date/time step with the booking's own service (possibly deactivated) and
+   * slot lookups exclude the booking, so it never blocks its own new time.
+   * Pair with `initialMemberId` (the booking's provider) and `initialDate`
+   * (its shop-local date).
    */
-  reschedule?: { bookingId: string; service: Service };
+  reschedule?: {
+    /** Owner wizard: the booking's id (authenticated slots). */
+    bookingId?: string;
+    /** Customer page: the link's token (public slots). */
+    token?: string;
+    service: Service;
+    /** Customer page: the service can't change, so there is no step 1. */
+    fixedService?: boolean;
+    /** Back on the first step leaves the wizard. */
+    onExit?: () => void;
+  };
 }
 
 export interface UseBookingWizardResult {
@@ -54,6 +64,10 @@ export interface UseBookingWizardResult {
   slotsError: boolean;
   retrySlots: () => void;
   selectedService: Service | null;
+  /** What step 1 offers: the shop's active services, plus a rescheduled booking's own. */
+  services: Service[];
+  /** The first step this wizard has (2 when the service is fixed). */
+  firstStep: WizardStep;
   eligibleMembers: ShopMember[];
   handleSelectService: (serviceId: string) => void;
   handleSelectMember: (memberId: string | null) => void;
@@ -63,6 +77,17 @@ export interface UseBookingWizardResult {
   intervalMinutes: number | null;
   handleIntervalChange: (minutes: number | null) => void;
 }
+
+/** Step 1's list: the active services, plus a rescheduled booking's own one. */
+export const wizardServices = (active: Service[], own?: Service): Service[] =>
+  !own || active.some((s) => s.id === own.id) ? active : [own, ...active];
+
+/**
+ * Where Back leads in reschedule mode: one step down, never below the wizard's
+ * first step. null = there is nothing before this step, so Back leaves.
+ */
+export const nextStepBack = (step: WizardStep, firstStep: WizardStep): WizardStep | null =>
+  step > firstStep ? ((step - 1) as WizardStep) : null;
 
 export function useBookingWizard({
   slug,
@@ -109,10 +134,10 @@ export function useBookingWizard({
   }, []);
 
   // A deactivated service is missing from the public shop info; a reschedule
-  // keeps it, so fall back to the booking's own copy.
-  const selectedService =
-    shop?.services.find((s) => s.id === selectedServiceId) ??
-    (reschedule && reschedule.service.id === selectedServiceId ? reschedule.service : null);
+  // keeps it, so the booking's own copy is offered alongside the active ones.
+  const services = wizardServices(shop?.services ?? [], reschedule?.service);
+  const selectedService = services.find((s) => s.id === selectedServiceId) ?? null;
+  const firstStep: WizardStep = reschedule?.fixedService ? 2 : 1;
   const bookableMembers = (shop?.members ?? []).filter((m) =>
     internal ? m.bookableInternally : m.bookableByCustomers,
   );
@@ -129,7 +154,7 @@ export function useBookingWizard({
     const request =
       internal && shopId
         ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId)
-        : getPublicSlots(slug, targetDate, memberId, serviceId);
+        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token);
     const seq = ++slotsSeq.current;
     lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceId, interval);
     setSlotsError(false);
@@ -150,6 +175,11 @@ export function useBookingWizard({
     setSelectedServiceId(serviceId);
     setTime('');
 
+    if (reschedule) {
+      // Another service: who does it comes next; the date is kept.
+      setStep(2);
+      return;
+    }
     if (initialMemberId) {
       setSelectedMemberId(initialMemberId);
       setStep(3);
@@ -167,7 +197,7 @@ export function useBookingWizard({
       // Same day, another provider: keep the date and show their slots.
       setTime('');
       setStep(3);
-      if (date && memberId) fetchSlots(date, memberId, reschedule.service.id);
+      if (date && memberId && selectedServiceId) fetchSlots(date, memberId, selectedServiceId);
       return;
     }
     setDate('');
@@ -191,16 +221,13 @@ export function useBookingWizard({
 
   function goBack() {
     if (reschedule) {
-      // No service step: date/time -> provider, and provider -> back to the
-      // booking's own provider on the date/time step.
-      if (step === 3) {
-        setTime('');
-        setStep(2);
-      } else if (step === 2) {
-        const memberId = initialMemberId ?? null;
-        setSelectedMemberId(memberId);
-        setStep(3);
-        if (date && memberId) fetchSlots(date, memberId, reschedule.service.id);
+      // The booking's own service, provider and date stay selected, so going
+      // back only changes the step. Back on the first step leaves the wizard.
+      const next = nextStepBack(step, firstStep);
+      if (next === null) reschedule.onExit?.();
+      else {
+        if (step === 3) setTime('');
+        setStep(next);
       }
       return;
     }
@@ -237,6 +264,8 @@ export function useBookingWizard({
     slotsError,
     retrySlots,
     selectedService,
+    services,
+    firstStep,
     eligibleMembers,
     handleSelectService,
     handleSelectMember,

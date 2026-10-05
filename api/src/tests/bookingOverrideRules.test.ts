@@ -247,7 +247,8 @@ describe('PATCH: the same contract when scheduling changes', () => {
       overrideRules: ['OUTSIDE_OPENING_HOURS'],
     });
     expect(ok.status).toBe(200);
-    expect((await stored(id)).overriddenRules).toEqual([
+    // A reschedule creates a new booking; the codes are stored on that one.
+    expect((await stored(ok.body.data.id)).overriddenRules).toEqual([
       'OUTSIDE_OPENING_HOURS',
     ]);
   });
@@ -255,15 +256,17 @@ describe('PATCH: the same contract when scheduling changes', () => {
   it('a reschedule back into hours replaces the stored codes with []', async () => {
     const t = await shop();
     const id = await booked(t);
-    await patch(t, id, {
+    const early = await patch(t, id, {
       startTime: BEFORE_OPEN,
       overrideRules: ['OUTSIDE_OPENING_HOURS'],
     });
-    expect((await stored(id)).overriddenRules).toEqual([
+    const earlyId = early.body.data.id as string;
+    expect((await stored(earlyId)).overriddenRules).toEqual([
       'OUTSIDE_OPENING_HOURS',
     ]);
-    expect((await patch(t, id, { startTime: OK })).status).toBe(200);
-    expect((await stored(id)).overriddenRules).toEqual([]);
+    const back = await patch(t, earlyId, { startTime: OK });
+    expect(back.status).toBe(200);
+    expect((await stored(back.body.data.id)).overriddenRules).toEqual([]);
   });
 
   it('a notes-only edit leaves the stored codes and the creator untouched', async () => {

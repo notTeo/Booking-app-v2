@@ -53,6 +53,8 @@ export default function ShopRescheduleBookingPage() {
         shopId={shop.id}
         slug={slug}
         reschedule={{ booking, zone: shop.timezone }}
+        // Back to the calendar on the day the booking is still on.
+        onCancel={() => navigate(`/shops/${slug}/bookings?date=${dateInZone(booking.startTime, shop.timezone)}`)}
         onDone={(moved) =>
           navigate(`/shops/${slug}/bookings?date=${dateInZone(moved.startTime, shop.timezone)}`)
         }

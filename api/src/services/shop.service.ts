@@ -27,6 +27,9 @@ export interface UpdateShopDto {
   timezone?: string;
   maxAdvanceDays?: number;
   slotIntervalMinutes?: number;
+  customerRescheduleEnabled?: boolean;
+  cancelCutoffHours?: number;
+  rescheduleCutoffHours?: number;
   isActive?: boolean;
 }
 
@@ -52,6 +55,9 @@ const UPDATE_FIELDS = [
   'timezone',
   'maxAdvanceDays',
   'slotIntervalMinutes',
+  'customerRescheduleEnabled',
+  'cancelCutoffHours',
+  'rescheduleCutoffHours',
   'isActive',
 ] as const;
 

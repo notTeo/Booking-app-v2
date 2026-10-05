@@ -213,7 +213,7 @@ export const sendPasswordResetEmail = async (
   logger.info(`Password reset email sent`);
 };
 
-export const sendBookingConfirmationEmail = async (params: {
+export interface BookingEmailParams {
   email: string;
   customerName: string;
   shopName: string;
@@ -224,7 +224,163 @@ export const sendBookingConfirmationEmail = async (params: {
   timezone: string;
   formattedAddress: string | null;
   cancelToken: string;
+  // The shop's rules for the customer links (see Shop in schema.prisma).
+  canReschedule: boolean;
+  cancelCutoffHours: number;
+  rescheduleCutoffHours: number;
+}
+
+const hoursLabel = (hours: number) => `${hours} hour${hours === 1 ? '' : 's'}`;
+
+/** One line telling the customer until when the links below still work. */
+const changePolicyNote = (p: BookingEmailParams) => {
+  const cancel = p.cancelCutoffHours;
+  const reschedule = p.rescheduleCutoffHours;
+  if (!p.canReschedule)
+    return cancel > 0
+      ? `You can cancel up to ${hoursLabel(cancel)} before your appointment.`
+      : '';
+  if (cancel === reschedule)
+    return cancel > 0
+      ? `You can cancel or reschedule up to ${hoursLabel(cancel)} before your appointment.`
+      : '';
+  return [
+    cancel > 0
+      ? `You can cancel up to ${hoursLabel(cancel)} before your appointment.`
+      : '',
+    reschedule > 0
+      ? `You can reschedule up to ${hoursLabel(reschedule)} before.`
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+};
+
+/** Calendar, directions, reschedule and cancel buttons for a booking email. */
+const bookingActions = (p: BookingEmailParams) => {
+  const mapsUrl = p.formattedAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.formattedAddress)}`
+    : null;
+  const calendarUrl = buildCalendarUrl({
+    title: `${p.serviceName} at ${p.shopName}`,
+    startTime: p.startTime,
+    endTime: p.endTime,
+    details: `Appointment with ${p.staffName} at ${p.shopName}.`,
+    location: p.formattedAddress,
+  });
+  const rescheduleUrl = `${env.clientUrl}/reschedule?token=${p.cancelToken}`;
+  const cancelUrl = `${env.clientUrl}/cancel?token=${p.cancelToken}`;
+  const policy = changePolicyNote(p);
+
+  return `
+      <div style="margin:28px 0 16px;">
+        ${btnOutline(calendarUrl, 'Save to calendar')}
+        ${mapsUrl ? btnOutline(mapsUrl, 'Get directions') : ''}
+        ${p.canReschedule ? btnOutline(rescheduleUrl, 'Reschedule booking') : ''}
+        ${btnOutline(cancelUrl, 'Cancel booking')}
+      </div>
+      ${policy ? `<p style="${styles.note}">${policy}</p>` : ''}
+      ${mapsUrl ? `<p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>` : ''}
+    `;
+};
+
+const formatDate = (date: Date, timezone: string) =>
+  new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+
+const formatTime = (date: Date, timezone: string) =>
+  new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+
+export const sendBookingRescheduledEmail = async (
+  params: BookingEmailParams & { previousStartTime: Date },
+) => {
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to: params.email,
+    subject: `Your booking at ${params.shopName} has been rescheduled`,
+    html: baseTemplate(
+      `Booking rescheduled — ${params.shopName}`,
+      'Rescheduled',
+      `
+      <h1 style="${styles.h1}">Booking rescheduled, ${escapeHtml(params.customerName)}.</h1>
+      <p style="${styles.p}">Your appointment has moved to a new time. The old time is no longer reserved for you.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
+        ${detailRow('New date', formatDate(params.startTime, params.timezone))}
+        ${detailRow('New time', formatTime(params.startTime, params.timezone))}
+        ${detailRow('Was', `${formatDate(params.previousStartTime, params.timezone)}, ${formatTime(params.previousStartTime, params.timezone)}`)}
+        ${detailRow('Service', escapeHtml(params.serviceName))}
+        ${detailRow('Provider', escapeHtml(params.staffName))}
+        ${detailRow('Location', escapeHtml(params.formattedAddress ?? params.shopName))}
+      </table>
+      ${bookingActions(params)}
+      <p style="${styles.note}">The links in earlier emails about this booking no longer work.</p>
+    `,
+    ),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send booking rescheduled email`);
+    throw new Error('Failed to send booking rescheduled email');
+  }
+
+  logger.info(`Booking rescheduled email sent`);
+};
+
+export const sendBookingRescheduledNotificationEmail = async (params: {
+  email: string;
+  customerName: string;
+  customerPhone: string;
+  shopName: string;
+  serviceName: string;
+  staffName: string;
+  startTime: Date;
+  previousStartTime: Date;
+  timezone: string;
 }) => {
+  const { error } = await resend.emails.send({
+    from: env.resend.emailFrom,
+    to: params.email,
+    subject: `Booking rescheduled at ${params.shopName}`,
+    html: baseTemplate(
+      `Booking rescheduled — ${params.shopName}`,
+      'Rescheduled',
+      `
+      <h1 style="${styles.h1}">A customer rescheduled a booking.</h1>
+      <p style="${styles.p}">The old time is free again and shows as rescheduled in your calendar.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:28px 0;">
+        ${detailRow('Customer', escapeHtml(params.customerName))}
+        ${detailRow('Phone', escapeHtml(params.customerPhone))}
+        ${detailRow('Service', escapeHtml(params.serviceName))}
+        ${detailRow('Provider', escapeHtml(params.staffName))}
+        ${detailRow('New date', formatDate(params.startTime, params.timezone))}
+        ${detailRow('New time', formatTime(params.startTime, params.timezone))}
+        ${detailRow('Was', `${formatDate(params.previousStartTime, params.timezone)}, ${formatTime(params.previousStartTime, params.timezone)}`)}
+      </table>
+    `,
+    ),
+  });
+
+  if (error) {
+    logger.error(error, `Failed to send booking rescheduled notification`);
+    throw new Error('Failed to send booking rescheduled notification email');
+  }
+
+  logger.info(`Booking rescheduled notification sent`);
+};
+
+export const sendBookingConfirmationEmail = async (
+  params: BookingEmailParams,
+) => {
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: params.timezone,
     weekday: 'long',
@@ -239,20 +395,6 @@ export const sendBookingConfirmationEmail = async (params: {
     minute: '2-digit',
     hour12: true,
   }).format(params.startTime);
-
-  const mapsUrl = params.formattedAddress
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(params.formattedAddress)}`
-    : null;
-
-  const calendarUrl = buildCalendarUrl({
-    title: `${params.serviceName} at ${params.shopName}`,
-    startTime: params.startTime,
-    endTime: params.endTime,
-    details: `Appointment with ${params.staffName} at ${params.shopName}.`,
-    location: params.formattedAddress,
-  });
-
-  const cancelUrl = `${env.clientUrl}/cancel?token=${params.cancelToken}`;
 
   const { error } = await resend.emails.send({
     from: env.resend.emailFrom,
@@ -271,12 +413,7 @@ export const sendBookingConfirmationEmail = async (params: {
         ${detailRow('Provider', escapeHtml(params.staffName))}
         ${detailRow('Location', escapeHtml(params.formattedAddress ?? params.shopName))}
       </table>
-      <div style="margin:28px 0 16px;">
-        ${btnOutline(calendarUrl, 'Save to calendar')}
-        ${mapsUrl ? btnOutline(mapsUrl, 'Get directions') : ''}
-        ${btnOutline(cancelUrl, 'Cancel booking')}
-      </div>
-      <p style="${styles.note}">Directions open Google Maps and show travel time from your location.</p>
+      ${bookingActions(params)}
     `,
     ),
   });

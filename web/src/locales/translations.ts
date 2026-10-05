@@ -673,6 +673,14 @@ export interface Translations {
     maxAdvanceHint: string;
     slotIntervalLabel: string;
     slotIntervalHint: string;
+    customerChangesTitle: string;
+    customerChangesHint: string;
+    rescheduleEnabledLabel: string;
+    rescheduleEnabledDesc: string;
+    cancelCutoffLabel: string;
+    cancelCutoffHint: string;
+    rescheduleCutoffLabel: string;
+    rescheduleCutoffHint: string;
     slotIntervalOption: string;
   };
   sharing: {
@@ -871,6 +879,14 @@ export interface Translations {
       error: string;
       notFound: string;
       notAllowed: string;
+      /** Shown in place of "Canceled" on the old half of a reschedule. */
+      rescheduledLabel: string;
+      /** {when} = the new booking's date and time. */
+      rescheduledTo: string;
+      /** {when} = the replaced booking's date and time. */
+      rescheduledFrom: string;
+      viewNew: string;
+      serviceWas: string;
     };
     override: RuleMessages & {
       title: string;
@@ -939,6 +955,31 @@ export interface Translations {
     confirmButton: string;
     keepButton: string;
     kept: string;
+    /** {n} = hours of notice the shop asks for. */
+    windowClosed: string;
+    rescheduled: string;
+  };
+  rescheduleBooking: {
+    invalidLink: string;
+    notFound: string;
+    title: string;
+    currentLabel: string;
+    keepButton: string;
+    kept: string;
+    done: string;
+    doneText: string;
+    doneEmail: string;
+    disabled: string;
+    /** {n} = hours of notice the shop asks for. */
+    windowClosed: string;
+    /** {when} = the new booking's date and time. */
+    rescheduled: string;
+    alreadyCancelled: string;
+    alreadyCompleted: string;
+    markedNoShow: string;
+    pastBooking: string;
+    staffUnavailable: string;
+    error: string;
   };
 }
 
@@ -1610,6 +1651,14 @@ home: {
       maxAdvanceHint: 'Πόσες ημέρες μπροστά μπορούν οι πελάτες να κλείσουν ραντεβού.',
     slotIntervalLabel: 'Διάστημα ραντεβού',
     slotIntervalHint: 'Κάθε πόσα λεπτά εμφανίζεται διαθέσιμη ώρα ραντεβού (π.χ. κάθε 15 λεπτά).',
+    customerChangesTitle: 'Αλλαγές από πελάτες',
+    customerChangesHint: 'Τι μπορούν να κάνουν οι πελάτες από τους συνδέσμους στο email τους. Εσείς και οι υπεύθυνοι μπορείτε πάντα να αλλάξετε ένα ραντεβού από το ημερολόγιο.',
+    rescheduleEnabledLabel: 'Αλλαγή ώρας από τον πελάτη',
+    rescheduleEnabledDesc: 'Το email επιβεβαίωσης περιέχει σύνδεσμο για αλλαγή ώρας.',
+    cancelCutoffLabel: 'Ακύρωση έως (ώρες πριν)',
+    cancelCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να ακυρώσει μόνος του. 0 = μέχρι την έναρξη.',
+    rescheduleCutoffLabel: 'Αλλαγή ώρας έως (ώρες πριν)',
+    rescheduleCutoffHint: 'Μετά από αυτό το όριο ο πελάτης δεν μπορεί να αλλάξει ώρα μόνος του. 0 = μέχρι την έναρξη.',
     slotIntervalOption: 'Κάθε {n} λεπτά',
     },
     sharing: {
@@ -1820,6 +1869,11 @@ home: {
         error: 'Η αλλαγή ώρας απέτυχε.',
         notFound: 'Το ραντεβού δεν βρέθηκε.',
         notAllowed: 'Μόνο ραντεβού σε αναμονή ή επιβεβαιωμένα μπορούν να αλλάξουν ώρα.',
+        rescheduledLabel: 'Άλλαξε ώρα',
+        rescheduledTo: 'Το ραντεβού μεταφέρθηκε: {when}. Αυτή η ώρα είναι ξανά ελεύθερη.',
+        rescheduledFrom: 'Μεταφέρθηκε από: {when}.',
+        viewNew: 'Δείτε τη νέα ώρα',
+        serviceWas: 'Ήταν',
       },
       override: {
         BOOKING_IN_PAST: 'Η ώρα αυτή βρίσκεται στο παρελθόν.',
@@ -1901,6 +1955,28 @@ home: {
       confirmButton: 'Ναι, ακύρωση',
       keepButton: 'Διατήρηση ραντεβού',
       kept: 'Το ραντεβού σας διατηρήθηκε. Μπορείτε να κλείσετε αυτή τη σελίδα.',
+      windowClosed: 'Το ραντεβού είναι σε λιγότερο από {n} ώρες και δεν μπορεί πλέον να ακυρωθεί από εδώ. Επικοινωνήστε με το κατάστημα.',
+      rescheduled: 'Αυτό το ραντεβού έχει αλλάξει ώρα. Χρησιμοποιήστε τον σύνδεσμο στο πιο πρόσφατο email.',
+    },
+    rescheduleBooking: {
+      invalidLink: 'Μη έγκυρος σύνδεσμος αλλαγής ώρας.',
+      notFound: 'Το ραντεβού δεν βρέθηκε. Ο σύνδεσμος μπορεί να είναι άκυρος ή ληγμένος.',
+      title: 'Αλλαγή ώρας ραντεβού',
+      currentLabel: 'Τρέχουσα ώρα',
+      keepButton: 'Διατήρηση τρέχουσας ώρας',
+      kept: 'Το ραντεβού σας έμεινε όπως ήταν. Μπορείτε να κλείσετε αυτή τη σελίδα.',
+      done: 'Η ώρα άλλαξε',
+      doneText: 'Το ραντεβού σας είναι πλέον:',
+      doneEmail: 'Αν έχετε δώσει email, θα λάβετε τα νέα στοιχεία. Οι σύνδεσμοι σε παλαιότερα email δεν ισχύουν πλέον.',
+      disabled: 'Αυτό το κατάστημα δεν δέχεται αλλαγή ώρας online. Επικοινωνήστε με το κατάστημα.',
+      windowClosed: 'Το ραντεβού είναι σε λιγότερο από {n} ώρες και δεν μπορεί πλέον να αλλάξει ώρα από εδώ. Επικοινωνήστε με το κατάστημα.',
+      rescheduled: 'Αυτό το ραντεβού έχει ήδη μεταφερθεί: {when}. Χρησιμοποιήστε τον σύνδεσμο στο πιο πρόσφατο email.',
+      alreadyCancelled: 'Αυτό το ραντεβού έχει ακυρωθεί.',
+      alreadyCompleted: 'Αυτό το ραντεβού έχει ήδη ολοκληρωθεί.',
+      markedNoShow: 'Αυτό το ραντεβού έχει καταχωρηθεί ως απουσία.',
+      pastBooking: 'Αυτό το ραντεβού έχει ήδη ξεκινήσει ή περάσει. Επικοινωνήστε με το κατάστημα.',
+      staffUnavailable: 'Αυτός ο συνεργάτης δεν είναι διαθέσιμος. Επιλέξτε άλλον.',
+      error: 'Η αλλαγή ώρας απέτυχε. Δοκιμάστε ξανά ή επικοινωνήστε με το κατάστημα.',
     },
   },
 
@@ -2571,6 +2647,14 @@ home: {
       maxAdvanceHint: 'How many days ahead customers can book an appointment.',
     slotIntervalLabel: 'Slot interval',
     slotIntervalHint: 'How often a bookable time appears (e.g. every 15 minutes). Existing bookings are not changed.',
+    customerChangesTitle: 'Customer changes',
+    customerChangesHint: 'What customers can do from the links in their email. You and your managers can always change a booking from the calendar.',
+    rescheduleEnabledLabel: 'Let customers reschedule',
+    rescheduleEnabledDesc: 'The confirmation email includes a link to pick a new time.',
+    cancelCutoffLabel: 'Cancel up to (hours before)',
+    cancelCutoffHint: 'Closer than this, customers can no longer cancel by themselves. 0 = until the booking starts.',
+    rescheduleCutoffLabel: 'Reschedule up to (hours before)',
+    rescheduleCutoffHint: 'Closer than this, customers can no longer reschedule by themselves. 0 = until the booking starts.',
     slotIntervalOption: 'Every {n} minutes',
     },
     sharing: {
@@ -2781,6 +2865,11 @@ home: {
         error: 'Could not reschedule the booking.',
         notFound: 'This booking no longer exists.',
         notAllowed: 'Only pending or confirmed bookings can be rescheduled.',
+        rescheduledLabel: 'Rescheduled',
+        rescheduledTo: 'This booking was rescheduled to {when}. This time is free again.',
+        rescheduledFrom: 'Rescheduled from {when}.',
+        viewNew: 'Go to the new time',
+        serviceWas: 'Was',
       },
       override: {
         BOOKING_IN_PAST: 'That time is in the past.',
@@ -2862,6 +2951,28 @@ home: {
       confirmButton: 'Yes, cancel booking',
       keepButton: 'Keep booking',
       kept: 'Your booking is kept. You can close this page.',
+      windowClosed: 'Your booking is less than {n} hours away and can no longer be cancelled here. Please contact the shop.',
+      rescheduled: 'This booking was rescheduled. Use the link in your latest email.',
+    },
+    rescheduleBooking: {
+      invalidLink: 'Invalid reschedule link.',
+      notFound: 'Booking not found. The link may be invalid or expired.',
+      title: 'Reschedule your booking',
+      currentLabel: 'Current time',
+      keepButton: 'Keep current time',
+      kept: 'Your booking stays as it was. You can close this page.',
+      done: 'Booking rescheduled',
+      doneText: 'Your appointment is now on:',
+      doneEmail: 'If you gave an email, the new details are on their way. Links in earlier emails no longer work.',
+      disabled: 'This shop does not take reschedules online. Please contact the shop.',
+      windowClosed: 'Your booking is less than {n} hours away and can no longer be rescheduled here. Please contact the shop.',
+      rescheduled: 'This booking was already rescheduled to {when}. Use the link in your latest email.',
+      alreadyCancelled: 'This booking has been cancelled.',
+      alreadyCompleted: 'This booking has already been completed.',
+      markedNoShow: 'This booking was marked as a no-show.',
+      pastBooking: 'This booking has already started or passed. Please contact the shop.',
+      staffUnavailable: 'That team member is not available. Pick someone else.',
+      error: 'Could not reschedule your booking. Please try again or contact the shop.',
     },
   },
 };

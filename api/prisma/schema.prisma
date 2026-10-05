@@ -36,14 +36,20 @@ model Shop {
 
   formattedAddress String?
 
-  timezone            String   @default("Europe/Athens")
+  timezone                  String   @default("Europe/Athens")
   // How many calendar days ahead customers may book (shop-local date).
-  maxAdvanceDays      Int      @default(60)
+  maxAdvanceDays            Int      @default(60)
   // Minutes between bookable start times (10, 15, 20 or 30).
-  slotIntervalMinutes Int      @default(30)
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  slotIntervalMinutes       Int      @default(30)
+  // Customers may reschedule from the link in their confirmation email.
+  customerRescheduleEnabled Boolean  @default(true)
+  // Hours before the start time after which the customer links lock
+  // (0 = until the booking starts). Owners and managers are never limited.
+  cancelCutoffHours         Int      @default(1)
+  rescheduleCutoffHours     Int      @default(1)
+  isActive                  Boolean  @default(true)
+  createdAt                 DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime @updatedAt @db.Timestamptz(3)
 
   members              UserShop[]
   shopWorkingSchedules ShopWorkingSchedule[]
@@ -211,23 +217,29 @@ model Customer {
 }
 
 model Booking {
-  id              String        @id @default(cuid())
-  shopId          String
-  customerId      String
-  serviceId       String
-  staffId         String
-  startTime       DateTime      @db.Timestamptz(3)
-  endTime         DateTime      @db.Timestamptz(3)
-  status          BookingStatus @default(CONFIRMED)
-  notes           String?
-  cancelToken     String?       @unique
+  id                String        @id @default(cuid())
+  shopId            String
+  customerId        String
+  serviceId         String
+  staffId           String
+  startTime         DateTime      @db.Timestamptz(3)
+  endTime           DateTime      @db.Timestamptz(3)
+  status            BookingStatus @default(CONFIRMED)
+  notes             String?
+  cancelToken       String?       @unique
   // Booking rules the owner/staff explicitly accepted when creating this
   // booking (e.g. OUTSIDE_OPENING_HOURS). Stored at creation, never recomputed.
-  overriddenRules String[]      @default([])
+  overriddenRules   String[]      @default([])
   // Who created it (null = public booking, or the creator was deleted).
-  createdById     String?
-  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime      @updatedAt @db.Timestamptz(3)
+  createdById       String?
+  // Set on the booking a reschedule created; points at the booking it
+  // replaced, which stays CANCELED at its old time as a reference.
+  rescheduledFromId String?       @unique
+  createdAt         DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
+
+  rescheduledFrom Booking? @relation("BookingReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo   Booking? @relation("BookingReschedule")
 
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -242,14 +254,14 @@ model Booking {
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  family    String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  expiresAt DateTime @db.Timestamptz(3)
+  id         String   @id @default(cuid())
+  token      String   @unique
+  family     String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  expiresAt  DateTime @db.Timestamptz(3)
   rememberMe Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model EmailVerificationToken {

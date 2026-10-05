@@ -35,6 +35,7 @@ import ShopSettingsPage from './pages/ShopSettingsPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
 import CancelBookingPage from './pages/CancelBookingPage';
+import RescheduleBookingPage from './pages/RescheduleBookingPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import DpaPage from './pages/DpaPage';
@@ -79,6 +80,7 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/invite" element={<AcceptInvitePage />} />
                 <Route path="/cancel" element={<CancelBookingPage />} />
+                <Route path="/reschedule" element={<RescheduleBookingPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/dpa" element={<DpaPage />} />
