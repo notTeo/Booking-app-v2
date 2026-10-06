@@ -94,8 +94,10 @@ describe('PB-01: an explicitly chosen staff member need not perform the service'
 });
 
 // ── PB-02 ────────────────────────────────────────────────────────────────────
-describe('PB-02: nothing caps how many slots one anonymous customer can hold', () => {
-  it('PB-02: one phone number cannot take 20 confirmed slots on a single day', async () => {
+// ACCEPTED BY DESIGN (decision D1, 2026-10-06): no per-phone cap. The per-IP
+// write limiter is the only brake. This now documents that behaviour.
+describe('PB-02 (accepted): nothing caps how many slots one customer can hold', () => {
+  it('PB-02 (accepted): one phone number may take every slot of a day', async () => {
     const t = await shop('Fill', '09:00', '19:00');
     const phone = '+306941234567';
     const statuses: number[] = [];
@@ -105,7 +107,7 @@ describe('PB-02: nothing caps how many slots one anonymous customer can hold', (
       statuses.push(res.status);
     }
     // The whole 09:00-19:00 day of the only provider is now held, auto-CONFIRMED.
-    expect(tally(statuses)[201] ?? 0, JSON.stringify(tally(statuses))).toBeLessThan(20);
+    expect(tally(statuses)).toEqual({ 201: 20 });
   });
 });
 
@@ -269,8 +271,9 @@ describe('PB-09: the customer key (shopId, phone) is the raw string as typed', (
 });
 
 // ── PB-10 ────────────────────────────────────────────────────────────────────
-describe('PB-10: X-Customer-Phone on public slots reveals a known customer', () => {
-  it('PB-10: the slot list is the same for a known and an unknown phone number', async () => {
+// ACCEPTED BY DESIGN (decision D3, 2026-10-06), same behaviour as TI-05.
+describe('PB-10 (accepted): X-Customer-Phone sizes the public grid for a known customer', () => {
+  it('PB-10 (accepted): a known phone gets its own durations; an unknown one gets the default grid', async () => {
     const t = await shop();
     const vip = await prisma.customer.create({
       data: { shopId: t.shop.id, name: 'VIP', phone: '+306940000001' },
@@ -281,7 +284,9 @@ describe('PB-10: X-Customer-Phone on public slots reveals a known customer', () 
     const q = `date=${DAY}&serviceId=${t.service.id}&staffId=${t.staff.id}`;
     const known = await slots(t, q, { 'x-customer-phone': '+306940000001' });
     const unknown = await slots(t, q, { 'x-customer-phone': '+306940000002' });
-    expect(known.body.data.slots).toEqual(unknown.body.data.slots);
+    const anonymous = await slots(t, q);
+    expect(known.body.data.slots).not.toEqual(anonymous.body.data.slots);
+    expect(unknown.body.data.slots).toEqual(anonymous.body.data.slots);
   });
 });
 

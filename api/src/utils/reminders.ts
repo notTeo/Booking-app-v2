@@ -23,7 +23,11 @@ export const sendDueReminders = async (now: Date = new Date()) => {
         gt: now,
         lte: new Date(now.getTime() + MAX_REMINDER_HOURS * HOUR_MS),
       },
-      customer: { isSystem: false, email: { not: null } },
+      customer: { isSystem: false },
+      OR: [
+        { contactEmail: { not: null } },
+        { customer: { email: { not: null } } },
+      ],
       shop: { isActive: true, reminderEnabled: true },
     },
     include: {

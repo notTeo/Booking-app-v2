@@ -13,8 +13,8 @@ import {
   NAME_MAX_LENGTH,
   NOTES_MAX_LENGTH,
   isPlausiblePhone,
+  normalizePhone,
 } from '../validators/common';
-import { NO_CANCEL_TOKEN } from './booking.service';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
@@ -50,6 +50,10 @@ export const listCustomers = async (
       OR: [
         { name: { contains: search, mode: 'insensitive' as const } },
         { phone: { contains: search } },
+        // Phones are stored without separators; "694 123" still finds it.
+        ...(/\d/.test(search) && /^[\d\s().+-]+$/.test(search)
+          ? [{ phone: { contains: normalizePhone(search) } }]
+          : []),
       ],
     }),
   };
@@ -369,9 +373,12 @@ export const importCustomers = async (
 
   const parsed = rows.map((raw) => {
     const r = (raw ?? {}) as Record<string, unknown>;
+    const phone = text(r.phone);
     return {
       name: text(r.name),
-      phone: text(r.phone),
+      // Stored in one form, like every other way a customer is created; an
+      // invalid value is left alone for the row's own check to report.
+      phone: isPlausiblePhone(phone) ? normalizePhone(phone) : phone,
       email: text(r.email),
       notes: text(r.notes),
     };
@@ -455,7 +462,7 @@ export const exportCustomer = async (
   const bookings = await prisma.booking.findMany({
     where: { customerId, shopId },
     orderBy: { startTime: 'asc' },
-    omit: NO_CANCEL_TOKEN,
+    omit: { cancelToken: true },
     include: {
       service: { select: { name: true } },
       staff: { select: { name: true } },
@@ -488,6 +495,7 @@ export const exportCustomer = async (
       endTime: b.endTime,
       status: b.status,
       notes: b.notes,
+      contactEmail: b.contactEmail,
       service: b.service.name,
       staff: b.staff.name,
       createdAt: b.createdAt,

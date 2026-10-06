@@ -6,6 +6,7 @@ import { bookingServiceNames, bookingServicesPrice } from './bookingServices';
 /** The customer-email fields of a booking loaded with shop, service and staff. */
 export const bookingEmailParams = (booking: {
   cancelToken: string | null;
+  contactEmail?: string | null;
   locale: string;
   startTime: Date;
   endTime: Date;
@@ -23,11 +24,14 @@ export const bookingEmailParams = (booking: {
     rescheduleCutoffHours: number;
   };
 }): BookingEmailParams | null => {
+  // The address typed for this booking comes first; the customer's own is the
+  // fallback (a booking the shop made, or one from before contactEmail).
+  const email = booking.contactEmail || booking.customer.email;
   // No address to write to, or no token to build the links from.
-  if (!booking.customer.email || !booking.cancelToken) return null;
+  if (!email || !booking.cancelToken) return null;
   const locale = parseLocale(booking.locale);
   return {
-    email: booking.customer.email,
+    email,
     customerName: booking.customer.name,
     shopName: booking.shop.name,
     serviceName: bookingServiceNames(booking),
