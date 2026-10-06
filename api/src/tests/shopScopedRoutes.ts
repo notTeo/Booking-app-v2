@@ -4,6 +4,7 @@ import {
   createStaffMember,
   createTenant,
 } from './helpers';
+import { prisma } from '../utils/prisma';
 
 // Every route under /api/shops/:id or /api/shops/:shopId/..., with the request
 // each one needs. Shared by the membership matrix (membershipActive.test.ts)
@@ -16,7 +17,15 @@ export async function world() {
   const member = await createStaffMember(t, 'Target');
   const schedule = await addWeeklySchedule(t, { staffId: member.staff.id });
   const booking = await createBookingRow(t);
-  return { t, member, schedule, booking };
+  const timeOff = await prisma.timeOff.create({
+    data: {
+      shopId: t.shop.id,
+      staffId: member.staff.id,
+      startDate: new Date(Date.UTC(2030, 0, 1)),
+      endDate: new Date(Date.UTC(2030, 0, 1)),
+    },
+  });
+  return { t, member, schedule, booking, timeOff };
 }
 export type World = Awaited<ReturnType<typeof world>>;
 
@@ -29,6 +38,7 @@ export const params = (w: World): Record<string, string> => ({
   bookingId: w.booking.id,
   customerId: w.booking.customerId,
   scheduleId: w.schedule.id,
+  timeOffId: w.timeOff.id,
   day: 'MON',
 });
 
@@ -109,6 +119,17 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
       hours: [{ startTime: '09:00', endTime: '12:00' }],
     }),
   },
+
+  'GET /api/shops/:shopId/time-off': {},
+  'POST /api/shops/:shopId/time-off': {
+    minRole: 'manager',
+    body: () => ({ startDate: '2030-02-01', endDate: '2030-02-02' }),
+  },
+  'PATCH /api/shops/:shopId/time-off/:timeOffId': {
+    minRole: 'manager',
+    body: () => ({ note: 'Moved' }),
+  },
+  'DELETE /api/shops/:shopId/time-off/:timeOffId': { minRole: 'manager' },
 
   'POST /api/shops/:shopId/services': {
     minRole: 'manager',

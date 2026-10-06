@@ -672,6 +672,39 @@ export interface Translations {
       SUN: string;
     };
   };
+  timeOff: {
+    title: string;
+    shopTitle: string;
+    hint: string;
+    shopHint: string;
+    add: string;
+    firstDay: string;
+    lastDay: string;
+    allDay: string;
+    startTime: string;
+    endTime: string;
+    note: string;
+    notePlaceholder: string;
+    shopNotePlaceholder: string;
+    save: string;
+    cancel: string;
+    empty: string;
+    shopEmpty: string;
+    wholeShop: string;
+    remove: string;
+    removeTitle: string;
+    removeMessage: string;
+    errorLoad: string;
+    errorSave: string;
+    errorDelete: string;
+    endBeforeStart: string;
+    timeEndBeforeStart: string;
+    affectedOne: string;
+    affectedMany: string;
+    viewCalendar: string;
+    showPast: string;
+    hidePast: string;
+  };
   toggles: {
     switchToLight: string;
     switchToDark: string;
@@ -1856,6 +1889,39 @@ home: {
         SAT: 'Σάββατο',
         SUN: 'Κυριακή',
       },
+    },
+    timeOff: {
+      title: "Άδειες και ρεπό",
+      shopTitle: "Κλειστές ημέρες",
+      hint: "Ημέρες ή ώρες που το μέλος δεν δουλεύει, πέρα από το εβδομαδιαίο πρόγραμμα. Οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      shopHint: "Ημέρες ή ώρες που όλο το κατάστημα είναι κλειστό, π.χ. αργίες. Ισχύουν για όλα τα μέλη και οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      add: "Προσθήκη",
+      firstDay: "Πρώτη ημέρα",
+      lastDay: "Τελευταία ημέρα (προαιρετική)",
+      allDay: "Όλη την ημέρα",
+      startTime: "Ώρα έναρξης",
+      endTime: "Ώρα λήξης",
+      note: "Σημείωση (προαιρετική)",
+      notePlaceholder: "π.χ. Άδεια",
+      shopNotePlaceholder: "π.χ. Χριστούγεννα",
+      save: "Αποθήκευση",
+      cancel: "Ακύρωση",
+      empty: "Δεν υπάρχουν άδειες ή ρεπό.",
+      shopEmpty: "Δεν υπάρχουν κλειστές ημέρες.",
+      wholeShop: "Όλο το κατάστημα",
+      remove: "Αφαίρεση",
+      removeTitle: "Αφαίρεση αυτής της καταχώρισης;",
+      removeMessage: "Οι ώρες αυτές θα είναι ξανά διαθέσιμες για κρατήσεις, σύμφωνα με το εβδομαδιαίο πρόγραμμα.",
+      errorLoad: "Αποτυχία φόρτωσης.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      errorDelete: "Αποτυχία αφαίρεσης.",
+      endBeforeStart: "Η τελευταία ημέρα δεν μπορεί να είναι πριν από την πρώτη.",
+      timeEndBeforeStart: "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.",
+      affectedOne: "Υπάρχει ήδη 1 κράτηση σε αυτό το διάστημα. Δεν άλλαξε· ακύρωσέ την ή μετάφερέ την αν χρειάζεται.",
+      affectedMany: "Υπάρχουν ήδη {count} κρατήσεις σε αυτό το διάστημα. Δεν άλλαξαν· ακύρωσέ τες ή μετάφερέ τες αν χρειάζεται.",
+      viewCalendar: "Άνοιγμα ημερολογίου",
+      showPast: "Εμφάνιση παλαιότερων ({count})",
+      hidePast: "Απόκρυψη παλαιότερων",
     },
     toggles: {
       switchToLight: 'Εναλλαγή σε φωτεινή λειτουργία',
@@ -3065,6 +3131,39 @@ home: {
         SAT: 'Saturday',
         SUN: 'Sunday',
       },
+    },
+    timeOff: {
+      title: "Time off",
+      shopTitle: "Closed days",
+      hint: "Days or hours this member is not working, on top of the weekly hours. Customers cannot book then.",
+      shopHint: "Days or hours the whole shop is closed, such as public holidays. They apply to every member and customers cannot book then.",
+      add: "Add",
+      firstDay: "First day",
+      lastDay: "Last day (optional)",
+      allDay: "All day",
+      startTime: "Start time",
+      endTime: "End time",
+      note: "Note (optional)",
+      notePlaceholder: "e.g. Vacation",
+      shopNotePlaceholder: "e.g. Christmas",
+      save: "Save",
+      cancel: "Cancel",
+      empty: "No time off.",
+      shopEmpty: "No closed days.",
+      wholeShop: "Whole shop",
+      remove: "Remove",
+      removeTitle: "Remove this entry?",
+      removeMessage: "This time will be bookable again, following the weekly hours.",
+      errorLoad: "Could not load time off.",
+      errorSave: "Could not save.",
+      errorDelete: "Could not remove.",
+      endBeforeStart: "The last day cannot be before the first day.",
+      timeEndBeforeStart: "The end time must be after the start time.",
+      affectedOne: "1 booking is already in this time. It was not changed; cancel or move it if needed.",
+      affectedMany: "{count} bookings are already in this time. They were not changed; cancel or move them if needed.",
+      viewCalendar: "Open calendar",
+      showPast: "Show past ({count})",
+      hidePast: "Hide past",
     },
     toggles: {
       switchToLight: 'Switch to light mode',

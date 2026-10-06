@@ -21,6 +21,36 @@ const toHHMM = (mins: number) =>
     .padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`;
 
 /**
+ * `ranges` with every `cuts` window removed ("HH:mm" wall-clock labels), in
+ * time order. A range a cut splits comes back as two; one it covers is gone.
+ */
+export const subtractRanges = <
+  T extends { startTime: string; endTime: string },
+>(
+  ranges: T[],
+  cuts: { startTime: string; endTime: string }[],
+): { startTime: string; endTime: string }[] => {
+  let left = ranges.map((r) => [toMins(r.startTime), toMins(r.endTime)]);
+  for (const cut of cuts) {
+    const from = toMins(cut.startTime);
+    const to = toMins(cut.endTime);
+    left = left.flatMap(([start, end]) => {
+      if (to <= start || from >= end) return [[start, end]];
+      return [
+        [start, from],
+        [to, end],
+      ].filter(([a, b]) => a < b);
+    });
+  }
+  return left
+    .sort((a, b) => a[0] - b[0])
+    .map(([start, end]) => ({
+      startTime: toHHMM(start),
+      endTime: toHHMM(end),
+    }));
+};
+
+/**
  * Bookable start times for one calendar day, given its opening ranges
  * (wall-clock "HH:mm" in `zone`) and the service duration.
  *
