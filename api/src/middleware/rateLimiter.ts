@@ -54,6 +54,8 @@ export const refreshLimiter: RequestHandler = limiter({
 // info, slots) are generous — the booking wizard refetches slots on every
 // date/staff change from one visitor. Writes (book, cancel) are stricter:
 // they create data or reveal whether a guessed cancelToken worked.
+// There is deliberately no cap on how many bookings one phone number may hold
+// (audit PB-02): the write limiter is the only brake on bulk booking.
 export const publicReadLimiter: RequestHandler = limiter({
   windowMs: 15 * 60 * 1000,
   max: 100,

@@ -301,9 +301,12 @@ export const getPublicSlots = async (
       'public',
       // A customer rescheduling: their own booking must not block its slot.
       // Otherwise a returning customer may say who they are, so the times
-      // offered fit their own duration for the service. Sent as a header to
-      // keep the phone out of URLs and access logs; whether it is known is
-      // never revealed, and a malformed one is ignored.
+      // offered fit their own duration for the service ("continue as" in the
+      // first step of the wizard; skipping it sends no phone and gets the
+      // default durations). Sent as a header to keep the phone out of URLs and
+      // access logs; a malformed one is ignored. A known phone with a personal
+      // duration does get a different grid from an unknown one, which tells
+      // the two apart: accepted by design (audit TI-05).
       {
         ...(serviceIds && { serviceIds }),
         ...(rescheduleToken
