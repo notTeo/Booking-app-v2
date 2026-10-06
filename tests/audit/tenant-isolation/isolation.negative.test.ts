@@ -149,7 +149,7 @@ describe('tenant isolation: true negatives', () => {
     await addWeeklySchedule(a);
     await addWeeklySchedule(b);
     const booking = await createBookingRow(a, `${DATE}T10:00:00.000Z`);
-    const token = 'b3f1c2d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+    const token = crypto.randomUUID();
     await prisma.booking.update({
       where: { id: booking.id },
       data: { cancelToken: token },

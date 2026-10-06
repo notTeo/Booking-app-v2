@@ -40,7 +40,7 @@ async function setup() {
       startTime,
       endTime: new Date(startTime.getTime() + 30 * 60_000),
       status: "CONFIRMED",
-      cancelToken: "7b0f6a52-3a0e-4c56-9a53-1f1d2c3b4a59",
+      cancelToken: crypto.randomUUID(),
     },
   });
   return { api, t, restricted, booking };

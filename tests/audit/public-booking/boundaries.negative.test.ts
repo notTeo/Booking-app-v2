@@ -374,9 +374,9 @@ describe('cancel / reschedule token', () => {
 
   it('unknown and malformed tokens: 404 / 400, same answer on all three endpoints', async () => {
     for (const path of ['/public/cancel', '/public/booking', '/public/reschedule']) {
-      const unknown = await post(path, { token: '3f1c2b1e-5b7a-4d0e-9c53-0d7f6a3b9a11', startTime: at('12:00') });
+      const unknown = await post(path, { token: crypto.randomUUID(), startTime: at('12:00') });
       expect(unknown.status, path).toBe(404);
-      for (const token of ['', 'abc', null, 123, { a: 1 }, ['3f1c2b1e-5b7a-4d0e-9c53-0d7f6a3b9a11']]) {
+      for (const token of ['', 'abc', null, 123, { a: 1 }, [crypto.randomUUID()]]) {
         const res = await post(path, { token, startTime: at('12:00') });
         expect(res.status, `${path} ${JSON.stringify(token)}`).toBe(400);
       }
