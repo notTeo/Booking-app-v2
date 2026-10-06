@@ -53,6 +53,21 @@ export const ErrorHandler = (
     });
   }
 
+  // A value of the wrong type got past a validator and Prisma refused the
+  // query. The client's mistake, not a server failure. Prisma's message embeds
+  // the query arguments (a password hash, an email), so it is neither returned
+  // nor logged.
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    logger.warn(
+      { path: req.path, method: req.method },
+      'Rejected malformed input at the database layer',
+    );
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid request',
+    });
+  }
+
   // Not our own AppError, but still the client's mistake, not a server
   // failure — e.g. a malformed JSON body throws a plain SyntaxError from
   // body-parser (upstream of our own routes) with status/statusCode 400.

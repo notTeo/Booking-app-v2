@@ -3,6 +3,12 @@
 
 export const NAME_MAX_LENGTH = 100;
 export const NOTES_MAX_LENGTH = 1000;
+export const DESCRIPTION_MAX_LENGTH = 2000;
+export const ADDRESS_MAX_LENGTH = 300;
+// Far above any real password, well below what is worth hashing.
+export const PASSWORD_MAX_LENGTH = 128;
+// Highest price a service or product may have, in cents.
+export const PRICE_MAX_CENTS = 10_000_000;
 
 // Lenient by design: this only needs to catch obvious garbage (empty
 // separators, letters, an essay pasted into the field), never reject a real

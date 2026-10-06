@@ -38,14 +38,17 @@ describe('platform config (true negatives)', () => {
     expect(res.headers['x-powered-by']).toBeUndefined();
   });
 
-  it('a Prisma error is a generic 500 body with no internals', async () => {
+  // Was "a generic 500": since the VE-02 fix the same input is the client's
+  // error (400). What this guards is unchanged: nothing internal in the body.
+  it('a wrong-typed field is a generic 4xx body with no internals', async () => {
     const t = await createTenant('Pl');
     const res = await api
       .patch(`/api/shops/${t.shop.id}`)
       .set(authHeader(t.token))
       .send({ name: ['x'] });
-    expect(res.status).toBe(500);
-    expect(res.body).toEqual({ status: 'error', message: 'Internal server error' });
+    expect(res.status).toBe(400);
+    expect(Object.keys(res.body).sort()).toEqual(['message', 'status']);
+    expect(JSON.stringify(res.body)).not.toMatch(/prisma|invocation|node_modules/i);
   });
 
   it('a body over the default 100kb limit is a 413', async () => {
