@@ -37,7 +37,8 @@ export const emailedToken = (
 
 /**
  * A real account made the way production makes one: POST /auth/register, then
- * GET /auth/verify-email with the token from the verification email.
+ * POST /auth/verify-email with the token from the verification email and the
+ * sign-up password (AU-03: the link alone no longer activates an account).
  */
 export async function registerAndVerify(
   api: Api,
@@ -50,8 +51,8 @@ export async function registerAndVerify(
   if (reg.status !== 201)
     throw new Error(`setup: register failed ${reg.status} ${reg.text}`);
   const ver = await api
-    .get("/auth/verify-email")
-    .query({ token: emailedToken("sendVerificationEmail", email) });
+    .post("/auth/verify-email")
+    .send({ token: emailedToken("sendVerificationEmail", email), password });
   if (ver.status !== 200)
     throw new Error(`setup: verify failed ${ver.status} ${ver.text}`);
   const user = await prisma.user.findUniqueOrThrow({ where: { email } });

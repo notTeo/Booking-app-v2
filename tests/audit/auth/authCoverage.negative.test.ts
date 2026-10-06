@@ -31,7 +31,7 @@ const PUBLIC = [
   "POST /auth/login",
   "POST /auth/refresh",
   "POST /auth/logout",
-  "GET /auth/verify-email",
+  "POST /auth/verify-email",
   "GET /auth/verify-email-change",
   "POST /auth/resend-verification",
   "POST /auth/forgot-password",

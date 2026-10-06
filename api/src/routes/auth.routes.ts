@@ -20,6 +20,7 @@ import {
   resendVerificationValidation,
   resetPasswordValidation,
   verifyEmailTokenValidation,
+  verifyEmailValidation,
 } from '../validators/authValidation';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
@@ -49,9 +50,12 @@ router.post(
   refresh,
 );
 router.post('/logout', refreshCookieValidation, validate, logout);
-router.get(
+// A POST: it carries the sign-up password, which must not travel in a URL.
+// Limited like login, since it checks a password.
+router.post(
   '/verify-email',
-  verifyEmailTokenValidation,
+  authLimiter,
+  verifyEmailValidation,
   validate,
   verifyEmailController,
 );

@@ -23,8 +23,10 @@ export const forgotPassword = (email: string) =>
 export const resetPassword = (token: string, password: string) =>
   client.post('/auth/reset-password', { token, password }).then((res) => res.data);
 
-export const verifyEmail = (token: string) =>
-  client.get(`/auth/verify-email?token=${token}`).then((res) => res.data);
+// The password is the one chosen at sign-up: the link shows the mailbox is
+// theirs, the password that they are the person who signed up.
+export const verifyEmail = (token: string, password: string) =>
+  client.post('/auth/verify-email', { token, password }).then((res) => res.data);
 
 export const verifyEmailChange = (token: string) =>
   client.get(`/auth/verify-email-change?token=${token}`).then((res) => res.data);

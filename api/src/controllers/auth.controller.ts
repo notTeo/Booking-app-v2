@@ -146,13 +146,12 @@ export const verifyEmailController = async (
   next: NextFunction,
 ) => {
   try {
-    const { token } = req.query as { token: string };
+    const { token, password } = req.body as {
+      token: string;
+      password: string;
+    };
 
-    if (!token) {
-      throw new AppError(400, 'Token is required');
-    }
-
-    const user = await verifyEmail(token);
+    const user = await verifyEmail(token, password);
     successResponse(res, { user });
   } catch (err) {
     next(err);

@@ -321,7 +321,10 @@ export const logoutUser = async (token: string) => {
   logger.info('User logged out');
 };
 
-export const verifyEmail = async (token: string) => {
+// The link proves someone can read the mailbox; the password proves they are
+// the one who signed up. Without it, anyone could register a stranger's
+// address with a password of their own and wait for the stranger to click.
+export const verifyEmail = async (token: string, password: string) => {
   const pending = await prisma.pendingRegistration.findUnique({
     where: { token: hashToken(token) },
   });
@@ -336,6 +339,14 @@ export const verifyEmail = async (token: string) => {
     });
     throw new AppError(400, 'Verification token expired');
   }
+
+  // A wrong password leaves the link usable, so a typo can be retried.
+  if (!(await bcrypt.compare(password, pending.passwordHash)))
+    throw new AppError(
+      403,
+      'That is not the password this account was signed up with',
+      'INVALID_PASSWORD',
+    );
 
   const user = await prisma.user.create({
     data: {
