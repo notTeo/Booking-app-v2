@@ -1,49 +1,48 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
-import { apiErrorMessage } from '../utils/apiError';
+import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import PasswordInput from '../components/PasswordInput';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+  const token = searchParams.get('token');
+  // 'form' asks for the sign-up password; the link alone verifies nothing.
+  const [status, setStatus] = useState<'form' | 'loading' | 'success' | 'error'>(
+    token ? 'form' : 'error',
+  );
+  const [message, setMessage] = useState(token ? '' : 'Invalid verification link.');
   const [isExpired, setIsExpired] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const [resendEmail, setResendEmail] = useState('');
   const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [resendError, setResendError] = useState('');
 
-  // useRef persists across StrictMode double-invocations, preventing a second API call
-  // that would consume the one-time token before the first call's result is processed.
-  const called = useRef(false);
-
-  useEffect(() => {
-    if (called.current) return;
-    called.current = true;
-
-    const token = searchParams.get('token');
-    if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time token call on mount; the ref guard must stay in the effect (StrictMode double-run would spend the token twice)
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || status === 'loading') return;
+    setPasswordError('');
+    setStatus('loading');
+    try {
+      await verifyEmail(token, password);
+      setStatus('success');
+      setMessage('Email verified successfully. You can now log in.');
+    } catch (err: unknown) {
+      // A wrong password leaves the link usable: stay on the form.
+      if (apiErrorField(err, 'code') === 'INVALID_PASSWORD') {
+        setPasswordError('That is not the password you signed up with.');
+        setStatus('form');
+        return;
+      }
+      const msg = apiErrorMessage(err, 'Verification failed.');
       setStatus('error');
-      setMessage('Invalid verification link.');
-      return;
+      setMessage(msg);
+      if (msg.toLowerCase().includes('expired')) setIsExpired(true);
     }
-
-    verifyEmail(token)
-      .then(() => {
-        setStatus('success');
-        setMessage('Email verified successfully. You can now log in.');
-      })
-      .catch((err: unknown) => {
-        const msg = apiErrorMessage(err, 'Verification failed.');
-        setStatus('error');
-        setMessage(msg);
-        if (msg.toLowerCase().includes('expired')) {
-          setIsExpired(true);
-        }
-      });
-  }, [searchParams]);
+  };
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +65,32 @@ export default function VerifyEmailPage() {
       <div className="card card--auth">
         <h1 className="t-heading">Email Verification</h1>
 
-        {status === 'loading' && <p className="card__text">Verifying...</p>}
+        {(status === 'form' || status === 'loading') && (
+          <form onSubmit={handleVerify}>
+            <p className="card__text">
+              Enter the password you chose when you signed up to finish creating your account.
+            </p>
+            <div className="field">
+              <label className="field__label" htmlFor="verify-password">Password</label>
+              <PasswordInput
+                id="verify-password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {passwordError && <Alert variant="danger">{passwordError}</Alert>}
+            <button
+              className={`btn btn--block${status === 'loading' ? ' is-loading' : ''}`}
+              type="submit"
+              aria-busy={status === 'loading'}
+              disabled={!password}
+            >
+              Verify email
+            </button>
+          </form>
+        )}
 
         {status === 'success' && (
           <>

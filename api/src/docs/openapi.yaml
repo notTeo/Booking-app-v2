@@ -350,20 +350,29 @@ paths:
                 message: Email already in use
 
   /auth/verify-email:
-    get:
+    post:
       tags: [auth]
       summary: Verify email address
       description: |
-        Verifies the email token from the verification link. On success, creates the
-        user account and marks it as verified.
+        Verifies the token from the verification link together with the password
+        chosen at sign-up. On success, creates the user account and marks it as
+        verified. A wrong password is a 403 (`INVALID_PASSWORD`) and leaves the
+        link usable.
       operationId: verifyEmail
-      parameters:
-        - name: token
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Verification token from the email link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                  description: Verification token from the email link
+                password:
+                  type: string
+                  description: The password chosen at sign-up
       responses:
         '200':
           description: Email verified and account created

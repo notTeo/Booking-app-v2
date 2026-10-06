@@ -4,6 +4,7 @@ import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { REFRESH_RACE_WINDOW_MS } from '../services/auth.service';
 import * as emailService from '../services/email.service';
+import { hashToken } from '../utils/jwt';
 
 const api = await serve(app);
 
@@ -15,6 +16,11 @@ vi.mock('../services/email.service', () => ({
 }));
 
 const TEST_EMAIL = 'test@example.com';
+
+// Tokens are stored hashed, so the one a user can submit is the one in the
+// email: the second argument of the newest sendVerificationEmail call.
+const emailedVerifyToken = () =>
+  vi.mocked(emailService.sendVerificationEmail).mock.calls.at(-1)![1];
 const TEST_PASSWORD = 'Password123!';
 
 // Helper: create a verified user directly in DB
@@ -108,9 +114,11 @@ describe('POST /auth/register', () => {
     const after = await prisma.pendingRegistration.findUniqueOrThrow({
       where: { email: TEST_EMAIL },
     });
-    // Same row, same password: the later request only re-sent the email.
+    // Same row, same password: the later request only sent a fresh link
+    // (the first one cannot be re-sent, only its hash is stored).
+    expect(after.id).toBe(first.id);
     expect(after.passwordHash).toBe(first.passwordHash);
-    expect(after.token).toBe(first.token);
+    expect(after.token).not.toBe(first.token);
     expect(emailService.sendVerificationEmail).toHaveBeenCalledTimes(2);
   });
 
@@ -158,10 +166,9 @@ describe('terms acceptance at registration', () => {
       .post('/auth/register')
       // a client-supplied version must be ignored
       .send({ ...base, acceptTerms: true, termsVersion: 'client-lies' });
-    const pending = await prisma.pendingRegistration.findUnique({
-      where: { email: TEST_EMAIL },
-    });
-    await api.get(`/auth/verify-email?token=${pending!.token}`);
+    await api
+      .post('/auth/verify-email')
+      .send({ token: emailedVerifyToken(), password: base.password });
 
     const user = await prisma.user.findUnique({ where: { email: TEST_EMAIL } });
     expect(user!.termsVersion).toBe(TERMS_VERSION);
@@ -182,7 +189,7 @@ describe('terms acceptance at registration', () => {
   });
 });
 
-describe('GET /auth/verify-email', () => {
+describe('POST /auth/verify-email', () => {
   it('verifies email and creates user', async () => {
     await api.post('/auth/register').send({
       name: 'Test User',
@@ -190,11 +197,9 @@ describe('GET /auth/verify-email', () => {
       password: TEST_PASSWORD,
       acceptTerms: true,
     });
-    const pending = await prisma.pendingRegistration.findUnique({
-      where: { email: TEST_EMAIL },
-    });
-
-    const res = await api.get(`/auth/verify-email?token=${pending!.token}`);
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: emailedVerifyToken(), password: TEST_PASSWORD });
 
     expect(res.status).toBe(200);
     expect(res.body.data.user.email).toBe(TEST_EMAIL);
@@ -204,8 +209,50 @@ describe('GET /auth/verify-email', () => {
     expect(user).not.toBeNull();
   });
 
+  // The link alone must not be enough: whoever registered an address chose
+  // the password, and only they can turn the sign-up into an account.
+  it('needs the sign-up password, and a wrong one leaves the link usable', async () => {
+    await api.post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
+    const token = emailedVerifyToken();
+
+    const missing = await api.post('/auth/verify-email').send({ token });
+    expect(missing.status).toBe(400);
+    const wrong = await api
+      .post('/auth/verify-email')
+      .send({ token, password: 'Not-The-Password-1!' });
+    expect(wrong.status).toBe(403);
+    expect(wrong.body.code).toBe('INVALID_PASSWORD');
+    expect(await prisma.user.count()).toBe(0);
+
+    const right = await api
+      .post('/auth/verify-email')
+      .send({ token, password: TEST_PASSWORD });
+    expect(right.status).toBe(200);
+  });
+
+  it('no longer verifies from a plain GET of the link', async () => {
+    await api.post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
+    const res = await api.get(
+      `/auth/verify-email?token=${emailedVerifyToken()}`,
+    );
+    expect(res.status).toBe(404);
+    expect(await prisma.user.count()).toBe(0);
+  });
+
   it('returns 400 for invalid token', async () => {
-    const res = await api.get('/auth/verify-email?token=invalidtoken');
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: 'invalidtoken', password: TEST_PASSWORD });
     expect(res.status).toBe(400);
   });
 
@@ -215,12 +262,14 @@ describe('GET /auth/verify-email', () => {
         name: 'Test User',
         email: TEST_EMAIL,
         passwordHash: 'hash',
-        token: 'expiredtoken',
+        token: hashToken('expiredtoken'), // stored hashed
         expiresAt: new Date(Date.now() - 1000), // already expired
       },
     });
 
-    const res = await api.get('/auth/verify-email?token=expiredtoken');
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: 'expiredtoken', password: TEST_PASSWORD });
     expect(res.status).toBe(400);
     expect(res.body.message).toContain('expired');
   });
@@ -350,7 +399,7 @@ describe('POST /auth/reset-password', () => {
     const token = generateRandomToken();
     await prisma.passwordResetToken.create({
       data: {
-        token,
+        token: hashToken(token), // stored hashed
         userId: user.id,
         expiresAt: getPasswordResetTokenExpiry(),
       },

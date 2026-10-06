@@ -77,14 +77,31 @@ export const resendVerificationValidation = [
     .normalizeEmail(),
 ];
 
-// GET /auth/verify-email and /verify-email-change both take the token as a
-// query-string param, otherwise unvalidated before hitting the service.
+// GET /auth/verify-email-change takes the token as a query-string param,
+// otherwise unvalidated before hitting the service.
 export const verifyEmailTokenValidation = [
   query('token')
     .notEmpty()
     .withMessage('Token is required')
     .isString()
     .withMessage('Token must be a string'),
+];
+
+// POST /auth/verify-email: the token from the link plus the password chosen
+// at sign-up (in the body, never the URL).
+export const verifyEmailValidation = [
+  body('token')
+    .isString()
+    .withMessage('Token must be a string')
+    .bail()
+    .notEmpty()
+    .withMessage('Token is required'),
+  body('password')
+    .isString()
+    .withMessage('Password is required')
+    .bail()
+    .notEmpty()
+    .withMessage('Password is required'),
 ];
 
 export const resetPasswordValidation = [
