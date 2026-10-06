@@ -36,6 +36,7 @@ import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/home.css';
 import Wordmark from '../components/Wordmark';
 import BrandText from '../components/BrandText';
+import PlanCards from '../components/PlanCards';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
@@ -83,8 +84,6 @@ const PREVIEW_CUSTOMERS_COUNT = 312;
 const PREVIEW_UPCOMING_COUNT = 4;
 
 const PREVIEW_SERVICE_PRICES = ['€25', '€12'];
-// Monthly plan prices in euro, excluding VAT.
-const PLAN_PRICES = { solo: 15, team: 25 };
 
 // ─── Booking wizard mock demo data ─────────────────────────────────────────
 type WizardStep = 1 | 2 | 3 | 4;
@@ -196,10 +195,6 @@ export default function HomePage() {
   const wizardServices = [
     { name: t.home.previewService1Name, duration: t.home.previewService1Duration, price: PREVIEW_SERVICE_PRICES[0] },
     { name: t.home.previewService2Name, duration: t.home.previewService2Duration, price: PREVIEW_SERVICE_PRICES[1] },
-  ];
-  const pricingPlans = [
-    { name: t.home.pricingSoloName, price: PLAN_PRICES.solo, desc: t.home.pricingSoloDesc, features: t.home.pricingSoloFeatures, featured: false },
-    { name: t.home.pricingTeamName, price: PLAN_PRICES.team, desc: t.home.pricingTeamDesc, features: t.home.pricingTeamFeatures, featured: true },
   ];
   const wizardStaff = [t.home.previewCalStaff1, t.home.previewCalStaff2, t.home.previewCalStaff3];
 
@@ -1222,25 +1217,10 @@ export default function HomePage() {
             <h2 className="home-section-title">{t.home.pricingTitle}</h2>
             <p className="home-section-sub">{t.home.pricingSub}</p>
           </div>
-          <div className="home-pricing-grid">
-            {pricingPlans.map((plan) => (
-              <div key={plan.name} className={`home-price-card${plan.featured ? ' home-price-card--pro' : ''}`}>
-                <h3 className="home-price-tier">{plan.name}</h3>
-                <div className="home-price-amount">
-                  <span className="currency">€</span>
-                  <span className="amount">{plan.price}</span>
-                  <span className="period">{t.home.pricingPerMonth} · {t.home.pricingExclVat}</span>
-                </div>
-                <p className="home-price-desc">{plan.desc}</p>
-                <hr className="home-price-divider" />
-                <ul className="home-price-features">
-                  {plan.features.map((feature) => (
-                    <li key={feature}><FontAwesomeIcon icon={faCheck} className="feat-check" /> {feature}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <PlanCards />
+          <p className="home-pricing-more">
+            <Link to="/pricing">{t.home.pricingDetailsLink}</Link>
+          </p>
         </div>
       </section>
 
