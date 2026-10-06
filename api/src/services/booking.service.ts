@@ -172,12 +172,16 @@ const pickAnyStaff = async (
   const clean: UserShop[] = [];
   const overridable: UserShop[] = [];
   const free: UserShop[] = [];
+  const busy: UserShop[] = [];
   for (const member of team) {
     const conflict = await tx.booking.findFirst({
       where: overlapWhere(member.id, p.startTime, p.endTime),
       select: { id: true },
     });
-    if (conflict) continue;
+    if (conflict) {
+      busy.push(member);
+      continue;
+    }
     free.push(member);
     const violations = await findBookingViolations({
       db: tx,
@@ -197,7 +201,25 @@ const pickAnyStaff = async (
   }
 
   const pool = clean.length > 0 ? clean : overridable;
-  if (pool.length === 0) return free[0] ?? team[0];
+  if (pool.length === 0) {
+    // Nobody can take it. Prefer a member who would have, had they been free,
+    // so the caller answers "that time is taken" and not "the shop is closed"
+    // because a colleague happens to be off.
+    for (const member of busy) {
+      const violations = await findBookingViolations({
+        db: tx,
+        shopId: p.shopId,
+        timezone: p.timezone,
+        maxAdvanceDays: p.maxAdvanceDays,
+        slotIntervalMinutes: p.slotIntervalMinutes,
+        scheduleStaffId: member.id,
+        startTime: p.startTime,
+        endTime: p.endTime,
+      });
+      if (violations.length === 0) return member;
+    }
+    return free[0] ?? team[0];
+  }
   if (pool.length === 1) return pool[0];
 
   const { start, end } = dayBoundsUtc(
@@ -555,6 +577,9 @@ const claimSlotAndCreate = async (
 // and reused; and (2) have no side effects (emails are sent by the controller
 // after this returns).
 
+// How often a no-preference booking re-picks its provider after losing one.
+const ANY_STAFF_ATTEMPTS = 4;
+
 export const createBooking = async (
   slug: string,
   data: {
@@ -573,80 +598,94 @@ export const createBooking = async (
   const startTime = new Date(data.startTime);
   const cancelToken = randomUUID(); // only persisted by the attempt that commits
 
-  return serializableTransaction(async (tx) => {
-    const shop = await tx.shop.findFirst({ where: { slug, isActive: true } });
-    if (!shop) throw new AppError(404, 'Shop not found');
-    if (isShopLocked(shop))
-      throw new AppError(
-        403,
-        'This shop is not taking online bookings right now.',
-        'SHOP_LOCKED',
+  const attempt = () =>
+    serializableTransaction(async (tx) => {
+      const shop = await tx.shop.findFirst({ where: { slug, isActive: true } });
+      if (!shop) throw new AppError(404, 'Shop not found');
+      if (isShopLocked(shop))
+        throw new AppError(
+          403,
+          'This shop is not taking online bookings right now.',
+          'SHOP_LOCKED',
+        );
+
+      // One or more services, done one after another: the booking runs as long
+      // as they take together. A returning customer (matched by phone) gets
+      // their own duration for each.
+      const serviceIds = requestedServiceIds(data);
+      const chosen = await resolveServices(tx, shop.id, serviceIds, {
+        publicOnly: true,
+        customer: { phone: data.phone },
+      });
+      const endTime = new Date(
+        startTime.getTime() + chosen.totalDuration * 60_000,
       );
 
-    // One or more services, done one after another: the booking runs as long
-    // as they take together. A returning customer (matched by phone) gets
-    // their own duration for each.
-    const serviceIds = requestedServiceIds(data);
-    const chosen = await resolveServices(tx, shop.id, serviceIds, {
-      publicOnly: true,
-      customer: { phone: data.phone },
+      // The requested staff member, or — with no preference — whichever free
+      // team member working then has the fewest bookings that day.
+      const staff = data.staffId
+        ? await resolveBookableStaff(tx, shop.id, data.staffId, 'public')
+        : await pickAnyStaff(tx, {
+            shopId: shop.id,
+            serviceId: serviceIds,
+            context: 'public',
+            timezone: shop.timezone,
+            maxAdvanceDays: shop.maxAdvanceDays,
+            slotIntervalMinutes: shop.slotIntervalMinutes,
+            startTime,
+            endTime,
+          });
+      if (!staff) throw staffUnavailable(data.staffId);
+      await assertDoesAll(tx, staff.id, serviceIds, 'public');
+
+      // Strict on the public path — there is no override. The schedule checked is
+      // the assigned team member's own, the same one the slots endpoint used.
+      await assertBookingRules({
+        db: tx,
+        shopId: shop.id,
+        timezone: shop.timezone,
+        maxAdvanceDays: shop.maxAdvanceDays,
+        slotIntervalMinutes: shop.slotIntervalMinutes,
+        scheduleStaffId: staff.id,
+        startTime,
+        endTime,
+      });
+
+      // Nobody can reserve past the stock on the public path.
+      const reserved = await resolveProductLines(
+        tx,
+        shop.id,
+        data.products,
+        null,
+      );
+
+      return claimSlotAndCreate(tx, {
+        shopId: shop.id,
+        serviceId: chosen.primary.id,
+        services: chosen.lines,
+        staffId: staff.id,
+        startTime,
+        endTime,
+        customer: { name: data.name, phone: data.phone, email: data.email },
+        overwriteCustomer: false,
+        notes: data.notes,
+        cancelToken,
+        products: reserved.create,
+      });
     });
-    const endTime = new Date(
-      startTime.getTime() + chosen.totalDuration * 60_000,
-    );
 
-    // The requested staff member, or — with no preference — whichever free
-    // team member working then has the fewest bookings that day.
-    const staff = data.staffId
-      ? await resolveBookableStaff(tx, shop.id, data.staffId, 'public')
-      : await pickAnyStaff(tx, {
-          shopId: shop.id,
-          serviceId: serviceIds,
-          context: 'public',
-          timezone: shop.timezone,
-          maxAdvanceDays: shop.maxAdvanceDays,
-          slotIntervalMinutes: shop.slotIntervalMinutes,
-          startTime,
-          endTime,
-        });
-    if (!staff) throw staffUnavailable(data.staffId);
-    await assertDoesAll(tx, staff.id, serviceIds, 'public');
-
-    // Strict on the public path — there is no override. The schedule checked is
-    // the assigned team member's own, the same one the slots endpoint used.
-    await assertBookingRules({
-      db: tx,
-      shopId: shop.id,
-      timezone: shop.timezone,
-      maxAdvanceDays: shop.maxAdvanceDays,
-      slotIntervalMinutes: shop.slotIntervalMinutes,
-      scheduleStaffId: staff.id,
-      startTime,
-      endTime,
-    });
-
-    // Nobody can reserve past the stock on the public path.
-    const reserved = await resolveProductLines(
-      tx,
-      shop.id,
-      data.products,
-      null,
-    );
-
-    return claimSlotAndCreate(tx, {
-      shopId: shop.id,
-      serviceId: chosen.primary.id,
-      services: chosen.lines,
-      staffId: staff.id,
-      startTime,
-      endTime,
-      customer: { name: data.name, phone: data.phone, email: data.email },
-      overwriteCustomer: false,
-      notes: data.notes,
-      cancelToken,
-      products: reserved.create,
-    });
-  });
+  if (data.staffId) return attempt();
+  // No preference: the provider is picked before their lock is taken, so two
+  // parallel requests can pick the same one. The loser tries again, and the
+  // pick then sees the winner's booking and moves to someone who is free.
+  for (let n = 1; ; n++) {
+    try {
+      return await attempt();
+    } catch (err) {
+      const lostThePick = err instanceof AppError && err.code === 'SLOT_TAKEN';
+      if (!lostThePick || n >= ANY_STAFF_ATTEMPTS) throw err;
+    }
+  }
 };
 
 // ── Owner / Staff booking creation ──────────────────────────────────────────

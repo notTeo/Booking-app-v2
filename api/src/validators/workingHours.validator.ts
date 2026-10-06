@@ -1,7 +1,31 @@
 import { body, param, query } from 'express-validator';
 
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-const TIME_REGEX = /^\d{2}:\d{2}$/;
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// A day's ranges must each run forwards and must not overlap one another.
+// Malformed entries are left to the per-field rules.
+const validRanges = (hours: unknown): boolean => {
+  if (!Array.isArray(hours)) return true;
+  const ranges = hours.filter(
+    (h): h is { startTime: string; endTime: string } =>
+      typeof h?.startTime === 'string' && typeof h?.endTime === 'string',
+  );
+  const sorted = [...ranges].sort((a, b) =>
+    a.startTime.localeCompare(b.startTime),
+  );
+  return sorted.every(
+    (h, i) =>
+      h.startTime < h.endTime &&
+      (i === 0 || sorted[i - 1].endTime <= h.startTime),
+  );
+};
+const RANGES_MESSAGE =
+  'Each range must end after it starts and must not overlap another';
+
+const uniqueDays = (days: unknown): boolean =>
+  !Array.isArray(days) || new Set(days.map((d) => d?.day)).size === days.length;
+const UNIQUE_DAYS_MESSAGE = 'Each day may appear only once';
 
 // This router is mounted both directly under /api/shops/:shopId/schedules
 // and nested under /api/shops/:shopId/team/:memberId/schedules — shopId is
@@ -37,7 +61,9 @@ const dayEntryValidation = (prefix: string) => [
   body(`${prefix}.hours`)
     .optional()
     .isArray()
-    .withMessage('hours must be an array'),
+    .withMessage('hours must be an array')
+    .custom(validRanges)
+    .withMessage(RANGES_MESSAGE),
   ...hourRangeValidation(`${prefix}.hours.*`),
 ];
 
@@ -55,7 +81,12 @@ export const createScheduleValidation = [
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
-  body('days').optional().isArray().withMessage('days must be an array'),
+  body('days')
+    .optional()
+    .isArray()
+    .withMessage('days must be an array')
+    .custom(uniqueDays)
+    .withMessage(UNIQUE_DAYS_MESSAGE),
   ...dayEntryValidation('days.*'),
 ];
 
@@ -82,7 +113,9 @@ export const upsertDaysValidation = [
     .notEmpty()
     .withMessage('days is required')
     .isArray({ min: 1 })
-    .withMessage('days must be a non-empty array'),
+    .withMessage('days must be a non-empty array')
+    .custom(uniqueDays)
+    .withMessage(UNIQUE_DAYS_MESSAGE),
   ...dayEntryValidation('days.*'),
 ];
 
@@ -94,7 +127,12 @@ export const updateDayValidation = [
     .isIn(DAYS_OF_WEEK)
     .withMessage(`day must be one of ${DAYS_OF_WEEK.join(', ')}`),
   body('isOpen').optional().isBoolean().withMessage('isOpen must be a boolean'),
-  body('hours').optional().isArray().withMessage('hours must be an array'),
+  body('hours')
+    .optional()
+    .isArray()
+    .withMessage('hours must be an array')
+    .custom(validRanges)
+    .withMessage(RANGES_MESSAGE),
   ...hourRangeValidation('hours.*'),
 ];
 
