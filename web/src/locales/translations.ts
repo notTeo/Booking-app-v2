@@ -238,6 +238,10 @@ export interface Translations {
   shopPlan: {
     newShopTrial: string;
     newShopInactive: string;
+    staffLimitReached: string;
+    featureNotInPlan: string;
+    locked: string;
+    contactUs: string;
   };
   pricingPage: {
     title: string;
@@ -1332,6 +1336,10 @@ home: {
   shopPlan: {
     newShopTrial: 'Το πρώτο σου κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
     newShopInactive: 'Έχεις ήδη χρησιμοποιήσει τη δωρεάν δοκιμή. Το νέο κατάστημα θα μείνει ανενεργό μέχρι να επικοινωνήσεις μαζί μας για να του ορίσουμε πακέτο.',
+    staffLimitReached: 'Το πακέτο {plan} επιτρέπει έως {n} μέλη προσωπικού με κρατήσεις. Για περισσότερα χρειάζεται αναβάθμιση.',
+    featureNotInPlan: 'Οι προσκλήσεις ομάδας και ο ρόλος διαχειριστή δεν περιλαμβάνονται στο πακέτο {plan}.',
+    locked: 'Το κατάστημα είναι μόνο για ανάγνωση μέχρι να οριστεί πακέτο.',
+    contactUs: 'Επικοινώνησε μαζί μας',
   },
   pricingPage: {
     title: 'Τιμές',
@@ -2514,6 +2522,10 @@ home: {
   shopPlan: {
     newShopTrial: 'Your first shop starts with a 30-day free trial with everything in Team. No card is needed.',
     newShopInactive: 'You have already used your free trial. The new shop stays inactive until you contact us to set a plan for it.',
+    staffLimitReached: 'The {plan} plan allows up to {n} bookable staff. Adding more needs an upgrade.',
+    featureNotInPlan: 'Team invites and the manager role are not part of the {plan} plan.',
+    locked: 'This shop is read-only until a plan is set for it.',
+    contactUs: 'Contact us',
   },
   pricingPage: {
     title: 'Pricing',

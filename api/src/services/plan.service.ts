@@ -1,4 +1,6 @@
 import type { ShopPlan, SubscriptionStatus } from '../../dist/generated/prisma';
+import { AppError } from '../middleware/errorHandler';
+import { prisma } from '../utils/prisma';
 
 // The one place for what each plan allows. The pricing pages in the web app
 // describe the same limits (web/src/config/pricing.ts and the translations).
@@ -36,3 +38,66 @@ export const planView = (shop: PlanFields) => ({
   locked: isShopLocked(shop),
   ...PLAN_LIMITS[shop.plan],
 });
+
+const PLAN_SELECT = {
+  plan: true,
+  subscriptionStatus: true,
+  trialEndsAt: true,
+} as const;
+
+const loadPlan = async (shopId: string) => {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    select: PLAN_SELECT,
+  });
+  if (!shop) throw new AppError(404, 'Shop not found');
+  return shop;
+};
+
+// A member takes one of the plan's staff places while they can be booked.
+export const countsAsStaff = (m: {
+  active: boolean;
+  bookableByCustomers: boolean;
+  bookableInternally: boolean;
+}) => m.active && (m.bookableByCustomers || m.bookableInternally);
+
+export const countBookableStaff = (shopId: string, exceptMemberId?: string) =>
+  prisma.userShop.count({
+    where: {
+      shopId,
+      active: true,
+      OR: [{ bookableByCustomers: true }, { bookableInternally: true }],
+      ...(exceptMemberId && { id: { not: exceptMemberId } }),
+    },
+  });
+
+// Refuses one more bookable staff member when the plan's places are taken.
+// `exceptMemberId` is the member being edited, so they are not counted twice.
+export const assertStaffCapacity = async (
+  shopId: string,
+  exceptMemberId?: string,
+) => {
+  const { plan } = await loadPlan(shopId);
+  const { staffLimit } = PLAN_LIMITS[plan];
+  if ((await countBookableStaff(shopId, exceptMemberId)) >= staffLimit)
+    throw new AppError(
+      403,
+      `This shop's plan allows ${staffLimit} bookable staff. Upgrade the plan to add more.`,
+      'PLAN_STAFF_LIMIT',
+      undefined,
+      { plan, staffLimit },
+    );
+};
+
+// Login invites and the manager role come with the Team plan and above.
+export const assertTeamFeatures = async (shopId: string) => {
+  const { plan } = await loadPlan(shopId);
+  if (!PLAN_LIMITS[plan].teamFeatures)
+    throw new AppError(
+      403,
+      "This shop's plan does not include team invites or managers. Upgrade the plan to use them.",
+      'PLAN_FEATURE',
+      undefined,
+      { plan },
+    );
+};
