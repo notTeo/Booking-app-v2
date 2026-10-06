@@ -27,6 +27,8 @@ import ShopBookingsPage from './pages/ShopBookingsPage';
 import ShopNewBookingPage from './pages/ShopNewBookingPage';
 import ShopRescheduleBookingPage from './pages/ShopRescheduleBookingPage';
 import ShopServicesPage from './pages/ShopServicesPage';
+import ShopProductsPage from './pages/ShopProductsPage';
+import ShopProductPage from './pages/ShopProductPage';
 import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
@@ -102,7 +104,10 @@ export default function App() {
                         <Route index element={<ShopOverviewPage />} />
                         <Route path="bookings" element={<ShopBookingsPage />} />
                         <Route path="services" element={<ShopServicesPage />} />
+                        <Route path="products" element={<ShopProductsPage />} />
+                        <Route path="products/:productId" element={<ShopProductPage />} />
                         <Route element={<OwnerRoute />}>
+                          <Route path="products/new" element={<ShopProductPage />} />
                           <Route path="bookings/new" element={<ShopNewBookingPage />} />
                           <Route path="bookings/:bookingId/reschedule" element={<ShopRescheduleBookingPage />} />
                           <Route path="team" element={<ShopTeamPage />} />

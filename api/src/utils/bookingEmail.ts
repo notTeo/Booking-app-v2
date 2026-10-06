@@ -9,8 +9,9 @@ export const bookingEmailParams = (booking: {
   startTime: Date;
   endTime: Date;
   customer: { name: string; email: string | null };
-  service: { name: string };
+  service: { name: string; price?: number };
   staff: { name: string | null };
+  products?: { name: string; quantity: number; unitPrice: number }[];
   shop: {
     name: string;
     timezone: string;
@@ -37,6 +38,10 @@ export const bookingEmailParams = (booking: {
     canReschedule: booking.shop.customerRescheduleEnabled,
     cancelCutoffHours: booking.shop.cancelCutoffHours,
     rescheduleCutoffHours: booking.shop.rescheduleCutoffHours,
+    servicePrice: booking.service.price,
+    products: booking.products
+      ?.filter((p) => p.quantity > 0)
+      .map(({ name, quantity, unitPrice }) => ({ name, quantity, unitPrice })),
     locale,
   };
 };

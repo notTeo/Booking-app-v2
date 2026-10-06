@@ -7,11 +7,13 @@ import {
   createOwnerBooking,
   getApiError,
   isBookingRuleViolation,
+  PRODUCT_OUT_OF_STOCK,
   rescheduleBooking,
   type Booking,
   type BookingRuleCode,
 } from '../../api/booking.api';
 import Alert from '../Alert';
+import { canManageShop } from '../../utils/roles';
 import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
@@ -156,6 +158,9 @@ export default function OwnerBookingWizard({
     } else if (info.code === 'SLOT_TAKEN') {
       setPendingOverride(null);
       setSubmitError(t.bookings.override.SLOT_TAKEN);
+    } else if (info.code === PRODUCT_OUT_OF_STOCK) {
+      setPendingOverride(null);
+      setSubmitError(t.products.outOfStockError);
     } else if (reschedule && info.status === 404) {
       setPendingOverride(null);
       setSubmitError(t.bookings.reschedule.notFound);
@@ -193,7 +198,13 @@ export default function OwnerBookingWizard({
           staffId: wizard.selectedMemberId ?? undefined,
           startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
           notes: values.notes,
-          ...(acceptedRules && { overrideRules: acceptedRules }),
+          ...((acceptedRules || values.acceptStockOverride) && {
+            overrideRules: [
+              ...(acceptedRules ?? []),
+              ...(values.acceptStockOverride ? [PRODUCT_OUT_OF_STOCK] as const : []),
+            ],
+          }),
+          ...(values.products && { products: values.products }),
         }),
       values,
     );
@@ -331,6 +342,8 @@ export default function OwnerBookingWizard({
           date={wizard.date}
           time={wizard.time}
           outsideRules={anticipated ?? []}
+          products={wizard.shop.products}
+          canOverStock={canManageShop(memberShop?.role)}
           onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}
           submitting={submitting}

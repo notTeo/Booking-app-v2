@@ -22,6 +22,7 @@ import { photoUpload } from '../middleware/photoUpload';
 import teamRouter from './team.routes';
 import timeOffRouter from './timeOff.routes';
 import serviceRouter from './service.routes';
+import productRouter from './product.routes';
 import bookingRouter from './booking.routes';
 import customerRouter from './customer.routes';
 import {
@@ -113,6 +114,12 @@ router.use(
   authenticate,
   requireWritableShop(),
   serviceRouter,
+);
+router.use(
+  '/:shopId/products',
+  authenticate,
+  requireWritableShop(),
+  productRouter,
 );
 router.use(
   '/:shopId/bookings',

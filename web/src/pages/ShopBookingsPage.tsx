@@ -3,7 +3,7 @@ import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays, faLockOpen } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faCalendarDays, faLockOpen, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import {
@@ -29,6 +29,7 @@ import {
   type OverrideTag,
 } from './calendarModel';
 import '../styles/pages/bookings.css';
+import BookingProducts from '../components/BookingProducts';
 import Alert from '../components/Alert';
 import { BOOKING_STATUS, bookingDisplay } from '../components/bookingStatus';
 
@@ -514,6 +515,12 @@ export default function ShopBookingsPage() {
                             <span className="cal-block__time">
                               <FontAwesomeIcon icon={bookingDisplay(b).icon} aria-hidden="true" />
                               {tags.length > 0 && <FontAwesomeIcon icon={faClock} aria-hidden="true" />}
+                              {b.products && b.products.some(l => l.quantity > 0) && (
+                                <>
+                                  <FontAwesomeIcon icon={faBoxOpen} aria-hidden="true" />
+                                  <span className="visually-hidden">{t.products.bookingTitle}</span>
+                                </>
+                              )}
                               {formatTimeInZone(b.startTime, zone)}
                               <span className="visually-hidden">{statusLabel(b)}</span>
                             </span>
@@ -586,6 +593,29 @@ export default function ShopBookingsPage() {
             )}
             {selectedBooking.notes && (
               <div className="t-body-sm"><em>{selectedBooking.notes}</em></div>
+            )}
+
+            {shop && selectedBooking.products && selectedBooking.products.length > 0 && (
+              <BookingProducts
+                shopId={shop.id}
+                bookingId={selectedBooking.id}
+                products={selectedBooking.products}
+                servicePrice={selectedBooking.service.price}
+                onChange={(change) =>
+                  setBookings(prev =>
+                    prev.map(b =>
+                      b.id === selectedBooking.id
+                        ? {
+                            ...b,
+                            products: change.deleted
+                              ? b.products?.filter(l => l.id !== change.id)
+                              : b.products?.map(l => (l.id === change.id ? { ...l, ...change } : l)),
+                          }
+                        : b,
+                    ),
+                  )
+                }
+              />
             )}
 
             {selectedBooking.rescheduledFrom && (

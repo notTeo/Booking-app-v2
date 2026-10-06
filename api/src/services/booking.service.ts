@@ -7,9 +7,13 @@ import {
 } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
-import { isShopLocked } from './plan.service';
+import { assertProductsFeature, isShopLocked } from './plan.service';
 import { redactCustomer } from '../utils/customerVisibility';
-import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
+import {
+  canManage,
+  canViewCustomerDetails,
+  requireShopAccess,
+} from '../utils/shopAccess';
 import {
   DATE_ONLY_RE,
   dateInZone,
@@ -226,12 +230,102 @@ const RESCHEDULE_LINKS = {
   rescheduledTo: { select: { id: true, startTime: true } },
 } as const;
 
+// The products reserved with a booking, as the shop sees them: the copied name
+// and price, and what is left of the product now (null once it is deleted).
+const PRODUCT_LINES = {
+  select: {
+    id: true,
+    productId: true,
+    name: true,
+    unitPrice: true,
+    quantity: true,
+    saleStatus: true,
+    product: { select: { stock: true, photoUrl: true } },
+  },
+  // Lines get consecutive timestamps when they are created (see
+  // resolveProductLines); the id only settles a tie.
+  orderBy: [
+    { createdAt: 'asc' },
+    { id: 'asc' },
+  ] as Prisma.BookingProductOrderByWithRelationInput[],
+} as const;
+
 const BOOKING_INCLUDE = {
   customer: true,
   service: true,
   shop: true,
   staff: { select: { id: true, name: true, email: true } },
+  products: PRODUCT_LINES,
 } as const;
+
+export const PRODUCT_OUT_OF_STOCK = 'PRODUCT_OUT_OF_STOCK';
+
+export interface ProductLineInput {
+  productId: string;
+  quantity: number;
+}
+
+/**
+ * Checks the products a booking reserves and returns the lines to store.
+ * Stock is only checked, never changed (it moves when a line is marked sold).
+ * A customer cannot reserve more than is left; the owner and managers can,
+ * once they have accepted it with PRODUCT_OUT_OF_STOCK in `overrideRules`.
+ * Runs inside the booking's transaction.
+ */
+const resolveProductLines = async (
+  tx: Prisma.TransactionClient,
+  shopId: string,
+  lines: ProductLineInput[] | undefined,
+  caller: { role: string; overrideRules?: readonly string[] } | null,
+) => {
+  if (!lines || lines.length === 0)
+    return {
+      create: [] as Prisma.BookingProductCreateWithoutBookingInput[],
+      overridden: false,
+    };
+  await assertProductsFeature(shopId, tx);
+
+  const ids = lines.map((l) => l.productId);
+  if (new Set(ids).size !== ids.length)
+    throw new AppError(400, 'A product can only be listed once');
+  const products = await tx.product.findMany({
+    where: { id: { in: ids }, shopId },
+  });
+  if (products.length !== ids.length)
+    throw new AppError(404, 'Product not found', 'PRODUCT_NOT_FOUND');
+  const byId = new Map(products.map((p) => [p.id, p]));
+
+  const short = lines.filter((l) => l.quantity > byId.get(l.productId)!.stock);
+  const canOverride = !!caller && canManage(caller.role);
+  const accepted =
+    canOverride && !!caller?.overrideRules?.includes(PRODUCT_OUT_OF_STOCK);
+  if (short.length > 0 && !accepted) {
+    const names = short.map((l) => byId.get(l.productId)!.name).join(', ');
+    const message = `Not enough in stock: ${names}`;
+    throw new AppError(422, message, PRODUCT_OUT_OF_STOCK, undefined, {
+      violations: [
+        { code: PRODUCT_OUT_OF_STOCK, message, overridable: canOverride },
+      ],
+      productIds: short.map((l) => l.productId),
+    });
+  }
+
+  return {
+    // Each line gets its own timestamp, one millisecond apart, so they keep
+    // the order the products were chosen in.
+    create: lines.map((l, i) => {
+      const p = byId.get(l.productId)!;
+      return {
+        createdAt: new Date(Date.now() + i),
+        product: { connect: { id: p.id } },
+        name: p.name,
+        unitPrice: p.price,
+        quantity: l.quantity,
+      };
+    }),
+    overridden: short.length > 0,
+  };
+};
 
 /**
  * Find-or-create the customer for a booking, by (shopId, phone).
@@ -304,6 +398,8 @@ const claimSlotAndCreate = async (
     // Owner/staff creation only: the rules accepted, and who created it.
     overriddenRules?: string[];
     createdById?: string;
+    // The products reserved with it, already checked (resolveProductLines).
+    products?: Prisma.BookingProductCreateWithoutBookingInput[];
   },
 ) => {
   assertBookingLength(p.startTime, p.endTime);
@@ -333,6 +429,7 @@ const claimSlotAndCreate = async (
       overriddenRules: p.overriddenRules ?? [],
       createdById: p.createdById ?? null,
       locale: currentLocale(),
+      ...(p.products?.length && { products: { create: p.products } }),
     },
     include: BOOKING_INCLUDE,
   });
@@ -356,6 +453,7 @@ export const createBooking = async (
     staffId: string | null | undefined;
     startTime: string; // ISO string — rename from `date`
     notes?: string;
+    products?: ProductLineInput[];
   },
 ) => {
   const startTime = new Date(data.startTime);
@@ -416,6 +514,14 @@ export const createBooking = async (
       endTime,
     });
 
+    // Nobody can reserve past the stock on the public path.
+    const reserved = await resolveProductLines(
+      tx,
+      shop.id,
+      data.products,
+      null,
+    );
+
     return claimSlotAndCreate(tx, {
       shopId: shop.id,
       serviceId: data.serviceId,
@@ -426,6 +532,7 @@ export const createBooking = async (
       overwriteCustomer: false,
       notes: data.notes,
       cancelToken,
+      products: reserved.create,
     });
   });
 };
@@ -449,6 +556,7 @@ export const createBookingForShop = async (
     // Booking rules the caller explicitly accepts, by code (validated to the
     // overridable set). Never bypasses the overlap check.
     overrideRules?: string[];
+    products?: ProductLineInput[];
   },
 ) => {
   const startTime = new Date(data.startTime);
@@ -456,9 +564,8 @@ export const createBookingForShop = async (
 
   return serializableTransaction(async (tx) => {
     // Verify caller is an active member of the shop
-    const callerCanViewCustomer = canViewCustomerDetails(
-      await requireShopAccess(userId, shopId, { db: tx }),
-    );
+    const caller = await requireShopAccess(userId, shopId, { db: tx });
+    const callerCanViewCustomer = canViewCustomerDetails(caller);
 
     const service = await tx.service.findFirst({
       where: { id: data.serviceId, shopId, isActive: true },
@@ -512,12 +619,21 @@ export const createBookingForShop = async (
       overrideRules: data.overrideRules,
     });
 
+    // A blocked slot has no customer, so nothing is reserved with it.
+    const reserved = await resolveProductLines(
+      tx,
+      shopId,
+      data.block ? undefined : data.products,
+      { role: caller.role, overrideRules: data.overrideRules },
+    );
+
     const booking = await claimSlotAndCreate(tx, {
       shopId,
       serviceId: data.serviceId,
       staffId: staff.id,
       startTime,
       endTime,
+      products: reserved.create,
       customer: data.block
         ? null
         : { name: data.name, phone: data.phone, email: data.email },
@@ -529,7 +645,9 @@ export const createBookingForShop = async (
       overwriteCustomer: callerCanViewCustomer,
       notes: data.notes,
       cancelToken,
-      overriddenRules,
+      overriddenRules: reserved.overridden
+        ? [...overriddenRules, PRODUCT_OUT_OF_STOCK]
+        : overriddenRules,
       createdById: userId,
     });
     // The full row, for the confirmation email. The controller redacts the
@@ -818,7 +936,12 @@ export const listBookings = async (
 
   const bookings = await prisma.booking.findMany({
     where,
-    include: { customer: true, service: true, ...RESCHEDULE_LINKS },
+    include: {
+      customer: true,
+      service: true,
+      products: PRODUCT_LINES,
+      ...RESCHEDULE_LINKS,
+    },
     orderBy: { startTime: 'asc' },
   });
 
@@ -871,6 +994,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         customer: true,
         service: true,
         staff: { select: { id: true, name: true, email: true } },
+        products: PRODUCT_LINES,
       },
       orderBy: { startTime: 'asc' },
       take: 5,
@@ -896,7 +1020,12 @@ const loadBooking = async (
 ) => {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
-    include: { customer: true, service: true, ...RESCHEDULE_LINKS },
+    include: {
+      customer: true,
+      service: true,
+      products: PRODUCT_LINES,
+      ...RESCHEDULE_LINKS,
+    },
   });
   if (!booking || booking.shopId !== shopId)
     throw new AppError(404, 'Booking not found');
@@ -973,7 +1102,7 @@ const rescheduleInTx = async (
   if (conflict)
     throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  return tx.booking.create({
+  const created = await tx.booking.create({
     data: {
       shopId: existing.shopId,
       customerId: existing.customerId,
@@ -990,6 +1119,14 @@ const rescheduleInTx = async (
       rescheduledFromId: existing.id,
       locale: existing.locale,
     },
+  });
+  // The reserved products (and their sold marks) stay with the appointment.
+  await tx.bookingProduct.updateMany({
+    where: { bookingId: existing.id },
+    data: { bookingId: created.id },
+  });
+  return tx.booking.findUniqueOrThrow({
+    where: { id: created.id },
     include: { ...BOOKING_INCLUDE, ...RESCHEDULE_LINKS },
   });
 };
@@ -1172,7 +1309,12 @@ export const updateBookingStatus = async (
     const updated = await tx.booking.update({
       where: { id: bookingId },
       data: { status },
-      include: { customer: true, service: true, ...RESCHEDULE_LINKS },
+      include: {
+        customer: true,
+        service: true,
+        products: PRODUCT_LINES,
+        ...RESCHEDULE_LINKS,
+      },
     });
     return {
       ...updated,
@@ -1263,6 +1405,7 @@ const TOKEN_INCLUDE = {
   shop: true,
   staff: { select: { id: true, name: true, email: true } },
   rescheduledTo: { select: { id: true, startTime: true } },
+  products: PRODUCT_LINES,
 } as const;
 
 const loadByToken = async (db: Prisma.TransactionClient, token: string) => {
@@ -1367,3 +1510,102 @@ export const cancelBookingByToken = async (token: string) => {
     include: { customer: true, service: true, shop: true },
   });
 };
+
+// ── Reserved products: quantity, sold / not sold ────────────────────────────
+
+/**
+ * Changes a reserved product on a booking: its quantity and/or whether it was
+ * sold. A quantity of 0 keeps the line (it may be a slip) but it no longer
+ * counts; removing it is a separate, deliberate request. Marking it sold takes the quantity out of the
+ * product's stock (never below 0, and only what was really taken is given
+ * back later); marking it not sold, changing the quantity or removing it
+ * first returns what it took. Any active member of the shop may do this, but
+ * only the owner and managers may raise a quantity past what is left.
+ */
+export const updateBookingProductLine = async (
+  userId: string,
+  shopId: string,
+  bookingId: string,
+  lineId: string,
+  change: {
+    saleStatus?: 'RESERVED' | 'SOLD' | 'NOT_SOLD';
+    quantity?: number;
+  },
+) =>
+  prisma.$transaction(async (tx) => {
+    const caller = await requireShopAccess(userId, shopId, { db: tx });
+    // Lock the line before reading it, so a second click at the same moment
+    // waits and then sees what the first one did instead of repeating it.
+    await tx.$queryRaw`SELECT id FROM "BookingProduct" WHERE id = ${lineId} FOR UPDATE`;
+    const line = await tx.bookingProduct.findFirst({
+      where: { id: lineId, bookingId, booking: { shopId } },
+    });
+    if (!line) throw new AppError(404, 'Reserved product not found');
+
+    const quantity = change.quantity ?? line.quantity;
+    const saleStatus = change.saleStatus ?? line.saleStatus;
+    let stockTaken = line.stockTaken;
+
+    if (line.productId) {
+      // Then the product, so two clicks cannot both take the last one.
+      await tx.$queryRaw`SELECT id FROM "Product" WHERE id = ${line.productId} FOR UPDATE`;
+      const product = await tx.product.findUniqueOrThrow({
+        where: { id: line.productId },
+      });
+      // What the stock would be if this line had never taken anything.
+      let stock = product.stock + line.stockTaken;
+      stockTaken = 0;
+
+      if (
+        quantity > line.quantity &&
+        quantity > stock &&
+        !canManage(caller.role)
+      ) {
+        const message = `Not enough in stock: ${product.name}`;
+        throw new AppError(422, message, PRODUCT_OUT_OF_STOCK, undefined, {
+          violations: [
+            { code: PRODUCT_OUT_OF_STOCK, message, overridable: false },
+          ],
+          productIds: [product.id],
+        });
+      }
+      if (quantity > 0 && saleStatus === 'SOLD') {
+        stockTaken = Math.min(quantity, stock);
+        stock -= stockTaken;
+      }
+      if (stock !== product.stock)
+        await tx.product.update({ where: { id: product.id }, data: { stock } });
+    }
+
+    return tx.bookingProduct.update({
+      where: { id: line.id },
+      data: { saleStatus, quantity, stockTaken },
+      select: PRODUCT_LINES.select,
+    });
+  });
+
+/** Takes a reserved product off a booking, giving back any stock it took. */
+export const removeBookingProductLine = async (
+  userId: string,
+  shopId: string,
+  bookingId: string,
+  lineId: string,
+) =>
+  prisma.$transaction(async (tx) => {
+    await requireShopAccess(userId, shopId, { db: tx });
+    await tx.$queryRaw`SELECT id FROM "BookingProduct" WHERE id = ${lineId} FOR UPDATE`;
+    const line = await tx.bookingProduct.findFirst({
+      where: { id: lineId, bookingId, booking: { shopId } },
+    });
+    if (!line) throw new AppError(404, 'Reserved product not found');
+
+    if (line.productId && line.stockTaken > 0) {
+      await tx.$queryRaw`SELECT id FROM "Product" WHERE id = ${line.productId} FOR UPDATE`;
+      await tx.product.update({
+        where: { id: line.productId },
+        data: { stock: { increment: line.stockTaken } },
+      });
+    }
+    await tx.bookingProduct.delete({ where: { id: line.id } });
+    return { id: line.id, deleted: true as const };
+  });

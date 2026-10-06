@@ -18,6 +18,7 @@ import RescheduleConfirmStep from '../components/booking-wizard/RescheduleConfir
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { dateInZone, formatDateTimeInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import PublicPalette from '../components/PublicPalette';
+import ReservedProducts from '../components/ReservedProducts';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import '../styles/pages/public.css';
 
@@ -84,6 +85,7 @@ export default function RescheduleBookingPage() {
           <strong>{booking.service.name}</strong> · {booking.shop.name}
         </p>
         <p className="card__text">{formatDateTimeInZone(booking.startTime, zone)}</p>
+        <ReservedProducts products={booking.products ?? []} servicePrice={booking.service.price} />
         <Alert variant="warning">{blockMessage(t, booking)}</Alert>
       </Notice>
     );
@@ -244,6 +246,8 @@ function CustomerRescheduleWizard({
         <strong>{formatDateTimeInZone(booking.startTime, zone)}</strong>
         {booking.staff.name && <> · {booking.staff.name}</>}
       </p>
+      {/* Rescheduling moves the appointment; what was reserved stays with it. */}
+      <ReservedProducts products={booking.products ?? []} servicePrice={booking.service.price} />
 
       <WizardStepsIndicator
         currentStep={wizard.step}

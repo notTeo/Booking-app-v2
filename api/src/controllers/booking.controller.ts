@@ -188,6 +188,44 @@ export const updateBooking = async (
   }
 };
 
+export const removeBookingProductLine = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await bookingService.removeBookingProductLine(
+      req.user!.userId!,
+      req.params['shopId'] as string,
+      req.params['bookingId'] as string,
+      req.params['lineId'] as string,
+    );
+    successResponse(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateBookingProductLine = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { saleStatus, quantity } = req.body;
+    const line = await bookingService.updateBookingProductLine(
+      req.user!.userId!,
+      req.params['shopId'] as string,
+      req.params['bookingId'] as string,
+      req.params['lineId'] as string,
+      { saleStatus, quantity },
+    );
+    successResponse(res, line);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateBookingStatus = async (
   req: Request,
   res: Response,

@@ -39,6 +39,30 @@ export interface ShopMember {
   staffServices: StaffService[];
 }
 
+/** A product a customer can reserve with a booking. */
+export interface PublicProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  /** In cents. */
+  price: number;
+  stock: number;
+  photoUrl: string | null;
+}
+
+/** A product reserved with a booking, as it is shown back to the customer. */
+export interface ReservedProduct {
+  name: string;
+  quantity: number;
+  /** In cents. */
+  unitPrice: number;
+}
+
+export interface ProductLine {
+  productId: string;
+  quantity: number;
+}
+
 export interface ShopInfo {
   id: string;
   name: string;
@@ -63,6 +87,8 @@ export interface ShopInfo {
   /** Derived from the team's own schedules: per weekday, merged ranges (empty = closed). */
   openingHours: OpeningDay[];
   members: ShopMember[];
+  /** Empty when the shop's plan has no products. */
+  products: PublicProduct[];
 }
 
 export const getShopInfo = (slug: string) =>
@@ -76,6 +102,7 @@ export interface CreateBookingPayload {
   staffId: string;
   startTime: string;       // ISO 8601 datetime
   notes?: string;
+  products?: ProductLine[];
 }
 
 export interface BookingConfirmation {
@@ -83,6 +110,9 @@ export interface BookingConfirmation {
   status: string;
   startTime: string;
   endTime: string;
+  products: ReservedProduct[];
+  /** The service's fee in cents. */
+  servicePrice: number;
 }
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>
@@ -127,6 +157,7 @@ export interface ManagedBooking {
   shop: { slug: string; name: string; timezone: string; publicPalette: string; publicFont: string };
   service: { id: string; name: string; duration: number; price: number };
   staff: { id: string; name: string | null };
+  products: ReservedProduct[];
   rescheduledTo: { startTime: string } | null;
   cancel: CustomerAction;
   reschedule: CustomerAction;

@@ -20,6 +20,20 @@ export interface BookingService {
   price: number;     // cents
 }
 
+/** One product reserved with a booking, as the shop sees it. */
+export interface BookingProductLine {
+  id: string;
+  /** Null once the product has been deleted: the line keeps the name and price it was reserved with. */
+  productId: string | null;
+  name: string;
+  /** In cents. */
+  unitPrice: number;
+  quantity: number;
+  saleStatus: 'RESERVED' | 'SOLD' | 'NOT_SOLD';
+  /** What is left of the product now. Null once it has been deleted. */
+  product: { stock: number; photoUrl: string | null } | null;
+}
+
 export interface Booking {
   id: string;
   shopId: string;
@@ -42,6 +56,7 @@ export interface Booking {
   rescheduledFrom?: BookingLink | null;
   /** Set on the old half of a reschedule: it stays CANCELED as a reference. */
   rescheduledTo?: BookingLink | null;
+  products?: BookingProductLine[];
 }
 
 export interface BookingLink {
@@ -133,8 +148,35 @@ export interface OwnerCreateBookingPayload {
    * check). Sent only after the user confirmed the violations the server listed
    * in a 422. The server ignores nothing: any violation not listed here is
    * rejected again. */
-  overrideRules?: BookingRuleCode[];
+  overrideRules?: (BookingRuleCode | typeof PRODUCT_OUT_OF_STOCK)[];
+  /** Products reserved with the booking (not with a blocked slot). */
+  products?: { productId: string; quantity: number }[];
 }
+
+/** The code of a reservation asking for more of a product than is left. */
+export const PRODUCT_OUT_OF_STOCK = 'PRODUCT_OUT_OF_STOCK';
+
+/** What changing a reserved product returns: the line as it is now, or that it was removed (quantity 0). */
+export type BookingProductChange =
+  | (Pick<BookingProductLine, 'id' | 'quantity' | 'saleStatus' | 'product'> & { deleted?: undefined })
+  | { id: string; deleted: true };
+
+/** Change a reserved product on a booking: its quantity and/or whether it was sold. A quantity of 0 keeps the line. */
+export const updateBookingProductLine = (
+  shopId: string,
+  bookingId: string,
+  lineId: string,
+  change: { saleStatus?: BookingProductLine['saleStatus']; quantity?: number },
+) =>
+  client
+    .patch(`${base(shopId)}/${bookingId}/products/${lineId}`, change)
+    .then((r) => r.data.data as BookingProductChange);
+
+/** Takes a reserved product off a booking for good (not the same as a quantity of 0). */
+export const removeBookingProductLine = (shopId: string, bookingId: string, lineId: string) =>
+  client
+    .delete(`${base(shopId)}/${bookingId}/products/${lineId}`)
+    .then((r) => r.data.data as { id: string; deleted: true });
 
 export const createOwnerBooking = (shopId: string, payload: OwnerCreateBookingPayload) =>
   client.post(base(shopId), payload).then((r) => r.data.data as Booking);

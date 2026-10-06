@@ -6,11 +6,11 @@ import { prisma } from '../utils/prisma';
 // describe the same limits (web/src/config/pricing.ts and the translations).
 export const PLAN_LIMITS: Record<
   ShopPlan,
-  { staffLimit: number; teamFeatures: boolean }
+  { staffLimit: number; teamFeatures: boolean; products: boolean }
 > = {
-  SOLO: { staffLimit: 1, teamFeatures: false },
-  TEAM: { staffLimit: 5, teamFeatures: true },
-  BUSINESS: { staffLimit: 15, teamFeatures: true },
+  SOLO: { staffLimit: 1, teamFeatures: false, products: false },
+  TEAM: { staffLimit: 5, teamFeatures: true, products: true },
+  BUSINESS: { staffLimit: 15, teamFeatures: true, products: true },
 };
 
 // A user's first shop is free for this long, on this plan.
@@ -52,6 +52,27 @@ const loadPlan = async (shopId: string) => {
   });
   if (!shop) throw new AppError(404, 'Shop not found');
   return shop;
+};
+
+// Products (listing them, reserving them with a booking) are on the Team and
+// Business plans.
+export const assertProductsFeature = async (
+  shopId: string,
+  db: Pick<typeof prisma, 'shop'> = prisma,
+) => {
+  const shop = await db.shop.findUnique({
+    where: { id: shopId },
+    select: PLAN_SELECT,
+  });
+  if (!shop) throw new AppError(404, 'Shop not found');
+  if (!PLAN_LIMITS[shop.plan].products)
+    throw new AppError(
+      403,
+      "This shop's plan does not include products. Upgrade the plan to use them.",
+      'PLAN_FEATURE',
+      undefined,
+      { plan: shop.plan },
+    );
 };
 
 // A member takes one of the plan's staff places while they can be booked.

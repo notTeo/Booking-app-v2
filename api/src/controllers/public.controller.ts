@@ -54,6 +54,14 @@ export const createBooking = async (
         status: booking.status,
         startTime: booking.startTime,
         endTime: booking.endTime,
+        servicePrice: booking.service.price,
+        products: booking.products
+          .filter((p) => p.quantity > 0)
+          .map(({ name, quantity, unitPrice }) => ({
+            name,
+            quantity,
+            unitPrice,
+          })),
       },
       201,
     );
@@ -81,6 +89,8 @@ export const createBooking = async (
           staffName: booking.staff.name ?? 'Staff',
           startTime: booking.startTime,
           timezone: booking.shop.timezone,
+          products: booking.products.filter((p) => p.quantity > 0),
+          servicePrice: booking.service.price,
           // The owner's own language, not the customer's.
           locale: parseLocale(owner.user?.locale),
         });
@@ -158,6 +168,13 @@ export const getBookingForCustomer = async (
         price: booking.service.price,
       },
       staff: { id: booking.staff.id, name: booking.staff.name },
+      products: booking.products
+        .filter((p) => p.quantity > 0)
+        .map(({ name, quantity, unitPrice }) => ({
+          name,
+          quantity,
+          unitPrice,
+        })),
       rescheduledTo: booking.rescheduledTo
         ? { startTime: booking.rescheduledTo.startTime }
         : null,

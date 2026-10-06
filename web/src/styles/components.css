@@ -846,6 +846,34 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .range { width: 100%; height: var(--control-sm); accent-color: var(--accent); background: transparent; cursor: pointer; }
 .range:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
+/* ---------- Products: thumb, stepper, product row ---------- */
+/* Thumb: a product's photo as a small square (a box icon without one). */
+.thumb { flex: none; display: grid; place-items: center; width: 3rem; height: 3rem; overflow: hidden; color: var(--text-muted); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.thumb--lg { width: 5rem; height: 5rem; font-size: var(--fs-xl); }
+/* Stepper: a quantity with its minus and plus buttons. */
+.stepper { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); }
+.stepper__value { min-width: var(--space-6); text-align: center; font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body); }
+/* Product row: photo, name with its price and stock, and the stepper at the end. */
+.product-list .product-row { flex-wrap: nowrap; justify-content: flex-start; gap: var(--space-3); padding: var(--space-3) 0; font-size: var(--fs-base); }
+.product-row__main { display: flex; flex: 1; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.product-row__name { font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body); overflow-wrap: anywhere; }
+.product-row__price { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); }
+/* A line at quantity 0 stays, dimmed: it no longer counts but can be raised again or removed. */
+.product-row--zero .product-row__name, .product-row--zero .thumb { opacity: 0.55; }
+.product-picker { display: flex; flex-direction: column; gap: var(--space-2); }
+.product-picker__total { margin: 0; }
+.reserved-products { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; text-align: left; }
+@media (max-width: 639px) { .product-list .product-row { flex-wrap: wrap; } .product-list .stepper { margin-left: calc(3rem + var(--space-3)); } }
+
+/* Sum-up: the service fee, the products and the total, label on the left and amount on the right. */
+.sum-up { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; margin: 0; font-size: var(--fs-sm); }
+.sum-up__row { display: flex; justify-content: space-between; gap: var(--space-3); }
+.sum-up__row dt { color: var(--text-muted); }
+.sum-up__row dd { margin: 0; }
+.sum-up__row--total { padding-top: var(--space-2); border-top: 1px solid var(--border); font: var(--fw-bold) var(--fs-base) / var(--lh-base) var(--font-body); }
+.sum-up__row--total dt { color: var(--text); }
+
 /* ---------- 31. Suggestions (under an input) ---------- */
 .suggest {
   position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-nav); max-height: calc(var(--control-md) * 4.5); margin: 0; padding: 0; overflow-y: auto;

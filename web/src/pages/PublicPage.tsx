@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faClock, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import { createBooking } from '../api/public.api';
+import { createBooking, type ReservedProduct } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
@@ -14,11 +14,14 @@ import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import PublicIdentityStep, { type PublicIdentity } from '../components/booking-wizard/PublicIdentityStep';
 import { buildISODateTime, formatDuration } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
-import { getApiError, isBookingRuleViolation } from '../api/booking.api';
+import { getApiError, isBookingRuleViolation, PRODUCT_OUT_OF_STOCK } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
 import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
+import ReservedProducts from '../components/ReservedProducts';
+import ProductPicker from '../components/booking-wizard/ProductPicker';
+import { toProductLines } from '../utils/productLines';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import NotFoundPage from './NotFoundPage';
@@ -76,6 +79,10 @@ function PublicBookingPage({ slug }: { slug: string }) {
   // the red error style.
   const [busyNotice, setBusyNotice] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  // Products reserved with the booking: quantity per product id, then what the server confirmed.
+  const [reserved, setReserved] = useState<Record<string, number>>({});
+  const [confirmedProducts, setConfirmedProducts] = useState<ReservedProduct[]>([]);
+  const [confirmedServicePrice, setConfirmedServicePrice] = useState<number | undefined>();
 
   if (wizard.loading) {
     return <div className="spinner-page"><div className="spinner spinner--lg" /></div>;
@@ -100,7 +107,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
     setSubmitError(null);
     setBusyNotice(null);
     try {
-      await createBooking(slug, {
+      const confirmation = await createBooking(slug, {
         name,
         phone,
         email: email || undefined,
@@ -108,7 +115,10 @@ function PublicBookingPage({ slug }: { slug: string }) {
         staffId: wizard.selectedMemberId ?? '',
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
+        products: toProductLines(reserved),
       });
+      setConfirmedProducts(confirmation.products ?? []);
+      setConfirmedServicePrice(confirmation.servicePrice);
       if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
       else clearSavedCustomer();
       setConfirmed(true);
@@ -133,7 +143,9 @@ function PublicBookingPage({ slug }: { slug: string }) {
           ? t.public.ruleErrors.BOOKING_TOO_LONG
           : info.code === 'SLOT_TAKEN'
             ? t.public.ruleErrors.SLOT_TAKEN
-            : (info.message ?? t.public.somethingWrong);
+            : info.code === PRODUCT_OUT_OF_STOCK
+              ? t.products.outOfStockError
+              : (info.message ?? t.public.somethingWrong);
       setSubmitError(msg);
       setSubmitting(false);
     }
@@ -209,6 +221,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   {email && <strong>{email}</strong>}
                 </p>
               )}
+              <ReservedProducts products={confirmedProducts} servicePrice={confirmedServicePrice} />
             </div>
           </section>
         ) : !shop.acceptingBookings ? (
@@ -339,6 +352,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
                       rows={3}
                     />
                   </div>
+
+                  <ProductPicker products={shop.products} value={reserved} onChange={setReserved} servicePrice={wizard.selectedService?.price} />
 
                   <div className="field">
                     <label className="checkbox">
