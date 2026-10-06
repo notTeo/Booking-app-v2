@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import cookieParser from 'cookie-parser';
 import { startCleanupJob } from './utils/cleanup';
+import { startReminderJob } from './utils/reminders';
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -109,11 +110,15 @@ if (process.env.NODE_ENV !== 'test') {
     logger.info(`🚀 Server running on http://localhost:${env.port}`);
   });
   const cleanupTimer = startCleanupJob();
+  const reminderTimer = startReminderJob();
 
   const shutdown = createShutdown({
     server,
     disconnect: () => prisma.$disconnect(),
-    onShutdown: () => clearInterval(cleanupTimer),
+    onShutdown: () => {
+      clearInterval(cleanupTimer);
+      clearInterval(reminderTimer);
+    },
     log: logger,
     exit: (code) => process.exit(code),
   });

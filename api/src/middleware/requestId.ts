@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { requestContext } from '../utils/requestContext';
 import { logger } from '../utils/logger';
+import { requestLocale } from '../utils/locale';
 
 // Accept a proxy-supplied id (Railway sets X-Request-Id) so logs line up with
 // the edge, but only if it's short and boring — it ends up in logs and a
@@ -14,7 +15,7 @@ export const requestId = (req: Request, res: Response, next: NextFunction) => {
     incoming && SAFE_ID.test(incoming) ? incoming : crypto.randomUUID();
   res.setHeader('X-Request-Id', id);
 
-  requestContext.run({ requestId: id }, () => {
+  requestContext.run({ requestId: id, locale: requestLocale(req) }, () => {
     const start = process.hrtime.bigint();
     res.on('finish', () => {
       if (req.path === '/health') return;

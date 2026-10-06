@@ -1,3 +1,4 @@
+import { currentLocale } from '../utils/locale';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { prisma } from '../utils/prisma';
@@ -172,6 +173,12 @@ export const loginUser = async ({
     logger.warn(`Failed login attempt for userId: ${user.id}`);
     throw new AppError(401, 'Invalid credentials');
   }
+
+  // Remember the language they use the app in, for emails sent to them later
+  // (new-booking notices) when they are not the one making the request.
+  const locale = currentLocale();
+  if (user.locale !== locale)
+    await prisma.user.update({ where: { id: user.id }, data: { locale } });
 
   const accessToken = signAccessToken(user.id);
   const refreshToken = signRefreshToken(user.id);

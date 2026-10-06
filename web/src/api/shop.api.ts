@@ -17,6 +17,8 @@ export interface Shop {
   /** Hours before the start after which the customer links lock (0 = until it starts). */
   cancelCutoffHours: number;
   rescheduleCutoffHours: number;
+  reminderEnabled: boolean;
+  reminderHoursBefore: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -43,6 +45,8 @@ export interface UpdateShopDto extends Partial<CreateShopDto> {
   customerRescheduleEnabled?: boolean;
   cancelCutoffHours?: number;
   rescheduleCutoffHours?: number;
+  reminderEnabled?: boolean;
+  reminderHoursBefore?: number;
   isActive?: boolean;
 }
 

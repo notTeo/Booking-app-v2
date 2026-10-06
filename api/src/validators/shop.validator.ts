@@ -4,6 +4,8 @@ import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
 
 // One week: the longest notice a shop may demand for a customer change.
 export const MAX_CUTOFF_HOURS = 168;
+// The longest lead time a shop may set for reminder emails (3 days).
+export const MAX_REMINDER_HOURS = 72;
 
 export const createShopValidation = [
   body('name').notEmpty().withMessage('Name is required').trim(),
@@ -102,6 +104,18 @@ export const updateShopValidation = [
       )
       .toInt(),
   ),
+  body('reminderEnabled')
+    .optional()
+    .isBoolean()
+    .withMessage('reminderEnabled must be a boolean')
+    .toBoolean(),
+  body('reminderHoursBefore')
+    .optional()
+    .isInt({ min: 1, max: MAX_REMINDER_HOURS })
+    .withMessage(
+      `reminderHoursBefore must be a whole number between 1 and ${MAX_REMINDER_HOURS}`,
+    )
+    .toInt(),
   body('isActive')
     .optional()
     .isBoolean()
