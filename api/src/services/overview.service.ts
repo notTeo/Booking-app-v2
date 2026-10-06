@@ -5,6 +5,7 @@ import { addDays, dayBoundsUtc, todayInZone } from '../utils/shopTime';
 import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 import { redactCustomer } from '../utils/customerVisibility';
 import { AppError } from '../middleware/errorHandler';
+import { NO_CANCEL_TOKEN } from './booking.service';
 
 export const OVERVIEW_RANGES = ['week', 'month', 'quarter'] as const;
 export type OverviewRange = (typeof OVERVIEW_RANGES)[number];
@@ -329,6 +330,7 @@ export const getMyUpcoming = async (userId: string, now: Date = new Date()) => {
       status: { notIn: ['CANCELED', 'NO_SHOW'] },
       customer: { isSystem: false },
     },
+    omit: NO_CANCEL_TOKEN,
     include: {
       customer: true,
       service: true,

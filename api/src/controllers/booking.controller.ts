@@ -23,12 +23,14 @@ export const createBooking = async (
     const shopId = req.params['shopId'] as string;
     const { callerCanViewCustomer, ...booking } =
       await bookingService.createBookingForShop(userId, shopId, req.body);
+    // The cancel token is the customer's; it only goes into their email.
+    const { cancelToken: _token, ...row } = booking;
     // Redact here, not in the service: the confirmation email below needs the
     // customer's real name and email.
     successResponse(
       res,
       {
-        ...booking,
+        ...row,
         customer: redactCustomer(booking.customer, callerCanViewCustomer),
       },
       201,
@@ -169,7 +171,8 @@ export const updateBooking = async (
     const { booking, callerCanViewCustomer, previous } =
       await bookingService.updateBooking(userId, shopId, bookingId, req.body);
     // The shop and staff rows are only loaded for the email below.
-    const { shop: _shop, staff: _staff, ...row } = booking;
+    // Nor does the cancel token leave: it is the customer's, for their email.
+    const { shop: _shop, staff: _staff, cancelToken: _token, ...row } = booking;
     successResponse(res, {
       ...row,
       customer: redactCustomer(booking.customer, callerCanViewCustomer),

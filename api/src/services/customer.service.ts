@@ -14,6 +14,7 @@ import {
   NOTES_MAX_LENGTH,
   isPlausiblePhone,
 } from '../validators/common';
+import { NO_CANCEL_TOKEN } from './booking.service';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
   const customer = await prisma.customer.findUnique({
@@ -454,6 +455,7 @@ export const exportCustomer = async (
   const bookings = await prisma.booking.findMany({
     where: { customerId, shopId },
     orderBy: { startTime: 'asc' },
+    omit: NO_CANCEL_TOKEN,
     include: {
       service: { select: { name: true } },
       staff: { select: { name: true } },

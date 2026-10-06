@@ -267,6 +267,11 @@ const SERVICE_LINES = {
   orderBy: { position: 'asc' },
 } as const;
 
+// A booking's cancelToken is the customer's only credential on the public
+// cancel and reschedule links, so a query whose rows go back to a shop member
+// leaves it out. Only the rows that feed the customer's emails keep it.
+export const NO_CANCEL_TOKEN = { cancelToken: true } as const;
+
 const BOOKING_INCLUDE = {
   customer: true,
   service: true,
@@ -1084,6 +1089,7 @@ export const listBookings = async (
 
   const bookings = await prisma.booking.findMany({
     where,
+    omit: NO_CANCEL_TOKEN,
     include: {
       customer: true,
       service: true,
@@ -1139,6 +1145,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
         ...NOT_BLOCKED,
       },
+      omit: NO_CANCEL_TOKEN,
       include: {
         customer: true,
         service: true,
@@ -1170,6 +1177,7 @@ const loadBooking = async (
 ) => {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
+    omit: NO_CANCEL_TOKEN,
     include: {
       customer: true,
       service: true,
@@ -1496,6 +1504,7 @@ export const updateBookingStatus = async (
     const updated = await tx.booking.update({
       where: { id: bookingId },
       data: { status },
+      omit: NO_CANCEL_TOKEN,
       include: {
         customer: true,
         service: true,
