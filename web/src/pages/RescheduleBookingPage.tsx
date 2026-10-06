@@ -18,6 +18,7 @@ import RescheduleConfirmStep from '../components/booking-wizard/RescheduleConfir
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { dateInZone, formatDateTimeInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import PublicPalette from '../components/PublicPalette';
+import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import '../styles/pages/public.css';
 
 /** One centered card: every state of this page that isn't the wizard itself. */
@@ -90,7 +91,10 @@ export default function RescheduleBookingPage() {
 
   return (
     <div className="public-page">
-      <PublicPalette />
+      <PublicPalette
+        palette={parsePublicPalette(booking.shop.publicPalette)}
+        font={parsePublicFont(booking.shop.publicFont)}
+      />
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{booking.shop.name}</h1>

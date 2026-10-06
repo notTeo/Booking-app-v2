@@ -54,7 +54,8 @@ export default function StaffSelectStep({
           </button>
         ))}
 
-        {!hideNoPreference && (
+        {/* With a single provider there is nothing to choose between. */}
+        {!hideNoPreference && members.length > 1 && (
           <button
             type="button"
             role="radio"

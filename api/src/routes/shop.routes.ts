@@ -17,6 +17,7 @@ import {
 import { dayScheduleValidation } from '../validators/workingHours.validator';
 import { getDaySchedule } from '../controllers/workingHours.controller';
 import teamRouter from './team.routes';
+import timeOffRouter from './timeOff.routes';
 import serviceRouter from './service.routes';
 import bookingRouter from './booking.routes';
 import customerRouter from './customer.routes';
@@ -80,6 +81,12 @@ router.get(
 // A locked shop is read-only: its members' writes stop here. Deleting the shop
 // itself (above) and deleting a customer stay possible.
 router.use('/:shopId/team', authenticate, requireWritableShop(), teamRouter);
+router.use(
+  '/:shopId/time-off',
+  authenticate,
+  requireWritableShop(),
+  timeOffRouter,
+);
 router.use(
   '/:shopId/services',
   authenticate,

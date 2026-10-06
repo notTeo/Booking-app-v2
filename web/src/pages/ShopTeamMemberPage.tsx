@@ -26,6 +26,7 @@ import {
   type Service,
 } from '../api/service.api';
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
+import TimeOffPanel from '../components/TimeOffPanel';
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
@@ -531,6 +532,16 @@ export default function ShopTeamMemberPage() {
       {/* Staff availability schedule */}
       {workingHoursApi && (
         <WorkingHoursPanel api={workingHoursApi} canManage={canManage} title={t.team.availability} />
+      )}
+
+      {/* Days and hours off, on top of the schedule */}
+      {shop && memberId && (
+        <TimeOffPanel
+          shopId={shop.id}
+          memberId={memberId}
+          canManage={canManage}
+          calendarPath={`/shops/${slug}/bookings`}
+        />
       )}
 
       {/* Assigned services */}

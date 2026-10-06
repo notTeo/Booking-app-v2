@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faClock, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { createBooking } from '../api/public.api';
@@ -19,6 +19,7 @@ import { isPlausibleSlug } from '../utils/publicLink';
 import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
+import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
@@ -33,6 +34,8 @@ export default function PublicPage() {
 
 function PublicBookingPage({ slug }: { slug: string }) {
   const { t, language } = useLang();
+  // The shop settings preview shows a look before it is saved: ?palette=&font=
+  const [look] = useSearchParams();
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
   // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
@@ -165,7 +168,10 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
   return (
     <div className="public-page">
-      <PublicPalette />
+      <PublicPalette
+        palette={parsePublicPalette(look.get('palette') ?? shop.publicPalette)}
+        font={parsePublicFont(look.get('font') ?? shop.publicFont)}
+      />
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{shop.name}</h1>

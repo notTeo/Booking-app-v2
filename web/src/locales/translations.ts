@@ -1,3 +1,5 @@
+import type { PublicFont, PublicPalette } from '../utils/branding';
+
 export type Language = 'el' | 'en';
 
 // Messages for the server's booking-rule violations (422 `code`s) + slot conflict.
@@ -671,6 +673,54 @@ export interface Translations {
       SAT: string;
       SUN: string;
     };
+  };
+  branding: {
+    title: string;
+    desc: string;
+    colours: string;
+    font: string;
+    fontHint: string;
+    save: string;
+    saved: string;
+    errorSave: string;
+    preview: string;
+    previewUnsaved: string;
+    previewSaved: string;
+    palettes: Record<PublicPalette, string>;
+    fonts: Record<PublicFont, string>;
+  };
+  timeOff: {
+    title: string;
+    shopTitle: string;
+    hint: string;
+    shopHint: string;
+    add: string;
+    firstDay: string;
+    lastDay: string;
+    allDay: string;
+    startTime: string;
+    endTime: string;
+    note: string;
+    notePlaceholder: string;
+    shopNotePlaceholder: string;
+    save: string;
+    cancel: string;
+    empty: string;
+    shopEmpty: string;
+    wholeShop: string;
+    remove: string;
+    removeTitle: string;
+    removeMessage: string;
+    errorLoad: string;
+    errorSave: string;
+    errorDelete: string;
+    endBeforeStart: string;
+    timeEndBeforeStart: string;
+    affectedOne: string;
+    affectedMany: string;
+    viewCalendar: string;
+    showPast: string;
+    hidePast: string;
   };
   toggles: {
     switchToLight: string;
@@ -1856,6 +1906,68 @@ home: {
         SAT: 'Σάββατο',
         SUN: 'Κυριακή',
       },
+    },
+    branding: {
+      title: "Εμφάνιση σελίδας κρατήσεων",
+      desc: "Χρώματα και γραμματοσειρά της δημόσιας σελίδας όπου κλείνουν ραντεβού οι πελάτες σου.",
+      colours: "Χρώματα",
+      font: "Γραμματοσειρά",
+      fontHint: "Όλες οι γραμματοσειρές υποστηρίζουν ελληνικά.",
+      save: "Αποθήκευση",
+      saved: "Η εμφάνιση αποθηκεύτηκε.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      preview: "Προεπισκόπηση",
+      previewUnsaved: "Δεν έχει αποθηκευτεί ακόμα. Οι πελάτες βλέπουν την προηγούμενη εμφάνιση μέχρι να πατήσεις Αποθήκευση.",
+      previewSaved: "Έτσι βλέπουν τη σελίδα οι πελάτες σου.",
+      palettes: {
+        mono: "Ασπρόμαυρο",
+        original: "Πράσινο",
+        purple: "Μωβ",
+        blue: "Μπλε",
+        rose: "Ροζ",
+        sand: "Άμμος",
+      },
+      fonts: {
+        default: "Κανονική (Poppins)",
+        manrope: "Manrope · μοντέρνα",
+        "noto-serif": "Noto Serif · κλασική",
+        alegreya: "Alegreya · κομψή",
+        comfortaa: "Comfortaa · στρογγυλή",
+        "roboto-slab": "Roboto Slab · έντονη",
+      },
+    },
+    timeOff: {
+      title: "Άδειες και ρεπό",
+      shopTitle: "Κλειστές ημέρες",
+      hint: "Ημέρες ή ώρες που το μέλος δεν δουλεύει, πέρα από το εβδομαδιαίο πρόγραμμα. Οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      shopHint: "Ημέρες ή ώρες που όλο το κατάστημα είναι κλειστό, π.χ. αργίες. Ισχύουν για όλα τα μέλη και οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      add: "Προσθήκη",
+      firstDay: "Πρώτη ημέρα",
+      lastDay: "Τελευταία ημέρα (προαιρετική)",
+      allDay: "Όλη την ημέρα",
+      startTime: "Ώρα έναρξης",
+      endTime: "Ώρα λήξης",
+      note: "Σημείωση (προαιρετική)",
+      notePlaceholder: "π.χ. Άδεια",
+      shopNotePlaceholder: "π.χ. Χριστούγεννα",
+      save: "Αποθήκευση",
+      cancel: "Ακύρωση",
+      empty: "Δεν υπάρχουν άδειες ή ρεπό.",
+      shopEmpty: "Δεν υπάρχουν κλειστές ημέρες.",
+      wholeShop: "Όλο το κατάστημα",
+      remove: "Αφαίρεση",
+      removeTitle: "Αφαίρεση αυτής της καταχώρισης;",
+      removeMessage: "Οι ώρες αυτές θα είναι ξανά διαθέσιμες για κρατήσεις, σύμφωνα με το εβδομαδιαίο πρόγραμμα.",
+      errorLoad: "Αποτυχία φόρτωσης.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      errorDelete: "Αποτυχία αφαίρεσης.",
+      endBeforeStart: "Η τελευταία ημέρα δεν μπορεί να είναι πριν από την πρώτη.",
+      timeEndBeforeStart: "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.",
+      affectedOne: "Υπάρχει ήδη 1 κράτηση σε αυτό το διάστημα. Δεν άλλαξε· ακύρωσέ την ή μετάφερέ την αν χρειάζεται.",
+      affectedMany: "Υπάρχουν ήδη {count} κρατήσεις σε αυτό το διάστημα. Δεν άλλαξαν· ακύρωσέ τες ή μετάφερέ τες αν χρειάζεται.",
+      viewCalendar: "Άνοιγμα ημερολογίου",
+      showPast: "Εμφάνιση παλαιότερων ({count})",
+      hidePast: "Απόκρυψη παλαιότερων",
     },
     toggles: {
       switchToLight: 'Εναλλαγή σε φωτεινή λειτουργία',
@@ -3065,6 +3177,68 @@ home: {
         SAT: 'Saturday',
         SUN: 'Sunday',
       },
+    },
+    branding: {
+      title: "Booking page look",
+      desc: "The colours and font of the public page where your customers book.",
+      colours: "Colours",
+      font: "Font",
+      fontHint: "Every font covers Greek and English.",
+      save: "Save",
+      saved: "The look was saved.",
+      errorSave: "Could not save.",
+      preview: "Preview",
+      previewUnsaved: "Not saved yet. Customers see the previous look until you press Save.",
+      previewSaved: "This is how your customers see the page.",
+      palettes: {
+        mono: "Black & white",
+        original: "Green",
+        purple: "Purple",
+        blue: "Blue",
+        rose: "Rose",
+        sand: "Sand",
+      },
+      fonts: {
+        default: "Standard (Poppins)",
+        manrope: "Manrope · modern",
+        "noto-serif": "Noto Serif · classic",
+        alegreya: "Alegreya · elegant",
+        comfortaa: "Comfortaa · rounded",
+        "roboto-slab": "Roboto Slab · bold",
+      },
+    },
+    timeOff: {
+      title: "Time off",
+      shopTitle: "Closed days",
+      hint: "Days or hours this member is not working, on top of the weekly hours. Customers cannot book then.",
+      shopHint: "Days or hours the whole shop is closed, such as public holidays. They apply to every member and customers cannot book then.",
+      add: "Add",
+      firstDay: "First day",
+      lastDay: "Last day (optional)",
+      allDay: "All day",
+      startTime: "Start time",
+      endTime: "End time",
+      note: "Note (optional)",
+      notePlaceholder: "e.g. Vacation",
+      shopNotePlaceholder: "e.g. Christmas",
+      save: "Save",
+      cancel: "Cancel",
+      empty: "No time off.",
+      shopEmpty: "No closed days.",
+      wholeShop: "Whole shop",
+      remove: "Remove",
+      removeTitle: "Remove this entry?",
+      removeMessage: "This time will be bookable again, following the weekly hours.",
+      errorLoad: "Could not load time off.",
+      errorSave: "Could not save.",
+      errorDelete: "Could not remove.",
+      endBeforeStart: "The last day cannot be before the first day.",
+      timeEndBeforeStart: "The end time must be after the start time.",
+      affectedOne: "1 booking is already in this time. It was not changed; cancel or move it if needed.",
+      affectedMany: "{count} bookings are already in this time. They were not changed; cancel or move them if needed.",
+      viewCalendar: "Open calendar",
+      showPast: "Show past ({count})",
+      hidePast: "Hide past",
     },
     toggles: {
       switchToLight: 'Switch to light mode',

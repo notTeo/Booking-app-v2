@@ -2,3 +2,11 @@
 .shops-page { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: 53.75rem; }
 .shops-page > .back-link { margin-bottom: 0; }
 .shop-detail-header { display: flex; flex-direction: column; gap: var(--space-2); }
+/* Booking page look: the controls, with the preview beside them once there is room. */
+.brand-settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+.brand-settings__controls { display: flex; flex-direction: column; gap: var(--space-4); }
+.brand-settings__controls .field { margin-bottom: 0; }
+.brand-settings__preview { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+@media (min-width: 960px) {
+  .brand-settings { grid-template-columns: minmax(0, 1fr) 23.4375rem; align-items: start; }
+}

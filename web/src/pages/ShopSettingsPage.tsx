@@ -1,5 +1,5 @@
 import { publicShopUrl } from '../utils/publicLink';
-import { ROLE_BADGE } from '../utils/roles';
+import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
@@ -20,6 +20,8 @@ import Alert from '../components/Alert';
 import { PLAN_NAMES } from '../config/pricing';
 import { isOnTrial } from '../utils/plan';
 import ConfirmDialog from '../components/ConfirmDialog';
+import TimeOffPanel from '../components/TimeOffPanel';
+import PublicBrandingCard from '../components/PublicBrandingCard';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -440,6 +442,16 @@ export default function ShopSettingsPage() {
         </div>
         </fieldset>
       </form>
+
+      {/* Colours and fonts of the public booking page, with a live preview */}
+      <PublicBrandingCard shop={shop} onSaved={setShop} />
+
+      {/* Shop-wide closed days, on top of every member's working hours */}
+      <TimeOffPanel
+        shopId={shop.id}
+        canManage={canManageShop(shop.role)}
+        calendarPath={`/shops/${shop.slug}/bookings`}
+      />
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (
