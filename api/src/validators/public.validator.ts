@@ -1,4 +1,5 @@
 import { param, body } from 'express-validator';
+import { isInstant } from './common';
 
 export const getShopInfoValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
@@ -22,7 +23,7 @@ export const cancelBookingValidation = [tokenField()];
 export const rescheduleBookingValidation = [
   tokenField(),
   body('startTime')
-    .isISO8601()
-    .withMessage('startTime must be a valid ISO 8601 date'),
+    .custom(isInstant)
+    .withMessage('startTime must be an ISO 8601 timestamp with a UTC offset'),
   body('staffId').optional({ values: 'null' }).isString(),
 ];

@@ -157,6 +157,9 @@ describe('POST /public/reschedule', () => {
     const t = await shop();
     const other = await createStaffMember(t, 'Other');
     await addWeeklySchedule(t, { staffId: other.staff.id });
+    await prisma.staffService.create({
+      data: { userShopId: other.staff.id, serviceId: t.service.id },
+    });
     const { token } = await bookingWith(t);
 
     const res = await reschedule(token, {

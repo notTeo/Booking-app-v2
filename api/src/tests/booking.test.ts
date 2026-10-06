@@ -229,6 +229,10 @@ describe('getAvailableSlots', () => {
   it("honors a staff member's own schedule, not a colleague's", async () => {
     const { owner, shop, staff, service } = await setupShop();
     const staffMember = await addStaffMember(shop.id);
+    // Customers are only offered a member for a service that member does.
+    await prisma.staffService.create({
+      data: { userShopId: staffMember.id, serviceId: service.id },
+    });
 
     await createSchedule(
       owner.id,
