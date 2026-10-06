@@ -18,8 +18,12 @@ import globalInviteRoutes from './routes/globalInvite.routes';
 import publicRoutes from './routes/public.routes';
 import mediaRoutes from './routes/media.routes';
 import { requestId } from './middleware/requestId';
+import { authenticate } from './middleware/authenticate';
+import { rejectControlChars } from './middleware/rejectControlChars';
 import { prisma } from './utils/prisma';
 import { createShutdown } from './utils/shutdown';
+
+const IMPORT_PATH = /^\/api\/shops\/[^/]+\/customers\/import\/?$/;
 
 const app = express();
 
@@ -58,11 +62,23 @@ app.use(
 );
 app.use(cookieParser());
 // A customer import carries up to 500 rows, more than the default 100kb body.
-app.use(
-  /^\/api\/shops\/[^/]+\/customers\/import\/?$/,
-  express.json({ limit: '2mb' }),
-);
-app.use(express.json());
+// Its own, larger parser runs in the customer router, after authentication,
+// so an anonymous caller is never read past the default limit.
+const defaultJson = express.json();
+app.use((req, res, next) => {
+  if (!IMPORT_PATH.test(req.path)) return defaultJson(req, res, next);
+  try {
+    authenticate(req, res, next);
+  } catch (err) {
+    // Throw the unread body away (no buffering, no parsing) and answer once
+    // it has all arrived, so the caller reads the 401 instead of a connection
+    // broken halfway through its upload.
+    req.once('end', () => next(err));
+    req.once('error', () => next(err));
+    req.resume();
+  }
+});
+app.use(rejectControlChars);
 
 // Liveness + DB reachability. 503 (no detail) when the DB is down so a
 // platform health check restarts/stops routing instead of reporting healthy.

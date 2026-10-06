@@ -1,16 +1,27 @@
 import { body, cookie, query } from 'express-validator';
+import { PASSWORD_MAX_LENGTH } from './common';
 
 export const registerValidation = [
   body('email')
+    .isString()
+    .withMessage('Valid email is required')
+    .bail()
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
   body('name')
+    .optional()
+    .isString()
+    .withMessage('Valid name is required max 50 char')
+    .bail()
     .isLength({ max: 50 })
     .withMessage('Valid name is required max 50 char'),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters')
+    .isString()
+    .withMessage('Password must be a string')
+    .bail()
+    .isLength({ min: 8, max: PASSWORD_MAX_LENGTH })
+    .withMessage(`Password must be 8 to ${PASSWORD_MAX_LENGTH} characters long`)
     .matches(/[A-Z]/)
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)
@@ -28,18 +39,29 @@ export const registerValidation = [
 
 export const loginValidation = [
   body('email')
+    .isString()
+    .withMessage('Valid email is required')
+    .bail()
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
-  body('password').notEmpty().withMessage('Password is required'),
+  body('password')
+    .isString()
+    .withMessage('Password is required')
+    .bail()
+    .notEmpty()
+    .withMessage('Password is required'),
   body('rememberMe')
     .optional()
-    .isBoolean()
+    .isBoolean({ strict: true })
     .withMessage('rememberMe must be a boolean'),
 ];
 
 export const forgotPasswordValidation = [
   body('email')
+    .isString()
+    .withMessage('Valid email is required')
+    .bail()
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
@@ -47,6 +69,9 @@ export const forgotPasswordValidation = [
 
 export const resendVerificationValidation = [
   body('email')
+    .isString()
+    .withMessage('Valid email is required')
+    .bail()
     .isEmail()
     .withMessage('Valid email is required')
     .normalizeEmail(),
@@ -69,8 +94,11 @@ export const resetPasswordValidation = [
     .isString()
     .withMessage('Token must be a string'),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters')
+    .isString()
+    .withMessage('Password must be a string')
+    .bail()
+    .isLength({ min: 8, max: PASSWORD_MAX_LENGTH })
+    .withMessage(`Password must be 8 to ${PASSWORD_MAX_LENGTH} characters long`)
     .matches(/[A-Z]/)
     .withMessage('Password must contain at least one uppercase letter')
     .matches(/[0-9]/)

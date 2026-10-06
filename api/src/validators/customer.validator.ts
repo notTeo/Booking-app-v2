@@ -1,6 +1,9 @@
 import { body, param, query } from 'express-validator';
 import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
 
+// Far beyond any real customer list; keeps the offset inside a 32-bit int.
+const MAX_PAGE = 100_000;
+
 export const customerParamsValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   param('customerId').notEmpty().withMessage('customerId is required'),
@@ -8,11 +11,18 @@ export const customerParamsValidation = [
 
 export const listCustomersValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
-  query('search').optional().trim(),
+  query('search')
+    .optional()
+    .isString()
+    .withMessage('search must be text')
+    .bail()
+    .trim()
+    .isLength({ max: NAME_MAX_LENGTH })
+    .withMessage(`search must be ${NAME_MAX_LENGTH} characters or fewer`),
   query('page')
     .optional()
-    .isInt({ min: 1 })
-    .withMessage('page must be a positive integer'),
+    .isInt({ min: 1, max: MAX_PAGE })
+    .withMessage(`page must be between 1 and ${MAX_PAGE}`),
   query('limit')
     .optional()
     .isInt({ min: 1, max: 100 })
@@ -95,8 +105,8 @@ export const listCustomerBookingsValidation = [
   ...customerParamsValidation,
   query('page')
     .optional()
-    .isInt({ min: 1 })
-    .withMessage('page must be a positive integer'),
+    .isInt({ min: 1, max: MAX_PAGE })
+    .withMessage(`page must be between 1 and ${MAX_PAGE}`),
   query('limit')
     .optional()
     .isInt({ min: 1, max: 50 })
