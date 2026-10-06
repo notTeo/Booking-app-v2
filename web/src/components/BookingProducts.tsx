@@ -17,24 +17,26 @@ import { formatPrice } from './booking-wizard/wizardUtils';
 
 const MAX_QUANTITY = 99;
 
+type Change = { saleStatus?: BookingProductLine['saleStatus']; quantity?: number } | 'remove';
+
 /**
- * The products reserved with a booking: change the quantity, remove one, and
- * mark each Sold or Not sold. Marking one sold takes it out of the product's
- * stock; marking it not sold gives it back (the server does the counting).
- * Under the lines: the service fee, the products and the total.
+ * The products reserved with a booking. Read-only by default: each product
+ * with its quantity and price (a line at 0 no longer counts, so it is left
+ * out). In `editing` mode: change the quantity, remove a product, and mark
+ * each Sold or Not sold. Marking one sold takes it out of the product's stock;
+ * marking it not sold gives it back (the server does the counting).
  */
 export default function BookingProducts({
   shopId,
   bookingId,
   products,
-  servicePrice,
+  editing,
   onChange,
 }: {
   shopId: string;
   bookingId: string;
   products: BookingProductLine[];
-  /** The booking's service fee, in cents, so the total includes it. */
-  servicePrice: number;
+  editing: boolean;
   onChange: (change: BookingProductChange) => void;
 }) {
   const { t } = useLang();
@@ -43,12 +45,7 @@ export default function BookingProducts({
   const [error, setError] = useState('');
   const [removing, setRemoving] = useState<BookingProductLine | null>(null);
 
-  if (products.length === 0) return null;
-
-  const change = async (
-    line: BookingProductLine,
-    body: { saleStatus?: BookingProductLine['saleStatus']; quantity?: number } | 'remove',
-  ) => {
+  const change = async (line: BookingProductLine, body: Change) => {
     if (busyId) return;
     setBusyId(line.id);
     setError('');
@@ -66,94 +63,103 @@ export default function BookingProducts({
     }
   };
 
-  const productsTotal = products.reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+  const shown = editing ? products : products.filter((l) => l.quantity > 0);
 
   return (
-    <div className="booking-products">
-      <h3 className="t-subheading">{tp.bookingTitle}</h3>
+    <>
       <ul className="list product-list">
-        {products.map((line) => (
+        {shown.map((line) => (
           <li key={line.id} className={`product-row${line.quantity === 0 ? ' product-row--zero' : ''}`}>
             <ProductThumb photoUrl={line.product?.photoUrl} />
             <div className="product-row__main">
-              <span className="product-row__name">{line.name}</span>
-              <span className="t-body-sm t-muted">
-                {formatPrice(line.unitPrice)} · {formatPrice(line.quantity * line.unitPrice)}
-                {line.product
-                  ? ` · ${tp.leftInStock.replace('{n}', String(line.product.stock))}`
-                  : ` · ${tp.deletedProduct}`}
+              <span className="product-row__name">
+                {line.name} <span className="t-muted">× {line.quantity}</span>
               </span>
-              {line.quantity === 0 && <span className="t-body-sm">{tp.zeroNote}</span>}
-              <div className="cluster cluster--tight">
-                <div className="stepper" role="group" aria-label={tp.quantity.replace('{name}', line.name)}>
-                  <button
-                    type="button"
-                    className="btn btn--secondary btn--icon"
-                    aria-label={tp.decrease.replace('{name}', line.name)}
-                    disabled={busyId === line.id || line.quantity <= 0}
-                    onClick={() => change(line, { quantity: line.quantity - 1 })}
-                  >
-                    <FontAwesomeIcon icon={faMinus} aria-hidden="true" />
-                  </button>
-                  <span className="stepper__value" aria-live="polite">{line.quantity}</span>
-                  <button
-                    type="button"
-                    className="btn btn--secondary btn--icon"
-                    aria-label={tp.increase.replace('{name}', line.name)}
-                    disabled={busyId === line.id || line.quantity >= MAX_QUANTITY}
-                    onClick={() => change(line, { quantity: line.quantity + 1 })}
-                  >
-                    <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn--danger-outline btn--icon"
-                  aria-label={tp.removeLine.replace('{name}', line.name)}
-                  disabled={busyId === line.id}
-                  onClick={() => setRemoving(line)}
-                >
-                  <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />
-                </button>
-              </div>
+              {!editing && line.saleStatus !== 'RESERVED' && (
+                <span>
+                  <span className={`badge ${line.saleStatus === 'SOLD' ? 'badge--success' : 'badge--neutral'}`}>
+                    <FontAwesomeIcon icon={line.saleStatus === 'SOLD' ? faCheck : faXmark} aria-hidden="true" />
+                    {line.saleStatus === 'SOLD' ? t.bookings.detail.soldBadge : t.bookings.detail.notSoldBadge}
+                  </span>
+                </span>
+              )}
+              {editing && (
+                <>
+                  <span className="t-body-sm t-muted">
+                    {formatPrice(line.unitPrice)}
+                    {line.product
+                      ? ` · ${tp.leftInStock.replace('{n}', String(line.product.stock))}`
+                      : ` · ${tp.deletedProduct}`}
+                  </span>
+                  {line.quantity === 0 && <span className="t-body-sm">{tp.zeroNote}</span>}
+                  <div className="cluster cluster--tight">
+                    <div className="stepper" role="group" aria-label={tp.quantity.replace('{name}', line.name)}>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--icon"
+                        aria-label={tp.decrease.replace('{name}', line.name)}
+                        disabled={busyId === line.id || line.quantity <= 0}
+                        onClick={() => change(line, { quantity: line.quantity - 1 })}
+                      >
+                        <FontAwesomeIcon icon={faMinus} aria-hidden="true" />
+                      </button>
+                      <span className="stepper__value" aria-live="polite">{line.quantity}</span>
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--icon"
+                        aria-label={tp.increase.replace('{name}', line.name)}
+                        disabled={busyId === line.id || line.quantity >= MAX_QUANTITY}
+                        onClick={() => change(line, { quantity: line.quantity + 1 })}
+                      >
+                        <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn--danger-outline btn--icon"
+                      aria-label={tp.removeLine.replace('{name}', line.name)}
+                      disabled={busyId === line.id}
+                      onClick={() => setRemoving(line)}
+                    >
+                      <FontAwesomeIcon icon={faTrashCan} aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className="cluster cluster--tight">
+                    <button
+                      type="button"
+                      className={`btn btn--sm ${line.saleStatus === 'SOLD' ? '' : 'btn--secondary'}`}
+                      aria-pressed={line.saleStatus === 'SOLD'}
+                      disabled={busyId === line.id}
+                      // Pressing the active button again goes back to merely reserved.
+                      onClick={() => change(line, { saleStatus: line.saleStatus === 'SOLD' ? 'RESERVED' : 'SOLD' })}
+                    >
+                      <FontAwesomeIcon icon={faCheck} aria-hidden="true" />
+                      {tp.sold}
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn--sm ${line.saleStatus === 'NOT_SOLD' ? '' : 'btn--secondary'}`}
+                      aria-pressed={line.saleStatus === 'NOT_SOLD'}
+                      disabled={busyId === line.id}
+                      onClick={() => change(line, { saleStatus: line.saleStatus === 'NOT_SOLD' ? 'RESERVED' : 'NOT_SOLD' })}
+                    >
+                      <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+                      {tp.notSold}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-            <div className="cluster cluster--tight cluster--nowrap">
-              <button
-                type="button"
-                className={`btn btn--sm ${line.saleStatus === 'SOLD' ? '' : 'btn--secondary'}`}
-                aria-pressed={line.saleStatus === 'SOLD'}
-                disabled={busyId === line.id}
-                // Pressing the active button again goes back to merely reserved.
-                onClick={() => change(line, { saleStatus: line.saleStatus === 'SOLD' ? 'RESERVED' : 'SOLD' })}
-              >
-                <FontAwesomeIcon icon={faCheck} aria-hidden="true" />
-                {tp.sold}
-              </button>
-              <button
-                type="button"
-                className={`btn btn--sm ${line.saleStatus === 'NOT_SOLD' ? '' : 'btn--secondary'}`}
-                aria-pressed={line.saleStatus === 'NOT_SOLD'}
-                disabled={busyId === line.id}
-                onClick={() => change(line, { saleStatus: line.saleStatus === 'NOT_SOLD' ? 'RESERVED' : 'NOT_SOLD' })}
-              >
-                <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
-                {tp.notSold}
-              </button>
-            </div>
+            {!editing && <span className="product-row__price">{formatPrice(line.quantity * line.unitPrice)}</span>}
           </li>
         ))}
       </ul>
-      <dl className="sum-up">
-        <div className="sum-up__row"><dt>{tp.serviceFee}</dt><dd>{formatPrice(servicePrice)}</dd></div>
-        <div className="sum-up__row"><dt>{tp.productsSubtotal}</dt><dd>{formatPrice(productsTotal)}</dd></div>
-        <div className="sum-up__row sum-up__row--total"><dt>{tp.total}</dt><dd>{formatPrice(servicePrice + productsTotal)}</dd></div>
-      </dl>
       {error && <Alert variant="danger">{error}</Alert>}
       {removing && (
         <ConfirmDialog
           title={tp.removeLineTitle}
           message={tp.removeLineMessage}
-          confirmLabel={t.products.delete}
+          confirmLabel={tp.delete}
           cancelLabel={tp.cancel}
           tone="danger"
           busy={busyId === removing.id}
@@ -161,6 +167,6 @@ export default function BookingProducts({
           onCancel={() => setRemoving(null)}
         />
       )}
-    </div>
+    </>
   );
 }

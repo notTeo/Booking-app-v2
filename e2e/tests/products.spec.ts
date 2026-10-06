@@ -169,24 +169,37 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await page.goto(`/shops/${E2E.shop.slug}/bookings?date=${DATE}`);
   await page.locator('.cal-block').filter({ hasText: CUSTOMER }).click();
   const dialog = page.getByRole('dialog');
+  // The overview: status, time, service fee, products and the total with what it is made of.
+  await expect(dialog.getByText('Confirmed').first()).toBeVisible();
+  await expect(dialog.getByText('€15.00', { exact: true })).toBeVisible();
   await expect(dialog.getByText('E2E Shampoo')).toBeVisible();
+  await expect(dialog.getByText('× 2')).toBeVisible();
+  await expect(dialog.locator('.total-bar__amount')).toHaveText('€40.00');
+  await expect(dialog.getByText('Service €15.00 + products €25.00')).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Sold', exact: true })).toHaveCount(0);
+
+  // Edit opens the controls: the quantity can be changed from here and the
+  // total follows. The stock is untouched.
+  await dialog.getByRole('button', { name: 'Edit' }).click();
   await expect(dialog.locator('.stepper__value')).toHaveText('2');
   await expect(dialog.getByText('3 in stock')).toBeVisible();
-  await expect(dialog.locator('.sum-up__row--total')).toContainText('€40.00');
-
-  // The quantity can be changed from here; the total follows. Stock is untouched.
   await dialog.getByRole('button', { name: 'More: E2E Shampoo' }).click();
   await expect(dialog.locator('.stepper__value')).toHaveText('3');
-  await expect(dialog.locator('.sum-up__row--total')).toContainText('€52.50');
+  await expect(dialog.locator('.total-bar__amount')).toHaveText('€52.50');
   await dialog.getByRole('button', { name: 'Fewer: E2E Shampoo' }).click();
   await expect(dialog.locator('.stepper__value')).toHaveText('2');
-  await expect(dialog.locator('.sum-up__row--total')).toContainText('€40.00');
+  await expect(dialog.locator('.total-bar__amount')).toHaveText('€40.00');
   expect(await stockOf('p-e2e-1')).toBe(3);
 
   await dialog.getByRole('button', { name: 'Sold', exact: true }).click();
   await expect(dialog.getByRole('button', { name: 'Sold', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(dialog.getByText('1 in stock')).toBeVisible();
   expect(await stockOf('p-e2e-1')).toBe(1);
+
+  // Done goes back to the plain view, which shows the line as sold.
+  await dialog.getByRole('button', { name: 'Done' }).click();
+  await expect(dialog.locator('.badge', { hasText: 'Sold' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Edit' }).click();
 
   // Not sold gives it back.
   await dialog.getByRole('button', { name: 'Not sold', exact: true }).click();
@@ -199,7 +212,7 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await dialog.getByRole('button', { name: 'Fewer: E2E Shampoo' }).click();
   await expect(dialog.locator('.stepper__value')).toHaveText('0');
   await expect(dialog.getByText('Quantity is 0')).toBeVisible();
-  await expect(dialog.locator('.sum-up__row--total')).toContainText('€15.00');
+  await expect(dialog.locator('.total-bar__amount')).toHaveText('€15.00');
   await expect(dialog.getByRole('button', { name: 'Fewer: E2E Shampoo' })).toBeDisabled();
   expect(await bookingLineCount()).toBe(1);
   await dialog.getByRole('button', { name: 'More: E2E Shampoo' }).click();

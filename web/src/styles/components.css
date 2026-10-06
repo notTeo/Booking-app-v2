@@ -130,6 +130,8 @@ a { color: var(--accent); }
 }
 .btn--icon.is-loading > .icon { display: none; }
 
+.btn--danger-ghost { --btn-bg: transparent; --btn-fg: var(--danger); }
+.btn--danger-ghost:hover, .btn--danger-ghost.is-hover { --btn-bg: var(--danger-bg); box-shadow: none; }
 .btn:disabled, .btn[aria-disabled="true"], .btn.is-disabled {
   --btn-bg: var(--surface-sunken); --btn-fg: var(--text-muted); --btn-bd: var(--border);
   box-shadow: none; transform: none; cursor: not-allowed;
@@ -855,7 +857,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .stepper { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); }
 .stepper__value { min-width: var(--space-6); text-align: center; font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body); }
 /* Product row: photo, name with its price and stock, and the stepper at the end. */
-.product-list .product-row { flex-wrap: nowrap; justify-content: flex-start; gap: var(--space-3); padding: var(--space-3) 0; font-size: var(--fs-base); }
+.product-list .product-row { display: flex; align-items: center; flex-wrap: nowrap; justify-content: flex-start; gap: var(--space-3); padding: var(--space-3) 0; font-size: var(--fs-base); }
 .product-row__main { display: flex; flex: 1; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .product-row__name { font: var(--fw-semibold) var(--fs-base) / var(--lh-base) var(--font-body); overflow-wrap: anywhere; }
 .product-row__price { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); }
@@ -864,7 +866,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .product-picker { display: flex; flex-direction: column; gap: var(--space-2); }
 .product-picker__total { margin: 0; }
 .reserved-products { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; text-align: left; }
-@media (max-width: 639px) { .product-list .product-row { flex-wrap: wrap; } .product-list .stepper { margin-left: calc(3rem + var(--space-3)); } }
+/* In the picker the stepper drops under the name on a phone, lined up with it. */
+@media (max-width: 639px) { .product-picker .product-row { flex-wrap: wrap; } .product-picker .stepper { margin-left: calc(3rem + var(--space-3)); } }
 
 /* Sum-up: the service fee, the products and the total, label on the left and amount on the right. */
 .sum-up { display: flex; flex-direction: column; gap: var(--space-1); width: 100%; margin: 0; font-size: var(--fs-sm); }
@@ -873,6 +876,26 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .sum-up__row dd { margin: 0; }
 .sum-up__row--total { padding-top: var(--space-2); border-top: 1px solid var(--border); font: var(--fw-bold) var(--fs-base) / var(--lh-base) var(--font-body); }
 .sum-up__row--total dt { color: var(--text); }
+
+/* ---------- Booking details: detail rows, action grid, total bar ---------- */
+/* Detail list: rows of an icon, text and (optionally) something at the end, in one bordered box. */
+.detail-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.detail-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-4); }
+.detail-row + .detail-row { border-top: 1px solid var(--border); }
+.detail-row__icon { flex: none; width: var(--space-6); text-align: center; font-size: var(--fs-lg); color: var(--text-muted); }
+.detail-row__main { display: flex; flex: 1 1 8rem; flex-direction: column; gap: var(--space-1); min-width: 0; overflow-wrap: anywhere; }
+.detail-row__title { font: var(--fw-bold) var(--fs-xl) / var(--lh-xl) var(--font-display); }
+.detail-row__sub { font-size: var(--fs-sm); color: var(--text-muted); }
+.detail-row__end { flex: none; margin-left: auto; font-size: var(--fs-base); }
+/* Action grid: two equal, full-width buttons side by side (the main status choices). */
+.action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+/* Total bar: the total large on the right, with a line under it saying what it is made of. */
+.total-bar { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); font: var(--fw-bold) var(--fs-lg) / var(--lh-lg) var(--font-display); }
+.total-bar__amount { font-size: var(--fs-2xl); line-height: var(--lh-2xl); }
+.total-bar__note { margin: 0; text-align: right; font-size: var(--fs-sm); color: var(--text-muted); }
+
+/* Booking details header: the status pill above the customer's name. */
+.booking-detail__head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
 
 /* ---------- 31. Suggestions (under an input) ---------- */
 .suggest {

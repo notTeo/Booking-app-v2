@@ -1095,6 +1095,19 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    detail: {
+      minutes: string;
+      noShow: string;
+      cancelBooking: string;
+      cancelTitle: string;
+      cancelMessage: string;
+      keepBooking: string;
+      editProducts: string;
+      doneEditing: string;
+      totalNote: string;
+      soldBadge: string;
+      notSoldBadge: string;
+    };
     block: {
       button: string;
       bookCustomer: string;
@@ -2456,6 +2469,19 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} λεπτά",
+        noShow: "Δεν ήρθε",
+        cancelBooking: "Ακύρωση ραντεβού",
+        cancelTitle: "Ακύρωση ραντεβού;",
+        cancelMessage: "Το ραντεβού ακυρώνεται και η ώρα ελευθερώνεται. Μπορείς να το ξαναανοίξεις αργότερα αν η ώρα είναι ακόμη ελεύθερη.",
+        keepBooking: "Κράτηση του ραντεβού",
+        editProducts: "Επεξεργασία",
+        doneEditing: "Τέλος",
+        totalNote: "Υπηρεσία {service} + προϊόντα {products}",
+        soldBadge: "Πουλήθηκε",
+        notSoldBadge: "Δεν πουλήθηκε",
+      },
       block: {
         button: 'Κλείδωμα ώρας',
         bookCustomer: 'Κράτηση για πελάτη',
@@ -3820,6 +3846,19 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} min",
+        noShow: "No-show",
+        cancelBooking: "Cancel booking",
+        cancelTitle: "Cancel this booking?",
+        cancelMessage: "The booking is canceled and its time is freed. You can reopen it later if the time is still free.",
+        keepBooking: "Keep it",
+        editProducts: "Edit",
+        doneEditing: "Done",
+        totalNote: "Service {service} + products {products}",
+        soldBadge: "Sold",
+        notSoldBadge: "Not sold",
+      },
       block: {
         button: 'Block this slot',
         bookCustomer: 'Book a customer instead',
