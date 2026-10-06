@@ -94,6 +94,10 @@ export interface Translations {
     pricingTitle: string;
     pricingSub: string;
     pricingPerMonth: string;
+    pricingPerYear: string;
+    pricingBillingLabel: string;
+    pricingMonthly: string;
+    pricingYearly: string;
     pricingExclVat: string;
     pricingSoloName: string;
     pricingSoloDesc: string;
@@ -1189,6 +1193,10 @@ home: {
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
     pricingSub: 'Τρία πακέτα, με τιμή ανά κατάστημα. 30 ημέρες δωρεάν χωρίς κάρτα, και χωρίς προμήθεια στις κρατήσεις.',
     pricingPerMonth: '/μήνα',
+    pricingPerYear: '/έτος',
+    pricingBillingLabel: 'Χρέωση',
+    pricingMonthly: 'Μηνιαία',
+    pricingYearly: 'Ετήσια · 2 μήνες δώρο',
     pricingExclVat: 'χωρίς ΦΠΑ',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'Για όποιον δουλεύει μόνος του.',
@@ -1228,7 +1236,7 @@ home: {
     faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
     faqContact: 'Επικοινώνησε μαζί μας',
     faq1Q: 'Πόσο κοστίζει το BeBooked;',
-    faq1A: 'Το Solo κοστίζει €19 τον μήνα, το Team €35 και το Business €59, ανά κατάστημα και χωρίς ΦΠΑ. Οι πρώτες 30 ημέρες είναι δωρεάν και δεν υπάρχει προμήθεια στις κρατήσεις.',
+    faq1A: 'Το Solo κοστίζει €19 τον μήνα, το Team €35 και το Business €59, ανά κατάστημα και χωρίς ΦΠΑ. Με ετήσια πληρωμή, 2 μήνες είναι δώρο. Οι πρώτες 30 ημέρες είναι δωρεάν και δεν υπάρχει προμήθεια στις κρατήσεις.',
     faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
     faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
     faq3Q: 'Πώς διαγράφω τον λογαριασμό μου;',
@@ -1433,7 +1441,7 @@ home: {
     ],
     notesTitle: 'Καλό να γνωρίζεις',
     notes: [
-      'Οι τιμές είναι ανά κατάστημα, τον μήνα, χωρίς ΦΠΑ.',
+      'Οι τιμές είναι ανά κατάστημα, χωρίς ΦΠΑ. Με ετήσια πληρωμή πληρώνεις 10 μήνες αντί για 12.',
       'Κάθε νέο κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
       'Αν η δοκιμή τελειώσει χωρίς πακέτο, το κατάστημα γίνεται μόνο για ανάγνωση και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού. Τα δεδομένα σου μένουν.',
       'Δεν υπάρχει προμήθεια στις κρατήσεις.',
@@ -2389,6 +2397,10 @@ home: {
     pricingTitle: 'Simple, with no surprises',
     pricingSub: 'Three plans, priced per shop. 30 days free with no card, and no commission on bookings.',
     pricingPerMonth: '/month',
+    pricingPerYear: '/year',
+    pricingBillingLabel: 'Billing',
+    pricingMonthly: 'Monthly',
+    pricingYearly: 'Yearly · 2 months free',
     pricingExclVat: 'excl. VAT',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'For anyone working on their own.',
@@ -2428,7 +2440,7 @@ home: {
     faqSub: 'Find answers to frequently asked questions.',
     faqContact: 'Contact us',
     faq1Q: 'How much does BeBooked cost?',
-    faq1A: 'Solo is €19 a month, Team is €35 and Business is €59, per shop and excluding VAT. The first 30 days are free and there is no commission on bookings.',
+    faq1A: 'Solo is €19 a month, Team is €35 and Business is €59, per shop and excluding VAT. Paying yearly gives 2 months free. The first 30 days are free and there is no commission on bookings.',
     faq2Q: 'Can my clients book without creating an account?',
     faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
     faq3Q: 'How do I delete my account?',
@@ -2633,7 +2645,7 @@ home: {
     ],
     notesTitle: 'Good to know',
     notes: [
-      'Prices are per shop, per month, excluding VAT.',
+      'Prices are per shop, excluding VAT. Paying yearly costs 10 months instead of 12.',
       'Every new shop starts with a 30-day free trial with everything in Team. No card is needed.',
       'If the trial ends without a plan, the shop becomes read-only and the booking page stops taking new bookings. Your data stays.',
       'There is no commission on bookings.',
