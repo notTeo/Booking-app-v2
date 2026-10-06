@@ -119,6 +119,8 @@ a { color: var(--accent); }
 .btn--icon.btn--sm { width: var(--control-sm); font-size: var(--fs-base); }
 .btn--icon.btn--lg { width: var(--control-lg); font-size: var(--fs-xl); }
 .btn--block { display: flex; width: 100%; }
+/* A button whose label is a full sentence: it wraps instead of running past the edge on a phone. */
+.btn--wrap { max-width: 100%; padding-block: var(--space-2); line-height: var(--lh-sm); white-space: normal; text-align: left; border-radius: var(--radius-md); }
 
 .btn.is-loading { cursor: progress; pointer-events: none; }
 .btn.is-loading::before {
@@ -319,6 +321,9 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .badge--neutral, .badge--canceled { --b-fg: var(--text-muted); --b-bg: var(--surface-sunken); --b-bd: var(--border); }
 .badge--canceled { text-decoration: line-through; text-decoration-thickness: 1px; }
 .badge--lg { padding: var(--space-1) var(--space-4); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+/* A badge whose text may run long (an address): it wraps inside the row instead of pushing past the edge. */
+.badge--wrap { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; border-radius: var(--radius-md); }
+.badge--wrap > svg, .badge--wrap > .icon { flex: none; }
 
 /* ---------- 7b. Chip (toggle pill) ---------- */
 .chip {

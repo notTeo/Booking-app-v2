@@ -4,8 +4,12 @@
   padding: 0;
 }
 
-html, body, #root {
-  height: 100%;
+/* min-height, not height: a fixed 100% pins the document to the first
+   viewport, and iOS Safari then stops the page scrolling back to the top once
+   its toolbar has collapsed. */
+body, #root {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 html {

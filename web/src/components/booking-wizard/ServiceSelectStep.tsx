@@ -37,7 +37,7 @@ export default function ServiceSelectStep({
                 <span className="service-card__meta">
                   <FontAwesomeIcon icon={faClock} aria-hidden="true" /> {formatDuration(customDurations?.[s.id] ?? s.duration)}
                   {customDurations?.[s.id] !== undefined && customDurations[s.id] !== s.duration && (
-                    <span className="badge badge--info">{t.customers.customDurationsBadge}</span>
+                    <span className="badge badge--accent">{t.customers.customDurationsBadge}</span>
                   )}
                 </span>
               </span>
