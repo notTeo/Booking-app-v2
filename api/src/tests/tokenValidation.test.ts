@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+import { hashToken } from '../utils/jwt';
 
 const api = await serve(app);
 
@@ -54,7 +55,7 @@ describe('token validation (group 7): a malformed token is a 400, not a 500', ()
         name: 'Real User',
         email: 'real-token-user@example.com',
         passwordHash: 'hash',
-        token: 'a-real-token',
+        token: hashToken('a-real-token'), // stored hashed
         expiresAt: new Date(Date.now() + 60_000),
       },
     });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+import { hashToken } from '../utils/jwt';
 
 const api = await serve(app);
 
@@ -185,7 +186,7 @@ describe('GET /auth/verify-email-change', () => {
       data: {
         userId: user.id,
         newEmail: 'changed@example.com',
-        token: 'valid-token-abc123',
+        token: hashToken('valid-token-abc123'), // stored hashed
         expiresAt: expiry,
       },
     });
@@ -200,7 +201,7 @@ describe('GET /auth/verify-email-change', () => {
 
     // PendingEmailChange record must be cleaned up
     const pending = await prisma.pendingEmailChange.findUnique({
-      where: { token: 'valid-token-abc123' },
+      where: { token: hashToken('valid-token-abc123') },
     });
     expect(pending).toBeNull();
   });
@@ -216,7 +217,7 @@ describe('GET /auth/verify-email-change', () => {
       data: {
         userId: user.id,
         newEmail: 'expired@example.com',
-        token: 'expired-token-xyz',
+        token: hashToken('expired-token-xyz'),
         expiresAt: expired,
       },
     });

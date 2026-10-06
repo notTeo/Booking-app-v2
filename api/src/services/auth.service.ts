@@ -7,6 +7,7 @@ import { LoginDto, RegisterDto } from '../types/auth.types';
 import { logger } from '../utils/logger';
 import {
   generateRandomToken,
+  hashToken,
   getEmailTokenExpiry,
   getPasswordResetTokenExpiry,
   getRefreshTokenExpiry,
@@ -48,11 +49,14 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
   if (existingPending && existingPending.expiresAt > new Date()) {
     // Someone already started signing up with this address. Whoever reads the
     // mailbox finishes that sign-up; a later request cannot swap its password.
-    await sendVerificationEmail(
-      email,
-      existingPending.token,
-      existingPending.name,
-    );
+    // Only its hash is stored, so the email carries a fresh link; the name
+    // and password of the first sign-up stay.
+    const token = generateRandomToken();
+    await prisma.pendingRegistration.update({
+      where: { email },
+      data: { token: hashToken(token) },
+    });
+    await sendVerificationEmail(email, token, existingPending.name);
     return;
   }
   if (existingPending) {
@@ -68,7 +72,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
       name,
       email,
       passwordHash,
-      token,
+      token: hashToken(token),
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
       expiresAt: getEmailTokenExpiry(),
@@ -146,7 +150,7 @@ export const registerUserWithInvite = async (
     const newRefreshToken = signRefreshToken(user.id);
     await tx.refreshToken.create({
       data: {
-        token: newRefreshToken,
+        token: hashToken(newRefreshToken),
         family,
         userId: user.id,
         expiresAt: getRefreshTokenExpiry(),
@@ -207,7 +211,7 @@ export const loginUser = async ({
 
   await prisma.refreshToken.create({
     data: {
-      token: refreshToken,
+      token: hashToken(refreshToken),
       family,
       userId: user.id,
       expiresAt: getRefreshTokenExpiry(rememberMe),
@@ -267,13 +271,15 @@ export const refreshAccessToken = async (token: string) => {
   }
 
   const stored = await prisma.refreshToken.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!stored) return rejectRotatedToken(payload.userId);
 
   if (stored.expiresAt < new Date()) {
-    await prisma.refreshToken.deleteMany({ where: { token } });
+    await prisma.refreshToken.deleteMany({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(401, 'Refresh token expired');
   }
 
@@ -282,11 +288,13 @@ export const refreshAccessToken = async (token: string) => {
   // Claim and replace in one transaction: only one concurrent request can
   // delete the row, and a loser waits on its lock until the successor exists.
   const rotated = await prisma.$transaction(async (tx) => {
-    const { count } = await tx.refreshToken.deleteMany({ where: { token } });
+    const { count } = await tx.refreshToken.deleteMany({
+      where: { token: hashToken(token) },
+    });
     if (count !== 1) return false;
     await tx.refreshToken.create({
       data: {
-        token: newRefreshToken,
+        token: hashToken(newRefreshToken),
         family: stored.family,
         userId: payload.userId,
         expiresAt: getRefreshTokenExpiry(stored.rememberMe),
@@ -307,7 +315,7 @@ export const refreshAccessToken = async (token: string) => {
 
 export const logoutUser = async (token: string) => {
   await prisma.refreshToken.deleteMany({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   logger.info('User logged out');
@@ -315,7 +323,7 @@ export const logoutUser = async (token: string) => {
 
 export const verifyEmail = async (token: string) => {
   const pending = await prisma.pendingRegistration.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!pending) {
@@ -323,7 +331,9 @@ export const verifyEmail = async (token: string) => {
   }
 
   if (pending.expiresAt < new Date()) {
-    await prisma.pendingRegistration.delete({ where: { token } });
+    await prisma.pendingRegistration.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Verification token expired');
   }
 
@@ -339,7 +349,9 @@ export const verifyEmail = async (token: string) => {
     select: USER_SELECT,
   });
 
-  await prisma.pendingRegistration.delete({ where: { token } });
+  await prisma.pendingRegistration.delete({
+    where: { token: hashToken(token) },
+  });
 
   logger.info(`Email verified and user created: ${user.id}`);
   return toUserDto(user);
@@ -358,7 +370,7 @@ export const forgotPassword = async (email: string) => {
 
   await prisma.passwordResetToken.create({
     data: {
-      token,
+      token: hashToken(token),
       userId: user.id,
       expiresAt: getPasswordResetTokenExpiry(),
     },
@@ -437,11 +449,15 @@ export const updateUser = async (
     const token = generateRandomToken();
     await prisma.pendingEmailChange.upsert({
       where: { userId },
-      update: { newEmail: data.email, token, expiresAt: getEmailTokenExpiry() },
+      update: {
+        newEmail: data.email,
+        token: hashToken(token),
+        expiresAt: getEmailTokenExpiry(),
+      },
       create: {
         userId,
         newEmail: data.email,
-        token,
+        token: hashToken(token),
         expiresAt: getEmailTokenExpiry(),
       },
     });
@@ -486,7 +502,7 @@ export const updateUser = async (
 
 export const verifyEmailChange = async (token: string) => {
   const pending = await prisma.pendingEmailChange.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!pending) {
@@ -494,7 +510,9 @@ export const verifyEmailChange = async (token: string) => {
   }
 
   if (pending.expiresAt < new Date()) {
-    await prisma.pendingEmailChange.delete({ where: { token } });
+    await prisma.pendingEmailChange.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Verification token expired');
   }
 
@@ -504,7 +522,9 @@ export const verifyEmailChange = async (token: string) => {
     select: USER_SELECT,
   });
 
-  await prisma.pendingEmailChange.delete({ where: { token } });
+  await prisma.pendingEmailChange.delete({
+    where: { token: hashToken(token) },
+  });
 
   logger.info(`Email changed for userId: ${pending.userId}`);
   return toUserDto(user);
@@ -564,7 +584,7 @@ export const resendVerificationEmail = async (email: string) => {
   await prisma.pendingRegistration.update({
     where: { email },
     data: {
-      token,
+      token: hashToken(token),
       expiresAt: getEmailTokenExpiry(),
     },
   });
@@ -576,7 +596,7 @@ export const resendVerificationEmail = async (email: string) => {
 
 export const resetPassword = async (token: string, newPassword: string) => {
   const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!resetToken) {
@@ -588,7 +608,9 @@ export const resetPassword = async (token: string, newPassword: string) => {
   }
 
   if (resetToken.expiresAt < new Date()) {
-    await prisma.passwordResetToken.delete({ where: { token } });
+    await prisma.passwordResetToken.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Reset token expired');
   }
 
@@ -600,7 +622,7 @@ export const resetPassword = async (token: string, newPassword: string) => {
   });
 
   await prisma.passwordResetToken.update({
-    where: { token },
+    where: { token: hashToken(token) },
     data: { used: true },
   });
 
