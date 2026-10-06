@@ -26,7 +26,7 @@ import {
   bookingServicesPrice,
 } from '../utils/bookingServices';
 import { AppError } from '../middleware/errorHandler';
-import { isPlausiblePhone } from '../validators/common';
+import { isPlausiblePhone, normalizePhone } from '../validators/common';
 
 export const getShopInfo = async (
   req: Request,
@@ -317,7 +317,7 @@ export const getPublicSlots = async (
               ),
             }
           : isPlausiblePhone(phone)
-            ? { customer: { phone: phone as string } }
+            ? { customer: { phone: normalizePhone(phone as string) } }
             : {}),
       },
     );

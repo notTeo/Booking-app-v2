@@ -7,6 +7,7 @@ import {
   NOTES_MAX_LENGTH,
   isInstant,
   isPlausiblePhone,
+  normalizePhone,
 } from './common';
 
 const validStatuses = Object.values(BookingStatus);
@@ -57,7 +58,8 @@ const customerFieldsValidation = (exceptForBlock = false) => [
     .withMessage('Phone is required')
     .trim()
     .custom(isPlausiblePhone)
-    .withMessage('Phone must be a valid phone number'),
+    .withMessage('Phone must be a valid phone number')
+    .customSanitizer(normalizePhone),
   body('email')
     .optional()
     .isEmail()

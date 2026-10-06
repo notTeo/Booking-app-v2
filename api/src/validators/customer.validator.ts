@@ -1,5 +1,10 @@
 import { body, param, query } from 'express-validator';
-import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
+import {
+  NAME_MAX_LENGTH,
+  NOTES_MAX_LENGTH,
+  isPlausiblePhone,
+  normalizePhone,
+} from './common';
 
 // Far beyond any real customer list; keeps the offset inside a 32-bit int.
 const MAX_PAGE = 100_000;
@@ -64,7 +69,8 @@ export const updateCustomerValidation = [
     .withMessage('Phone cannot be empty')
     .trim()
     .custom(isPlausiblePhone)
-    .withMessage('Phone must be a valid phone number'),
+    .withMessage('Phone must be a valid phone number')
+    .customSanitizer(normalizePhone),
   body('email')
     .optional({ nullable: true })
     .isEmail()
