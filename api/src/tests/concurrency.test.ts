@@ -140,6 +140,9 @@ describe('concurrent bookings for the same provider', () => {
       const long = await prisma.service.create({
         data: { shopId: t.shop.id, name: 'Long', duration: 120, price: 1 },
       });
+      await prisma.staffService.create({
+        data: { userShopId: t.staff.id, serviceId: long.id },
+      });
       const rs = await Promise.all(
         starts.map((hhmm, i) =>
           api.post(`/public/${t.shop.slug}/book`).send({

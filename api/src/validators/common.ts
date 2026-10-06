@@ -17,3 +17,15 @@ export const isPlausiblePhone = (value: unknown): boolean => {
   const digits = value.replace(/\D/g, '');
   return digits.length >= 7 && digits.length <= 15;
 };
+
+// A full timestamp with an explicit offset or Z, that Date can parse.
+// isISO8601() alone also lets through week dates, ordinal dates, the basic
+// format and times with no offset, which are then read in the server's zone
+// or not at all.
+const INSTANT =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
+
+export const isInstant = (value: unknown): boolean =>
+  typeof value === 'string' &&
+  INSTANT.test(value) &&
+  !Number.isNaN(new Date(value).getTime());

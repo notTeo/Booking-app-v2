@@ -2,7 +2,12 @@ import { body, param, query } from 'express-validator';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { OVERRIDABLE_RULE_CODES } from '../services/bookingRules.service';
 import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
-import { NAME_MAX_LENGTH, NOTES_MAX_LENGTH, isPlausiblePhone } from './common';
+import {
+  NAME_MAX_LENGTH,
+  NOTES_MAX_LENGTH,
+  isInstant,
+  isPlausiblePhone,
+} from './common';
 
 const validStatuses = Object.values(BookingStatus);
 
@@ -110,9 +115,8 @@ export const createBookingValidation = [
   ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
-    .notEmpty()
-    .isISO8601()
-    .withMessage('startTime must be a valid ISO 8601 timestamp'),
+    .custom(isInstant)
+    .withMessage('startTime must be an ISO 8601 timestamp with a UTC offset'),
   notesValidation,
   ...productsValidation,
 ];
@@ -120,9 +124,10 @@ export const createBookingValidation = [
 export const getPublicSlotsValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
   query('date')
-    .notEmpty()
-    .isISO8601()
-    .withMessage('date must be a valid ISO 8601 date'),
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('date must be YYYY-MM-DD')
+    .isISO8601({ strict: true })
+    .withMessage('date must be a valid calendar date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
   // All the services when there are several ("a,b,c"); serviceId is the first.
@@ -173,9 +178,8 @@ export const ownerCreateBookingValidation = [
   ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
-    .notEmpty()
-    .isISO8601()
-    .withMessage('startTime must be a valid ISO 8601 timestamp'),
+    .custom(isInstant)
+    .withMessage('startTime must be an ISO 8601 timestamp with a UTC offset'),
   notesValidation,
   ...productsValidation,
   body('products')
@@ -238,8 +242,8 @@ export const updateBookingValidation = [
   param('bookingId').notEmpty().withMessage('bookingId is required'),
   body('startTime')
     .optional()
-    .isISO8601()
-    .withMessage('startTime must be a valid ISO 8601 timestamp'),
+    .custom(isInstant)
+    .withMessage('startTime must be an ISO 8601 timestamp with a UTC offset'),
   body('serviceId')
     .optional()
     .notEmpty()

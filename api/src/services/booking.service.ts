@@ -351,8 +351,11 @@ const assertDoesAll = async (
   tx: Prisma.TransactionClient,
   staffId: string,
   ids: string[],
+  // Customers may only book a member for what that member does, even a single
+  // service. The shop's own staff may put one service on anyone.
+  context: BookingContext = 'internal',
 ) => {
-  if (ids.length < 2) return;
+  if (ids.length < 2 && context !== 'public') return;
   const count = await tx.staffService.count({
     where: { userShopId: staffId, serviceId: { in: ids } },
   });
@@ -606,7 +609,7 @@ export const createBooking = async (
           endTime,
         });
     if (!staff) throw staffUnavailable(data.staffId);
-    await assertDoesAll(tx, staff.id, serviceIds);
+    await assertDoesAll(tx, staff.id, serviceIds, 'public');
 
     // Strict on the public path — there is no override. The schedule checked is
     // the assigned team member's own, the same one the slots endpoint used.
@@ -880,7 +883,11 @@ export const getAvailableSlots = async (
   let team: UserShop[];
   if (staffId) {
     const member = await resolveBookableStaff(prisma, shopId, staffId, context);
-    team = member ? [member] : [];
+    // On the public page a member is only offered for what they do.
+    const offered =
+      !!member &&
+      (context !== 'public' || eligible.some((e) => e.id === member.id));
+    team = offered ? [member] : [];
   } else {
     team = eligible;
   }
@@ -1559,7 +1566,7 @@ type TokenBooking = {
     customerRescheduleEnabled: boolean;
     cancelCutoffHours: number;
     rescheduleCutoffHours: number;
-  };
+  } & Parameters<typeof isShopLocked>[0];
 };
 
 // Why the customer can't change this booking at all, whatever the action.
@@ -1590,7 +1597,10 @@ export const cancelBlock = (b: TokenBooking, now = Date.now()) =>
 
 export const rescheduleBlock = (b: TokenBooking, now = Date.now()) =>
   stateBlock(b, now) ??
-  (!b.shop.customerRescheduleEnabled || !b.shop.isActive
+  // A locked shop takes no new bookings, and a reschedule makes one.
+  (!b.shop.customerRescheduleEnabled ||
+  !b.shop.isActive ||
+  isShopLocked(b.shop, new Date(now))
     ? 'RESCHEDULE_DISABLED'
     : insideCutoff(b.startTime, b.shop.rescheduleCutoffHours, now)
       ? 'RESCHEDULE_WINDOW_CLOSED'
@@ -1659,6 +1669,15 @@ export const rescheduleBookingByToken = async (
           },
         });
     if (!staff) throw staffUnavailable(data.staffId ?? existing.staffId);
+    if (staffChanged)
+      await assertDoesAll(
+        tx,
+        staff.id,
+        existing.services.length > 0
+          ? existing.services.map((line) => line.serviceId)
+          : [existing.serviceId],
+        'public',
+      );
 
     if (!staffChanged && startTime.getTime() === existing.startTime.getTime())
       throw new AppError(
@@ -1702,9 +1721,24 @@ export const cancelBookingByToken = async (token: string) => {
   const block = cancelBlock(booking);
   if (block) throw blockError(block);
 
-  return prisma.booking.update({
-    where: { id: booking.id },
+  // Conditional write: only one request takes a booking out of an active
+  // state. A second cancel, or one that lost to a reschedule, is told what
+  // the booking is now instead of "cancelled".
+  const { count } = await prisma.booking.updateMany({
+    where: {
+      id: booking.id,
+      status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+    },
     data: { status: BookingStatus.CANCELED },
+  });
+  if (count === 0)
+    throw blockError(
+      cancelBlock(await loadByToken(prisma, token)) ??
+        'BOOKING_ALREADY_CANCELED',
+    );
+
+  return prisma.booking.findUniqueOrThrow({
+    where: { id: booking.id },
     include: {
       customer: true,
       service: true,
