@@ -1,0 +1,6 @@
+# False positives from the secret scan: made-up UUIDs used as booking cancel
+# tokens in the audit tests (tests/audit). They are not credentials. The tests
+# now generate their tokens, so nothing new should need adding here.
+3785531b2a291fa44cd7a41475e4bde51afe78d9:tests/audit/auth/au01-cancelTokenLeak.test.ts:generic-api-key:43
+3785531b2a291fa44cd7a41475e4bde51afe78d9:tests/audit/tenant-isolation/isolation.negative.test.ts:generic-api-key:152
+3785531b2a291fa44cd7a41475e4bde51afe78d9:tests/audit/public-booking/boundaries.negative.test.ts:generic-api-key:377
