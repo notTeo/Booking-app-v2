@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { usePalette } from '../context/PaletteContext';
@@ -11,8 +11,6 @@ import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCreditCard,
-  faCrown,
   faSlidersH,
   faShieldHalved,
   faTriangleExclamation,
@@ -49,17 +47,6 @@ function formatSessionDate(iso: string, lang: string) {
 
 export default function AccountPage() {
   const { user, setUser, logout } = useAuth();
-  const { hash } = useLocation();
-
-  // Arriving from the dashboard's plan button: bring the subscription card
-  // into view (the router does not follow #hash links on its own).
-  useEffect(() => {
-    if (hash !== '#subscription') return;
-    const frame = requestAnimationFrame(() =>
-      document.getElementById('subscription')?.scrollIntoView({ block: 'center' }),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [hash]);
   const { theme, toggleTheme } = useTheme();
   const { palette, setPalette } = usePalette();
   const { language, toggleLanguage, t } = useLang();
@@ -263,27 +250,6 @@ export default function AccountPage() {
             {t.settings.saveProfile}
           </button>
         </form>
-      </div>
-
-      {/* Subscription — the plan; billing is not built yet, so the button is disabled */}
-      <div className="card" id="subscription">
-        <div className="card__header">
-          <h2 className="card__title">
-            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
-            {t.settings.subscription.title}
-          </h2>
-          <span className={`badge badge--lg ${user?.isPro ? 'badge--accent' : 'badge--neutral'}`}>
-            <FontAwesomeIcon icon={user?.isPro ? faCrown : faUser} aria-hidden="true" />
-            {user?.isPro ? t.dashboard.plan.pro : t.dashboard.plan.free}
-          </span>
-        </div>
-        <p className="card__text">
-          {user?.isPro ? t.settings.subscription.proText : t.settings.subscription.freeText}{' '}
-          {t.settings.subscription.comingSoon}
-        </p>
-        <button type="button" className="btn btn--secondary btn--sm" disabled>
-          {user?.isPro ? t.settings.subscription.manageBilling : t.settings.subscription.upgrade}
-        </button>
       </div>
 
       {/* Preferences */}

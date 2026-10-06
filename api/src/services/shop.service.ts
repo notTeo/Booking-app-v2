@@ -7,6 +7,7 @@ import {
   canViewCustomerDetails,
   requireShopAccess,
 } from '../utils/shopAccess';
+import { planView, trialEndFrom, TRIAL_PLAN } from './plan.service';
 
 export interface CreateShopDto {
   name: string;
@@ -93,27 +94,42 @@ const memberView = (m: {
 export const createShop = async (userId: string, dto: CreateShopDto) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { isPro: true, name: true, email: true },
+    select: { name: true, email: true, trialUsedAt: true },
   });
-  if (!user?.isPro) {
-    throw new AppError(403, 'Creating a shop requires a Pro account.');
-  }
+  if (!user) throw new AppError(404, 'User not found');
 
   const existing = await prisma.shop.findUnique({ where: { slug: dto.slug } });
   if (existing) throw new AppError(409, 'A shop with this slug already exists');
 
-  const shop = await prisma.shop.create({
-    data: {
-      ...pick(dto, CREATE_FIELDS),
-      members: {
-        create: { userId, role: 'owner', name: user.name, email: user.email },
+  // Only a user's first shop gets the free trial; later ones wait, inactive,
+  // until a plan is set for them.
+  const now = new Date();
+  const trial = !user.trialUsedAt;
+  const [shop] = await prisma.$transaction([
+    prisma.shop.create({
+      data: {
+        ...pick(dto, CREATE_FIELDS),
+        plan: TRIAL_PLAN,
+        subscriptionStatus: trial ? 'TRIALING' : 'INACTIVE',
+        trialEndsAt: trial ? trialEndFrom(now) : null,
+        members: {
+          create: { userId, role: 'owner', name: user.name, email: user.email },
+        },
       },
-    },
-    include: { members: { where: { userId } } },
-  });
+      include: { members: { where: { userId } } },
+    }),
+    ...(trial
+      ? [
+          prisma.user.update({
+            where: { id: userId },
+            data: { trialUsedAt: now },
+          }),
+        ]
+      : []),
+  ]);
 
   logger.info(`Shop created: ${shop.id} by user ${userId}`);
-  return { ...shop, ...memberView(shop.members[0]) };
+  return { ...shop, ...planView(shop), ...memberView(shop.members[0]) };
 };
 
 export const getMyShops = async (userId: string) => {
@@ -122,14 +138,18 @@ export const getMyShops = async (userId: string) => {
     include: { shop: true },
   });
 
-  return memberships.map(({ shop, ...m }) => ({ ...shop, ...memberView(m) }));
+  return memberships.map(({ shop, ...m }) => ({
+    ...shop,
+    ...planView(shop),
+    ...memberView(m),
+  }));
 };
 
 export const getShopById = async (userId: string, shopId: string) => {
   const membership = await requireShopAccess(userId, shopId);
   const shop = await prisma.shop.findUniqueOrThrow({ where: { id: shopId } });
 
-  return { ...shop, ...memberView(membership) };
+  return { ...shop, ...planView(shop), ...memberView(membership) };
 };
 
 export const updateShop = async (
@@ -168,7 +188,7 @@ export const updateShop = async (
   });
 
   logger.info(`Shop updated: ${shop.id} by user ${userId}`);
-  return { ...shop, ...memberView(membership) };
+  return { ...shop, ...planView(shop), ...memberView(membership) };
 };
 
 export const deleteShop = async (userId: string, shopId: string) => {

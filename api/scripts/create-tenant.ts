@@ -1,4 +1,4 @@
-// Admin-only: create a customer tenant (verified Pro owner + shop + owner
+// Admin-only: create a customer tenant (verified owner + active shop + owner
 // membership). Run where DATABASE_URL points at the target database, e.g.
 //   railway run npm run tenant:create -- --owner-name "Maria K" \
 //     --owner-email maria@example.com --shop-name "Maria's Salon" --slug marias-salon
@@ -13,7 +13,7 @@ import { createTenant } from '../src/admin/createTenant';
 import { prisma } from '../src/utils/prisma';
 
 const USAGE =
-  'Usage: npm run tenant:create -- --owner-name <n> --owner-email <e> --shop-name <n> --slug <s> [--timezone Europe/Athens]';
+  'Usage: npm run tenant:create -- --owner-name <n> --owner-email <e> --shop-name <n> --slug <s> [--timezone Europe/Athens] [--plan solo|team|business]';
 
 async function main() {
   const { values } = parseArgs({
@@ -23,6 +23,7 @@ async function main() {
       'shop-name': { type: 'string' },
       slug: { type: 'string' },
       timezone: { type: 'string' },
+      plan: { type: 'string' },
     },
   });
   const {
@@ -34,6 +35,10 @@ async function main() {
   if (!ownerName || !ownerEmail || !shopName || !slug) {
     throw new Error(USAGE);
   }
+  const plan = values.plan?.toUpperCase();
+  if (plan && plan !== 'SOLO' && plan !== 'TEAM' && plan !== 'BUSINESS') {
+    throw new Error(USAGE);
+  }
 
   const r = await createTenant({
     ownerName,
@@ -41,11 +46,13 @@ async function main() {
     shopName,
     slug,
     timezone: values.timezone,
+    plan,
     password: process.env.TENANT_PASSWORD || undefined,
   });
 
   console.log('Tenant created');
   console.log('  shop:        ', r.shop.name, `(/${r.shop.slug})`);
+  console.log('  plan:        ', r.shop.plan);
   console.log('  owner email: ', r.user.email);
   if (r.generatedPassword) {
     console.log(

@@ -39,7 +39,6 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    plan: { pro: string; free: string };
     /** from: "{email} invited you as {role}" */
     invites: { title: string; from: string; empty: string };
     shops: { title: string };
@@ -236,6 +235,10 @@ export interface Translations {
     intro: string;
     buttonLabel: string;
   };
+  shopPlan: {
+    newShopTrial: string;
+    newShopInactive: string;
+  };
   pricingPage: {
     title: string;
     intro: string;
@@ -348,14 +351,6 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
-    subscription: {
-      title: string;
-      proText: string;
-      freeText: string;
-      manageBilling: string;
-      upgrade: string;
-      comingSoon: string;
-    };
     wrongPassword: string;
     soleOwnerOfShop: string;
     deleteAccountMessage: string;
@@ -1116,7 +1111,6 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      plan: { pro: 'Pro', free: 'Δωρεάν' },
       invites: {
         title: 'Προσκλήσεις',
         from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
@@ -1335,6 +1329,10 @@ home: {
     intro: 'Βρήκες κάποιο bug, έχεις κάποια ερώτηση ή μια ιδέα για το BeBooked; Στείλε μου ένα μήνυμα και θα σου απαντήσω το συντομότερο δυνατό.',
     buttonLabel: 'Επικοινώνησε μαζί μου',
   },
+  shopPlan: {
+    newShopTrial: 'Το πρώτο σου κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+    newShopInactive: 'Έχεις ήδη χρησιμοποιήσει τη δωρεάν δοκιμή. Το νέο κατάστημα θα μείνει ανενεργό μέχρι να επικοινωνήσεις μαζί μας για να του ορίσουμε πακέτο.',
+  },
   pricingPage: {
     title: 'Τιμές',
     intro: 'Τρία πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
@@ -1511,14 +1509,6 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
-      subscription: {
-        title: 'Συνδρομή',
-        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
-        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
-        manageBilling: 'Διαχείριση χρέωσης',
-        upgrade: 'Αναβάθμιση',
-        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
-      },
       wrongPassword: 'Λάθος κωδικός.',
       soleOwnerOfShop: 'Είστε ο ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή μεταβιβάστε το πρώτα σε έναν διαχειριστή.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
@@ -2303,7 +2293,6 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      plan: { pro: 'Pro', free: 'Free' },
       invites: {
         title: 'Invitations',
         from: '{email} invited you as {role}',
@@ -2522,6 +2511,10 @@ home: {
     intro: "Found a bug, have a question, or have an idea for BeBooked? I’d like to hear it. Send me a message and I’ll get back to you.",
     buttonLabel: 'Contact me',
   },
+  shopPlan: {
+    newShopTrial: 'Your first shop starts with a 30-day free trial with everything in Team. No card is needed.',
+    newShopInactive: 'You have already used your free trial. The new shop stays inactive until you contact us to set a plan for it.',
+  },
   pricingPage: {
     title: 'Pricing',
     intro: 'Three plans, priced per shop per month. Below is exactly what each one includes.',
@@ -2698,14 +2691,6 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
-      subscription: {
-        title: 'Subscription',
-        proText: 'You are on the Pro plan and can create shops.',
-        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
-        manageBilling: 'Manage billing',
-        upgrade: 'Upgrade',
-        comingSoon: 'Billing is coming soon.',
-      },
       wrongPassword: 'Incorrect password.',
       soleOwnerOfShop: 'You are the owner of a shop. Delete the shop or transfer it to a manager first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
