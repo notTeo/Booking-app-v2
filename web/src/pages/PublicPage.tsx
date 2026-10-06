@@ -169,7 +169,6 @@ function PublicBookingPage({ slug }: { slug: string }) {
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{shop.name}</h1>
-          {shop.description && <p className="t-body t-muted">{shop.description}</p>}
           <div className="cluster cluster--tight">
             {shop.phone && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
             {shop.formattedAddress && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}

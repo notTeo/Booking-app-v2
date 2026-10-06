@@ -331,7 +331,7 @@ export default function ShopServicesPage() {
                     </button>
 
                     <button
-                      className="btn btn--danger-outline btn--sm service-actions__end"
+                      className="btn btn--danger-outline btn--sm"
                       onClick={() => setConfirmDeleteId(service.id)}
                     >
                       <FontAwesomeIcon icon={faTrashCan} /> {t.services.delete}

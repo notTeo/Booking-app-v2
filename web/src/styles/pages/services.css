@@ -1,6 +1,4 @@
 /* Layout only — every visual comes from components.css. */
 .services-page { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: 53.75rem; }
 .services-list { display: flex; flex-direction: column; gap: var(--space-3); }
-/* Delete sits at the far end of a service's action row. */
-.service-actions__end { margin-left: auto; }
 .service-staff-select { min-width: 11.25rem; }
