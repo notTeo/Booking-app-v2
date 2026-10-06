@@ -1,3 +1,4 @@
+import { getCookie } from '../utils/cookies';
 import axios from 'axios';
 import { env } from '../config/env';
 import { authStore } from '../store/authStore';
@@ -42,6 +43,8 @@ export const refreshTokens = (): Promise<RefreshResponse> => {
 client.interceptors.request.use((config) => {
   const token = authStore.getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // The language the app is shown in, so emails the request triggers match it.
+  config.headers['Accept-Language'] = getCookie('lang') === 'en' ? 'en' : 'el';
   return config;
 });
 

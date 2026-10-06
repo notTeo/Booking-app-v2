@@ -119,6 +119,8 @@ a { color: var(--accent); }
 .btn--icon.btn--sm { width: var(--control-sm); font-size: var(--fs-base); }
 .btn--icon.btn--lg { width: var(--control-lg); font-size: var(--fs-xl); }
 .btn--block { display: flex; width: 100%; }
+/* A button whose label is a full sentence: it wraps instead of running past the edge on a phone. */
+.btn--wrap { max-width: 100%; padding-block: var(--space-2); line-height: var(--lh-sm); white-space: normal; text-align: left; border-radius: var(--radius-md); }
 
 .btn.is-loading { cursor: progress; pointer-events: none; }
 .btn.is-loading::before {
@@ -319,6 +321,9 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .badge--neutral, .badge--canceled { --b-fg: var(--text-muted); --b-bg: var(--surface-sunken); --b-bd: var(--border); }
 .badge--canceled { text-decoration: line-through; text-decoration-thickness: 1px; }
 .badge--lg { padding: var(--space-1) var(--space-4); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+/* A badge whose text may run long (an address): it wraps inside the row instead of pushing past the edge. */
+.badge--wrap { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; border-radius: var(--radius-md); }
+.badge--wrap > svg, .badge--wrap > .icon { flex: none; }
 
 /* ---------- 7b. Chip (toggle pill) ---------- */
 .chip {
@@ -833,7 +838,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* ---------- 29. Calendar (day view, one column per provider) ---------- */
 /* .cal is the scroll box. The hour row height comes from the page as --cal-hour-h (it positions the blocks in JS). */
 .cal {
-  --cal-gutter-w: 3.5rem; --cal-col-min: 8.75rem; --cal-stripe: 6px; --cal-hour-h: 4rem;
+  --cal-gutter-w: 3.5rem; --cal-col-min: 8.75rem; --cal-col-max: 22.5rem; --cal-stripe: 6px; --cal-hour-h: 4rem;
   overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
 }
 .cal__grid { min-width: fit-content; }
@@ -900,6 +905,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   .cal__col-head, .cal__col { flex: 0 0 calc(100% - var(--cal-gutter-w)); min-width: calc(100% - var(--cal-gutter-w)); scroll-snap-align: start; }
   /* The time gutter stays put while a column swipes past it. */
   .cal__gutter, .cal__corner { position: sticky; left: 0; z-index: 6; background: var(--surface); }
+}
+/* Wider screens: the box is only as wide as its columns at --cal-col-max each (the page passes the count as --cal-cols),
+   so one or two providers don't stretch across the page. The 2px is the box's own border. */
+@media (min-width: 640px) {
+  .cal { max-width: calc(var(--cal-gutter-w) + var(--cal-cols, 99) * var(--cal-col-max) + 2px); }
 }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */

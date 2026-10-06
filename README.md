@@ -14,7 +14,8 @@ Small appointment-based shops often run on phone calls and paper notebooks. BeBo
 - Service, staff and per-staff working-hours management
 - Bookings and customer records, including owner-created bookings outside working hours
 - Team invites by email; one account can own or work in several shops
-- Email: account verification, password reset, booking confirmation and cancellation, invites
+- Email in Greek or English: account verification, password reset, booking confirmation and cancellation, invites
+- Reminder emails before each appointment, switched on or off per shop with a chosen number of hours
 - Customer cancellation through a link in the confirmation email
 - Greek and English interface, light and dark theme
 

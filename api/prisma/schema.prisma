@@ -47,6 +47,9 @@ model Shop {
   // (0 = until the booking starts). Owners and managers are never limited.
   cancelCutoffHours         Int      @default(1)
   rescheduleCutoffHours     Int      @default(1)
+  // Email the customer a reminder this many hours before the appointment.
+  reminderEnabled           Boolean  @default(true)
+  reminderHoursBefore       Int      @default(24)
   isActive                  Boolean  @default(true)
   createdAt                 DateTime @default(now()) @db.Timestamptz(3)
   updatedAt                 DateTime @updatedAt @db.Timestamptz(3)
@@ -186,6 +189,8 @@ model User {
   passwordHash    String?
   isVerified      Boolean   @default(false)
   isPro           Boolean   @default(false)
+  // The language they last signed in with (el or en); their emails use it.
+  locale          String    @default("el")
   // Version of the terms accepted at registration (null = account predates
   // versioned acceptance), and when.
   termsVersion    String?
@@ -260,6 +265,10 @@ model Booking {
   // Set on the booking a reschedule created; points at the booking it
   // replaced, which stays CANCELED at its old time as a reference.
   rescheduledFromId String?       @unique
+  // The language it was booked in (el or en); the customer's emails use it.
+  locale            String        @default("el")
+  // When the reminder email went out (null = not sent).
+  reminderSentAt    DateTime?     @db.Timestamptz(3)
   createdAt         DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
 

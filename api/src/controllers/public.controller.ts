@@ -1,3 +1,4 @@
+import { parseLocale } from '../utils/locale';
 import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
@@ -65,7 +66,10 @@ export const createBooking = async (
     }
 
     prisma.userShop
-      .findFirst({ where: { shopId: booking.shopId, role: 'owner' } })
+      .findFirst({
+        where: { shopId: booking.shopId, role: 'owner' },
+        include: { user: { select: { locale: true } } },
+      })
       .then((owner) => {
         if (!owner?.email) return;
         return sendNewBookingNotificationEmail({
@@ -77,6 +81,8 @@ export const createBooking = async (
           staffName: booking.staff.name ?? 'Staff',
           startTime: booking.startTime,
           timezone: booking.shop.timezone,
+          // The owner's own language, not the customer's.
+          locale: parseLocale(owner.user?.locale),
         });
       })
       .catch((err) =>
@@ -111,6 +117,7 @@ export const cancelBooking = async (
         serviceName: booking.service.name,
         startTime: booking.startTime,
         timezone: booking.shop.timezone,
+        locale: parseLocale(booking.locale),
       }).catch((err) =>
         logger.error(err, 'Failed to send cancellation confirmation email'),
       );
@@ -200,7 +207,10 @@ export const rescheduleBooking = async (
     }
 
     prisma.userShop
-      .findFirst({ where: { shopId: booking.shopId, role: 'owner' } })
+      .findFirst({
+        where: { shopId: booking.shopId, role: 'owner' },
+        include: { user: { select: { locale: true } } },
+      })
       .then((owner) => {
         if (!owner?.email) return;
         return sendBookingRescheduledNotificationEmail({
@@ -213,6 +223,8 @@ export const rescheduleBooking = async (
           startTime: booking.startTime,
           previousStartTime: previous.startTime,
           timezone: booking.shop.timezone,
+          // The owner's own language, not the customer's.
+          locale: parseLocale(owner.user?.locale),
         });
       })
       .catch((err) =>

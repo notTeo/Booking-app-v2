@@ -69,7 +69,7 @@ export default function PublicIdentityStep({
   if (!open) {
     return (
       <div className="cluster">
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => setOpen(true)}>{i.prompt}</button>
+        <button type="button" className="btn btn--ghost btn--sm btn--wrap" onClick={() => setOpen(true)}>{i.prompt}</button>
       </div>
     );
   }

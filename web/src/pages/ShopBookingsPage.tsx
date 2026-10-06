@@ -416,7 +416,7 @@ export default function ShopBookingsPage() {
             </div>
           )}
 
-          <div className="cal" style={{ '--cal-hour-h': `${SLOT_H}px` } as CSSProperties} ref={scrollRef}>
+          <div className="cal" style={{ '--cal-hour-h': `${SLOT_H}px`, '--cal-cols': columns.length } as CSSProperties} ref={scrollRef}>
             <div className="cal__grid">
 
               {/* Column headers */}
