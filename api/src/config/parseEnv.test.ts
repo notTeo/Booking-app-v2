@@ -9,6 +9,11 @@ const VALID = {
   JWT_REFRESH_SECRET: 's2',
   RESEND_API_KEY: 'k',
   EMAIL_FROM: 'a@b.c',
+  S3_ENDPOINT: 'https://storage.example',
+  S3_REGION: 'auto',
+  S3_BUCKET: 'media',
+  S3_ACCESS_KEY_ID: 'id',
+  S3_SECRET_ACCESS_KEY: 'secret',
 } as NodeJS.ProcessEnv;
 
 const errorsFor = (overrides: Record<string, string | undefined>) => {
@@ -23,6 +28,25 @@ describe('parseEnv', () => {
     expect(r.env?.nodeEnv).toBe('production');
     expect(r.env?.jwt.refreshExpiresInSeconds).toBe(30 * 86400);
     expect(r.env?.jwt.accessExpiresInSeconds).toBe(900);
+  });
+
+  it('requires the photo bucket in production, and all five variables together', () => {
+    const none = {
+      S3_ENDPOINT: undefined,
+      S3_REGION: undefined,
+      S3_BUCKET: undefined,
+      S3_ACCESS_KEY_ID: undefined,
+      S3_SECRET_ACCESS_KEY: undefined,
+    };
+    expect(errorsFor(none)).toContain('required in production');
+    const dev = parseEnv({ ...VALID, ...none, NODE_ENV: 'development' });
+    expect(dev.errors).toEqual([]);
+    expect(dev.env?.storage).toBeNull();
+    expect(
+      errorsFor({ NODE_ENV: 'development', S3_SECRET_ACCESS_KEY: undefined }),
+    ).toContain('S3_SECRET_ACCESS_KEY is required');
+    expect(errorsFor({ S3_ENDPOINT: 'not a url' })).toContain('S3_ENDPOINT');
+    expect(parseEnv(VALID).env?.storage?.bucket).toBe('media');
   });
 
   it('requires NODE_ENV, with no default', () => {

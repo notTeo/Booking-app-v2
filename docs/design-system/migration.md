@@ -111,3 +111,7 @@ Left:
 - Orange and amber are close in hue. They are separated by role (brand versus state), by lightness (amber-brown in light, brighter in dark), and by the rule that state always carries an icon. If a shop's brand color ever lands near orange, revisit.
 - `success` and `accent` are both greens. Success always comes with a check icon and a tint, accent never appears on a tint, and the pair is not red/green, so it is safe for the usual color-blindness types.
 - No high-contrast theme and no tooltip were designed; neither was asked for.
+
+## Photos
+
+Shop and team member photos added the `cover`, `photo-field`, `photo-editor` and `range` classes to `components.css` (section "Photos") and the `Avatar`, `PhotoField`, `PhotoEditorModal` components. No new tokens.

@@ -127,6 +127,8 @@ export default function PublicBrandingCard({
         <div className="brand-settings__preview">
           <span className="field__label">{tb.preview}</span>
           <iframe
+            // Remounted when the shop photo changes, so the preview shows it.
+            key={shop.photoUrl ?? 'no-photo'}
             className="preview-frame"
             title={tb.preview}
             src={`/${shop.slug}?palette=${palette}&font=${font}`}

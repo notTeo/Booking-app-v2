@@ -68,6 +68,12 @@ model Shop {
   // Colour set and fonts of the public booking page (utils/branding.ts).
   publicPalette             String   @default("mono")
   publicFont                String   @default("default")
+  // The shop's photo on the public page. photoUrl is the cropped image that
+  // is shown; the original and the crop are kept so it can be re-edited.
+  // Files live in the storage bucket (services/storage.service.ts).
+  photoUrl                  String?
+  photoOriginalUrl          String?
+  photoCrop                 Json?
   isActive                  Boolean  @default(true)
   plan                      ShopPlan           @default(TEAM)
   subscriptionStatus        SubscriptionStatus @default(ACTIVE)
@@ -185,6 +191,11 @@ model UserShop {
   active              Boolean @default(true)
   bookableByCustomers Boolean @default(true)
   bookableInternally  Boolean @default(true)
+
+  // Same three as Shop: the shown photo, its original and the crop.
+  photoUrl         String?
+  photoOriginalUrl String?
+  photoCrop        Json?
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 

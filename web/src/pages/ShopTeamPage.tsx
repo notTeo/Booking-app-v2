@@ -8,6 +8,7 @@ import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, sendLoginInvite, cancelLoginInvite, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -184,6 +185,7 @@ export default function ShopTeamPage() {
                 {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
+                      <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
                       <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
                       {!member.userId && (
                         <>

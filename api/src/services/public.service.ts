@@ -88,6 +88,7 @@ export const getShopInfoService = async (
           shopId: true,
           role: true,
           name: true,
+          photoUrl: true,
           createdAt: true,
           bookableByCustomers: true,
           bookableInternally: true,
@@ -118,8 +119,11 @@ export const getShopInfoService = async (
     include: { days: { include: { hours: true } } },
   });
 
+  // The public only needs the photo that is shown, not what it was cut from.
+  const { photoOriginalUrl: _original, photoCrop: _crop, ...visible } = shop;
+
   return {
-    ...withoutPlan(shop),
+    ...withoutPlan(visible),
     // False while the shop is locked: the page still shows, but takes no
     // new bookings.
     acceptingBookings: !isShopLocked(shop),

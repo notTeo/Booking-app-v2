@@ -33,6 +33,7 @@ export interface ShopMember {
   role: ShopRole;
   createdAt: string;
   name: string;
+  photoUrl: string | null;
   bookableByCustomers: boolean;
   bookableInternally: boolean;
   staffServices: StaffService[];
@@ -51,6 +52,8 @@ export interface ShopInfo {
   /** Colour set and fonts of this page (see utils/branding.ts). */
   publicPalette: string;
   publicFont: string;
+  /** The shop's photo, shown at the top of its page. */
+  photoUrl: string | null;
   isActive: boolean;
   /** False while the shop takes no new online bookings (its plan has lapsed). */
   acceptingBookings: boolean;

@@ -9,9 +9,12 @@ import {
   sendLoginInvite as sendLoginInviteService,
   cancelLoginInvite as cancelLoginInviteService,
   transferOwnership as transferOwnershipService,
+  setMemberPhoto as setMemberPhotoService,
+  removeMemberPhoto as removeMemberPhotoService,
   UpdateMemberRoleDto,
   CreateTeamMemberDto,
 } from '../services/team.service';
+import { parseCrop } from '../services/photo.service';
 
 export const getMembers = async (
   req: Request,
@@ -135,6 +138,44 @@ export const transferOwnership = async (
     const shopId = req.params.shopId as string;
     const memberId = req.params.memberId as string;
     const member = await transferOwnershipService(userId, shopId, memberId);
+    successResponse(res, member);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setMemberPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const memberId = req.params.memberId as string;
+    const member = await setMemberPhotoService(
+      userId,
+      shopId,
+      memberId,
+      req.file?.buffer,
+      parseCrop(req.body?.crop),
+    );
+    successResponse(res, member);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeMemberPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const memberId = req.params.memberId as string;
+    const member = await removeMemberPhotoService(userId, shopId, memberId);
     successResponse(res, member);
   } catch (err) {
     next(err);

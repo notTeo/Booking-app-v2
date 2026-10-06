@@ -13,9 +13,12 @@ import {
   getShop,
   updateShop,
   deleteShop,
+  setShopPhoto,
+  removeShopPhoto,
 } from '../controllers/shop.controller';
 import { dayScheduleValidation } from '../validators/workingHours.validator';
 import { getDaySchedule } from '../controllers/workingHours.controller';
+import { photoUpload } from '../middleware/photoUpload';
 import teamRouter from './team.routes';
 import timeOffRouter from './timeOff.routes';
 import serviceRouter from './service.routes';
@@ -60,6 +63,24 @@ router.delete(
   shopIdParamValidation,
   validate,
   deleteShop,
+);
+
+router.put(
+  '/:id/photo',
+  authenticate,
+  requireWritableShop(),
+  shopIdParamValidation,
+  validate,
+  photoUpload,
+  setShopPhoto,
+);
+router.delete(
+  '/:id/photo',
+  authenticate,
+  requireWritableShop(),
+  shopIdParamValidation,
+  validate,
+  removeShopPhoto,
 );
 
 // Working hours are per team member (/:shopId/team/:memberId/schedules); this

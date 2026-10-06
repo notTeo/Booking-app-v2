@@ -70,6 +70,7 @@ The API validates its environment at startup and exits, listing **every** proble
 | `JWT_REFRESH_EXPIRES_IN` | `30d` (default) | Also the cookie lifetime. |
 | `RESEND_API_KEY` | from Resend | |
 | `EMAIL_FROM` | `BeBooked <noreply@example.gr>` | Must be on the **verified** Resend domain. |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | references to the bucket (section 4) | Photo storage. **Required in production**: the API exits at start without all five. |
 | `PORT` | leave unset | Railway injects it. |
 | `INVITE_EMAIL_OVERRIDE` | **must be unset** | Dev-only: it redirects every team-invite email to one address. |
 | `RATE_LIMIT_DISABLED` | **must be unset** | Ignored in production anyway. |
@@ -94,6 +95,15 @@ Create the project with two services: **PostgreSQL** and the **API**.
 4. **Custom domain** `api.example.gr` on the API service; Railway shows the DNS record to create (section 5).
 5. **Postgres backups**: turn them on and note the retention (verify the feature and plan). Do one manual restore test into a scratch database before launch.
 6. Give the API one instance. The rate limiters are in-memory per process, so multiple instances multiply the limits.
+
+**Photo bucket.** Photos (shop, team members, products) are stored in a Railway bucket in the same project, never in Postgres or on the API's disk. The database holds only each file's URL (`/media/...`); the bucket is private and the API serves the files at that path.
+
+1. Project canvas → **Create** → **Bucket**, region closest to the API (EU), name `bebooked-media`.
+2. Open the bucket → **Credentials**: it lists the endpoint, region, bucket name, access key id and secret access key.
+3. API service → **Variables**: add `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, each as a reference to the bucket's matching credential (verify the reference names in the picker), then deploy.
+4. Check: upload a shop photo in production and open its `/media/...` URL on the API domain.
+
+Deleting a photo, a team member, a product or a shop deletes its files. A failed delete is logged (`Could not delete stored files`) and leaves an orphan in the bucket, nothing else.
 
 **What the container does on start** (`api/Dockerfile`): `npx prisma migrate deploy && node dist/app.js`. Migrations run automatically on every deploy, **before** the new code serves traffic. If a migration fails the container exits and the deploy fails.
 
