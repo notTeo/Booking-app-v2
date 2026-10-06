@@ -838,7 +838,7 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* ---------- 29. Calendar (day view, one column per provider) ---------- */
 /* .cal is the scroll box. The hour row height comes from the page as --cal-hour-h (it positions the blocks in JS). */
 .cal {
-  --cal-gutter-w: 3.5rem; --cal-col-min: 8.75rem; --cal-stripe: 6px; --cal-hour-h: 4rem;
+  --cal-gutter-w: 3.5rem; --cal-col-min: 8.75rem; --cal-col-max: 22.5rem; --cal-stripe: 6px; --cal-hour-h: 4rem;
   overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
 }
 .cal__grid { min-width: fit-content; }
@@ -905,6 +905,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   .cal__col-head, .cal__col { flex: 0 0 calc(100% - var(--cal-gutter-w)); min-width: calc(100% - var(--cal-gutter-w)); scroll-snap-align: start; }
   /* The time gutter stays put while a column swipes past it. */
   .cal__gutter, .cal__corner { position: sticky; left: 0; z-index: 6; background: var(--surface); }
+}
+/* Wider screens: a column stops growing at --cal-col-max, so one or two providers don't stretch across the page. */
+@media (min-width: 640px) {
+  .cal__col-head, .cal__col { max-width: var(--cal-col-max); }
+  .cal__col-head:last-child, .cal__col:last-child { border-right: 1px solid var(--border); }
 }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */

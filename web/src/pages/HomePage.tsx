@@ -307,7 +307,7 @@ export default function HomePage() {
             <div className="home-nav-links">
               <Link to="/about" className="home-nav-link">{t.home.aboutBadge || 'About'}</Link>
               <a href="#features" className="home-nav-link">{t.home.productBadge || 'Product'}</a>
-              <a href="#pricing" className="home-nav-link">{t.home.pricingBadge}</a>
+              <Link to="/pricing" className="home-nav-link">{t.home.pricingBadge}</Link>
               <Link to="/contact" className="home-nav-link">{t.home.contactBadge || 'Contact'}</Link>
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function HomePage() {
         <div className="home-mobile-links">
           <Link to="/about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</Link>
           <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.productBadge || 'Product'}</a>
-          <a href="#pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</a>
+          <Link to="/pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</Link>
           <Link to="/contact" className="home-mobile-link" onClick={closeMenu}>{t.home.contactBadge || 'Contact'}</Link>
         </div>
 
