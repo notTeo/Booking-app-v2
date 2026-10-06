@@ -1,17 +1,23 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { PLAN_PRICES, yearlyPrice } from '../config/pricing';
 
 const BILLING = ['monthly', 'yearly'] as const;
 type Billing = (typeof BILLING)[number];
 
-/** The Solo, Team and Business plans side by side: name, price and what is included, with a monthly | yearly switch. */
+/**
+ * The Solo, Team and Business plans side by side, under a monthly | yearly
+ * switch. Yearly shows twelve months' price struck through, then the price
+ * actually paid and what that saves.
+ */
 export default function PlanCards() {
   const { t } = useLang();
   const [billing, setBilling] = useState<Billing>('monthly');
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const yearly = billing === 'yearly';
   const plans = [
     { name: t.home.pricingSoloName, price: PLAN_PRICES.solo, desc: t.home.pricingSoloDesc, features: t.home.pricingSoloFeatures, featured: false },
     { name: t.home.pricingTeamName, price: PLAN_PRICES.team, desc: t.home.pricingTeamDesc, features: t.home.pricingTeamFeatures, featured: true },
@@ -29,8 +35,8 @@ export default function PlanCards() {
   };
 
   return (
-    <div>
-      <div className="home-pricing-billing">
+    <div className="plan-picker">
+      <div className="plan-picker__billing">
         <div role="tablist" aria-label={t.home.pricingBillingLabel} className="tabs tabs--segmented">
           {BILLING.map((option, i) => (
             <button
@@ -49,24 +55,42 @@ export default function PlanCards() {
           ))}
         </div>
       </div>
-      <div className="home-pricing-grid">
-        {plans.map((plan) => (
-          <div key={plan.name} className={`home-price-card${plan.featured ? ' home-price-card--pro' : ''}`}>
-            <h3 className="home-price-tier">{plan.name}</h3>
-            <div className="home-price-amount">
-              <span className="currency">€</span>
-              <span className="amount">{billing === 'yearly' ? yearlyPrice(plan.price) : plan.price}</span>
-              <span className="period">{billing === 'yearly' ? t.home.pricingPerYear : t.home.pricingPerMonth} · {t.home.pricingExclVat}</span>
-            </div>
-            <p className="home-price-desc">{plan.desc}</p>
-            <hr className="home-price-divider" />
-            <ul className="home-price-features">
-              {plan.features.map((feature) => (
-                <li key={feature}><FontAwesomeIcon icon={faCheck} className="feat-check" /> {feature}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="plan-grid">
+        {plans.map((plan) => {
+          const fullYear = plan.price * 12;
+          const paid = yearlyPrice(plan.price);
+          return (
+            <article key={plan.name} className={`card plan-card${plan.featured ? ' plan-card--featured' : ''}`}>
+              <div className="card__header">
+                <h3 className="card__title">{plan.name}</h3>
+                {plan.featured && <span className="badge badge--accent">{t.home.pricingPopular}</span>}
+              </div>
+              <div className="plan-card__price">
+                {yearly && (
+                  <s className="plan-card__was">
+                    <span className="visually-hidden">{t.home.pricingWas} </span>€{fullYear}
+                  </s>
+                )}
+                <span className={`plan-card__amount${yearly ? ' is-discounted' : ''}`}>€{yearly ? paid : plan.price}</span>
+                <span className="plan-card__period">{yearly ? t.home.pricingPerYear : t.home.pricingPerMonth} · {t.home.pricingExclVat}</span>
+              </div>
+              {yearly && <p className="plan-card__saving">{t.home.pricingSaving.replace('{amount}', String(fullYear - paid))}</p>}
+              <p className="card__text">{plan.desc}</p>
+              <Link to="/register" className={`btn btn--block${plan.featured ? '' : ' btn--secondary'}`}>{t.home.pricingCta}</Link>
+              <div className="card__section">
+                <span className="t-caption plan-card__label">{t.home.pricingFeaturesLabel}</span>
+                <ul className="plan-card__features">
+                  {plan.features.map((feature) => (
+                    <li key={feature}>
+                      <FontAwesomeIcon icon={faCircleCheck} className="plan-card__check" aria-hidden="true" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

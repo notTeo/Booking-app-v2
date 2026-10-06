@@ -31,20 +31,25 @@ test.afterEach(async () => {
 test('pricing page: three plans with their prices, and a column for each in the tables', async ({ page }) => {
   await page.context().addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto('/pricing');
-  const cards = page.locator('.home-price-card');
-  await expect(cards).toHaveCount(3);
-  await expect(cards.nth(0)).toContainText('Solo');
-  await expect(cards.nth(0).locator('.amount')).toHaveText('19');
-  await expect(cards.nth(1)).toContainText('Team');
-  await expect(cards.nth(1).locator('.amount')).toHaveText('35');
-  await expect(cards.nth(2)).toContainText('Business');
-  await expect(cards.nth(2).locator('.amount')).toHaveText('59');
-  // Yearly: ten months' price for the year.
+  const cards = page.locator('.plan-card');
+  const amounts = cards.locator('.plan-card__amount');
+  await expect(cards.getByRole('heading')).toHaveText(['Solo', 'Team', 'Business']);
+  await expect(amounts).toHaveText(['€19', '€35', '€59']);
+  await expect(cards.locator('.plan-card__was')).toHaveCount(0);
+  await expect(cards.nth(1)).toContainText('Most popular');
+  await expect(cards.getByRole('link', { name: 'Start free trial' })).toHaveCount(3);
+  // Yearly: twelve months struck through, then ten months' price and the saving.
   await page.getByRole('tab', { name: /^Yearly/ }).click();
-  await expect(cards.locator('.amount')).toHaveText(['190', '350', '590']);
+  await expect(cards.locator('.plan-card__was')).toHaveText(['Instead of €228', 'Instead of €420', 'Instead of €708']);
+  await expect(amounts).toHaveText(['€190', '€350', '€590']);
   await expect(cards.nth(0)).toContainText('/year');
+  await expect(cards.locator('.plan-card__saving')).toHaveText([
+    'You save €38: 2 months free',
+    'You save €70: 2 months free',
+    'You save €118: 2 months free',
+  ]);
   await page.getByRole('tab', { name: 'Monthly' }).click();
-  await expect(cards.locator('.amount')).toHaveText(['19', '35', '59']);
+  await expect(amounts).toHaveText(['€19', '€35', '€59']);
   await expect(page.locator('.data-table').first().locator('thead th')).toHaveText(['Feature', 'Solo', 'Team', 'Business']);
   await expect(page.getByText('30-day free trial')).toBeVisible();
 });
@@ -58,10 +63,12 @@ for (const theme of ['light', 'dark'] as const) {
     ]);
     await page.goto('/pricing');
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-    await expect(page.locator('.home-price-card')).toHaveCount(3);
+    await expect(page.locator('.plan-card')).toHaveCount(3);
+    await page.getByRole('tab').last().click();
+    await expect(page.locator('.plan-card__was')).toHaveCount(3);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
     await page.goto('/');
-    await expect(page.locator('#pricing .home-price-card')).toHaveCount(3);
+    await expect(page.locator('#pricing .plan-card')).toHaveCount(3);
     expect(await overflow(page)).toBeLessThanOrEqual(0);
   });
 

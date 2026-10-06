@@ -981,3 +981,22 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .shop-card__label { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
 /* Invite card: Accept / Decline, kept at the bottom when cards in a row differ in height. */
 .shop-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: auto; }
+
+/* ---------- Plan cards (pricing page and the landing page's pricing section) ---------- */
+.plan-picker { display: flex; flex-direction: column; gap: var(--space-8); text-align: start; }
+.plan-picker__billing { display: flex; justify-content: center; }
+.plan-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+@media (min-width: 960px) { .plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.plan-card { gap: var(--space-5); padding: var(--space-6); border-radius: var(--radius-lg); }
+.plan-card--featured { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.plan-card__price { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); }
+.plan-card__amount { font: var(--fw-black) var(--fs-3xl) / var(--lh-3xl) var(--font-display); }
+/* Yearly: the full twelve months, struck through, then what is actually paid. */
+.plan-card__was { font: var(--fw-semibold) var(--fs-xl) / var(--lh-xl) var(--font-display); color: var(--text-muted); text-decoration: line-through; }
+.plan-card__amount.is-discounted { color: var(--accent); }
+.plan-card__period { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-muted); }
+.plan-card__saving { font: var(--fw-semibold) var(--fs-sm) / var(--lh-sm) var(--font-body); color: var(--accent); }
+.plan-card__label { text-transform: uppercase; color: var(--text); }
+.plan-card__features { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; font-size: var(--fs-sm); line-height: var(--lh-sm); }
+.plan-card__features li { display: flex; align-items: flex-start; gap: var(--space-3); }
+.plan-card__check { flex: none; height: var(--lh-sm); color: var(--accent); }

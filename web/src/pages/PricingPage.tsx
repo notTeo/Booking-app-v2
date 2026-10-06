@@ -6,7 +6,6 @@ import Footer from '../components/Footer';
 import PlanCards from '../components/PlanCards';
 import Wordmark from '../components/Wordmark';
 import '../styles/pages/legal.css';
-import '../styles/pages/home.css';
 
 // Reference only: what each plan includes. There is nothing to buy here.
 export default function PricingPage() {
@@ -19,7 +18,7 @@ export default function PricingPage() {
       value
     ) : (
       <>
-        <FontAwesomeIcon icon={value ? faCheck : faMinus} className={value ? 'feat-check' : 'feat-x'} aria-hidden="true" />
+        <FontAwesomeIcon icon={value ? faCheck : faMinus} className={value ? 'pricing-yes' : 'pricing-no'} aria-hidden="true" />
         <span className="visually-hidden">{value ? p.included : p.notIncluded}</span>
       </>
     );
@@ -28,10 +27,10 @@ export default function PricingPage() {
     <>
       <div className="pricing-page">
         <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <div className="legal-section">
-          <h1 className="t-title">{p.title}</h1>
+        <header className="pricing-page__header">
+          <h1 className="t-display">{p.title}</h1>
           <p className="t-body t-muted">{p.intro}</p>
-        </div>
+        </header>
 
         <PlanCards />
 

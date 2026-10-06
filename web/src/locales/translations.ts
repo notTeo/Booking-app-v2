@@ -98,6 +98,11 @@ export interface Translations {
     pricingBillingLabel: string;
     pricingMonthly: string;
     pricingYearly: string;
+    pricingPopular: string;
+    pricingWas: string;
+    pricingSaving: string;
+    pricingCta: string;
+    pricingFeaturesLabel: string;
     pricingExclVat: string;
     pricingSoloName: string;
     pricingSoloDesc: string;
@@ -1197,6 +1202,11 @@ home: {
     pricingBillingLabel: 'Χρέωση',
     pricingMonthly: 'Μηνιαία',
     pricingYearly: 'Ετήσια · 2 μήνες δώρο',
+    pricingPopular: 'Το πιο δημοφιλές',
+    pricingWas: 'Αντί για',
+    pricingSaving: 'Κερδίζεις €{amount}: 2 μήνες δώρο',
+    pricingCta: 'Ξεκίνα δωρεάν',
+    pricingFeaturesLabel: 'Περιλαμβάνει',
     pricingExclVat: 'χωρίς ΦΠΑ',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'Για όποιον δουλεύει μόνος του.',
@@ -2401,6 +2411,11 @@ home: {
     pricingBillingLabel: 'Billing',
     pricingMonthly: 'Monthly',
     pricingYearly: 'Yearly · 2 months free',
+    pricingPopular: 'Most popular',
+    pricingWas: 'Instead of',
+    pricingSaving: 'You save €{amount}: 2 months free',
+    pricingCta: 'Start free trial',
+    pricingFeaturesLabel: 'Features',
     pricingExclVat: 'excl. VAT',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'For anyone working on their own.',
