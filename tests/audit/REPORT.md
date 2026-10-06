@@ -13,6 +13,36 @@ Paths are relative to the repo root unless they start with `svc/` (= `api/src/se
 - **No double booking was found.** 10 parallel POSTs for one slot gave exactly one 201 and nine 409 in every round.
 - **No route is missing authentication**, and no token-forgery path was found.
 
+## Fix status (updated 2026-10-06)
+
+Fixes are on six stacked local branches, `fix/audit-baseline` through `fix/audit-token-hardening` (the last one contains everything). Nothing is pushed. The rest of this report describes the code as audited, before the fixes.
+
+Audit suite after the fixes: **148 tests, 147 pass, 1 fails** (AU-03, second test). Existing API suite: 1197 pass.
+
+| Status | Findings |
+|---|---|
+| Fixed | TI-01, TI-02, TI-03, TI-04, AU-01, AU-02, AU-04, AU-05, AU-07, AU-08, AU-09, AU-10, PB-01, PB-03, PB-04, PB-05, PB-06, PB-07, PB-08, PB-09, PB-11, PB-12, VE-02 to VE-09 |
+| Partly fixed | AU-03: a second sign-up can no longer replace a pending one. Still open: an attacker who registers the victim's address first, if the victim then clicks that verification email. Needs a decision on the sign-up flow. |
+| Accepted by design | PB-02 (no per-phone booking cap), TI-05 / PB-10 (personal durations on the public grid), AU-06 (15-minute access-token window). Documented in `docs/deployment.md`, "Known limits"; their tests now assert the accepted behaviour. |
+
+Audit tests edited while fixing, and why:
+
+- PB-02, TI-05, PB-10, AU-06: rewritten to assert the accepted behaviour.
+- AU-02 (third test), AU-07 (email-change test): their setup now sends the current password, which the AU-02 fix requires.
+- All auth audit tests: tokens are taken from the emailed link, because the AU-07 fix stores only hashes.
+- `validation/platform.negative.test.ts`: a wrong-typed field is now a generic 400, not a generic 500 (VE-02 fix).
+
+Behaviour changes worth knowing before release:
+
+- Changing password or email in account settings asks for the current password.
+- Signing up with an address that already has an account answers "check your email" and sends that account a notice, instead of a 409.
+- Customers can only book a staff member for a service assigned to that member.
+- Booking start times must carry a UTC offset or `Z`.
+- Customer phones are stored without spaces or punctuation.
+- Login also counts failed attempts per email (10 per 15 minutes).
+- In production the API refuses to start if a JWT secret is under 32 characters or the two are equal.
+- Three migrations: `normalize_customer_phone`, `booking_contact_email`, `hash_stored_tokens`.
+
 ## Summary
 
 | ID | Severity | Status | Area | Description |
