@@ -17,6 +17,7 @@ import {
 } from '../utils/shopAccess';
 import {
   DATE_ONLY_RE,
+  addDays,
   dateInZone,
   dayBoundsUtc,
   todayInZone,
@@ -781,7 +782,7 @@ const getShopTimezone = async (shopId: string) =>
 const getShopTimeSettings = async (shopId: string) => {
   const shop = await prisma.shop.findUnique({
     where: { id: shopId },
-    select: { timezone: true, slotIntervalMinutes: true },
+    select: { timezone: true, slotIntervalMinutes: true, maxAdvanceDays: true },
   });
   if (!shop) throw new AppError(404, 'Shop not found');
   return shop;
@@ -934,13 +935,22 @@ export const getAvailableSlots = async (
         );
   }
 
-  const { timezone: zone, slotIntervalMinutes } =
-    await getShopTimeSettings(shopId);
+  const {
+    timezone: zone,
+    slotIntervalMinutes,
+    maxAdvanceDays,
+  } = await getShopTimeSettings(shopId);
   const { start: dayStart, end: dayEnd } = dayBoundsUtc(date, zone);
   // The caller may look at a finer (or coarser) grid than the shop's own, for
   // this one booking; times off the shop grid are flagged.
   const step = options.intervalMinutes ?? slotIntervalMinutes;
   const now = new Date();
+  // A customer cannot book the past or beyond the advance window (the booking
+  // rules refuse both), so the public grid does not offer those times either.
+  const today = todayInZone(zone, now);
+  const outsideWindow =
+    context === 'public' &&
+    (date < today || date > addDays(today, maxAdvanceDays));
 
   const memberHours = await Promise.all(
     team.map(async (m) => ({
@@ -992,12 +1002,15 @@ export const getAvailableSlots = async (
               hours,
               duration,
               slotIntervalMinutes,
-            ).map((c) => ({
-              time: c.time,
-              available: isFree(c),
-              outsideHours: false,
-              past: false,
-            }))
+            ).map((c) => {
+              const past = context === 'public' && c.start < now;
+              return {
+                time: c.time,
+                available: !outsideWindow && !past && isFree(c),
+                outsideHours: false,
+                past,
+              };
+            })
           : [];
         return slots;
       }
