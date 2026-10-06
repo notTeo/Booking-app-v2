@@ -90,6 +90,13 @@ export default function BookingDetailsModal({
     .setLocale(language)
     .toLocaleString({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+  // One row per service; a booking with a single one shows its real length.
+  const serviceLines =
+    booking.services && booking.services.length > 1
+      ? booking.services.map((s) => ({ name: s.name, price: s.price, duration: s.duration as number | null }))
+      : [{ name: booking.service.name, price: booking.service.price, duration: null as number | null }];
+  const servicesTotal = serviceLines.reduce((sum, l) => sum + l.price, 0);
+  const minutesLabel = (m: number) => (m < 60 ? t.bookings.detail.minutes.replace('{n}', String(m)) : formatDuration(m));
   const products = booking.products ?? [];
   const productsTotal = products.reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
   const canMove = canReschedule && !isBlock && (booking.status === 'PENDING' || booking.status === 'CONFIRMED');
@@ -138,15 +145,23 @@ export default function BookingDetailsModal({
               </Link>
             )}
           </div>
-          <div className="detail-row">
-            <FontAwesomeIcon icon={faScissors} className="detail-row__icon" aria-hidden="true" />
-            <div className="detail-row__main">
-              <span>
-                <strong>{booking.service.name}</strong> <span className="t-muted">· {length}</span>
-              </span>
+          {serviceLines.map((line, i) => (
+            <div className="detail-row" key={`${line.name}-${i}`}>
+              <FontAwesomeIcon
+                icon={faScissors}
+                className="detail-row__icon"
+                aria-hidden="true"
+                style={i > 0 ? { visibility: 'hidden' } : undefined}
+              />
+              <div className="detail-row__main">
+                <span>
+                  <strong>{line.name}</strong>{' '}
+                  <span className="t-muted">· {line.duration === null ? length : minutesLabel(line.duration)}</span>
+                </span>
+              </div>
+              <span className="detail-row__end">{formatPrice(line.price)}</span>
             </div>
-            <span className="detail-row__end">{formatPrice(booking.service.price)}</span>
-          </div>
+          ))}
           {!booking.customer.contactHidden && !isBlock && (
             <div className="detail-row">
               <FontAwesomeIcon icon={faPhone} className="detail-row__icon" aria-hidden="true" />
@@ -268,11 +283,11 @@ export default function BookingDetailsModal({
             />
             <div className="total-bar">
               <span>{t.products.total}</span>
-              <span className="total-bar__amount">{formatPrice(booking.service.price + productsTotal)}</span>
+              <span className="total-bar__amount">{formatPrice(servicesTotal + productsTotal)}</span>
             </div>
             <p className="total-bar__note">
               {t.bookings.detail.totalNote
-                .replace('{service}', formatPrice(booking.service.price))
+                .replace('{service}', formatPrice(servicesTotal))
                 .replace('{products}', formatPrice(productsTotal))}
             </p>
           </>

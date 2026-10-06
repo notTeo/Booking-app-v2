@@ -1,3 +1,4 @@
+import { bookingServicesPrice } from '../utils/bookingServices';
 import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
 import { BookingStatus } from '../../dist/generated/prisma';
@@ -91,7 +92,11 @@ export const getCustomer = async (
     prisma.customer.findUnique({ where: { id: customerId } }),
     prisma.booking.findMany({
       where: { customerId, shopId },
-      select: { status: true, service: { select: { price: true } } },
+      select: {
+        status: true,
+        service: { select: { name: true, price: true } },
+        services: { select: { name: true, duration: true, price: true } },
+      },
     }),
     prisma.customerServiceDuration.findMany({
       where: { customerId },
@@ -103,7 +108,11 @@ export const getCustomer = async (
     (b) => b.status === BookingStatus.COMPLETED,
   );
   const totalVisits = completed.length;
-  const totalSpent = completed.reduce((sum, b) => sum + b.service.price, 0);
+  // What the services of each completed booking cost together.
+  const totalSpent = completed.reduce(
+    (sum, b) => sum + bookingServicesPrice(b),
+    0,
+  );
 
   // Lifetime counts by status, in the shape of the shop overview's totals
   // (`all` leaves canceled bookings out), so the same stat tiles can show them.
@@ -182,6 +191,10 @@ export const listCustomerBookings = async (
         endTime: true,
         status: true,
         service: { select: { name: true, duration: true, price: true } },
+        services: {
+          select: { name: true, duration: true, price: true, position: true },
+          orderBy: { position: 'asc' },
+        },
         staff: { select: { name: true } },
       },
     }),

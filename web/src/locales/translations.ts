@@ -898,6 +898,16 @@ export interface Translations {
     dateTime: string;
     yourDetails: string;
     stepOf: string;
+    chooseService: string;
+    chooseServiceHint: string;
+    chooseServiceToContinue: string;
+    bookingAs: string;
+    change: string;
+    servicesChosen: string;
+    servicesLimit: string;
+    openMap: string;
+    callShop: string;
+    stepLabel: string;
     noServices: string;
     noStaff: string;
     noPreference: string;
@@ -2251,6 +2261,16 @@ home: {
       dateTime: 'Ημερομηνία & Ώρα',
       yourDetails: 'Τα Στοιχεία σας',
       stepOf: 'Βήμα {n} από {total}',
+      chooseService: "Διάλεξε υπηρεσία",
+      chooseServiceHint: "Μπορείς να διαλέξεις περισσότερες από μία: οι ώρες προστίθενται.",
+      chooseServiceToContinue: "Διάλεξε υπηρεσία για να συνεχίσεις",
+      bookingAs: "Κράτηση ως {name}",
+      change: "Αλλαγή",
+      servicesChosen: "{n} υπηρεσίες · {duration} · {price}",
+      servicesLimit: "Έως {n} υπηρεσίες σε μία κράτηση.",
+      openMap: "Άνοιγμα στους χάρτες",
+      callShop: "Κλήση στο {phone}",
+      stepLabel: "Βήμα {n} από {total}",
       noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
       noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
       noPreference: 'Χωρίς προτίμηση',
@@ -3628,6 +3648,16 @@ home: {
       dateTime: 'Date & Time',
       yourDetails: 'Your Details',
       stepOf: 'Step {n} of {total}',
+      chooseService: "Choose a service",
+      chooseServiceHint: "You can pick more than one: the times add up.",
+      chooseServiceToContinue: "Choose a service to continue",
+      bookingAs: "Booking as {name}",
+      change: "Change",
+      servicesChosen: "{n} services · {duration} · {price}",
+      servicesLimit: "Up to {n} services in one booking.",
+      openMap: "Open in maps",
+      callShop: "Call {phone}",
+      stepLabel: "Step {n} of {total}",
       noServices: 'No services available.',
       noStaff: 'No staff available for this service.',
       noPreference: 'No preference',

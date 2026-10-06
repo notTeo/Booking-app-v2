@@ -3,6 +3,7 @@ import { join } from 'path';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
+import { pickService } from '../support/booking';
 
 /**
  * Photos: the owner adds a photo for a team member (zoom, move, crop in the
@@ -72,7 +73,7 @@ test('a team member photo is edited, shown to customers, adjusted and removed', 
 
   // The provider picker on the public page shows it.
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickService(page);
   const pickerImg = page.locator('.staff-card .avatar img');
   await expect(pickerImg).toBeVisible();
   await loaded(pickerImg);
@@ -114,18 +115,18 @@ test('the shop photo is added in settings, previewed there and shown on the book
 
   // The "Booking page look" preview now has it.
   const preview = page.frameLocator('iframe[title="Preview"]');
-  await expect(preview.locator('.page-hero .cover img')).toBeVisible();
+  await expect(preview.locator('.booking-card__head .cover img')).toBeVisible();
 
   await page.goto(`/${E2E.shop.slug}`);
-  await expect(page.locator('.page-hero .cover img')).toBeVisible();
-  await loaded(page.locator('.page-hero .cover img'));
+  await expect(page.locator('.booking-card__head .cover img')).toBeVisible();
+  await loaded(page.locator('.booking-card__head .cover img'));
 
   await page.goto(`/shops/${E2E.shop.slug}/settings`);
   await card.getByRole('button', { name: 'Remove' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Remove' }).click();
   await expect(card.getByText('No photo added')).toBeVisible();
   await page.goto(`/${E2E.shop.slug}`);
-  await expect(page.locator('.page-hero .cover')).toHaveCount(0);
+  await expect(page.locator('.booking-card__head .cover')).toHaveCount(0);
 });
 
 for (const theme of ['light', 'dark'] as const) {

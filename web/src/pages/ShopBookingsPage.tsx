@@ -32,6 +32,7 @@ import '../styles/pages/bookings.css';
 import BookingDetailsModal from '../components/BookingDetailsModal';
 import Alert from '../components/Alert';
 import { bookingDisplay } from '../components/bookingStatus';
+import { bookingServiceNames } from '../utils/bookingServices';
 
 // ── constants ────────────────────────────────────────────────────────────────
 
@@ -525,7 +526,7 @@ export default function ShopBookingsPage() {
                             <span className="cal-block__service">
                               {b.rescheduledTo
                                 ? t.bookings.reschedule.rescheduledLabel
-                                : (b.customer.isSystem && b.notes) || b.service.name}
+                                : (b.customer.isSystem && b.notes) || bookingServiceNames(b)}
                             </span>
                             {tags.length > 0 && (
                               <span className="cal-block__tag label-caps">{tags.map(tagLabel).join(' · ')}</span>

@@ -1,3 +1,4 @@
+import { parseServiceIds } from '../utils/bookingServices';
 import { Request, Response, NextFunction } from 'express';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { successResponse } from '../utils/response';
@@ -76,6 +77,7 @@ export const getAvailableSlots = async (
     const date = req.query['date'] as string;
     const staffId = (req.query['staffId'] as string | undefined) || null;
     const serviceId = req.query['serviceId'] as string;
+    const serviceIds = parseServiceIds(req.query['serviceIds']);
     const slots = await bookingService.getAvailableSlots(
       shopId,
       date,
@@ -93,6 +95,7 @@ export const getAvailableSlots = async (
         customer: req.query['customerId']
           ? { customerId: req.query['customerId'] as string }
           : undefined,
+        ...(serviceIds && { serviceIds }),
       },
     );
     successResponse(res, slots);

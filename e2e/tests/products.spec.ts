@@ -4,6 +4,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * Products: the owner lists one from the Products tab (with a photo from the
@@ -38,8 +39,7 @@ const stockOf = async (id: string) =>
 const openDetailsStep = async (page: Page) => {
   await page.context().addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').evaluate((el, v) => {
     const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
     set.call(el, v);
@@ -157,7 +157,7 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await expect(picker.getByText('Reservation only: you pay in the shop.')).toBeVisible();
 
   await page.getByRole('button', { name: /confirm booking/i }).click();
-  const card = page.locator('.public-main .card--center');
+  const card = page.locator('.booking-card__body .card--center');
   await expect(card).toBeVisible();
   await expect(card.getByText('2 × E2E Shampoo')).toBeVisible();
   await expect(card.locator('.sum-up__row--total')).toContainText('€40.00');

@@ -21,6 +21,7 @@ import PublicPalette from '../components/PublicPalette';
 import ReservedProducts from '../components/ReservedProducts';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import '../styles/pages/public.css';
+import { bookingServiceNames, bookingServicesPrice } from '../utils/bookingServices';
 
 /** One centered card: every state of this page that isn't the wizard itself. */
 function Notice({ children }: { children: React.ReactNode }) {
@@ -82,10 +83,10 @@ export default function RescheduleBookingPage() {
       <Notice>
         <h1 className="t-heading">{t.rescheduleBooking.title}</h1>
         <p className="card__text">
-          <strong>{booking.service.name}</strong> · {booking.shop.name}
+          <strong>{bookingServiceNames(booking)}</strong> · {booking.shop.name}
         </p>
         <p className="card__text">{formatDateTimeInZone(booking.startTime, zone)}</p>
-        <ReservedProducts products={booking.products ?? []} servicePrice={booking.service.price} />
+        <ReservedProducts products={booking.products ?? []} servicePrice={bookingServicesPrice(booking)} />
         <Alert variant="warning">{blockMessage(t, booking)}</Alert>
       </Notice>
     );
@@ -247,7 +248,7 @@ function CustomerRescheduleWizard({
         {booking.staff.name && <> · {booking.staff.name}</>}
       </p>
       {/* Rescheduling moves the appointment; what was reserved stays with it. */}
-      <ReservedProducts products={booking.products ?? []} servicePrice={booking.service.price} />
+      <ReservedProducts products={booking.products ?? []} servicePrice={bookingServicesPrice(booking)} />
 
       <WizardStepsIndicator
         currentStep={wizard.step}

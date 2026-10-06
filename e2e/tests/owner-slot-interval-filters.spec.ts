@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * Per-shop slot interval (Shop settings) and the calendar filters modal.
@@ -36,8 +37,7 @@ test('a 15-minute interval offers :15 starts, and the calendar filters hide bloc
 
   // the wizard now offers a :15 start
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await page.getByRole('button', { name: '10:15', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
@@ -91,8 +91,7 @@ test('the "Time step" buttons in the staff wizard offer 10-minute starts for one
   await waitForLanding(page);
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
 
   // default: the shop's 30-minute grid, no :10 start

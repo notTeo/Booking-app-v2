@@ -11,6 +11,7 @@ export default function StaffSelectStep({
   onSelect,
   onBack,
   hideNoPreference,
+  hideBack,
 }: {
   members: ShopMember[];
   selectedService: Service | null;
@@ -18,6 +19,8 @@ export default function StaffSelectStep({
   onBack: () => void;
   /** Rescheduling moves the booking to one concrete provider, so "any staff" is not offered. */
   hideNoPreference?: boolean;
+  /** The page shows Back itself (the public page's footer). */
+  hideBack?: boolean;
 }) {
   const { t } = useLang();
 
@@ -71,7 +74,7 @@ export default function StaffSelectStep({
         )}
       </div>
 
-      <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
+      {!hideBack && <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>}
     </div>
   );
 }

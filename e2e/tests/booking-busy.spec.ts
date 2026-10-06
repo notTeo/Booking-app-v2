@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { bookingCount } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * BOOKING_BUSY (503, out-of-retry-budget) must never look like a rejection of
@@ -21,8 +22,7 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
 }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
@@ -51,7 +51,7 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
 
   const before = await bookingCount();
   // Located by position, not name: the label changes while the button is busy/disabled.
-  const submit = page.locator('.public-wizard-actions').getByRole('button').last();
+  const submit = page.locator('.booking-card__actions').getByRole('button').last();
   await submit.click();
 
   // Neutral, not the red rejection style; nothing was actually booked.
@@ -83,8 +83,7 @@ test('the owner wizard gets the same treatment: neutral notice, never the overri
   await waitForLanding(page);
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(addDays(date, 1));
   await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();

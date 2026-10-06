@@ -84,10 +84,30 @@ const productsValidation = [
     .withMessage('quantity must be a whole number from 1 to 99'),
 ];
 
+// One service (serviceId) or several, done one after another (serviceIds, at
+// most five; the first is the booking's primary).
+const servicesValidation = [
+  body('serviceId')
+    .optional()
+    .isString()
+    .withMessage('serviceId must be a string'),
+  body('serviceIds')
+    .optional()
+    .isArray({ min: 1, max: 5 })
+    .withMessage('serviceIds must be a list of 1 to 5 services'),
+  body('serviceIds.*')
+    .isString()
+    .notEmpty()
+    .withMessage('serviceIds must be ids'),
+  body()
+    .custom((value) => !!value?.serviceId || value?.serviceIds?.length > 0)
+    .withMessage('serviceId is required'),
+];
+
 export const createBookingValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
   ...customerFieldsValidation(),
-  body('serviceId').notEmpty().withMessage('serviceId is required'),
+  ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()
@@ -105,6 +125,8 @@ export const getPublicSlotsValidation = [
     .withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  // All the services when there are several ("a,b,c"); serviceId is the first.
+  query('serviceIds').optional({ values: 'falsy' }).isString(),
   // A customer rescheduling from their email link: frees their own slot.
   query('rescheduleToken').optional({ values: 'falsy' }).isUUID(),
 ];
@@ -117,6 +139,7 @@ export const ownerSlotsValidation = [
     .isISO8601({ strict: true })
     .withMessage('date must be a valid calendar date'),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  query('serviceIds').optional({ values: 'falsy' }).isString(),
   query('staffId').optional({ values: 'falsy' }).isString(),
   // Rescheduling: lets this booking's own (possibly deactivated) service be
   // looked up. Has no effect for any other service.
@@ -147,7 +170,7 @@ export const ownerCreateBookingValidation = [
     .isBoolean({ strict: true })
     .withMessage('block must be true or false'),
   ...customerFieldsValidation(true),
-  body('serviceId').notEmpty().withMessage('serviceId is required'),
+  ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()

@@ -897,6 +897,33 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* Booking details header: the status pill above the customer's name. */
 .booking-detail__head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
 
+/* ---------- Public booking card: cover, name and links, the step, a sticky footer ---------- */
+.booking-card { display: flex; flex-direction: column; width: 100%; max-width: 38rem; min-height: 100vh; min-height: 100dvh; margin: 0 auto; background: var(--bg); }
+@media (min-width: 640px) {
+  .booking-card { min-height: 0; margin: var(--space-10) auto; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+}
+.booking-card__head { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); background: var(--surface); border-bottom: 1px solid var(--border); }
+.booking-card__title { margin: 0; font: var(--fw-bold) var(--fs-2xl) / var(--lh-2xl) var(--font-display); overflow-wrap: anywhere; }
+.booking-card__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: var(--fs-sm); }
+.booking-card__link { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--text); text-decoration: underline; text-underline-offset: var(--space-1); overflow-wrap: anywhere; }
+.booking-card__link:hover { color: var(--accent); }
+.booking-card__body { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); padding: var(--space-5); }
+@media (min-width: 640px) { .booking-card__head, .booking-card__body, .booking-card__foot { padding-inline: var(--space-8); } }
+.booking-card__step { margin: 0; font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); color: var(--text-muted); }
+.booking-card__heading { margin: 0; font: var(--fw-bold) var(--fs-xl) / var(--lh-xl) var(--font-display); }
+.booking-card__hint { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.booking-card__foot { position: sticky; bottom: 0; z-index: var(--z-nav); display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-5); background: var(--surface); border-top: 1px solid var(--border); }
+.booking-card__who { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.booking-card__who strong { color: var(--text); }
+.booking-card__change { padding: 0; font: inherit; font-weight: var(--fw-bold); color: var(--accent); text-decoration: underline; text-underline-offset: var(--space-1); background: none; border: 0; cursor: pointer; }
+.booking-card__actions { display: flex; gap: var(--space-3); }
+.booking-card__actions .btn--block { flex: 1; }
+/* Wizard progress: the step label above a bar of equal parts (done and current are filled). */
+.wizard-progress { display: flex; flex-direction: column; gap: var(--space-2); }
+.wizard-progress__bar { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--space-2); }
+.wizard-progress__bar > span { height: var(--space-2); border-radius: var(--radius-pill); background: var(--border); }
+.wizard-progress__bar > .is-done { background: var(--accent); }
+
 /* ---------- 31. Suggestions (under an input) ---------- */
 .suggest {
   position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-nav); max-height: calc(var(--control-md) * 4.5); margin: 0; padding: 0; overflow-y: auto;

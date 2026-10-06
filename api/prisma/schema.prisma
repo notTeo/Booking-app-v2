@@ -229,6 +229,7 @@ model Service {
   staffServices     StaffService[]
   bookings          Booking[]
   customerDurations CustomerServiceDuration[]
+  bookingServices BookingService[]
 }
 
 model StaffService {
@@ -305,6 +306,30 @@ model CustomerServiceDuration {
   service  Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@unique([customerId, serviceId])
+  @@index([serviceId])
+}
+
+// One service of a booking. A booking has one or more, done one after another
+// by the same provider; its length is their durations added up. The name,
+// duration and price are copied, so the booking keeps what was agreed. The
+// first (position 0) is also Booking.serviceId.
+model BookingService {
+  id        String   @id @default(cuid())
+  bookingId String
+  serviceId String
+  name      String
+  // Minutes it took in this booking (the customer's own duration, if any).
+  duration  Int
+  // In cents.
+  price     Int
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, serviceId])
+  @@index([bookingId])
   @@index([serviceId])
 }
 
@@ -392,6 +417,7 @@ model Booking {
   rescheduledFrom Booking? @relation("BookingReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
   rescheduledTo   Booking? @relation("BookingReschedule")
   products        BookingProduct[]
+  services        BookingService[]
 
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)

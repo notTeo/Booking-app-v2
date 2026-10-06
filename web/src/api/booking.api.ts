@@ -34,6 +34,17 @@ export interface BookingProductLine {
   product: { stock: number; photoUrl: string | null } | null;
 }
 
+/** One service of a booking, as it was booked (name, minutes and price are copies). */
+export interface BookingServiceLine {
+  id: string;
+  serviceId: string;
+  name: string;
+  duration: number;
+  /** In cents. */
+  price: number;
+  position: number;
+}
+
 export interface Booking {
   id: string;
   shopId: string;
@@ -57,6 +68,8 @@ export interface Booking {
   /** Set on the old half of a reschedule: it stays CANCELED as a reference. */
   rescheduledTo?: BookingLink | null;
   products?: BookingProductLine[];
+  /** Every service of the booking, in order; the first is `service`. */
+  services?: BookingServiceLine[];
 }
 
 export interface BookingLink {
@@ -103,10 +116,15 @@ export const getOwnerSlots = (
   forBookingId?: string,
   /** Who the booking is for, when already picked: their own duration for the service decides which times fit. */
   customerId?: string,
+  /** All the services when there are several: the times fit them added up. */
+  serviceIds?: string[],
 ) =>
   client
     .get(`${base(shopId)}/slots`, {
-      params: { date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId, customerId },
+      params: {
+        date, staffId, serviceId, includeOutsideHours: true, intervalMinutes, forBookingId, customerId,
+        serviceIds: serviceIds && serviceIds.length > 1 ? serviceIds.join(',') : undefined,
+      },
     })
     .then((r) => r.data.data as SlotsResponse);
 
@@ -140,7 +158,10 @@ export interface OwnerCreateBookingPayload {
   name?: string;
   phone?: string;
   email?: string;
+  /** The first service (also serviceIds[0]). */
   serviceId: string;
+  /** Several services, done one after another by the same provider. */
+  serviceIds?: string[];
   staffId?: string;
   startTime: string; // ISO 8601
   notes?: string;

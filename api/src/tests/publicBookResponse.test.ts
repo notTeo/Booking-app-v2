@@ -55,6 +55,7 @@ describe('POST /public/:slug/book response', () => {
       'id',
       'products',
       'servicePrice',
+      'services',
       'startTime',
       'status',
     ]);

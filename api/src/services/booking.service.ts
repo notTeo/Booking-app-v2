@@ -8,6 +8,7 @@ import {
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { assertProductsFeature, isShopLocked } from './plan.service';
+import { MAX_SERVICES_PER_BOOKING } from '../utils/bookingServices';
 import { redactCustomer } from '../utils/customerVisibility';
 import {
   canManage,
@@ -114,7 +115,8 @@ const resolveBookableStaff = async (
 const listEligibleStaff = (
   db: Prisma.TransactionClient | typeof prisma,
   shopId: string,
-  serviceId: string,
+  // With several services, only members who do every one of them.
+  serviceId: string | string[],
   context: BookingContext,
 ): Promise<UserShop[]> =>
   db.userShop.findMany({
@@ -122,7 +124,9 @@ const listEligibleStaff = (
       shopId,
       active: true,
       [bookableFieldFor(context)]: true,
-      staffServices: { some: { serviceId } },
+      AND: (Array.isArray(serviceId) ? serviceId : [serviceId]).map((id) => ({
+        staffServices: { some: { serviceId: id } },
+      })),
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -150,7 +154,7 @@ const pickAnyStaff = async (
   tx: Prisma.TransactionClient,
   p: {
     shopId: string;
-    serviceId: string;
+    serviceId: string | string[];
     context: BookingContext;
     timezone: string;
     maxAdvanceDays: number;
@@ -250,13 +254,109 @@ const PRODUCT_LINES = {
   ] as Prisma.BookingProductOrderByWithRelationInput[],
 } as const;
 
+// The services of a booking, in the order they are done.
+const SERVICE_LINES = {
+  select: {
+    id: true,
+    serviceId: true,
+    name: true,
+    duration: true,
+    price: true,
+    position: true,
+  },
+  orderBy: { position: 'asc' },
+} as const;
+
 const BOOKING_INCLUDE = {
   customer: true,
   service: true,
   shop: true,
   staff: { select: { id: true, name: true, email: true } },
   products: PRODUCT_LINES,
+  services: SERVICE_LINES,
 } as const;
+
+/** The services asked for: serviceIds, or the one serviceId (the first is the booking's primary). */
+const requestedServiceIds = (data: {
+  serviceId?: string;
+  serviceIds?: string[];
+}) => {
+  const ids = data.serviceIds?.length
+    ? data.serviceIds
+    : data.serviceId
+      ? [data.serviceId]
+      : [];
+  if (ids.length === 0) throw new AppError(400, 'serviceId is required');
+  if (ids.length > MAX_SERVICES_PER_BOOKING)
+    throw new AppError(
+      400,
+      `A booking can have at most ${MAX_SERVICES_PER_BOOKING} services`,
+    );
+  if (new Set(ids).size !== ids.length)
+    throw new AppError(400, 'A service can only be listed once');
+  return ids;
+};
+
+/**
+ * Loads the chosen services in order and works out each one's length for this
+ * customer: a booking's length is those added up. The public page only
+ * offers services shown there. Runs inside the booking's transaction.
+ */
+const resolveServices = async (
+  tx: Prisma.TransactionClient,
+  shopId: string,
+  ids: string[],
+  opts: { publicOnly: boolean; customer?: DurationCustomer | null },
+) => {
+  const found = await tx.service.findMany({
+    where: {
+      id: { in: ids },
+      shopId,
+      isActive: true,
+      ...(opts.publicOnly && { showOnPublicPage: true }),
+    },
+  });
+  if (found.length !== ids.length) throw new AppError(404, 'Service not found');
+  const byId = new Map(found.map((s) => [s.id, s]));
+  const lines = [];
+  for (const [position, id] of ids.entries()) {
+    const service = byId.get(id)!;
+    const duration = await resolveDuration(tx, shopId, service, opts.customer);
+    lines.push({
+      service,
+      duration,
+      create: {
+        service: { connect: { id } },
+        name: service.name,
+        duration,
+        price: service.price,
+        position,
+      },
+    });
+  }
+  return {
+    primary: lines[0].service,
+    lines: lines.map((l) => l.create),
+    totalDuration: lines.reduce((sum, l) => sum + l.duration, 0),
+  };
+};
+
+/** A member who does every one of these services (the explicit-provider check for several services). */
+const assertDoesAll = async (
+  tx: Prisma.TransactionClient,
+  staffId: string,
+  ids: string[],
+) => {
+  if (ids.length < 2) return;
+  const count = await tx.staffService.count({
+    where: { userShopId: staffId, serviceId: { in: ids } },
+  });
+  if (count !== ids.length)
+    throw new AppError(
+      400,
+      'Selected staff member does not do all of these services',
+    );
+};
 
 export const PRODUCT_OUT_OF_STOCK = 'PRODUCT_OUT_OF_STOCK';
 
@@ -400,6 +500,8 @@ const claimSlotAndCreate = async (
     createdById?: string;
     // The products reserved with it, already checked (resolveProductLines).
     products?: Prisma.BookingProductCreateWithoutBookingInput[];
+    // Its services, in order (resolveServices); serviceId is the first.
+    services?: Prisma.BookingServiceCreateWithoutBookingInput[];
   },
 ) => {
   assertBookingLength(p.startTime, p.endTime);
@@ -430,6 +532,7 @@ const claimSlotAndCreate = async (
       createdById: p.createdById ?? null,
       locale: currentLocale(),
       ...(p.products?.length && { products: { create: p.products } }),
+      ...(p.services?.length && { services: { create: p.services } }),
     },
     include: BOOKING_INCLUDE,
   });
@@ -449,7 +552,9 @@ export const createBooking = async (
     name: string;
     phone: string;
     email?: string;
-    serviceId: string;
+    serviceId?: string;
+    // Several services, done one after another (the first is the primary).
+    serviceIds?: string[];
     staffId: string | null | undefined;
     startTime: string; // ISO string — rename from `date`
     notes?: string;
@@ -469,21 +574,17 @@ export const createBooking = async (
         'SHOP_LOCKED',
       );
 
-    const service = await tx.service.findFirst({
-      where: {
-        id: data.serviceId,
-        shopId: shop.id,
-        isActive: true,
-        showOnPublicPage: true,
-      },
+    // One or more services, done one after another: the booking runs as long
+    // as they take together. A returning customer (matched by phone) gets
+    // their own duration for each.
+    const serviceIds = requestedServiceIds(data);
+    const chosen = await resolveServices(tx, shop.id, serviceIds, {
+      publicOnly: true,
+      customer: { phone: data.phone },
     });
-    if (!service) throw new AppError(404, 'Service not found');
-
-    // A returning customer (matched by phone) gets their own duration.
-    const duration = await resolveDuration(tx, shop.id, service, {
-      phone: data.phone,
-    });
-    const endTime = new Date(startTime.getTime() + duration * 60_000);
+    const endTime = new Date(
+      startTime.getTime() + chosen.totalDuration * 60_000,
+    );
 
     // The requested staff member, or — with no preference — whichever free
     // team member working then has the fewest bookings that day.
@@ -491,7 +592,7 @@ export const createBooking = async (
       ? await resolveBookableStaff(tx, shop.id, data.staffId, 'public')
       : await pickAnyStaff(tx, {
           shopId: shop.id,
-          serviceId: data.serviceId,
+          serviceId: serviceIds,
           context: 'public',
           timezone: shop.timezone,
           maxAdvanceDays: shop.maxAdvanceDays,
@@ -500,6 +601,7 @@ export const createBooking = async (
           endTime,
         });
     if (!staff) throw staffUnavailable(data.staffId);
+    await assertDoesAll(tx, staff.id, serviceIds);
 
     // Strict on the public path — there is no override. The schedule checked is
     // the assigned team member's own, the same one the slots endpoint used.
@@ -524,7 +626,8 @@ export const createBooking = async (
 
     return claimSlotAndCreate(tx, {
       shopId: shop.id,
-      serviceId: data.serviceId,
+      serviceId: chosen.primary.id,
+      services: chosen.lines,
       staffId: staff.id,
       startTime,
       endTime,
@@ -549,7 +652,9 @@ export const createBookingForShop = async (
     name: string;
     phone: string;
     email?: string;
-    serviceId: string;
+    serviceId?: string;
+    // Several services, done one after another (the first is the primary).
+    serviceIds?: string[];
     staffId?: string | null;
     startTime: string;
     notes?: string;
@@ -567,16 +672,18 @@ export const createBookingForShop = async (
     const caller = await requireShopAccess(userId, shopId, { db: tx });
     const callerCanViewCustomer = canViewCustomerDetails(caller);
 
-    const service = await tx.service.findFirst({
-      where: { id: data.serviceId, shopId, isActive: true },
+    // A blocked slot holds the first service's standard length; a booking runs
+    // as long as all its services take, each for this customer.
+    const serviceIds = data.block
+      ? requestedServiceIds(data).slice(0, 1)
+      : requestedServiceIds(data);
+    const chosen = await resolveServices(tx, shopId, serviceIds, {
+      publicOnly: false,
+      customer: data.block ? null : { phone: data.phone },
     });
-    if (!service) throw new AppError(404, 'Service not found');
-
-    // A blocked slot runs the service's standard length.
-    const duration = data.block
-      ? service.duration
-      : await resolveDuration(tx, shopId, service, { phone: data.phone });
-    const endTime = new Date(startTime.getTime() + duration * 60_000);
+    const endTime = new Date(
+      startTime.getTime() + chosen.totalDuration * 60_000,
+    );
 
     const shop = await tx.shop.findUniqueOrThrow({
       where: { id: shopId },
@@ -593,7 +700,7 @@ export const createBookingForShop = async (
       ? await resolveBookableStaff(tx, shopId, data.staffId, 'internal')
       : await pickAnyStaff(tx, {
           shopId,
-          serviceId: data.serviceId,
+          serviceId: serviceIds,
           context: 'internal',
           timezone: shop.timezone,
           maxAdvanceDays: shop.maxAdvanceDays,
@@ -603,6 +710,7 @@ export const createBookingForShop = async (
           overrideRules: data.overrideRules,
         });
     if (!staff) throw staffUnavailable(data.staffId);
+    await assertDoesAll(tx, staff.id, serviceIds);
 
     // Same rules as the public path; a violation is only allowed if its code
     // is in overrideRules. The overlap check in claimSlotAndCreate is never
@@ -629,7 +737,8 @@ export const createBookingForShop = async (
 
     const booking = await claimSlotAndCreate(tx, {
       shopId,
-      serviceId: data.serviceId,
+      serviceId: chosen.primary.id,
+      services: chosen.lines,
       staffId: staff.id,
       startTime,
       endTime,
@@ -717,6 +826,9 @@ export const getAvailableSlots = async (
     // Who the booking is for, when known: their own duration for the service
     // decides which times fit. A rescheduled booking's customer is implied.
     customer?: DurationCustomer;
+    // Several services done one after another: the times offered fit all of
+    // them added up, and only members who do every one are considered.
+    serviceIds?: string[];
   } = {},
 ): Promise<SlotsResult> => {
   const withOutside = options.includeOutsideHours === true;
@@ -732,7 +844,34 @@ export const getAvailableSlots = async (
   // (validated: active + bookable in this context), or — with no preference —
   // every eligible team member. A member with no schedule of their own is not
   // working; there are no shop-wide hours to fall back on.
-  const eligible = await listEligibleStaff(prisma, shopId, serviceId, context);
+  // Moving a booking that has several services keeps all of them, and its length.
+  const existingBooking = options.forBookingId
+    ? await prisma.booking.findFirst({
+        where: { id: options.forBookingId, shopId },
+        select: {
+          customerId: true,
+          serviceId: true,
+          services: { select: { serviceId: true, duration: true } },
+        },
+      })
+    : null;
+  const keepsServices =
+    !options.serviceIds &&
+    !!existingBooking &&
+    existingBooking.services.length > 1 &&
+    existingBooking.serviceId === serviceId;
+  const serviceIds = keepsServices
+    ? existingBooking.services.map((s) => s.serviceId)
+    : options.serviceIds && options.serviceIds.length > 0
+      ? options.serviceIds
+      : [serviceId];
+  if (
+    serviceIds.length > MAX_SERVICES_PER_BOOKING ||
+    new Set(serviceIds).size !== serviceIds.length
+  )
+    throw new AppError(400, 'Invalid list of services');
+
+  const eligible = await listEligibleStaff(prisma, shopId, serviceIds, context);
   let team: UserShop[];
   if (staffId) {
     const member = await resolveBookableStaff(prisma, shopId, staffId, context);
@@ -742,9 +881,9 @@ export const getAvailableSlots = async (
   }
   if (team.length === 0) return closed();
 
-  const service = await prisma.service.findFirst({
+  const services = await prisma.service.findMany({
     where: {
-      id: serviceId,
+      id: { in: serviceIds },
       shopId,
       OR: [
         // Internal-only services are closed to the public page.
@@ -753,26 +892,35 @@ export const getAvailableSlots = async (
           ...(context === 'public' && { showOnPublicPage: true }),
         },
         ...(options.forBookingId
-          ? [{ bookings: { some: { id: options.forBookingId, shopId } } }]
+          ? [
+              { bookings: { some: { id: options.forBookingId, shopId } } },
+              {
+                bookingServices: {
+                  some: { bookingId: options.forBookingId },
+                },
+              },
+            ]
           : []),
       ],
     },
   });
-  if (!service) return closed();
+  if (services.length !== serviceIds.length) return closed();
 
-  const forBooking =
-    !options.customer && options.forBookingId
-      ? await prisma.booking.findFirst({
-          where: { id: options.forBookingId, shopId },
-          select: { customerId: true },
-        })
-      : null;
-  const duration = await resolveDuration(
-    prisma,
-    shopId,
-    service,
-    options.customer ?? forBooking,
-  );
+  const forBooking = !options.customer ? existingBooking : null;
+  // The services' lengths added up, each for this customer (a kept booking
+  // keeps the lengths it was made with).
+  let duration = 0;
+  for (const service of services) {
+    duration += keepsServices
+      ? existingBooking!.services.find((s) => s.serviceId === service.id)!
+          .duration
+      : await resolveDuration(
+          prisma,
+          shopId,
+          service,
+          options.customer ?? forBooking,
+        );
+  }
 
   const { timezone: zone, slotIntervalMinutes } =
     await getShopTimeSettings(shopId);
@@ -940,6 +1088,7 @@ export const listBookings = async (
       customer: true,
       service: true,
       products: PRODUCT_LINES,
+      services: SERVICE_LINES,
       ...RESCHEDULE_LINKS,
     },
     orderBy: { startTime: 'asc' },
@@ -995,6 +1144,7 @@ export const getBookingStats = async (userId: string, shopId: string) => {
         service: true,
         staff: { select: { id: true, name: true, email: true } },
         products: PRODUCT_LINES,
+        services: SERVICE_LINES,
       },
       orderBy: { startTime: 'asc' },
       take: 5,
@@ -1024,6 +1174,7 @@ const loadBooking = async (
       customer: true,
       service: true,
       products: PRODUCT_LINES,
+      services: SERVICE_LINES,
       ...RESCHEDULE_LINKS,
     },
   });
@@ -1073,6 +1224,9 @@ const rescheduleInTx = async (
     endTime: Date;
     notes?: string | null;
     overriddenRules?: string[];
+    // A different service was chosen: it replaces the booking's services.
+    // Otherwise they move over to the new booking, with its length.
+    newService?: { id: string; name: string; price: number };
   },
 ) => {
   const notReschedulable = () =>
@@ -1120,6 +1274,34 @@ const rescheduleInTx = async (
       locale: existing.locale,
     },
   });
+  // Its services come with it: a different one replaces them, otherwise they
+  // move over (a single one takes the booking's new length).
+  const minutes = Math.round(
+    (p.endTime.getTime() - p.startTime.getTime()) / 60_000,
+  );
+  if (p.newService) {
+    await tx.bookingService.create({
+      data: {
+        bookingId: created.id,
+        serviceId: p.newService.id,
+        name: p.newService.name,
+        duration: minutes,
+        price: p.newService.price,
+        position: 0,
+      },
+    });
+  } else {
+    const lines = await tx.bookingService.count({
+      where: { bookingId: existing.id },
+    });
+    await tx.bookingService.updateMany({
+      where: { bookingId: existing.id },
+      data: {
+        bookingId: created.id,
+        ...(lines === 1 && { duration: minutes }),
+      },
+    });
+  }
   // The reserved products (and their sold marks) stay with the appointment.
   await tx.bookingProduct.updateMany({
     where: { bookingId: existing.id },
@@ -1163,6 +1345,8 @@ export const updateBooking = async (
     // Any service/staff being referenced must belong to this shop.
     let newService: {
       id: string;
+      name: string;
+      price: number;
       duration: number;
       isActive: boolean;
     } | null = null;
@@ -1221,12 +1405,14 @@ export const updateBooking = async (
     const finalStartTime = data.startTime
       ? new Date(data.startTime)
       : existing.startTime;
-    const duration = await resolveDuration(
-      tx,
-      shopId,
-      newService ?? existing.service,
-      { customerId: existing.customerId },
-    );
+    // A booking with several services keeps its length (and them) unless a
+    // different service is chosen.
+    const duration =
+      !serviceChanged && existing.services.length > 1
+        ? (existing.endTime.getTime() - existing.startTime.getTime()) / 60_000
+        : await resolveDuration(tx, shopId, newService ?? existing.service, {
+            customerId: existing.customerId,
+          });
     const finalEndTime = new Date(finalStartTime.getTime() + duration * 60_000);
 
     // Same rules as creation; overlap never is bypassable. The stored codes
@@ -1259,6 +1445,7 @@ export const updateBooking = async (
       endTime: finalEndTime,
       notes: data.notes,
       overriddenRules,
+      newService: serviceChanged && newService ? newService : undefined,
     });
     return {
       booking,
@@ -1313,6 +1500,7 @@ export const updateBookingStatus = async (
         customer: true,
         service: true,
         products: PRODUCT_LINES,
+        services: SERVICE_LINES,
         ...RESCHEDULE_LINKS,
       },
     });
@@ -1406,6 +1594,7 @@ const TOKEN_INCLUDE = {
   staff: { select: { id: true, name: true, email: true } },
   rescheduledTo: { select: { id: true, startTime: true } },
   products: PRODUCT_LINES,
+  services: SERVICE_LINES,
 } as const;
 
 const loadByToken = async (db: Prisma.TransactionClient, token: string) => {
@@ -1469,12 +1658,12 @@ export const rescheduleBookingByToken = async (
         'BOOKING_UNCHANGED',
       );
 
-    const duration = await resolveDuration(
-      tx,
-      existing.shopId,
-      existing.service,
-      { customerId: existing.customerId },
-    );
+    const duration =
+      existing.services.length > 1
+        ? (existing.endTime.getTime() - existing.startTime.getTime()) / 60_000
+        : await resolveDuration(tx, existing.shopId, existing.service, {
+            customerId: existing.customerId,
+          });
     const endTime = new Date(startTime.getTime() + duration * 60_000);
 
     // Strict, like a public booking: no overrides.
@@ -1507,7 +1696,12 @@ export const cancelBookingByToken = async (token: string) => {
   return prisma.booking.update({
     where: { id: booking.id },
     data: { status: BookingStatus.CANCELED },
-    include: { customer: true, service: true, shop: true },
+    include: {
+      customer: true,
+      service: true,
+      shop: true,
+      services: SERVICE_LINES,
+    },
   });
 };
 

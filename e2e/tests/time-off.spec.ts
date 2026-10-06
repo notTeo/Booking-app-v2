@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * Time off sits on top of the weekly working hours: a day the owner marks as
@@ -20,8 +21,7 @@ test('a day off closes that day for customers', async ({ page, context }) => {
 
   const openPublicDay = async () => {
     await page.goto(`/${E2E.shop.slug}`);
-    await page.getByRole('radiogroup').getByRole('radio').first().click();
-    await page.getByRole('radiogroup').getByRole('radio').first().click();
+    await pickServiceAndProvider(page);
     await page.locator('#booking-date').fill(date);
   };
 

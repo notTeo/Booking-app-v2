@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faLocationDot, faClock, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faLocationDot, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { createBooking, type ReservedProduct } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
 import { useBookingWizard } from '../hooks/useBookingWizard';
-import WizardStepsIndicator from '../components/booking-wizard/WizardStepsIndicator';
+import WizardProgress from '../components/booking-wizard/WizardProgress';
 import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import PublicIdentityStep, { type PublicIdentity } from '../components/booking-wizard/PublicIdentityStep';
-import { buildISODateTime, formatDuration } from '../components/booking-wizard/wizardUtils';
+import { buildISODateTime, formatDuration, servicesSummary } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation, PRODUCT_OUT_OF_STOCK } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
@@ -83,6 +83,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [reserved, setReserved] = useState<Record<string, number>>({});
   const [confirmedProducts, setConfirmedProducts] = useState<ReservedProduct[]>([]);
   const [confirmedServicePrice, setConfirmedServicePrice] = useState<number | undefined>();
+  const [confirmedServiceNames, setConfirmedServiceNames] = useState('');
 
   if (wizard.loading) {
     return <div className="spinner-page"><div className="spinner spinner--lg" /></div>;
@@ -112,6 +113,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
         phone,
         email: email || undefined,
         serviceId: wizard.selectedServiceId,
+        ...(wizard.selectedServiceIds.length > 1 && { serviceIds: wizard.selectedServiceIds }),
         staffId: wizard.selectedMemberId ?? '',
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
@@ -119,6 +121,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
       });
       setConfirmedProducts(confirmation.products ?? []);
       setConfirmedServicePrice(confirmation.servicePrice);
+      setConfirmedServiceNames((confirmation.services ?? []).map((x) => x.name).join(' + '));
       if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
       else clearSavedCustomer();
       setConfirmed(true);
@@ -179,29 +182,50 @@ function PublicBookingPage({ slug }: { slug: string }) {
     wizard.setStep(3);
   }
 
+  const step = wizard.step;
+  const stepHeading =
+    step === 1 ? t.public.chooseService : [t.public.staff, t.public.dateTime, t.public.yourDetails][step - 2];
+  const picked = wizard.selectedServices;
+  const showFooter = !confirmed && shop.acceptingBookings;
+
   return (
     <div className="public-page">
       <PublicPalette
         palette={parsePublicPalette(look.get('palette') ?? shop.publicPalette)}
         font={parsePublicFont(look.get('font') ?? shop.publicFont)}
       />
-      <header className="page-hero">
-        <div className="page-hero__inner">
+      <div className="booking-card">
+        <header className="booking-card__head">
           {shop.photoUrl && (
             <div className="cover"><img src={mediaUrl(shop.photoUrl)} alt="" /></div>
           )}
-          <h1 className="t-title">{shop.name}</h1>
-          <div className="cluster cluster--tight">
-            {shop.phone && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
-            {shop.formattedAddress && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
-            <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
-          </div>
-        </div>
-      </header>
+          <h1 className="booking-card__title">{shop.name}</h1>
+          {(shop.formattedAddress || shop.phone) && (
+            <div className="booking-card__links">
+              {shop.formattedAddress && (
+                <a
+                  className="booking-card__link"
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.formattedAddress)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={t.public.openMap}
+                >
+                  <FontAwesomeIcon icon={faLocationDot} aria-hidden="true" />
+                  {shop.formattedAddress}
+                </a>
+              )}
+              {shop.phone && (
+                <a className="booking-card__link" href={`tel:${shop.phone.replace(/\s+/g, '')}`} title={t.public.callShop.replace('{phone}', shop.phone)}>
+                  <FontAwesomeIcon icon={faPhone} aria-hidden="true" />
+                  {shop.phone}
+                </a>
+              )}
+            </div>
+          )}
+        </header>
 
-      <main className="public-main">
-        {confirmed ? (
-          <section className="public-section">
+        <main className="booking-card__body">
+          {confirmed ? (
             <div className="card card--center">
               <div className="avatar avatar--xl" aria-hidden="true">
                 <FontAwesomeIcon icon={faCircleCheck} />
@@ -210,7 +234,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
               <p className="card__text">
                 {t.public.bookingConfirmedMsg
                   .replace('{name}', name)
-                  .replace('{service}', wizard.selectedService?.name ?? '')
+                  .replace('{service}', confirmedServiceNames || (wizard.selectedService?.name ?? ''))
                   .replace('{date}', wizard.date)
                   .replace('{time}', wizard.time)}
               </p>
@@ -223,76 +247,81 @@ function PublicBookingPage({ slug }: { slug: string }) {
               )}
               <ReservedProducts products={confirmedProducts} servicePrice={confirmedServicePrice} />
             </div>
-          </section>
-        ) : !shop.acceptingBookings ? (
-          <section className="public-section">
+          ) : !shop.acceptingBookings ? (
             <Alert variant="info" title={t.public.notAcceptingTitle}>
               {shop.phone ? t.public.notAcceptingCall.replace('{phone}', shop.phone) : t.public.notAccepting}
             </Alert>
-          </section>
-        ) : (
-          <section className="public-section">
-            <h2 className="t-heading">{t.public.bookAppointment}</h2>
+          ) : (
+            <>
+              <WizardProgress step={step} />
+              <h2 className="booking-card__heading">{stepHeading}</h2>
+              {step === 1 && picked.length === 0 && shop.services.length > 1 && (
+                <p className="booking-card__hint">{t.public.chooseServiceHint}</p>
+              )}
 
-            <WizardStepsIndicator currentStep={wizard.step} />
+              {/* Saved details found: the customer says who is booking before anything else. */}
+              {step === 1 && identity !== 'known' && (
+                <PublicIdentityStep
+                  identity={identity}
+                  name={name}
+                  phone={phone}
+                  onConfirm={() => setIdentity('known')}
+                  onDecline={handleDeclineIdentity}
+                  onUsePhone={handleUsePhone}
+                />
+              )}
 
-            {wizard.step === 1 && (
-              <PublicIdentityStep
-                identity={identity}
-                name={name}
-                phone={phone}
-                onConfirm={() => setIdentity('known')}
-                onDecline={handleDeclineIdentity}
-                onUsePhone={handleUsePhone}
-              />
-            )}
+              {step === 1 && identity !== 'ask' && (
+                <ServiceSelectStep
+                  services={shop.services}
+                  selectedIds={wizard.selectedServiceIds}
+                  onToggle={wizard.toggleService}
+                />
+              )}
 
-            {/* Saved details found: the customer says who is booking before anything else. */}
-            {wizard.step === 1 && identity !== 'ask' && (
-              <ServiceSelectStep services={shop.services} onSelect={wizard.handleSelectService} />
-            )}
+              {step === 2 && (
+                <StaffSelectStep
+                  members={wizard.eligibleMembers}
+                  selectedService={wizard.selectedService}
+                  onSelect={wizard.handleSelectMember}
+                  onBack={wizard.goBack}
+                  hideBack
+                />
+              )}
 
-            {wizard.step === 2 && (
-              <StaffSelectStep
-                members={wizard.eligibleMembers}
-                selectedService={wizard.selectedService}
-                onSelect={wizard.handleSelectMember}
-                onBack={wizard.goBack}
-              />
-            )}
+              {step === 3 && (
+                <DateTimeStep
+                  date={wizard.date}
+                  time={wizard.time}
+                  slots={wizard.slots}
+                  slotsError={wizard.slotsError}
+                  onRetrySlots={wizard.retrySlots}
+                  selectedService={wizard.selectedService}
+                  selectedMember={selectedMember}
+                  minDate={todayInZone(shop.timezone)}
+                  maxDate={shiftDate(todayInZone(shop.timezone), shop.maxAdvanceDays)}
+                  mode="public"
+                  onDateChange={wizard.handleDateChange}
+                  onSelectTime={wizard.setTime}
+                  onBack={wizard.goBack}
+                  onContinue={() => wizard.setStep(4)}
+                  hideActions
+                />
+              )}
 
-            {wizard.step === 3 && (
-              <DateTimeStep
-                date={wizard.date}
-                time={wizard.time}
-                slots={wizard.slots}
-                slotsError={wizard.slotsError}
-                onRetrySlots={wizard.retrySlots}
-                selectedService={wizard.selectedService}
-                selectedMember={selectedMember}
-                minDate={todayInZone(shop.timezone)}
-                maxDate={shiftDate(todayInZone(shop.timezone), shop.maxAdvanceDays)}
-                mode="public"
-                onDateChange={wizard.handleDateChange}
-                onSelectTime={wizard.setTime}
-                onBack={wizard.goBack}
-                onContinue={() => wizard.setStep(4)}
-              />
-            )}
+              {step === 4 && (
+                <div className="public-wizard-panel">
+                  {wizard.selectedService && (
+                    <p className="t-body-sm t-muted">
+                      {t.public.serviceContext} <strong>{wizard.selectedService.name}</strong> ({formatDuration(wizard.selectedService.duration)})
+                      {selectedMember && (
+                        <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
+                      )}
+                      {' · '}<strong>{wizard.date}</strong> {t.public.atLabel} <strong>{wizard.time}</strong>
+                    </p>
+                  )}
 
-            {wizard.step === 4 && (
-              <div className="public-wizard-panel">
-                {wizard.selectedService && (
-                  <p className="t-body-sm t-muted">
-                    {t.public.serviceContext} <strong>{wizard.selectedService.name}</strong> ({formatDuration(wizard.selectedService.duration)})
-                    {selectedMember && (
-                      <> · {t.public.staffContext} <strong>{selectedMember.name}</strong></>
-                    )}
-                    {' · '}<strong>{wizard.date}</strong> {t.public.atLabel} <strong>{wizard.time}</strong>
-                  </p>
-                )}
-
-                <div className="public-booking-form">
+                  <div className="public-booking-form">
                   <div className="field">
                     <label className="field__label" htmlFor="b-name">
                       {t.public.nameLabel} <span className="field__required">*</span>
@@ -379,30 +408,72 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
                   {busyNotice && <Alert variant="info">{busyNotice}</Alert>}
                   {submitError && <Alert variant="danger">{submitError}</Alert>}
+                  </div>
                 </div>
+              )}
+            </>
+          )}
+        </main>
 
-                <div className="cluster public-wizard-actions">
-                  <button
-                    className="btn btn--ghost"
-                    onClick={handleBackFromForm}
-                    disabled={submitting}
-                  >
-                    {t.public.back}
-                  </button>
-                  <button
-                    className={`btn${submitting && !cooling ? ' is-loading' : ''}`}
-                    onClick={handleSubmit}
-                    aria-busy={submitting && !cooling}
-                    disabled={cooling || name.trim() === '' || phone.trim() === ''}
-                  >
-                    {t.public.confirmBooking}
-                  </button>
-                </div>
-              </div>
+        {showFooter && (
+          <footer className="booking-card__foot">
+            {identity === 'known' && step === 1 && (
+              <p className="booking-card__who">
+                {t.public.bookingAs.replace('{name}', '')}
+                <strong>{name || phone}</strong>
+                {' · '}
+                <button type="button" className="booking-card__change" onClick={handleDeclineIdentity}>{t.public.change}</button>
+              </p>
             )}
-          </section>
+            {step === 1 && picked.length > 1 && (
+              <p className="booking-card__who">{servicesSummary(t.public, picked, (x) => x.duration)}</p>
+            )}
+            <div className="booking-card__actions">
+              {step > 1 && (
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  onClick={step === 4 ? handleBackFromForm : wizard.goBack}
+                  disabled={submitting}
+                >
+                  {t.public.back}
+                </button>
+              )}
+              {step === 1 && (
+                <button
+                  type="button"
+                  className="btn btn--block"
+                  disabled={picked.length === 0}
+                  onClick={wizard.continueFromServices}
+                >
+                  {picked.length === 0 ? t.public.chooseServiceToContinue : t.public.continue}
+                </button>
+              )}
+              {step === 3 && (
+                <button
+                  type="button"
+                  className="btn btn--block"
+                  disabled={wizard.date === '' || wizard.time === ''}
+                  onClick={() => wizard.setStep(4)}
+                >
+                  {t.public.continue}
+                </button>
+              )}
+              {step === 4 && (
+                <button
+                  type="button"
+                  className={`btn btn--block${submitting && !cooling ? ' is-loading' : ''}`}
+                  onClick={handleSubmit}
+                  aria-busy={submitting && !cooling}
+                  disabled={cooling || name.trim() === '' || phone.trim() === ''}
+                >
+                  {t.public.confirmBooking}
+                </button>
+              )}
+            </div>
+          </footer>
         )}
-      </main>
+      </div>
     </div>
   );
 }
