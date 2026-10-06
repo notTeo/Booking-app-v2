@@ -4,3 +4,11 @@
 .legal-page > .back-link { margin-bottom: 0; }
 .legal-section { display: flex; flex-direction: column; gap: var(--space-2); }
 .about-badge { align-self: center; }
+/* Pricing: wide enough for the two plan cards and the comparison tables. */
+.pricing-page { display: flex; flex-direction: column; gap: var(--space-10); max-width: 56rem; margin: 0 auto; padding: var(--space-12) var(--space-4) var(--space-16); }
+.pricing-page > .back-link { margin-bottom: 0; }
+/* Fixed columns so every table lines up: the feature, then one narrow column per plan. */
+.pricing-page .data-table { table-layout: fixed; }
+.pricing-page .data-table th:first-child { width: 56%; }
+.pricing-page .data-table th, .pricing-page .data-table td { padding-inline: var(--space-3); white-space: normal; overflow-wrap: anywhere; }
+.pricing-notes { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-5); }

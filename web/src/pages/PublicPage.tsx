@@ -18,6 +18,7 @@ import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
 import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
+import PublicPalette from '../components/PublicPalette';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
@@ -164,14 +165,15 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
   return (
     <div className="public-page">
+      <PublicPalette />
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{shop.name}</h1>
           {shop.description && <p className="t-body t-muted">{shop.description}</p>}
           <div className="cluster cluster--tight">
-            {shop.phone && <span className="badge badge--neutral"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
-            {shop.formattedAddress && <span className="badge badge--neutral"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
-            <span className="badge badge--neutral"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
+            {shop.phone && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}
+            {shop.formattedAddress && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faLocationDot} aria-hidden="true" /> {shop.formattedAddress}</span>}
+            <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faClock} aria-hidden="true" /> {shop.timezone}</span>
           </div>
         </div>
       </header>

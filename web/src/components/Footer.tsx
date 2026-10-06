@@ -23,7 +23,7 @@ export default function Footer() {
               <ul className="home-footer-links">
                 <li><a href="/#features">{t.home.featuresBadge || 'Features'}</a></li>
                 <li><a href="/#how">{t.home.howBadge || 'How It Works'}</a></li>
-                <li><a href="/#pricing">{t.home.pricingBadge}</a></li>
+                <li><Link to="/pricing">{t.home.pricingBadge}</Link></li>
                 <li><a href="/#faq">{t.footer.faq}</a></li>
                 <li><Link to="/register">{t.home.cta}</Link></li>
               </ul>

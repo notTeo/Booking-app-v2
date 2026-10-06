@@ -4,6 +4,7 @@ import { cancelBooking, getManagedBooking, type CancelBookingResult } from '../a
 import { useLang } from '../context/LanguageContext';
 import { apiErrorField } from '../utils/apiError';
 import Alert from '../components/Alert';
+import PublicPalette from '../components/PublicPalette';
 
 export default function CancelBookingPage() {
   const [params] = useSearchParams();
@@ -47,6 +48,7 @@ export default function CancelBookingPage() {
   if (loading) {
     return (
       <div className="page page--center">
+        <PublicPalette />
         <div className="card card--auth card--center">
           <div className="spinner spinner--lg" />
           <p className="card__text">{t.cancelBooking.cancelling}</p>
@@ -58,6 +60,7 @@ export default function CancelBookingPage() {
   if (error) {
     return (
       <div className="page page--center">
+        <PublicPalette />
         <div className="card card--auth card--center">
           <Alert variant="danger">{error}</Alert>
         </div>
@@ -68,6 +71,7 @@ export default function CancelBookingPage() {
   if (kept) {
     return (
       <div className="page page--center">
+        <PublicPalette />
         <div className="card card--auth card--center">
           <p>{t.cancelBooking.kept}</p>
         </div>
@@ -78,6 +82,7 @@ export default function CancelBookingPage() {
   if (!result) {
     return (
       <div className="page page--center">
+        <PublicPalette />
         <div className="card card--auth card--center">
           <h1 className="t-heading">{t.cancelBooking.confirmTitle}</h1>
           <p className="card__text">{t.cancelBooking.confirmText}</p>
@@ -105,6 +110,7 @@ export default function CancelBookingPage() {
 
   return (
     <div className="page page--center">
+      <PublicPalette />
       <div className="card card--auth card--center">
         <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <p className="card__text">

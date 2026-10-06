@@ -36,6 +36,7 @@ import { handleActivateKeyDown } from '../utils/a11y';
 import '../styles/pages/home.css';
 import Wordmark from '../components/Wordmark';
 import BrandText from '../components/BrandText';
+import PlanCards from '../components/PlanCards';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
@@ -1216,21 +1217,10 @@ export default function HomePage() {
             <h2 className="home-section-title">{t.home.pricingTitle}</h2>
             <p className="home-section-sub">{t.home.pricingSub}</p>
           </div>
-          <div className="home-pricing-single">
-            <div className="home-price-card home-price-card--pro">
-              <h3 className="home-price-tier">{t.home.pricingPlanName}</h3>
-              <p className="home-price-desc">{t.home.pricingPlanDesc}</p>
-              <hr className="home-price-divider" />
-              <ul className="home-price-features">
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature1}</li>
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature2}</li>
-                <li><FontAwesomeIcon icon={faCheck} className="feat-check" /> {t.home.pricingFeature3}</li>
-              </ul>
-              <a href="mailto:nikostheodosis05@gmail.com" className="home-btn-primary home-price-cta">
-                {t.home.pricingCta}
-              </a>
-            </div>
-          </div>
+          <PlanCards />
+          <p className="home-pricing-more">
+            <Link to="/pricing">{t.home.pricingDetailsLink}</Link>
+          </p>
         </div>
       </section>
 

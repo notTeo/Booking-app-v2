@@ -17,12 +17,14 @@ import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import RescheduleConfirmStep from '../components/booking-wizard/RescheduleConfirmStep';
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { dateInZone, formatDateTimeInZone, shiftDate, todayInZone } from '../utils/shopTime';
+import PublicPalette from '../components/PublicPalette';
 import '../styles/pages/public.css';
 
 /** One centered card: every state of this page that isn't the wizard itself. */
 function Notice({ children }: { children: React.ReactNode }) {
   return (
     <div className="page page--center">
+      <PublicPalette />
       <div className="card card--auth card--center">{children}</div>
     </div>
   );
@@ -88,6 +90,7 @@ export default function RescheduleBookingPage() {
 
   return (
     <div className="public-page">
+      <PublicPalette />
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{booking.shop.name}</h1>

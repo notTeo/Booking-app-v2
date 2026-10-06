@@ -283,24 +283,21 @@ export default function ShopServicesPage() {
             <div key={service.id} className="card card--flush">
               <div className="card__section">
                 <div className="service-card__main">
+                  <span className="service-card__name">{service.name}</span>
+                  {service.description && (
+                    <div className="service-card__desc">{service.description}</div>
+                  )}
                   <div className="cluster cluster--tight">
-                    <span className="service-card__name">{service.name}</span>
                     <span
-                      className={`badge ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
+                      className={`badge badge--wrap ${service.isActive ? 'badge--success' : 'badge--neutral'}`}
                     >
                       {service.isActive ? t.services.active : t.services.inactive}
                     </span>
                     {!service.showOnPublicPage && (
-                      <span className="badge badge--neutral">{t.services.internalOnly}</span>
+                      <span className="badge badge--neutral badge--wrap">{t.services.internalOnly}</span>
                     )}
-                  </div>
-                  {service.description && (
-                    <div className="service-card__desc">{service.description}</div>
-                  )}
-                  <div className="service-card__meta">
-                    <span>{formatDuration(service.duration)}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{formatPrice(service.price)}</span>
+                    <span className="badge badge--neutral badge--wrap">{formatDuration(service.duration)}</span>
+                    <span className="badge badge--neutral badge--wrap">{formatPrice(service.price)}</span>
                   </div>
                 </div>
               </div>

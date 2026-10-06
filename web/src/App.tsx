@@ -40,6 +40,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import DpaPage from './pages/DpaPage';
 import AboutPage from './pages/AboutPage';
+import PricingPage from './pages/PricingPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/ScrollToTop';
 import { publicShopPath } from './utils/publicLink';
@@ -85,6 +86,7 @@ export default function App() {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/dpa" element={<DpaPage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/p/:slug" element={<LegacyPublicRedirect />} />
 

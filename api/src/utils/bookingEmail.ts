@@ -1,8 +1,11 @@
 import type { BookingEmailParams } from '../services/email.service';
+import { emailStrings } from '../services/emailStrings';
+import { parseLocale } from './locale';
 
 /** The customer-email fields of a booking loaded with shop, service and staff. */
 export const bookingEmailParams = (booking: {
   cancelToken: string | null;
+  locale: string;
   startTime: Date;
   endTime: Date;
   customer: { name: string; email: string | null };
@@ -19,12 +22,13 @@ export const bookingEmailParams = (booking: {
 }): BookingEmailParams | null => {
   // No address to write to, or no token to build the links from.
   if (!booking.customer.email || !booking.cancelToken) return null;
+  const locale = parseLocale(booking.locale);
   return {
     email: booking.customer.email,
     customerName: booking.customer.name,
     shopName: booking.shop.name,
     serviceName: booking.service.name,
-    staffName: booking.staff.name ?? 'Your staff member',
+    staffName: booking.staff.name ?? emailStrings[locale].staffFallback,
     startTime: booking.startTime,
     endTime: booking.endTime,
     timezone: booking.shop.timezone,
@@ -33,5 +37,6 @@ export const bookingEmailParams = (booking: {
     canReschedule: booking.shop.customerRescheduleEnabled,
     cancelCutoffHours: booking.shop.cancelCutoffHours,
     rescheduleCutoffHours: booking.shop.rescheduleCutoffHours,
+    locale,
   };
 };

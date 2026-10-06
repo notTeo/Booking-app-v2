@@ -4,7 +4,7 @@ import { handleRowClick } from '../utils/a11y';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { exportAllCustomers, getCustomers, type Customer } from '../api/customer.api';
-import { buildExport, downloadBlob, type ExportFormat } from '../utils/customerFiles';
+import { buildExport, downloadBlob } from '../utils/customerFiles';
 import { canManageShop } from '../utils/roles';
 import ImportCustomersModal from '../components/ImportCustomersModal';
 import '../styles/pages/team.css';
@@ -13,12 +13,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
-
-const EXPORT_FORMATS: { format: ExportFormat; label: string }[] = [
-  { format: 'csv', label: 'CSV' },
-  { format: 'xlsx', label: 'Excel' },
-  { format: 'json', label: 'JSON' },
-];
+// How long typing must pause before the search is sent.
+const SEARCH_DELAY_MS = 250;
 
 export default function ShopCustomersPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -31,9 +27,14 @@ export default function ShopCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  // The search the list was last asked for; trails the input while typing.
+  const [query, setQuery] = useState('');
+  // False until the first list arrives. After that a refresh keeps the old
+  // rows on screen instead of swapping the whole list for a spinner.
+  const [loaded, setLoaded] = useState(false);
   const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
   // Bumped after an import so the list loads again.
   const [reloadKey, setReloadKey] = useState(0);
@@ -45,31 +46,39 @@ export default function ShopCustomersPage() {
     // search is applied server-side against every customer in the shop
     // before pagination, so it always searches the full list, not just
     // whatever page happens to be loaded.
-    getCustomers(shop.id, search || undefined, page, PAGE_SIZE, onlyCustomDurations)
+    // A slower, older answer must not overwrite a newer one.
+    let stale = false;
+    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations)
       .then((result) => {
+        if (stale) return;
         setCustomers(result.items);
         setTotal(result.total);
+        setLoaded(true);
       })
-      .catch(() => setError(t.customers.errorLoad))
-      .finally(() => setLoading(false));
-  }, [shop?.id, search, page, onlyCustomDurations, reloadKey]);
+      .catch(() => { if (!stale) setError(t.customers.errorLoad); })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
+  }, [shop?.id, query, page, onlyCustomDurations, reloadKey]);
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery(search);
+      setPage(1);
+    }, SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const handleExport = async (format: ExportFormat) => {
+  const handleExport = async () => {
     if (!shop || exporting) return;
-    setExporting(format);
+    setExporting(true);
     setExportError('');
     try {
-      const blob = await buildExport(format, await exportAllCustomers(shop.id));
-      downloadBlob(blob, `customers-${shop.slug}.${format}`);
+      const blob = await buildExport('xlsx', await exportAllCustomers(shop.id));
+      downloadBlob(blob, `customers-${shop.slug}.xlsx`);
     } catch {
       setExportError(t.customers.exportAllError);
     } finally {
-      setExporting(null);
+      setExporting(false);
     }
   };
 
@@ -95,20 +104,13 @@ export default function ShopCustomersPage() {
             <button className="btn btn--sm" onClick={() => setImportOpen(true)}>
               {t.customers.importButton}
             </button>
-            <span className="t-body-sm t-muted" id="customers-export-label">{t.customers.exportLabel}</span>
-            <div className="cluster cluster--tight" role="group" aria-labelledby="customers-export-label">
-              {EXPORT_FORMATS.map(({ format, label }) => (
-                <button
-                  key={format}
-                  className={`btn btn--secondary btn--sm${exporting === format ? ' is-loading' : ''}`}
-                  onClick={() => handleExport(format)}
-                  aria-busy={exporting === format}
-                  disabled={exporting !== null && exporting !== format}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <button
+              className={`btn btn--secondary btn--sm${exporting ? ' is-loading' : ''}`}
+              onClick={handleExport}
+              aria-busy={exporting}
+            >
+              {t.customers.exportLabel}
+            </button>
           </div>
         )}
       </div>
@@ -126,7 +128,7 @@ export default function ShopCustomersPage() {
             type="text"
             placeholder={t.customers.searchPlaceholder}
             value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       )}
@@ -145,17 +147,17 @@ export default function ShopCustomersPage() {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      {loading ? (
+      {loading && !loaded ? (
         <div className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       ) : (
-        <div className="table-wrap">
+        <div className="table-wrap" aria-busy={loading}>
           <div className="table-surface">
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {search || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
+                  {query || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (

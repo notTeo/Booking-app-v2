@@ -59,6 +59,8 @@ export default function ShopSettingsPage() {
   const [rescheduleEnabled, setRescheduleEnabled] = useState(true);
   const [cancelCutoff, setCancelCutoff] = useState('1');
   const [rescheduleCutoff, setRescheduleCutoff] = useState('1');
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [reminderHours, setReminderHours] = useState('24');
 
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -88,6 +90,8 @@ export default function ShopSettingsPage() {
           setRescheduleEnabled(found.customerRescheduleEnabled);
           setCancelCutoff(String(found.cancelCutoffHours));
           setRescheduleCutoff(String(found.rescheduleCutoffHours));
+          setReminderEnabled(found.reminderEnabled);
+          setReminderHours(String(found.reminderHoursBefore));
         }
       })
       .catch(() => setLoadError(t.shopSettings.errorLoad))
@@ -113,6 +117,8 @@ export default function ShopSettingsPage() {
         customerRescheduleEnabled: rescheduleEnabled,
         cancelCutoffHours: Number(cancelCutoff),
         rescheduleCutoffHours: Number(rescheduleCutoff),
+        reminderEnabled,
+        reminderHoursBefore: Number(reminderHours),
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
@@ -365,6 +371,42 @@ export default function ShopSettingsPage() {
                 <small className="field__hint" id="detail-reschedule-cutoff-hint">{t.shopSettings.rescheduleCutoffHint}</small>
               </div>
             </div>
+          </div>
+
+          <div className="card__section">
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <label htmlFor="detail-reminder" className="setting-row__title">
+                  {t.shopSettings.reminderEnabledLabel}
+                </label>
+                <span className="setting-row__text">{t.shopSettings.reminderEnabledDesc}</span>
+              </div>
+              <Switch
+                id="detail-reminder"
+                checked={reminderEnabled}
+                onChange={setReminderEnabled}
+                label={t.shopSettings.reminderEnabledLabel}
+              />
+            </div>
+            {reminderEnabled && (
+              <div className="field">
+                <label className="field__label" htmlFor="detail-reminder-hours">{t.shopSettings.reminderHoursLabel}</label>
+                <input
+                  className="input"
+                  id="detail-reminder-hours"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={72}
+                  step={1}
+                  value={reminderHours}
+                  onChange={(e) => setReminderHours(e.target.value)}
+                  aria-describedby="detail-reminder-hours-hint"
+                  required
+                />
+                <small className="field__hint" id="detail-reminder-hours-hint">{t.shopSettings.reminderHoursHint}</small>
+              </div>
+            )}
           </div>
         </div>
         </fieldset>
