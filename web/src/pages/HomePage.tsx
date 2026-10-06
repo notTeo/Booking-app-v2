@@ -9,7 +9,6 @@ import {
   faUserPlus,
   faGear,
   faArrowRight,
-  faXmark,
   faPlus,
   faTableCells,
   faCalendar,
@@ -17,8 +16,6 @@ import {
   faCheck,
   faGlobe,
   faEnvelope,
-  faSun,
-  faMoon,
   faPlusCircle,
   faClock,
   faMagnifyingGlass,
@@ -29,7 +26,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { useLang } from '../context/LanguageContext';
-import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 import Switch from '../components/Switch';
 import { handleActivateKeyDown } from '../utils/a11y';
@@ -37,6 +33,7 @@ import '../styles/pages/home.css';
 import Wordmark from '../components/Wordmark';
 import BrandText from '../components/BrandText';
 import PlanCards from '../components/PlanCards';
+import SiteNav from '../components/SiteNav';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 // Dashboard preview mockup — a clickable, non-functional stand-in for the
@@ -138,10 +135,7 @@ function HeroHeadline({ text }: { text: string }) {
 }
 
 export default function HomePage() {
-  const { t, language, toggleLanguage } = useLang();
-  const { theme, toggleTheme } = useTheme();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
+  const { t } = useLang();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
   const [previewPage, setPreviewPage] = useState<PreviewPageId>('overview');
@@ -293,57 +287,10 @@ export default function HomePage() {
   return (
     <div className="home-page">
 
-      {/* ── Nav row — its own always-on-top layer, decoupled from the pill body
-           below so it (and its links/buttons) can never end up hidden behind
-           the preview card while it overlaps the pill. ─────────────────────── */}
-      <nav className="home-nav-bar">
-        <div className="home-container home-nav" ref={navRowRef}>
-
-          <div className="home-nav-left">
-            <Link to="/" className="home-nav-logo-link" aria-label="BeBooked home">
-              <span className="home-logo-text"><Wordmark /></span>
-            </Link>
-
-            <div className="home-nav-links">
-              <Link to="/about" className="home-nav-link">{t.home.aboutBadge || 'About'}</Link>
-              <a href="#features" className="home-nav-link">{t.home.productBadge || 'Product'}</a>
-              <Link to="/pricing" className="home-nav-link">{t.home.pricingBadge}</Link>
-              <Link to="/contact" className="home-nav-link">{t.home.contactBadge || 'Contact'}</Link>
-            </div>
-          </div>
-
-          <div className="home-nav-right">
-            <button
-              className="home-nav-toggle"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            >
-              <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
-            </button>
-
-            <button
-              className="home-nav-toggle home-nav-toggle--lang"
-              onClick={toggleLanguage}
-              aria-label="Toggle language"
-            >
-              {language === 'el' ? 'EL' : 'EN'}
-            </button>
-
-            <Link to="/login" className="home-nav-link">{t.home.signIn}</Link>
-            <Link to="/register" className="home-btn-primary home-btn-primary--sm">{t.home.cta}</Link>
-          </div>
-
-          <button
-            className={`home-hamburger${menuOpen ? ' is-open' : ''}`}
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            <span className="home-hamburger-bar home-hamburger-bar--top" />
-            <span className="home-hamburger-bar home-hamburger-bar--bottom" />
-          </button>
-        </div>
-      </nav>
+      {/* ── Nav row and mobile menu: the nav row is its own always-on-top layer,
+           decoupled from the pill body below so it can never end up hidden
+           behind the preview card while it overlaps the pill. ─────────────── */}
+      <SiteNav rowRef={navRowRef} />
 
       {/* ── Pill body (gradient + hero copy) — shrinks away behind the nav row on scroll ── */}
       <div className="home-nav-wrapper" ref={navWrapperRef}>
@@ -367,44 +314,6 @@ export default function HomePage() {
               {t.home.cta}
               <FontAwesomeIcon icon={faArrowRight} />
             </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Mobile sidebar (slides in right-to-left) ─────────────────────────────── */}
-      <div className={`home-mobile-backdrop${menuOpen ? ' is-open' : ''}`} onClick={closeMenu} />
-      <div className={`home-mobile-menu${menuOpen ? ' is-open' : ''}`}>
-        <button className="home-mobile-close" onClick={closeMenu} aria-label="Close menu">
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
-
-        <div className="home-mobile-links">
-          <Link to="/about" className="home-mobile-link" onClick={closeMenu}>{t.home.aboutBadge || 'About'}</Link>
-          <a href="#features" className="home-mobile-link" onClick={closeMenu}>{t.home.productBadge || 'Product'}</a>
-          <Link to="/pricing" className="home-mobile-link" onClick={closeMenu}>{t.home.pricingBadge}</Link>
-          <Link to="/contact" className="home-mobile-link" onClick={closeMenu}>{t.home.contactBadge || 'Contact'}</Link>
-        </div>
-
-        <div className="home-mobile-bottom">
-          <div className="home-mobile-actions">
-            <Link to="/login" className="home-mobile-link" onClick={closeMenu}>{t.home.signIn}</Link>
-            <Link to="/register" className="home-btn-primary home-btn-primary--sm" onClick={closeMenu}>
-              {t.home.cta} <FontAwesomeIcon icon={faArrowRight} />
-            </Link>
-          </div>
-
-          <div className="home-mobile-toggles">
-            <button
-              className="home-nav-toggle"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            >
-              <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
-            </button>
-            <button className="home-nav-toggle home-nav-toggle--lang" onClick={toggleLanguage} aria-label="Toggle language">
-              {language === 'el' ? 'EL' : 'EN'}
-            </button>
           </div>
         </div>
       </div>

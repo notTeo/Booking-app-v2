@@ -1,10 +1,9 @@
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import PlanCards from '../components/PlanCards';
-import Wordmark from '../components/Wordmark';
+import SiteNav from '../components/SiteNav';
 import '../styles/pages/legal.css';
 
 // Reference only: what each plan includes. There is nothing to buy here.
@@ -25,8 +24,8 @@ export default function PricingPage() {
 
   return (
     <>
+      <SiteNav solid />
       <div className="pricing-page">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <header className="pricing-page__header">
           <h1 className="t-display">{p.title}</h1>
           <p className="t-body t-muted">{p.intro}</p>

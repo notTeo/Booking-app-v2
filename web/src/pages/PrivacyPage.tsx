@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
 import { useLang } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import '../styles/pages/legal.css';
-import Wordmark from '../components/Wordmark';
+import SiteNav from '../components/SiteNav';
 import BrandText from '../components/BrandText';
 
 export default function PrivacyPage() {
@@ -17,8 +16,8 @@ export default function PrivacyPage() {
   ];
   return (
     <>
+      <SiteNav solid />
       <div className="legal-page">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <h1 className="t-title"><BrandText text={t.privacy.title} /></h1>
         <p className="t-body-sm t-muted"><BrandText text={t.privacy.lastUpdated} muted /></p>
         <p className="t-body"><BrandText text={t.privacy.intro} muted /></p>
