@@ -906,10 +906,10 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
   /* The time gutter stays put while a column swipes past it. */
   .cal__gutter, .cal__corner { position: sticky; left: 0; z-index: 6; background: var(--surface); }
 }
-/* Wider screens: a column stops growing at --cal-col-max, so one or two providers don't stretch across the page. */
+/* Wider screens: the box is only as wide as its columns at --cal-col-max each (the page passes the count as --cal-cols),
+   so one or two providers don't stretch across the page. The 2px is the box's own border. */
 @media (min-width: 640px) {
-  .cal__col-head, .cal__col { max-width: var(--cal-col-max); }
-  .cal__col-head:last-child, .cal__col:last-child { border-right: 1px solid var(--border); }
+  .cal { max-width: calc(var(--cal-gutter-w) + var(--cal-cols, 99) * var(--cal-col-max) + 2px); }
 }
 
 /* ---------- Dashboard: stat grid + icon, bar chart, donut + legend ---------- */
