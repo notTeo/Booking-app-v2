@@ -8,6 +8,9 @@ import {
   requireShopAccess,
 } from '../utils/shopAccess';
 import { planView, trialEndFrom, TRIAL_PLAN } from './plan.service';
+import { PhotoCrop, storePhoto } from './photo.service';
+import { removeShopFiles, removeStoredFiles } from './storage.service';
+import { Prisma } from '../../dist/generated/prisma';
 
 export interface CreateShopDto {
   name: string;
@@ -202,6 +205,70 @@ export const deleteShop = async (userId: string, shopId: string) => {
   });
 
   await prisma.shop.delete({ where: { id: shopId } });
+  await removeShopFiles(shopId);
 
   logger.info(`Shop deleted: ${shopId} by user ${userId}`);
+};
+
+// The shop photo is part of the booking page's look, so it follows the same
+// permission as the other shop settings.
+const requireSettingsAccess = async (userId: string, shopId: string) => {
+  const membership = await requireShopAccess(userId, shopId, {
+    role: 'manager',
+    forbiddenMessage: 'Only the shop owner or a manager can update this shop',
+  });
+  if (!canEditShopSettings(membership))
+    throw new AppError(
+      403,
+      'The shop owner has not let you edit shop settings',
+    );
+  return membership;
+};
+
+// A new photo, or (without a file) a new crop of the current one.
+export const setShopPhoto = async (
+  userId: string,
+  shopId: string,
+  file: Buffer | undefined,
+  crop: PhotoCrop,
+) => {
+  const membership = await requireSettingsAccess(userId, shopId);
+  const current = await prisma.shop.findUniqueOrThrow({
+    where: { id: shopId },
+  });
+  const { data, stale } = await storePhoto({
+    shopId,
+    shape: 'cover',
+    label: 'shop',
+    file,
+    crop,
+    current,
+  });
+  const shop = await prisma.shop.update({
+    where: { id: shopId },
+    data: { ...data, photoCrop: { ...data.photoCrop } },
+  });
+  await removeStoredFiles(stale);
+
+  logger.info(`Shop photo set: ${shopId} by user ${userId}`);
+  return { ...shop, ...planView(shop), ...memberView(membership) };
+};
+
+export const removeShopPhoto = async (userId: string, shopId: string) => {
+  const membership = await requireSettingsAccess(userId, shopId);
+  const current = await prisma.shop.findUniqueOrThrow({
+    where: { id: shopId },
+  });
+  const shop = await prisma.shop.update({
+    where: { id: shopId },
+    data: {
+      photoUrl: null,
+      photoOriginalUrl: null,
+      photoCrop: Prisma.DbNull,
+    },
+  });
+  await removeStoredFiles([current.photoUrl, current.photoOriginalUrl]);
+
+  logger.info(`Shop photo removed: ${shopId} by user ${userId}`);
+  return { ...shop, ...planView(shop), ...memberView(membership) };
 };

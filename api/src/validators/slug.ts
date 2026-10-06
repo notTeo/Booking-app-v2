@@ -41,6 +41,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   'user',
   'users',
   'public',
+  'media',
   'docs',
   'health',
   // platform / brand

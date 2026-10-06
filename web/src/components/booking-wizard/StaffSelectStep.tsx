@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Avatar from '../Avatar';
 
 export default function StaffSelectStep({
   members,
@@ -40,9 +41,7 @@ export default function StaffSelectStep({
             className="staff-card"
             onClick={() => onSelect(m.id)}
           >
-            <span className="avatar avatar--lg" aria-hidden="true">
-              {m.name?.charAt(0)?.toUpperCase() ?? '?'}
-            </span>
+            <Avatar name={m.name} photoUrl={m.photoUrl} size="lg" />
             <span className="staff-card__main">
               <span className="staff-card__name">{m.name}</span>
               {m.staffServices.length > 0 && (

@@ -1,4 +1,5 @@
 import client from './client';
+import { deletePhoto, putPhoto, type PhotoCrop, type PhotoFields } from './photo.api';
 import type { ShopRole } from './shop.api';
 
 export type { ShopRole };
@@ -6,7 +7,7 @@ export type { ShopRole };
 /** Roles that can be given out: the owner role only moves by transfer. */
 export type AssignableRole = Exclude<ShopRole, 'owner'>;
 
-export interface TeamMember {
+export interface TeamMember extends PhotoFields {
   id: string;         // UserShop.id — used as memberId in URLs
   userId: string | null; // null = no login yet
   shopId: string;
@@ -71,3 +72,10 @@ export const transferOwnership = (shopId: string, memberId: string) =>
   client
     .post(`/api/shops/${shopId}/team/${memberId}/transfer-ownership`)
     .then((r) => r.data.data as TeamMember);
+
+/** A member's photo: a new file, or (file null) a new crop of the stored one. */
+export const setMemberPhoto = (shopId: string, memberId: string, file: File | null, crop: PhotoCrop) =>
+  putPhoto<TeamMember>(`/api/shops/${shopId}/team/${memberId}/photo`, file, crop);
+
+export const removeMemberPhoto = (shopId: string, memberId: string) =>
+  deletePhoto<TeamMember>(`/api/shops/${shopId}/team/${memberId}/photo`);

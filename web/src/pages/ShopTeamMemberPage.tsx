@@ -9,6 +9,8 @@ import { useLang } from '../context/LanguageContext';
 import {
   getMember,
   updateMemberRole,
+  setMemberPhoto,
+  removeMemberPhoto,
   removeMember,
   sendLoginInvite,
   cancelLoginInvite,
@@ -30,6 +32,8 @@ import TimeOffPanel from '../components/TimeOffPanel';
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
+import PhotoField from '../components/PhotoField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { planErrorMessage } from '../utils/plan';
 
@@ -364,15 +368,24 @@ export default function ShopTeamMemberPage() {
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
-        <h1 className="t-heading">{member.name}</h1>
-        <div className="cluster">
-          <span className={`badge ${ROLE_BADGE[member.role]}`}>
-            {t.team.roles[member.role]}
-          </span>
-          <span className="t-body-sm t-muted">
-            {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
-          </span>
-        </div>
+        <PhotoField
+          photo={member}
+          shape="round"
+          canEdit={canEdit}
+          preview={<Avatar name={member.name} photoUrl={member.photoUrl} size="xl" />}
+          onUpload={async (file, crop) => setMember(await setMemberPhoto(shop!.id, member.id, file, crop))}
+          onRemove={async () => setMember(await removeMemberPhoto(shop!.id, member.id))}
+        >
+          <h1 className="t-heading">{member.name}</h1>
+          <div className="cluster">
+            <span className={`badge ${ROLE_BADGE[member.role]}`}>
+              {t.team.roles[member.role]}
+            </span>
+            <span className="t-body-sm t-muted">
+              {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+        </PhotoField>
 
         {canEdit ? (
           <>

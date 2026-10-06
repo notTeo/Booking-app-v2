@@ -52,6 +52,7 @@ Validated at startup by `src/config/parseEnv.ts`; the process exits with the ful
 | `JWT_ACCESS_EXPIRES_IN` | no | Default `15m`. Format: number + `s`/`m`/`h`/`d`/`w`. |
 | `JWT_REFRESH_EXPIRES_IN` | no | Default `30d`. Same format; sets the refresh token lifetime, and the cookie lifetime when the user chose "remember me" (otherwise the cookie is a session cookie). A bare number is rejected. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | yes | |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | production | The S3-compatible bucket photos are stored in (a Railway bucket). All five or none. Without them photos go to `api/.uploads/` (override with `UPLOADS_DIR`) in development and stay in memory in tests; production refuses to start. |
 | `PORT` | no | Default `3000`. |
 | `INVITE_EMAIL_OVERRIDE` | no | Dev only: send all invite emails to this address. |
 | `RATE_LIMIT_DISABLED` | no | `true` disables rate limiting. Ignored when `NODE_ENV=production`. Used by the e2e suite. |

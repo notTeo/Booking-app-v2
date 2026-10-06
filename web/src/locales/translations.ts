@@ -689,6 +689,29 @@ export interface Translations {
     palettes: Record<PublicPalette, string>;
     fonts: Record<PublicFont, string>;
   };
+  photos: {
+    editorTitle: string;
+    zoom: string;
+    editorHint: string;
+    save: string;
+    cancel: string;
+    add: string;
+    replace: string;
+    adjust: string;
+    remove: string;
+    removeTitle: string;
+    removeMessage: string;
+    hint: string;
+    shopTitle: string;
+    shopDesc: string;
+    shopEmpty: string;
+    shopAlt: string;
+    errorType: string;
+    errorSize: string;
+    errorLoad: string;
+    errorSave: string;
+    errorRemove: string;
+  };
   timeOff: {
     title: string;
     shopTitle: string;
@@ -1935,6 +1958,29 @@ home: {
         comfortaa: "Comfortaa · στρογγυλή",
         "roboto-slab": "Roboto Slab · έντονη",
       },
+    },
+    photos: {
+      editorTitle: "Επεξεργασία φωτογραφίας",
+      zoom: "Μεγέθυνση",
+      editorHint: "Σύρε τη φωτογραφία για να τη μετακινήσεις και χρησιμοποίησε το ρυθμιστικό για μεγέθυνση. Το πλαίσιο είναι αυτό που θα φαίνεται.",
+      save: "Αποθήκευση",
+      cancel: "Άκυρο",
+      add: "Προσθήκη φωτογραφίας",
+      replace: "Αντικατάσταση",
+      adjust: "Προσαρμογή",
+      remove: "Αφαίρεση",
+      removeTitle: "Αφαίρεση φωτογραφίας;",
+      removeMessage: "Η φωτογραφία θα διαγραφεί. Θα φαίνεται ξανά το αρχικό γράμμα.",
+      hint: "JPEG, PNG ή WebP, έως 8 MB.",
+      shopTitle: "Φωτογραφία καταστήματος",
+      shopDesc: "Εμφανίζεται στην κορυφή της δημόσιας σελίδας κρατήσεων. Αποθηκεύεται μόλις την επεξεργαστείς.",
+      shopEmpty: "Δεν έχει προστεθεί φωτογραφία",
+      shopAlt: "Φωτογραφία του {name}",
+      errorType: "Η φωτογραφία πρέπει να είναι JPEG, PNG ή WebP.",
+      errorSize: "Η φωτογραφία είναι πολύ μεγάλη (έως 8 MB).",
+      errorLoad: "Δεν ήταν δυνατή η φόρτωση της φωτογραφίας.",
+      errorSave: "Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.",
+      errorRemove: "Δεν ήταν δυνατή η αφαίρεση της φωτογραφίας.",
     },
     timeOff: {
       title: "Άδειες και ρεπό",
@@ -3206,6 +3252,29 @@ home: {
         comfortaa: "Comfortaa · rounded",
         "roboto-slab": "Roboto Slab · bold",
       },
+    },
+    photos: {
+      editorTitle: "Edit photo",
+      zoom: "Zoom",
+      editorHint: "Drag the photo to move it and use the slider to zoom. What is inside the frame is what will be shown.",
+      save: "Save",
+      cancel: "Cancel",
+      add: "Add photo",
+      replace: "Replace",
+      adjust: "Adjust",
+      remove: "Remove",
+      removeTitle: "Remove photo?",
+      removeMessage: "The photo will be deleted. The initial is shown again.",
+      hint: "JPEG, PNG or WebP, up to 8 MB.",
+      shopTitle: "Shop photo",
+      shopDesc: "Shown at the top of your public booking page. Saved as soon as you finish editing it.",
+      shopEmpty: "No photo added",
+      shopAlt: "Photo of {name}",
+      errorType: "The photo must be a JPEG, PNG or WebP image.",
+      errorSize: "The photo is too large (up to 8 MB).",
+      errorLoad: "The photo could not be loaded.",
+      errorSave: "The photo could not be saved.",
+      errorRemove: "The photo could not be removed.",
     },
     timeOff: {
       title: "Time off",

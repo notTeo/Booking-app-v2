@@ -22,6 +22,7 @@ import { isOnTrial } from '../utils/plan';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TimeOffPanel from '../components/TimeOffPanel';
 import PublicBrandingCard from '../components/PublicBrandingCard';
+import ShopPhotoCard from '../components/ShopPhotoCard';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -445,6 +446,9 @@ export default function ShopSettingsPage() {
 
       {/* Colours and fonts of the public booking page, with a live preview */}
       <PublicBrandingCard shop={shop} onSaved={setShop} />
+
+      {/* The shop's photo at the top of that page */}
+      <ShopPhotoCard shop={shop} onSaved={setShop} />
 
       {/* Shop-wide closed days, on top of every member's working hours */}
       <TimeOffPanel

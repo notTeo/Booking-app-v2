@@ -65,6 +65,8 @@ const day = {
   hours: [{ startTime: '09:00', endTime: '12:00' }],
 };
 
+const crop = { x: 0, y: 0, width: 1, height: 1 };
+
 // Every route whose path is under /api/shops/:id or /api/shops/:shopId/... is
 // shop-scoped and must have an entry here.
 export const SHOP_SCOPED: Record<string, Fixture> = {
@@ -74,6 +76,8 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     body: () => ({ name: 'Renamed' }),
   },
   'DELETE /api/shops/:id': { minRole: 'owner' },
+  'PUT /api/shops/:id/photo': { minRole: 'manager', body: () => ({ crop }) },
+  'DELETE /api/shops/:id/photo': { minRole: 'manager' },
   'GET /api/shops/:shopId/schedules/day': { query: 'date=2027-01-04' },
   'GET /api/shops/:shopId/overview': { query: 'range=week' },
 
@@ -94,6 +98,11 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     minRole: 'owner',
   },
   'GET /api/shops/:shopId/team/:memberId/services': {},
+  'PUT /api/shops/:shopId/team/:memberId/photo': {
+    minRole: 'manager',
+    body: () => ({ crop }),
+  },
+  'DELETE /api/shops/:shopId/team/:memberId/photo': { minRole: 'manager' },
 
   'POST /api/shops/:shopId/team/:memberId/schedules': {
     minRole: 'manager',

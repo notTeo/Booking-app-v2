@@ -827,6 +827,25 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .page-hero__inner { display: flex; flex-direction: column; gap: var(--space-2); max-width: 45rem; margin: 0 auto; }
 @media (min-width: 640px) { .page-hero { padding: var(--space-12) var(--space-6) var(--space-10); } }
 
+/* ---------- Photos: cover, photo field, editor ---------- */
+/* Cover: a wide photo (the shop's), always 16:9. */
+.cover { width: 100%; overflow: hidden; background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-lg); aspect-ratio: 16 / 9; }
+.cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover--empty { display: grid; place-items: center; color: var(--text-muted); border-style: dashed; }
+.cover__empty { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); }
+/* Photo field: the photo beside its name and buttons; --stacked puts a wide photo above them. */
+.photo-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+.photo-field__main { display: flex; flex-direction: column; flex: 1 1 12rem; gap: var(--space-3); min-width: 0; }
+.photo-field--stacked { flex-direction: column; align-items: stretch; }
+.photo-field--stacked .photo-field__main { flex: none; }
+/* Photo editor: the crop stage inside a modal, with the zoom slider under it. */
+.modal--wide { max-width: 40rem; }
+.photo-editor__stage { position: relative; width: 100%; height: 50vh; max-height: 22rem; overflow: hidden; background: var(--surface-sunken); border-radius: var(--radius-md); touch-action: none; }
+.photo-editor__area { border: 2px solid var(--on-accent); box-shadow: 0 0 0 9999px var(--scrim); }
+/* Range: a slider (the photo zoom). */
+.range { width: 100%; height: var(--control-sm); accent-color: var(--accent); background: transparent; cursor: pointer; }
+.range:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
 /* ---------- 31. Suggestions (under an input) ---------- */
 .suggest {
   position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-nav); max-height: calc(var(--control-md) * 4.5); margin: 0; padding: 0; overflow-y: auto;

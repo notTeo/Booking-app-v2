@@ -1,10 +1,11 @@
 import client from './client';
+import { deletePhoto, putPhoto, type PhotoCrop, type PhotoFields } from './photo.api';
 
 export type ShopRole = 'owner' | 'manager' | 'staff';
 export type ShopPlan = 'SOLO' | 'TEAM' | 'BUSINESS';
 export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'INACTIVE';
 
-export interface Shop {
+export interface Shop extends PhotoFields {
   id: string;
   name: string;
   slug: string;
@@ -75,6 +76,12 @@ export const getShop = (id: string) =>
 
 export const createShop = (dto: CreateShopDto) =>
   client.post('/api/shops', dto).then((r) => r.data.data as Shop);
+
+/** The shop's photo on its booking page: a new file, or (file null) a new crop of the stored one. */
+export const setShopPhoto = (id: string, file: File | null, crop: PhotoCrop) =>
+  putPhoto<Shop>(`/api/shops/${id}/photo`, file, crop);
+
+export const removeShopPhoto = (id: string) => deletePhoto<Shop>(`/api/shops/${id}/photo`);
 
 export const updateShop = (id: string, dto: UpdateShopDto) =>
   client.patch(`/api/shops/${id}`, dto).then((r) => r.data.data as Shop);

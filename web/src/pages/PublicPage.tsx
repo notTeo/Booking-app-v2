@@ -20,6 +20,7 @@ import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/sa
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
+import { mediaUrl } from '../utils/media';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
@@ -174,6 +175,9 @@ function PublicBookingPage({ slug }: { slug: string }) {
       />
       <header className="page-hero">
         <div className="page-hero__inner">
+          {shop.photoUrl && (
+            <div className="cover"><img src={mediaUrl(shop.photoUrl)} alt="" /></div>
+          )}
           <h1 className="t-title">{shop.name}</h1>
           <div className="cluster cluster--tight">
             {shop.phone && <span className="badge badge--neutral badge--wrap"><FontAwesomeIcon icon={faPhone} aria-hidden="true" /> {shop.phone}</span>}

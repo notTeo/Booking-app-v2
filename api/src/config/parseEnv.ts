@@ -10,6 +10,17 @@ const REQUIRED_VARS = [
   'EMAIL_FROM',
 ] as const;
 
+// The S3-compatible bucket photos are stored in (a Railway bucket in
+// production). All five or none: without them photos are kept on local disk
+// (development) or in memory (tests), which production refuses.
+const STORAGE_VARS = [
+  'S3_ENDPOINT',
+  'S3_REGION',
+  'S3_BUCKET',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+] as const;
+
 const NODE_ENVS = ['development', 'test', 'production'] as const;
 export type NodeEnv = (typeof NODE_ENVS)[number];
 
@@ -68,6 +79,16 @@ const buildEnv = (
     emailFrom: source.EMAIL_FROM as string,
   },
   inviteEmailOverride: source.INVITE_EMAIL_OVERRIDE ?? null,
+  // null = no bucket configured (local disk in development, memory in tests).
+  storage: source.S3_BUCKET
+    ? {
+        endpoint: source.S3_ENDPOINT as string,
+        region: source.S3_REGION as string,
+        bucket: source.S3_BUCKET,
+        accessKeyId: source.S3_ACCESS_KEY_ID as string,
+        secretAccessKey: source.S3_SECRET_ACCESS_KEY as string,
+      }
+    : null,
 });
 
 export const parseEnv = (
@@ -98,6 +119,25 @@ export const parseEnv = (
       if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error();
     } catch {
       errors.push(`CLIENT_URLS contains an invalid origin: "${origin}"`);
+    }
+  }
+
+  const storageSet = STORAGE_VARS.filter((key) => source[key]);
+  if (storageSet.length > 0 && storageSet.length < STORAGE_VARS.length) {
+    for (const key of STORAGE_VARS) {
+      if (!source[key])
+        errors.push(`${key} is required when any S3_* variable is set`);
+    }
+  } else if (storageSet.length === 0 && nodeEnv === 'production') {
+    errors.push(
+      `${STORAGE_VARS.join(', ')} are required in production (photo storage)`,
+    );
+  }
+  if (source.S3_ENDPOINT) {
+    try {
+      new URL(source.S3_ENDPOINT);
+    } catch {
+      errors.push('S3_ENDPOINT must be a URL');
     }
   }
 
