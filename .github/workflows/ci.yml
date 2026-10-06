@@ -287,8 +287,10 @@ jobs:
           retention-days: 7
 
   ci-ok:
-    # The one required status check. Passes when nothing it depends on failed
-    # or was cancelled; a job skipped on a fast run counts as fine.
+    # The one required status check. Passes only when every job it depends on
+    # succeeded or was skipped (a fast run skips some). Anything else fails it,
+    # including a job that never got a runner, which GitHub reports as neither
+    # failed nor cancelled.
     name: ci-ok
     needs: [plan, secrets, api-static, api-tests, web, schema, e2e]
     if: always()
@@ -298,10 +300,10 @@ jobs:
     steps:
       - env:
           RESULTS: ${{ toJSON(needs) }}
-          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: |
           echo "$RESULTS"
-          if [ "$FAILED" = "true" ]; then
-            echo "::error::a required job failed or was cancelled"
+          bad="$(echo "$RESULTS" | jq -r 'to_entries[] | select(.value.result != "success" and .value.result != "skipped") | "\(.key)=\(.value.result)"')"
+          if [ -n "$bad" ]; then
+            echo "::error::required jobs did not succeed:" $bad
             exit 1
           fi
