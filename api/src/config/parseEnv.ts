@@ -91,6 +91,8 @@ const buildEnv = (
     : null,
 });
 
+const MIN_JWT_SECRET_LENGTH = 32;
+
 export const parseEnv = (
   source: NodeJS.ProcessEnv,
 ): { env: Env; errors: [] } | { env: null; errors: string[] } => {
@@ -98,6 +100,24 @@ export const parseEnv = (
 
   for (const key of REQUIRED_VARS) {
     if (!source[key]) errors.push(`${key} is required`);
+  }
+
+  // A short signing secret can be guessed, and one shared by both token kinds
+  // lets a 30-day refresh token pass as an access token. Checked in production
+  // only, so a local .env with throwaway values keeps working.
+  if (source.NODE_ENV === 'production') {
+    for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'] as const) {
+      const value = source[key];
+      if (value && value.length < MIN_JWT_SECRET_LENGTH)
+        errors.push(
+          `${key} must be at least ${MIN_JWT_SECRET_LENGTH} characters`,
+        );
+    }
+    if (
+      source.JWT_ACCESS_SECRET &&
+      source.JWT_ACCESS_SECRET === source.JWT_REFRESH_SECRET
+    )
+      errors.push('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must differ');
   }
 
   const nodeEnv = source.NODE_ENV as NodeEnv | undefined;

@@ -14,7 +14,10 @@ vi.mock('../../../api/src/services/email.service', async (importOriginal) => ({
 }));
 
 describe('AU-06 access tokens outlive revocation', () => {
-  it('AU-06: an access token issued before a password reset is rejected afterwards', async () => {
+  // ACCEPTED BY DESIGN (decision D4, 2026-10-06): an access token lives out
+  // its 15 minutes; see docs/deployment.md "Known limits". These two tests
+  // now document that, and that the refresh side is what gets revoked.
+  it('AU-06 (accepted): an access token issued before a password reset still works until it expires', async () => {
     const api = await serve(app);
     const victim = await registerAndVerify(api);
     const stolen = await login(api, victim.email, victim.password);
@@ -33,10 +36,18 @@ describe('AU-06 access tokens outlive revocation', () => {
     ).toBe(0);
 
     const res = await api.get('/user/me').set(authHeader(stolen.accessToken!));
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    // What it cannot do any more: outlive its 15 minutes, or take the account.
+    const refreshed = await api.post('/auth/refresh').set('Cookie', stolen.cookie);
+    expect(refreshed.status).toBe(401);
+    const takeover = await api
+      .patch('/user/me')
+      .set(authHeader(stolen.accessToken!))
+      .send({ password: 'Attacker-Pass-2!' });
+    expect(takeover.status).toBe(403);
   });
 
-  it('AU-06: an access token is rejected after DELETE /auth/sessions ("log out everywhere")', async () => {
+  it('AU-06 (accepted): an access token still works after DELETE /auth/sessions, but cannot be refreshed', async () => {
     const api = await serve(app);
     const victim = await registerAndVerify(api);
     const stolen = await login(api, victim.email, victim.password);
@@ -48,6 +59,8 @@ describe('AU-06 access tokens outlive revocation', () => {
     expect(revoke.status).toBe(200);
 
     const res = await api.get('/user/me').set(authHeader(stolen.accessToken!));
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    const refreshed = await api.post('/auth/refresh').set('Cookie', stolen.cookie);
+    expect(refreshed.status).toBe(401);
   });
 });

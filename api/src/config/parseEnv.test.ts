@@ -5,8 +5,8 @@ const VALID = {
   NODE_ENV: 'production',
   CLIENT_URLS: 'https://a.example',
   DATABASE_URL: 'postgresql://x',
-  JWT_ACCESS_SECRET: 's1',
-  JWT_REFRESH_SECRET: 's2',
+  JWT_ACCESS_SECRET: 'access-secret-'.padEnd(40, 'a'),
+  JWT_REFRESH_SECRET: 'refresh-secret-'.padEnd(40, 'r'),
   RESEND_API_KEY: 'k',
   EMAIL_FROM: 'a@b.c',
   S3_ENDPOINT: 'https://storage.example',
@@ -132,5 +132,25 @@ describe('parseDurationSeconds', () => {
     for (const bad of ['', '30', 'd', '-5d', '1.5d', '5 days', '0d']) {
       expect(parseDurationSeconds(bad)).toBeNull();
     }
+  });
+
+  it('refuses short or shared JWT secrets in production, and only there', () => {
+    const short = { JWT_ACCESS_SECRET: 'short', JWT_REFRESH_SECRET: 'tiny' };
+    const prod = parseEnv({ ...VALID, NODE_ENV: 'production', ...short });
+    expect(prod.env).toBeNull();
+    expect(prod.errors.join(' ')).toContain('at least 32 characters');
+
+    const same = 'x'.repeat(64);
+    const shared = parseEnv({
+      ...VALID,
+      NODE_ENV: 'production',
+      JWT_ACCESS_SECRET: same,
+      JWT_REFRESH_SECRET: same,
+    });
+    expect(shared.errors.join(' ')).toContain('must differ');
+
+    // A local .env with throwaway values keeps working.
+    const dev = parseEnv({ ...VALID, NODE_ENV: 'development', ...short });
+    expect(dev.errors.join(' ')).not.toContain('32 characters');
   });
 });

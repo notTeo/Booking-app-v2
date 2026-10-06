@@ -277,7 +277,8 @@ It is a floor, not a ceiling: GitHub's scheduler is best-effort (runs can be min
 - **Emails missing** → Resend dashboard first (bounces, domain status), then the API logs for `Failed to send … email`. Registration fails visibly when the verification email can't be sent.
 - **Deploy crash-loops on start** → read the first log line. `[env] Invalid environment configuration` lists what to fix; otherwise a migration error names the migration.
 - **CORS errors in the browser** → the web origin isn't in `CLIENT_URLS`, or has a trailing slash or a different scheme/host (`www` vs apex).
-- **Secrets rotation** → change the Railway variable and redeploy; see "Sessions" above for the effect.
+- **Secrets rotation** → change the Railway variable and redeploy; see "Sessions" above for the effect. In production each JWT secret must be at least 32 characters and the two must differ, or the API refuses to start (`[env] Invalid environment configuration`).
+- **One person can't log in, "Too many requests"** → besides the per-IP limits, login allows 10 failed attempts per email address per 15 minutes, from any address. Someone guessing at an account locks its owner out of logging in for that window; password reset still works. Wait it out.
 
 ### Legal changes
 
@@ -286,6 +287,10 @@ When the Terms or Privacy text changes materially, bump `TERMS_VERSION` in `api/
 ---
 
 ## 11. Known limits (accurate today, all deliberate or deferred)
+
+- **Access tokens are not revoked.** A password reset, a password change and "log out everywhere" end every session's refresh token at once, but an access token already issued keeps working until it expires (15 minutes, `JWT_ACCESS_EXPIRES_IN`). Revoking it would cost a database read on every request. Changing a password or email needs the current password, so a stolen access token cannot be turned into a lasting takeover. (Audit AU-06, accepted 2026-10-06.)
+- **No cap on bookings per phone number.** A customer may hold any number of bookings; the per-IP limit on public writes (20 per 15 minutes) is the only brake on bulk booking. A shop that gets flooded cancels the bookings from its calendar. (Audit PB-02, accepted 2026-10-06.)
+- **Personal durations show on the public slot grid.** A customer who identifies themselves in the first step of the booking wizard is offered times sized to their own durations, so the grid for a known phone with a personal duration differs from an unknown one. (Audit TI-05, accepted 2026-10-06.)
 
 - **The e2e suite only runs on the full CI pipeline** (pull requests and pushes to `dev`/`main`, not feature-branch pushes): run `npm run e2e` locally for booking-flow, routing or auth changes.
 - **Rate limiters are in-memory**: one API instance only.

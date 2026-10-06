@@ -24,6 +24,24 @@ export const authLimiter: RequestHandler = limiter({
   },
 });
 
+// Per account, whatever address the guesses come from: the per-IP limit above
+// does nothing against one account guessed from many addresses. Counts failed
+// attempts only. The cost: anyone can lock a known email out of logging in for
+// 15 minutes (password reset still works).
+export const loginAccountLimiter: RequestHandler = limiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req: Request) =>
+    `login:${String(req.body?.email ?? '')
+      .trim()
+      .toLowerCase()}`,
+  message: {
+    status: 'error',
+    message: 'Too many requests, please try again later.',
+  },
+});
+
 export const forgotPasswordLimiter: RequestHandler = limiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,

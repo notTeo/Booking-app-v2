@@ -26,13 +26,21 @@ import { validate } from '../middleware/validate';
 import {
   authLimiter,
   forgotPasswordLimiter,
+  loginAccountLimiter,
   refreshLimiter,
 } from '../middleware/rateLimiter';
 
 const router = Router();
 
 router.post('/register', authLimiter, registerValidation, validate, register);
-router.post('/login', authLimiter, loginValidation, validate, login);
+router.post(
+  '/login',
+  authLimiter,
+  loginAccountLimiter,
+  loginValidation,
+  validate,
+  login,
+);
 router.post(
   '/refresh',
   refreshLimiter,
