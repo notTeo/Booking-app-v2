@@ -46,14 +46,16 @@ export default function PricingPage() {
                     <th scope="col">{p.featureCol}</th>
                     <th scope="col">{t.home.pricingSoloName}</th>
                     <th scope="col">{t.home.pricingTeamName}</th>
+                    <th scope="col">{t.home.pricingBusinessName}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {group.rows.map(([label, solo, team]) => (
+                  {group.rows.map(([label, solo, team, business]) => (
                     <tr key={label}>
                       <td className="data-table__title">{label}</td>
                       <td>{cell(solo)}</td>
                       <td>{cell(team)}</td>
+                      <td>{cell(business)}</td>
                     </tr>
                   ))}
                 </tbody>

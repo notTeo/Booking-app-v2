@@ -3,12 +3,13 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { PLAN_PRICES } from '../config/pricing';
 
-/** The Solo and Team plans side by side: name, price and what is included. */
+/** The Solo, Team and Business plans side by side: name, price and what is included. */
 export default function PlanCards() {
   const { t } = useLang();
   const plans = [
     { name: t.home.pricingSoloName, price: PLAN_PRICES.solo, desc: t.home.pricingSoloDesc, features: t.home.pricingSoloFeatures, featured: false },
     { name: t.home.pricingTeamName, price: PLAN_PRICES.team, desc: t.home.pricingTeamDesc, features: t.home.pricingTeamFeatures, featured: true },
+    { name: t.home.pricingBusinessName, price: PLAN_PRICES.business, desc: t.home.pricingBusinessDesc, features: t.home.pricingBusinessFeatures, featured: false },
   ];
 
   return (

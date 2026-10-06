@@ -48,8 +48,8 @@ export const PAGE_META: Record<string, PageMeta> = {
   ),
   '/pricing': page(
     'Τιμές', 'Pricing',
-    'Τα πακέτα Solo και Team του BeBooked: τιμή ανά κατάστημα τον μήνα και τι περιλαμβάνει το καθένα.',
-    'BeBooked Solo and Team plans: the monthly price per shop and what each one includes.',
+    'Τα πακέτα Solo, Team και Business του BeBooked: τιμή ανά κατάστημα τον μήνα και τι περιλαμβάνει το καθένα.',
+    'BeBooked Solo, Team and Business plans: the monthly price per shop and what each one includes.',
   ),
   '/contact': page(
     'Επικοινωνία', 'Contact',
