@@ -1,7 +1,7 @@
 import { publicShopUrl } from '../utils/publicLink';
-import { ROLE_BADGE } from '../utils/roles';
+import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
 import { useLang } from '../context/LanguageContext';
 import type { Translations } from '../locales/translations';
@@ -12,11 +12,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore,
   faLink,
+  faCreditCard,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import { PLAN_NAMES } from '../config/pricing';
+import { isOnTrial } from '../utils/plan';
 import ConfirmDialog from '../components/ConfirmDialog';
+import TimeOffPanel from '../components/TimeOffPanel';
+import PublicBrandingCard from '../components/PublicBrandingCard';
+import ShopPhotoCard from '../components/ShopPhotoCard';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -198,6 +204,32 @@ export default function ShopSettingsPage() {
         </h2>
         <p className="card__text">{t.sharing.desc}</p>
         <CopyLinkButton link={publicShopUrl(shop.slug)} />
+      </div>
+
+      {/* Plan — set by us for now; there is no checkout yet */}
+      <div className="card">
+        <div className="card__header">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
+            {t.shopPlan.title}
+          </h2>
+          <span className={`badge badge--lg ${shop.locked ? 'badge--warning' : 'badge--accent'}`}>
+            {PLAN_NAMES[shop.plan]}
+          </span>
+        </div>
+        <p className="card__text">
+          {shop.locked
+            ? (shop.subscriptionStatus === 'TRIALING' ? t.shopPlan.trialEnded : t.shopPlan.inactive)
+            : isOnTrial(shop) && shop.trialEndsAt
+              ? t.shopPlan.trialUntil.replace('{date}', formatDate(shop.trialEndsAt, language))
+              : t.shopPlan.active}{' '}
+          {t.shopPlan.staffLimit.replace('{n}', String(shop.staffLimit))}
+        </p>
+        <p className="card__text">{t.shopPlan.changePlan}</p>
+        <div className="cluster cluster--tight">
+          <Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>
+          <Link to="/pricing" className="btn btn--ghost btn--sm">{t.shopPlan.seePlans}</Link>
+        </div>
       </div>
 
       <form onSubmit={handleSave}>
@@ -411,6 +443,19 @@ export default function ShopSettingsPage() {
         </div>
         </fieldset>
       </form>
+
+      {/* Colours and fonts of the public booking page, with a live preview */}
+      <PublicBrandingCard shop={shop} onSaved={setShop} />
+
+      {/* The shop's photo at the top of that page */}
+      <ShopPhotoCard shop={shop} onSaved={setShop} />
+
+      {/* Shop-wide closed days, on top of every member's working hours */}
+      <TimeOffPanel
+        shopId={shop.id}
+        canManage={canManageShop(shop.role)}
+        calendarPath={`/shops/${shop.slug}/bookings`}
+      />
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (

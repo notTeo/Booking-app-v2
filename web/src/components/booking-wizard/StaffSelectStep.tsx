@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import type { Service, ShopMember } from '../../api/public.api';
 import { useLang } from '../../context/LanguageContext';
+import Avatar from '../Avatar';
 
 export default function StaffSelectStep({
   members,
@@ -10,6 +11,7 @@ export default function StaffSelectStep({
   onSelect,
   onBack,
   hideNoPreference,
+  hideBack,
 }: {
   members: ShopMember[];
   selectedService: Service | null;
@@ -17,6 +19,8 @@ export default function StaffSelectStep({
   onBack: () => void;
   /** Rescheduling moves the booking to one concrete provider, so "any staff" is not offered. */
   hideNoPreference?: boolean;
+  /** The page shows Back itself (the public page's footer). */
+  hideBack?: boolean;
 }) {
   const { t } = useLang();
 
@@ -40,9 +44,7 @@ export default function StaffSelectStep({
             className="staff-card"
             onClick={() => onSelect(m.id)}
           >
-            <span className="avatar avatar--lg" aria-hidden="true">
-              {m.name?.charAt(0)?.toUpperCase() ?? '?'}
-            </span>
+            <Avatar name={m.name} photoUrl={m.photoUrl} size="lg" />
             <span className="staff-card__main">
               <span className="staff-card__name">{m.name}</span>
               {m.staffServices.length > 0 && (
@@ -54,7 +56,8 @@ export default function StaffSelectStep({
           </button>
         ))}
 
-        {!hideNoPreference && (
+        {/* With a single provider there is nothing to choose between. */}
+        {!hideNoPreference && members.length > 1 && (
           <button
             type="button"
             role="radio"
@@ -71,7 +74,7 @@ export default function StaffSelectStep({
         )}
       </div>
 
-      <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
+      {!hideBack && <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>}
     </div>
   );
 }

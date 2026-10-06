@@ -8,6 +8,14 @@ import {
   hashToken,
 } from '../utils/jwt';
 import { sendInviteEmail } from './email.service';
+import {
+  assertStaffCapacity,
+  assertTeamFeatures,
+  countsAsStaff,
+} from './plan.service';
+import { PhotoCrop, storePhoto } from './photo.service';
+import { removeStoredFiles } from './storage.service';
+import { Prisma } from '../../dist/generated/prisma';
 
 export interface UpdateMemberRoleDto {
   role: 'owner' | 'manager' | 'staff';
@@ -41,6 +49,9 @@ const MEMBER_SELECT = {
   active: true,
   bookableByCustomers: true,
   bookableInternally: true,
+  photoUrl: true,
+  photoOriginalUrl: true,
+  photoCrop: true,
   createdAt: true,
   invites: {
     where: { status: 'pending' as const },
@@ -108,6 +119,11 @@ export const createTeamMember = async (
 ) => {
   const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
   requireManagerAccess(caller, dto.role);
+
+  // A new member is bookable, so they take one of the plan's staff places.
+  await assertStaffCapacity(shopId);
+  if (dto.role === 'manager' || dto.sendEmail !== false)
+    await assertTeamFeatures(shopId);
 
   const email = dto.email ? dto.email.toLowerCase() : null;
 
@@ -240,6 +256,14 @@ export const updateMemberRole = async (
         ? dto.bookableInternally
         : member.bookableInternally;
 
+  if (
+    countsAsStaff({ active, bookableByCustomers, bookableInternally }) &&
+    !countsAsStaff(member)
+  )
+    await assertStaffCapacity(shopId, memberId);
+  if (dto.role === 'manager' && member.role !== 'manager')
+    await assertTeamFeatures(shopId);
+
   const updated = await prisma.userShop.update({
     where: { id: memberId },
     data: {
@@ -282,6 +306,7 @@ export const removeMember = async (
   await prisma.userShop.delete({
     where: { id: memberId },
   });
+  await removeStoredFiles([member.photoUrl, member.photoOriginalUrl]);
 
   logger.info(
     `Member ${memberId} removed from shop ${shopId} by user ${userId}`,
@@ -348,6 +373,7 @@ export const sendLoginInvite = async (
   requireManagerAccess(caller, member.role);
 
   if (member.userId) throw new AppError(400, 'This member already has a login');
+  await assertTeamFeatures(shopId);
   if (!member.active)
     throw new AppError(
       400,
@@ -436,4 +462,69 @@ export const cancelLoginInvite = async (
     `Pending login invite cancelled for member ${memberId} in shop ${shopId} by user ${userId}`,
   );
   return getMember(userId, shopId, memberId);
+};
+
+// A member's photo follows the rules for editing that member: the owner and
+// managers, a manager's only by someone who may manage managers, and the
+// owner's only by the owner.
+const requirePhotoAccess = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
+  const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
+  const member = await requireMemberInShop(memberId, shopId);
+  requireManagerAccess(caller, member.role);
+  if (member.role === 'owner' && member.userId !== userId)
+    throw new AppError(403, 'Only the owner can edit the owner');
+  return member;
+};
+
+// A new photo, or (without a file) a new crop of the current one.
+export const setMemberPhoto = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+  file: Buffer | undefined,
+  crop: PhotoCrop,
+) => {
+  const member = await requirePhotoAccess(userId, shopId, memberId);
+  const { data, stale } = await storePhoto({
+    shopId,
+    shape: 'square',
+    label: 'member',
+    file,
+    crop,
+    current: member,
+  });
+  const updated = await prisma.userShop.update({
+    where: { id: memberId },
+    data: { ...data, photoCrop: { ...data.photoCrop } },
+    select: MEMBER_SELECT,
+  });
+  await removeStoredFiles(stale);
+
+  logger.info(`Photo set for member ${memberId} in shop ${shopId}`);
+  return shapeMember(updated);
+};
+
+export const removeMemberPhoto = async (
+  userId: string,
+  shopId: string,
+  memberId: string,
+) => {
+  const member = await requirePhotoAccess(userId, shopId, memberId);
+  const updated = await prisma.userShop.update({
+    where: { id: memberId },
+    data: {
+      photoUrl: null,
+      photoOriginalUrl: null,
+      photoCrop: Prisma.DbNull,
+    },
+    select: MEMBER_SELECT,
+  });
+  await removeStoredFiles([member.photoUrl, member.photoOriginalUrl]);
+
+  logger.info(`Photo removed for member ${memberId} in shop ${shopId}`);
+  return shapeMember(updated);
 };

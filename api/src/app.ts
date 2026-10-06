@@ -16,6 +16,7 @@ import { parse } from 'yaml';
 import shopRoutes from './routes/shop.routes';
 import globalInviteRoutes from './routes/globalInvite.routes';
 import publicRoutes from './routes/public.routes';
+import mediaRoutes from './routes/media.routes';
 import { requestId } from './middleware/requestId';
 import { prisma } from './utils/prisma';
 import { createShutdown } from './utils/shutdown';
@@ -100,6 +101,7 @@ app.use('/user', userRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/invites', globalInviteRoutes);
 app.use('/public', publicRoutes);
+app.use('/media', mediaRoutes);
 
 app.use(ErrorHandler);
 

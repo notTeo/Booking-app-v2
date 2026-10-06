@@ -27,7 +27,11 @@ const en = {
     location: 'Location',
     customer: 'Customer',
     phone: 'Phone',
+    products: 'Products',
   },
+  // Under a booking's reserved products: reserving is not paying.
+  productsNote: (total: string) =>
+    `Total with the service: ${total}. Reserved for you, pay in the shop.`,
   roles: {
     owner: 'owner',
     manager: 'manager',
@@ -163,7 +167,10 @@ const el: EmailStrings = {
     location: 'Τοποθεσία',
     customer: 'Πελάτης',
     phone: 'Τηλέφωνο',
+    products: 'Προϊόντα',
   },
+  productsNote: (total: string) =>
+    `Σύνολο με την υπηρεσία: ${total}. Τα κρατήσαμε για εσάς, πληρώνετε στο κατάστημα.`,
   roles: {
     owner: 'ιδιοκτήτης',
     manager: 'διαχειριστής',

@@ -29,6 +29,9 @@ const SWAPS: Record<string, (a: World, b: World) => World> = {
   service: (a, b) => ({ ...a, t: { ...a.t, service: b.t.service } }),
   booking: (a, b) => ({ ...a, booking: b.booking }),
   schedule: (a, b) => ({ ...a, schedule: b.schedule }),
+  product: (a, b) => ({ ...a, product: b.product }),
+  // Only the line: Shop A's booking with Shop B's reserved product.
+  lineOnly: (a, b) => ({ ...a, line: b.line }),
   // A schedule together with its own member: the member/schedule consistency
   // check passes, so only the shop check stands between A and B's schedule.
   memberAndSchedule: (a, b) => ({
@@ -45,6 +48,8 @@ const PARAM_SWAP: Record<string, keyof typeof SWAPS> = {
   bookingId: 'booking',
   customerId: 'booking',
   scheduleId: 'schedule',
+  productId: 'product',
+  lineId: 'lineOnly',
 };
 
 // Everything that could change if a request leaked through to Shop B.
@@ -60,6 +65,8 @@ const snapshot = async (w: World) => {
       where: { id: w.member.staff.id },
     }),
     service: await prisma.service.findUnique({ where: { id: w.t.service.id } }),
+    product: await prisma.product.findUnique({ where: { id: w.product.id } }),
+    line: await prisma.bookingProduct.findUnique({ where: { id: w.line.id } }),
     schedule: await prisma.shopWorkingSchedule.findUnique({
       where: { id: w.schedule.id },
       include: { days: { include: { hours: true } } },
@@ -72,6 +79,7 @@ const snapshot = async (w: World) => {
     counts: {
       members: await prisma.userShop.count({ where: { shopId } }),
       services: await prisma.service.count({ where: { shopId } }),
+      products: await prisma.product.count({ where: { shopId } }),
       bookings: await prisma.booking.count({ where: { shopId } }),
       customers: await prisma.customer.count({ where: { shopId } }),
       schedules: await prisma.shopWorkingSchedule.count({ where: { shopId } }),
@@ -97,7 +105,7 @@ const send = (
 // Routes that name a sub-resource in the path, plus the one whose body does.
 const targets = Object.entries(SHOP_SCOPED).filter(
   ([key]) =>
-    /:(memberId|userShopId|serviceId|bookingId|customerId|scheduleId)\b/.test(
+    /:(memberId|userShopId|serviceId|bookingId|customerId|scheduleId|productId|lineId)\b/.test(
       key,
     ) || key === 'POST /api/shops/:shopId/services/:serviceId/staff',
 );
@@ -132,6 +140,8 @@ describe.each(targets)('%s', (routeKey, fx) => {
       b.member.staff.id,
       b.schedule.id,
       b.t.service.id,
+      b.product.id,
+      b.line.id,
     ];
 
     // Owner always; an active staff member too where staff may call the route.

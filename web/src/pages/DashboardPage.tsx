@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCrown, faPlus, faStore, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faStore } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { useMyShops } from '../hooks/useMyShops';
@@ -34,7 +34,7 @@ function EmptyText({ text, email }: { text: string; email: string }) {
 }
 
 /**
- * The one page outside a shop: the plan (a pill by the greeting), the user's
+ * The one page outside a shop: the user's
  * shops with Create shop after the last one, and pending invites. Both
  * sections are always shown, with an empty state when they have nothing in them.
  */
@@ -46,37 +46,13 @@ export default function DashboardPage() {
   const shops = shopsQuery.data ?? [];
   const invites = invitesQuery.data?.received ?? [];
 
-  const isPro = !!user?.isPro;
-  // The plan, linking to the subscription card on the Account page. A button,
-  // not a badge: badges are never interactive.
-  const plan = isPro ? t.dashboard.plan.pro : t.dashboard.plan.free;
-  const header = (
-    <OverviewHeader
-      zone={BROWSER_ZONE}
-      action={
-        <Link
-          to="/account#subscription"
-          className="btn btn--secondary btn--sm"
-          aria-label={`${t.settings.subscription.title}: ${plan}`}
-        >
-          <FontAwesomeIcon icon={isPro ? faCrown : faUser} aria-hidden="true" />
-          {plan}
-        </Link>
-      }
-    />
-  );
+  const header = <OverviewHeader zone={BROWSER_ZONE} />;
 
-  // Creating a shop needs Pro: without it the card is there but disabled.
-  const createShop = isPro ? (
+  const createShop = (
     <Link to="/shops/new" className="card card--interactive card--dashed">
       <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
       <span>{t.dashboard.createShop}</span>
     </Link>
-  ) : (
-    <button type="button" className="card card--dashed" disabled>
-      <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
-      <span>{t.dashboard.createShop}</span>
-    </button>
   );
 
   if (shopsQuery.isError || invitesQuery.isError) {

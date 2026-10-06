@@ -9,6 +9,8 @@ import { useLang } from '../context/LanguageContext';
 import {
   getMember,
   updateMemberRole,
+  setMemberPhoto,
+  removeMemberPhoto,
   removeMember,
   sendLoginInvite,
   cancelLoginInvite,
@@ -26,10 +28,14 @@ import {
   type Service,
 } from '../api/service.api';
 import WorkingHoursPanel, { type WorkingHoursApi } from '../components/WorkingHoursPanel';
+import TimeOffPanel from '../components/TimeOffPanel';
 import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
+import PhotoField from '../components/PhotoField';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { planErrorMessage } from '../utils/plan';
 
 export default function ShopTeamMemberPage() {
   const uid = useId();
@@ -197,7 +203,7 @@ export default function ShopTeamMemberPage() {
       const msg =
         err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
       setConfirmRoleChange(false);
-      setMemberError(msg || t.team.errorUpdateRole);
+      setMemberError(planErrorMessage(err, t.shopPlan) ?? (msg || t.team.errorUpdateRole));
     } finally {
       setSavingMember(false);
     }
@@ -362,15 +368,24 @@ export default function ShopTeamMemberPage() {
 
       {/* Member & Access — identity, role/permissions, and login invite, one save */}
       <div className="card team-member-card">
-        <h1 className="t-heading">{member.name}</h1>
-        <div className="cluster">
-          <span className={`badge ${ROLE_BADGE[member.role]}`}>
-            {t.team.roles[member.role]}
-          </span>
-          <span className="t-body-sm t-muted">
-            {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
-          </span>
-        </div>
+        <PhotoField
+          photo={member}
+          shape="round"
+          canEdit={canEdit}
+          preview={<Avatar name={member.name} photoUrl={member.photoUrl} size="xl" />}
+          onUpload={async (file, crop) => setMember(await setMemberPhoto(shop!.id, member.id, file, crop))}
+          onRemove={async () => setMember(await removeMemberPhoto(shop!.id, member.id))}
+        >
+          <h1 className="t-heading">{member.name}</h1>
+          <div className="cluster">
+            <span className={`badge ${ROLE_BADGE[member.role]}`}>
+              {t.team.roles[member.role]}
+            </span>
+            <span className="t-body-sm t-muted">
+              {t.team.joined}: {new Date(member.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+        </PhotoField>
 
         {canEdit ? (
           <>
@@ -394,7 +409,7 @@ export default function ShopTeamMemberPage() {
                   onChange={(e) => handleRoleChange(e.target.value as ShopRole)}
                 >
                   <option value="staff">{t.team.roles.staff}</option>
-                  {shop?.canManageManagers && <option value="manager">{t.team.roles.manager}</option>}
+                  {shop?.canManageManagers && (shop.teamFeatures || memberIsManager) && <option value="manager">{t.team.roles.manager}</option>}
                 </select></div>
               </div>
             )}
@@ -493,7 +508,7 @@ export default function ShopTeamMemberPage() {
 
             {/* Login invite — only relevant until they accept and get a login;
                 sends an email, so it stays a distinct action from the save above. */}
-            {!member.userId && (
+            {!member.userId && shop?.teamFeatures && (
               <div className="card__section">
                 <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}
@@ -530,6 +545,16 @@ export default function ShopTeamMemberPage() {
       {/* Staff availability schedule */}
       {workingHoursApi && (
         <WorkingHoursPanel api={workingHoursApi} canManage={canManage} title={t.team.availability} />
+      )}
+
+      {/* Days and hours off, on top of the schedule */}
+      {shop && memberId && (
+        <TimeOffPanel
+          shopId={shop.id}
+          memberId={memberId}
+          canManage={canManage}
+          calendarPath={`/shops/${slug}/bookings`}
+        />
       )}
 
       {/* Assigned services */}

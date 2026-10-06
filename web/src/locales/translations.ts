@@ -1,3 +1,5 @@
+import type { PublicFont, PublicPalette } from '../utils/branding';
+
 export type Language = 'el' | 'en';
 
 // Messages for the server's booking-rule violations (422 `code`s) + slot conflict.
@@ -30,6 +32,7 @@ export interface Translations {
     manageSection: string;
     bookings: string;
     services: string;
+    products: string;
     team: string;
     invites: string;
     customers: string;
@@ -39,7 +42,6 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    plan: { pro: string; free: string };
     /** from: "{email} invited you as {role}" */
     invites: { title: string; from: string; empty: string };
     shops: { title: string };
@@ -95,6 +97,15 @@ export interface Translations {
     pricingTitle: string;
     pricingSub: string;
     pricingPerMonth: string;
+    pricingPerYear: string;
+    pricingBillingLabel: string;
+    pricingMonthly: string;
+    pricingYearly: string;
+    pricingPopular: string;
+    pricingWas: string;
+    pricingSaving: string;
+    pricingCta: string;
+    pricingFeaturesLabel: string;
     pricingExclVat: string;
     pricingSoloName: string;
     pricingSoloDesc: string;
@@ -102,6 +113,9 @@ export interface Translations {
     pricingTeamName: string;
     pricingTeamDesc: string;
     pricingTeamFeatures: string[];
+    pricingBusinessName: string;
+    pricingBusinessDesc: string;
+    pricingBusinessFeatures: string[];
     pricingDetailsLink: string;
     previewHint: string;
     step1Title: string;
@@ -233,14 +247,33 @@ export interface Translations {
     intro: string;
     buttonLabel: string;
   };
+  shopPlan: {
+    newShopTrial: string;
+    newShopInactive: string;
+    staffLimitReached: string;
+    featureNotInPlan: string;
+    locked: string;
+    contactUs: string;
+    title: string;
+    active: string;
+    trialUntil: string;
+    trialEnded: string;
+    inactive: string;
+    staffLimit: string;
+    changePlan: string;
+    seePlans: string;
+    lockedTitle: string;
+    lockedOwner: string;
+    trialEnding: string;
+  };
   pricingPage: {
     title: string;
     intro: string;
     featureCol: string;
     included: string;
     notIncluded: string;
-    /** Each row: the feature, then Solo and Team (true/false, or a short text). */
-    groups: { title: string; rows: [string, boolean | string, boolean | string][] }[];
+    /** Each row: the feature, then Solo, Team and Business (true/false, or a short text). */
+    groups: { title: string; rows: [string, boolean | string, boolean | string, boolean | string][] }[];
     notesTitle: string;
     notes: string[];
   };
@@ -345,14 +378,6 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
-    subscription: {
-      title: string;
-      proText: string;
-      freeText: string;
-      manageBilling: string;
-      upgrade: string;
-      comingSoon: string;
-    };
     wrongPassword: string;
     soleOwnerOfShop: string;
     deleteAccountMessage: string;
@@ -650,6 +675,143 @@ export interface Translations {
       SUN: string;
     };
   };
+  branding: {
+    title: string;
+    desc: string;
+    colours: string;
+    font: string;
+    fontHint: string;
+    save: string;
+    saved: string;
+    errorSave: string;
+    preview: string;
+    previewUnsaved: string;
+    previewSaved: string;
+    palettes: Record<PublicPalette, string>;
+    fonts: Record<PublicFont, string>;
+  };
+  products: {
+    title: string;
+    add: string;
+    empty: string;
+    emptyHint: string;
+    notInPlan: string;
+    colProduct: string;
+    colPrice: string;
+    colStock: string;
+    colSupplier: string;
+    noSupplier: string;
+    stockOut: string;
+    stockLast: string;
+    stockLow: string;
+    stockOk: string;
+    stockCount: string;
+    newTitle: string;
+    back: string;
+    name: string;
+    price: string;
+    stockLabel: string;
+    description: string;
+    supplier: string;
+    supplierHint: string;
+    openSupplier: string;
+    save: string;
+    create: string;
+    saved: string;
+    errorLoad: string;
+    errorSave: string;
+    errorDelete: string;
+    errorPhoto: string;
+    notFound: string;
+    photoTitle: string;
+    photoPending: string;
+    photoAlt: string;
+    deleteCard: string;
+    deleteTitle: string;
+    deleteMessage: string;
+    delete: string;
+    cancel: string;
+    readOnly: string;
+    pickerTitle: string;
+    pickerHint: string;
+    payInShop: string;
+    total: string;
+    decrease: string;
+    increase: string;
+    quantity: string;
+    overStock: string;
+    overStockConfirm: string;
+    outOfStockError: string;
+    bookingTitle: string;
+    sold: string;
+    notSold: string;
+    leftInStock: string;
+    errorSale: string;
+    confirmationTitle: string;
+    deletedProduct: string;
+    zeroNote: string;
+    serviceFee: string;
+    productsSubtotal: string;
+    removeLine: string;
+    removeLineTitle: string;
+    removeLineMessage: string;
+  };
+  photos: {
+    editorTitle: string;
+    zoom: string;
+    editorHint: string;
+    save: string;
+    cancel: string;
+    add: string;
+    replace: string;
+    adjust: string;
+    remove: string;
+    removeTitle: string;
+    removeMessage: string;
+    hint: string;
+    shopTitle: string;
+    shopDesc: string;
+    shopEmpty: string;
+    shopAlt: string;
+    errorType: string;
+    errorSize: string;
+    errorLoad: string;
+    errorSave: string;
+    errorRemove: string;
+  };
+  timeOff: {
+    title: string;
+    shopTitle: string;
+    hint: string;
+    shopHint: string;
+    add: string;
+    firstDay: string;
+    lastDay: string;
+    allDay: string;
+    startTime: string;
+    endTime: string;
+    note: string;
+    notePlaceholder: string;
+    shopNotePlaceholder: string;
+    save: string;
+    cancel: string;
+    empty: string;
+    shopEmpty: string;
+    wholeShop: string;
+    remove: string;
+    removeTitle: string;
+    removeMessage: string;
+    errorLoad: string;
+    errorSave: string;
+    errorDelete: string;
+    endBeforeStart: string;
+    timeEndBeforeStart: string;
+    affectedOne: string;
+    affectedMany: string;
+    viewCalendar: string;
+    showPast: string;
+    hidePast: string;
+  };
   toggles: {
     switchToLight: string;
     switchToDark: string;
@@ -727,12 +889,25 @@ export interface Translations {
       usePhone: string;
       cancel: string;
     };
+    notAcceptingTitle: string;
+    notAccepting: string;
+    notAcceptingCall: string;
     bookAppointment: string;
     service: string;
     staff: string;
     dateTime: string;
     yourDetails: string;
     stepOf: string;
+    chooseService: string;
+    chooseServiceHint: string;
+    chooseServiceToContinue: string;
+    bookingAs: string;
+    change: string;
+    servicesChosen: string;
+    servicesLimit: string;
+    openMap: string;
+    callShop: string;
+    stepLabel: string;
     noServices: string;
     noStaff: string;
     noPreference: string;
@@ -930,6 +1105,19 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    detail: {
+      minutes: string;
+      noShow: string;
+      cancelBooking: string;
+      cancelTitle: string;
+      cancelMessage: string;
+      keepBooking: string;
+      editProducts: string;
+      doneEditing: string;
+      totalNote: string;
+      soldBadge: string;
+      notSoldBadge: string;
+    };
     block: {
       button: string;
       bookCustomer: string;
@@ -1104,6 +1292,7 @@ export const translations: Record<Language, Translations> = {
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
       services: 'Υπηρεσίες',
+      products: 'Προϊόντα',
       team: 'Ομάδα',
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
@@ -1113,7 +1302,6 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      plan: { pro: 'Pro', free: 'Δωρεάν' },
       invites: {
         title: 'Προσκλήσεις',
         from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
@@ -1172,8 +1360,17 @@ home: {
     contactBadge: 'Επικοινωνία',
     pricingBadge: 'Τιμές',
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
-    pricingSub: 'Δύο πακέτα, με τιμή ανά κατάστημα. Χωρίς προμήθεια στις κρατήσεις.',
+    pricingSub: 'Τρία πακέτα, με τιμή ανά κατάστημα. 30 ημέρες δωρεάν χωρίς κάρτα, και χωρίς προμήθεια στις κρατήσεις.',
     pricingPerMonth: '/μήνα',
+    pricingPerYear: '/έτος',
+    pricingBillingLabel: 'Χρέωση',
+    pricingMonthly: 'Μηνιαία',
+    pricingYearly: 'Ετήσια · 2 μήνες δώρο',
+    pricingPopular: 'Το πιο δημοφιλές',
+    pricingWas: 'Αντί για',
+    pricingSaving: 'Κερδίζεις €{amount}: 2 μήνες δώρο',
+    pricingCta: 'Ξεκίνα δωρεάν',
+    pricingFeaturesLabel: 'Περιλαμβάνει',
     pricingExclVat: 'χωρίς ΦΠΑ',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'Για όποιον δουλεύει μόνος του.',
@@ -1194,6 +1391,13 @@ home: {
       'Προσκλήσεις ομάδας με email',
       'Ρόλοι και δικαιώματα',
       'Ωράριο ανά μέλος προσωπικού',
+      'Προϊόντα που κρατούν οι πελάτες με το ραντεβού τους',
+    ],
+    pricingBusinessName: 'Business',
+    pricingBusinessDesc: 'Για καταστήματα με 6 έως 15 άτομα.',
+    pricingBusinessFeatures: [
+      'Έως 15 μέλη προσωπικού με κρατήσεις',
+      'Όλα όσα έχει το Team',
     ],
     pricingDetailsLink: 'Δες αναλυτικά τι περιλαμβάνει κάθε πακέτο',
     previewHint: 'Έλα, κάνε κλικ τριγύρω — είναι διαδραστικό',
@@ -1207,7 +1411,7 @@ home: {
     faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
     faqContact: 'Επικοινώνησε μαζί μας',
     faq1Q: 'Πόσο κοστίζει το BeBooked;',
-    faq1A: 'Το Solo κοστίζει €15 τον μήνα και το Team €25 τον μήνα, ανά κατάστημα και χωρίς ΦΠΑ. Δεν υπάρχει προμήθεια στις κρατήσεις.',
+    faq1A: 'Το Solo κοστίζει €19 τον μήνα, το Team €35 και το Business €59, ανά κατάστημα και χωρίς ΦΠΑ. Με ετήσια πληρωμή, 2 μήνες είναι δώρο. Οι πρώτες 30 ημέρες είναι δωρεάν και δεν υπάρχει προμήθεια στις κρατήσεις.',
     faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
     faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
     faq3Q: 'Πώς διαγράφω τον λογαριασμό μου;',
@@ -1326,9 +1530,28 @@ home: {
     intro: 'Βρήκες κάποιο bug, έχεις κάποια ερώτηση ή μια ιδέα για το BeBooked; Στείλε μου ένα μήνυμα και θα σου απαντήσω το συντομότερο δυνατό.',
     buttonLabel: 'Επικοινώνησε μαζί μου',
   },
+  shopPlan: {
+    newShopTrial: 'Το πρώτο σου κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+    newShopInactive: 'Έχεις ήδη χρησιμοποιήσει τη δωρεάν δοκιμή. Το νέο κατάστημα θα μείνει ανενεργό μέχρι να επικοινωνήσεις μαζί μας για να του ορίσουμε πακέτο.',
+    staffLimitReached: 'Το πακέτο {plan} επιτρέπει έως {n} μέλη προσωπικού με κρατήσεις. Για περισσότερα χρειάζεται αναβάθμιση.',
+    featureNotInPlan: 'Οι προσκλήσεις ομάδας και ο ρόλος διαχειριστή δεν περιλαμβάνονται στο πακέτο {plan}.',
+    locked: 'Το κατάστημα είναι μόνο για ανάγνωση μέχρι να οριστεί πακέτο.',
+    contactUs: 'Επικοινώνησε μαζί μας',
+    title: 'Πακέτο',
+    active: 'Η συνδρομή είναι ενεργή.',
+    trialUntil: 'Δωρεάν δοκιμή έως {date}.',
+    trialEnded: 'Η δωρεάν δοκιμή τελείωσε. Το κατάστημα είναι μόνο για ανάγνωση.',
+    inactive: 'Δεν υπάρχει ενεργή συνδρομή. Το κατάστημα είναι μόνο για ανάγνωση.',
+    staffLimit: 'Έως {n} μέλη προσωπικού με κρατήσεις.',
+    changePlan: 'Για να ξεκινήσεις ή να αλλάξεις πακέτο, επικοινώνησε μαζί μας.',
+    seePlans: 'Δες τα πακέτα',
+    lockedTitle: 'Το κατάστημα είναι μόνο για ανάγνωση',
+    lockedOwner: 'Η δοκιμή τελείωσε ή δεν υπάρχει ενεργή συνδρομή. Βλέπεις τα πάντα και μπορείς να εξάγεις τους πελάτες σου, αλλά δεν γίνονται αλλαγές και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού.',
+    trialEnding: 'Η δωρεάν δοκιμή τελειώνει στις {date}. Επικοινώνησε μαζί μας για να διαλέξεις πακέτο.',
+  },
   pricingPage: {
     title: 'Τιμές',
-    intro: 'Δύο πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
+    intro: 'Τρία πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
     featureCol: 'Δυνατότητα',
     included: 'Περιλαμβάνεται',
     notIncluded: 'Δεν περιλαμβάνεται',
@@ -1336,64 +1559,68 @@ home: {
       {
         title: 'Σελίδα κρατήσεων',
         rows: [
-          ['Δημόσια σελίδα κρατήσεων στον δικό σου σύνδεσμο', true, true],
-          ['Οι πελάτες κλείνουν χωρίς να φτιάξουν λογαριασμό', true, true],
-          ['Ακύρωση και αλλαγή ώρας από τον πελάτη, με όριο ωρών που ορίζεις', true, true],
-          ['Ελληνικά και Αγγλικά', true, true],
+          ['Δημόσια σελίδα κρατήσεων στον δικό σου σύνδεσμο', true, true, true],
+          ['Οι πελάτες κλείνουν χωρίς να φτιάξουν λογαριασμό', true, true, true],
+          ['Ακύρωση και αλλαγή ώρας από τον πελάτη, με όριο ωρών που ορίζεις', true, true, true],
+          ['Ελληνικά και Αγγλικά', true, true, true],
         ],
       },
       {
         title: 'Ημερολόγιο και ραντεβού',
         rows: [
-          ['Ημερήσιο ημερολόγιο με στήλη ανά μέλος προσωπικού', true, true],
-          ['Ραντεβού που καταχωρείς εσύ, και εκτός ωραρίου', true, true],
-          ['Κλείδωμα ωρών στο ημερολόγιο', true, true],
-          ['Καταστάσεις ραντεβού: ολοκληρώθηκε, δεν εμφανίστηκε, ακυρώθηκε', true, true],
-          ['Προστασία από διπλές κρατήσεις', true, true],
-          ['Σύνοψη με αριθμό ραντεβού ανά εβδομάδα, μήνα και τρίμηνο', true, true],
+          ['Ημερήσιο ημερολόγιο με στήλη ανά μέλος προσωπικού', true, true, true],
+          ['Ραντεβού που καταχωρείς εσύ, και εκτός ωραρίου', true, true, true],
+          ['Κλείδωμα ωρών στο ημερολόγιο', true, true, true],
+          ['Καταστάσεις ραντεβού: ολοκληρώθηκε, δεν εμφανίστηκε, ακυρώθηκε', true, true, true],
+          ['Προστασία από διπλές κρατήσεις', true, true, true],
+          ['Σύνοψη με αριθμό ραντεβού ανά εβδομάδα, μήνα και τρίμηνο', true, true, true],
         ],
       },
       {
         title: 'Υπηρεσίες και πελάτες',
         rows: [
-          ['Υπηρεσίες με τιμή και διάρκεια', true, true],
-          ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true],
-          ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true],
-          ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true],
-          ['Εισαγωγή πελατών από αρχείο και εξαγωγή σε Excel', true, true],
-          ['Συγχώνευση διπλών πελατών', true, true],
+          ['Υπηρεσίες με τιμή και διάρκεια', true, true, true],
+          ['Φωτογραφία για το κατάστημα και για κάθε μέλος', true, true, true],
+          ['Προϊόντα που κρατούν οι πελάτες με το ραντεβού τους (πληρωμή στο κατάστημα)', false, true, true],
+          ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true, true],
+          ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true, true],
+          ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true, true],
+          ['Εισαγωγή πελατών από αρχείο και εξαγωγή σε Excel', true, true, true],
+          ['Συγχώνευση διπλών πελατών', true, true, true],
         ],
       },
       {
         title: 'Email',
         rows: [
-          ['Email επιβεβαίωσης ραντεβού', true, true],
-          ['Email υπενθύμισης, όσες ώρες πριν ορίσεις', true, true],
-          ['Email ακύρωσης και αλλαγής ώρας', true, true],
-          ['Ειδοποίηση στο κατάστημα για κάθε νέο ραντεβού', true, true],
+          ['Email επιβεβαίωσης ραντεβού', true, true, true],
+          ['Email υπενθύμισης, όσες ώρες πριν ορίσεις', true, true, true],
+          ['Email ακύρωσης και αλλαγής ώρας', true, true, true],
+          ['Ειδοποίηση στο κατάστημα για κάθε νέο ραντεβού', true, true, true],
         ],
       },
       {
         title: 'Ομάδα',
         rows: [
-          ['Μέλη προσωπικού με κρατήσεις', '1', 'Έως 5'],
-          ['Ωράριο λειτουργίας', true, true],
-          ['Ξεχωριστό ωράριο ανά μέλος προσωπικού', false, true],
-          ['Προσκλήσεις ομάδας με email', false, true],
-          ['Ρόλοι και δικαιώματα (ιδιοκτήτης, διαχειριστής, προσωπικό)', false, true],
+          ['Μέλη προσωπικού με κρατήσεις', '1', 'Έως 5', 'Έως 15'],
+          ['Ωράριο λειτουργίας', true, true, true],
+          ['Ξεχωριστό ωράριο ανά μέλος προσωπικού', false, true, true],
+          ['Προσκλήσεις ομάδας με email', false, true, true],
+          ['Ρόλοι και δικαιώματα (ιδιοκτήτης, διαχειριστής, προσωπικό)', false, true, true],
         ],
       },
       {
         title: 'Όρια',
         rows: [
-          ['Κρατήσεις τον μήνα', 'Χωρίς όριο', 'Χωρίς όριο'],
-          ['Καταστήματα ανά συνδρομή', '1', '1'],
+          ['Κρατήσεις τον μήνα', 'Χωρίς όριο', 'Χωρίς όριο', 'Χωρίς όριο'],
+          ['Καταστήματα ανά συνδρομή', '1', '1', '1'],
         ],
       },
     ],
     notesTitle: 'Καλό να γνωρίζεις',
     notes: [
-      'Οι τιμές είναι ανά κατάστημα, τον μήνα, χωρίς ΦΠΑ.',
+      'Οι τιμές είναι ανά κατάστημα, χωρίς ΦΠΑ. Με ετήσια πληρωμή πληρώνεις 10 μήνες αντί για 12.',
+      'Κάθε νέο κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+      'Αν η δοκιμή τελειώσει χωρίς πακέτο, το κατάστημα γίνεται μόνο για ανάγνωση και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού. Τα δεδομένα σου μένουν.',
       'Δεν υπάρχει προμήθεια στις κρατήσεις.',
       'Οι επιβεβαιώσεις και οι υπενθυμίσεις στέλνονται με email. Δεν υπάρχουν SMS.',
       'Δεν υπάρχουν online πληρωμές ή προκαταβολές από πελάτες.',
@@ -1500,14 +1727,6 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
-      subscription: {
-        title: 'Συνδρομή',
-        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
-        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
-        manageBilling: 'Διαχείριση χρέωσης',
-        upgrade: 'Αναβάθμιση',
-        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
-      },
       wrongPassword: 'Λάθος κωδικός.',
       soleOwnerOfShop: 'Είστε ο ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή μεταβιβάστε το πρώτα σε έναν διαχειριστή.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
@@ -1805,6 +2024,157 @@ home: {
         SUN: 'Κυριακή',
       },
     },
+    branding: {
+      title: "Εμφάνιση σελίδας κρατήσεων",
+      desc: "Χρώματα και γραμματοσειρά της δημόσιας σελίδας όπου κλείνουν ραντεβού οι πελάτες σου.",
+      colours: "Χρώματα",
+      font: "Γραμματοσειρά",
+      fontHint: "Όλες οι γραμματοσειρές υποστηρίζουν ελληνικά.",
+      save: "Αποθήκευση",
+      saved: "Η εμφάνιση αποθηκεύτηκε.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      preview: "Προεπισκόπηση",
+      previewUnsaved: "Δεν έχει αποθηκευτεί ακόμα. Οι πελάτες βλέπουν την προηγούμενη εμφάνιση μέχρι να πατήσεις Αποθήκευση.",
+      previewSaved: "Έτσι βλέπουν τη σελίδα οι πελάτες σου.",
+      palettes: {
+        mono: "Ασπρόμαυρο",
+        original: "Πράσινο",
+        purple: "Μωβ",
+        blue: "Μπλε",
+        rose: "Ροζ",
+        sand: "Άμμος",
+      },
+      fonts: {
+        default: "Κανονική (Poppins)",
+        manrope: "Manrope · μοντέρνα",
+        "noto-serif": "Noto Serif · κλασική",
+        alegreya: "Alegreya · κομψή",
+        comfortaa: "Comfortaa · στρογγυλή",
+        "roboto-slab": "Roboto Slab · έντονη",
+      },
+    },
+    products: {
+      title: "Προϊόντα",
+      add: "Προσθήκη προϊόντος",
+      empty: "Δεν έχεις προσθέσει προϊόντα ακόμη.",
+      emptyHint: "Πρόσθεσε προϊόντα για να τα κρατούν οι πελάτες μαζί με το ραντεβού τους.",
+      notInPlan: "Τα προϊόντα δεν περιλαμβάνονται στο πακέτο {plan}. Αναβάθμισε το πακέτο για να τα χρησιμοποιήσεις.",
+      colProduct: "Προϊόν",
+      colPrice: "Τιμή",
+      colStock: "Απόθεμα",
+      colSupplier: "Προμηθευτής",
+      noSupplier: "—",
+      stockOut: "Δεν είναι διαθέσιμο",
+      stockLast: "Τελευταίο κομμάτι",
+      stockLow: "Μόνο {n} ακόμη",
+      stockOk: "Διαθέσιμο",
+      stockCount: "{n} σε απόθεμα",
+      newTitle: "Νέο προϊόν",
+      back: "Πίσω στα προϊόντα",
+      name: "Όνομα",
+      price: "Τιμή (€)",
+      stockLabel: "Πόσα έχουν απομείνει",
+      description: "Περιγραφή",
+      supplier: "Πού το αγοράζω (σύνδεσμος προμηθευτή)",
+      supplierHint: "Τον βλέπεις μόνο εσύ και οι διαχειριστές. Δεν φαίνεται ποτέ στους πελάτες.",
+      openSupplier: "Άνοιγμα προμηθευτή",
+      save: "Αποθήκευση",
+      create: "Δημιουργία προϊόντος",
+      saved: "Το προϊόν αποθηκεύτηκε.",
+      errorLoad: "Δεν ήταν δυνατή η φόρτωση των προϊόντων.",
+      errorSave: "Δεν ήταν δυνατή η αποθήκευση του προϊόντος.",
+      errorDelete: "Δεν ήταν δυνατή η διαγραφή του προϊόντος.",
+      errorPhoto: "Το προϊόν δημιουργήθηκε, αλλά η φωτογραφία δεν αποθηκεύτηκε. Πρόσθεσέ την ξανά εδώ.",
+      notFound: "Το προϊόν δεν βρέθηκε.",
+      photoTitle: "Φωτογραφία",
+      photoPending: "Η φωτογραφία αποθηκεύεται μαζί με το προϊόν.",
+      photoAlt: "Φωτογραφία του {name}",
+      deleteCard: "Διαγραφή προϊόντος",
+      deleteTitle: "Διαγραφή προϊόντος;",
+      deleteMessage: "Το προϊόν θα διαγραφεί. Οι κρατήσεις που το περιέχουν το κρατούν με το όνομα και την τιμή που είχε.",
+      delete: "Διαγραφή",
+      cancel: "Άκυρο",
+      readOnly: "Μόνο οι ιδιοκτήτες και οι διαχειριστές αλλάζουν τα προϊόντα.",
+      pickerTitle: "Προϊόντα",
+      pickerHint: "Κράτησε προϊόντα μαζί με το ραντεβού. Πληρώνεις στο κατάστημα.",
+      payInShop: "Κράτηση μόνο: πληρώνεις στο κατάστημα.",
+      total: "Σύνολο",
+      decrease: "Λιγότερα: {name}",
+      increase: "Περισσότερα: {name}",
+      quantity: "Ποσότητα: {name}",
+      overStock: "Ζητάς περισσότερα από όσα έχουν απομείνει. Θα κρατηθούν παρ’ όλα αυτά.",
+      overStockConfirm: "Κράτηση παρ’ όλα αυτά",
+      outOfStockError: "Κάποια προϊόντα δεν είναι πια διαθέσιμα σε αυτή την ποσότητα. Ανανέωσε τη σελίδα και δοκίμασε ξανά.",
+      bookingTitle: "Προϊόντα",
+      sold: "Πουλήθηκε",
+      notSold: "Δεν πουλήθηκε",
+      leftInStock: "{n} σε απόθεμα",
+      errorSale: "Δεν ήταν δυνατή η ενημέρωση του προϊόντος.",
+      confirmationTitle: "Προϊόντα που κρατήθηκαν",
+      deletedProduct: "Το προϊόν έχει διαγραφεί",
+      zeroNote: "Η ποσότητα είναι 0: το προϊόν δεν υπολογίζεται στην κράτηση. Αύξησέ την ή αφαίρεσέ το.",
+      serviceFee: "Υπηρεσία",
+      productsSubtotal: "Προϊόντα",
+      removeLine: "Αφαίρεση: {name}",
+      removeLineTitle: "Αφαίρεση προϊόντος από την κράτηση;",
+      removeLineMessage: "Το προϊόν αφαιρείται από την κράτηση. Αν είχε σημειωθεί ως πουλημένο, το απόθεμα επιστρέφει.",
+    },
+    photos: {
+      editorTitle: "Επεξεργασία φωτογραφίας",
+      zoom: "Μεγέθυνση",
+      editorHint: "Σύρε τη φωτογραφία για να τη μετακινήσεις και χρησιμοποίησε το ρυθμιστικό για μεγέθυνση. Το πλαίσιο είναι αυτό που θα φαίνεται.",
+      save: "Αποθήκευση",
+      cancel: "Άκυρο",
+      add: "Προσθήκη φωτογραφίας",
+      replace: "Αντικατάσταση",
+      adjust: "Προσαρμογή",
+      remove: "Αφαίρεση",
+      removeTitle: "Αφαίρεση φωτογραφίας;",
+      removeMessage: "Η φωτογραφία θα διαγραφεί. Θα φαίνεται ξανά το αρχικό γράμμα.",
+      hint: "JPEG, PNG ή WebP, έως 8 MB.",
+      shopTitle: "Φωτογραφία καταστήματος",
+      shopDesc: "Εμφανίζεται στην κορυφή της δημόσιας σελίδας κρατήσεων. Αποθηκεύεται μόλις την επεξεργαστείς.",
+      shopEmpty: "Δεν έχει προστεθεί φωτογραφία",
+      shopAlt: "Φωτογραφία του {name}",
+      errorType: "Η φωτογραφία πρέπει να είναι JPEG, PNG ή WebP.",
+      errorSize: "Η φωτογραφία είναι πολύ μεγάλη (έως 8 MB).",
+      errorLoad: "Δεν ήταν δυνατή η φόρτωση της φωτογραφίας.",
+      errorSave: "Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.",
+      errorRemove: "Δεν ήταν δυνατή η αφαίρεση της φωτογραφίας.",
+    },
+    timeOff: {
+      title: "Άδειες και ρεπό",
+      shopTitle: "Κλειστές ημέρες",
+      hint: "Ημέρες ή ώρες που το μέλος δεν δουλεύει, πέρα από το εβδομαδιαίο πρόγραμμα. Οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      shopHint: "Ημέρες ή ώρες που όλο το κατάστημα είναι κλειστό, π.χ. αργίες. Ισχύουν για όλα τα μέλη και οι πελάτες δεν μπορούν να κλείσουν ραντεβού τότε.",
+      add: "Προσθήκη",
+      firstDay: "Πρώτη ημέρα",
+      lastDay: "Τελευταία ημέρα (προαιρετική)",
+      allDay: "Όλη την ημέρα",
+      startTime: "Ώρα έναρξης",
+      endTime: "Ώρα λήξης",
+      note: "Σημείωση (προαιρετική)",
+      notePlaceholder: "π.χ. Άδεια",
+      shopNotePlaceholder: "π.χ. Χριστούγεννα",
+      save: "Αποθήκευση",
+      cancel: "Ακύρωση",
+      empty: "Δεν υπάρχουν άδειες ή ρεπό.",
+      shopEmpty: "Δεν υπάρχουν κλειστές ημέρες.",
+      wholeShop: "Όλο το κατάστημα",
+      remove: "Αφαίρεση",
+      removeTitle: "Αφαίρεση αυτής της καταχώρισης;",
+      removeMessage: "Οι ώρες αυτές θα είναι ξανά διαθέσιμες για κρατήσεις, σύμφωνα με το εβδομαδιαίο πρόγραμμα.",
+      errorLoad: "Αποτυχία φόρτωσης.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      errorDelete: "Αποτυχία αφαίρεσης.",
+      endBeforeStart: "Η τελευταία ημέρα δεν μπορεί να είναι πριν από την πρώτη.",
+      timeEndBeforeStart: "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.",
+      affectedOne: "Υπάρχει ήδη 1 κράτηση σε αυτό το διάστημα. Δεν άλλαξε· ακύρωσέ την ή μετάφερέ την αν χρειάζεται.",
+      affectedMany: "Υπάρχουν ήδη {count} κρατήσεις σε αυτό το διάστημα. Δεν άλλαξαν· ακύρωσέ τες ή μετάφερέ τες αν χρειάζεται.",
+      viewCalendar: "Άνοιγμα ημερολογίου",
+      showPast: "Εμφάνιση παλαιότερων ({count})",
+      hidePast: "Απόκρυψη παλαιότερων",
+    },
     toggles: {
       switchToLight: 'Εναλλαγή σε φωτεινή λειτουργία',
       switchToDark: 'Εναλλαγή σε σκοτεινή λειτουργία',
@@ -1883,11 +2253,24 @@ home: {
         cancel: 'Άκυρο',
       },
       bookAppointment: 'Κλείστε Ραντεβού',
+      notAcceptingTitle: 'Οι online κρατήσεις δεν είναι διαθέσιμες αυτή τη στιγμή',
+      notAccepting: 'Επικοινωνήστε με το κατάστημα για να κλείσετε ραντεβού.',
+      notAcceptingCall: 'Καλέστε στο {phone} για να κλείσετε ραντεβού.',
       service: 'Υπηρεσία',
       staff: 'Προσωπικό',
       dateTime: 'Ημερομηνία & Ώρα',
       yourDetails: 'Τα Στοιχεία σας',
       stepOf: 'Βήμα {n} από {total}',
+      chooseService: "Διάλεξε υπηρεσία",
+      chooseServiceHint: "Μπορείς να διαλέξεις περισσότερες από μία: οι ώρες προστίθενται.",
+      chooseServiceToContinue: "Διάλεξε υπηρεσία για να συνεχίσεις",
+      bookingAs: "Κράτηση ως {name}",
+      change: "Αλλαγή",
+      servicesChosen: "{n} υπηρεσίες · {duration} · {price}",
+      servicesLimit: "Έως {n} υπηρεσίες σε μία κράτηση.",
+      openMap: "Άνοιγμα στους χάρτες",
+      callShop: "Κλήση στο {phone}",
+      stepLabel: "Βήμα {n} από {total}",
       noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
       noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
       noPreference: 'Χωρίς προτίμηση',
@@ -2106,6 +2489,19 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} λεπτά",
+        noShow: "Δεν ήρθε",
+        cancelBooking: "Ακύρωση ραντεβού",
+        cancelTitle: "Ακύρωση ραντεβού;",
+        cancelMessage: "Το ραντεβού ακυρώνεται και η ώρα ελευθερώνεται. Μπορείς να το ξαναανοίξεις αργότερα αν η ώρα είναι ακόμη ελεύθερη.",
+        keepBooking: "Κράτηση του ραντεβού",
+        editProducts: "Επεξεργασία",
+        doneEditing: "Τέλος",
+        totalNote: "Υπηρεσία {service} + προϊόντα {products}",
+        soldBadge: "Πουλήθηκε",
+        notSoldBadge: "Δεν πουλήθηκε",
+      },
       block: {
         button: 'Κλείδωμα ώρας',
         bookCustomer: 'Κράτηση για πελάτη',
@@ -2283,6 +2679,7 @@ home: {
       manageSection: 'Manage',
       bookings: 'Bookings',
       services: 'Services',
+      products: 'Products',
       team: 'Team',
       invites: 'Invites',
       customers: 'Customers',
@@ -2292,7 +2689,6 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      plan: { pro: 'Pro', free: 'Free' },
       invites: {
         title: 'Invitations',
         from: '{email} invited you as {role}',
@@ -2351,8 +2747,17 @@ home: {
     contactBadge: 'Contact',
     pricingBadge: 'Pricing',
     pricingTitle: 'Simple, with no surprises',
-    pricingSub: 'Two plans, priced per shop. No commission on bookings.',
+    pricingSub: 'Three plans, priced per shop. 30 days free with no card, and no commission on bookings.',
     pricingPerMonth: '/month',
+    pricingPerYear: '/year',
+    pricingBillingLabel: 'Billing',
+    pricingMonthly: 'Monthly',
+    pricingYearly: 'Yearly · 2 months free',
+    pricingPopular: 'Most popular',
+    pricingWas: 'Instead of',
+    pricingSaving: 'You save €{amount}: 2 months free',
+    pricingCta: 'Start free trial',
+    pricingFeaturesLabel: 'Features',
     pricingExclVat: 'excl. VAT',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'For anyone working on their own.',
@@ -2373,6 +2778,13 @@ home: {
       'Team invites by email',
       'Roles and permissions',
       'Working hours per staff member',
+      'Products customers can reserve with a booking',
+    ],
+    pricingBusinessName: 'Business',
+    pricingBusinessDesc: 'For shops with 6 to 15 people.',
+    pricingBusinessFeatures: [
+      'Up to 15 bookable staff',
+      'Everything in Team',
     ],
     pricingDetailsLink: 'See everything each plan includes',
     previewHint: "Go ahead, click around — it's interactive",
@@ -2386,7 +2798,7 @@ home: {
     faqSub: 'Find answers to frequently asked questions.',
     faqContact: 'Contact us',
     faq1Q: 'How much does BeBooked cost?',
-    faq1A: 'Solo is €15 a month and Team is €25 a month, per shop and excluding VAT. There is no commission on bookings.',
+    faq1A: 'Solo is €19 a month, Team is €35 and Business is €59, per shop and excluding VAT. Paying yearly gives 2 months free. The first 30 days are free and there is no commission on bookings.',
     faq2Q: 'Can my clients book without creating an account?',
     faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
     faq3Q: 'How do I delete my account?',
@@ -2505,9 +2917,28 @@ home: {
     intro: "Found a bug, have a question, or have an idea for BeBooked? I’d like to hear it. Send me a message and I’ll get back to you.",
     buttonLabel: 'Contact me',
   },
+  shopPlan: {
+    newShopTrial: 'Your first shop starts with a 30-day free trial with everything in Team. No card is needed.',
+    newShopInactive: 'You have already used your free trial. The new shop stays inactive until you contact us to set a plan for it.',
+    staffLimitReached: 'The {plan} plan allows up to {n} bookable staff. Adding more needs an upgrade.',
+    featureNotInPlan: 'Team invites and the manager role are not part of the {plan} plan.',
+    locked: 'This shop is read-only until a plan is set for it.',
+    contactUs: 'Contact us',
+    title: 'Plan',
+    active: 'The subscription is active.',
+    trialUntil: 'Free trial until {date}.',
+    trialEnded: 'The free trial has ended. The shop is read-only.',
+    inactive: 'There is no active subscription. The shop is read-only.',
+    staffLimit: 'Up to {n} bookable staff.',
+    changePlan: 'To start or change a plan, contact us.',
+    seePlans: 'See the plans',
+    lockedTitle: 'This shop is read-only',
+    lockedOwner: 'The trial has ended or there is no active subscription. You can see everything and export your customers, but nothing can be changed and the booking page takes no new bookings.',
+    trialEnding: 'Your free trial ends on {date}. Contact us to choose a plan.',
+  },
   pricingPage: {
     title: 'Pricing',
-    intro: 'Two plans, priced per shop per month. Below is exactly what each one includes.',
+    intro: 'Three plans, priced per shop per month. Below is exactly what each one includes.',
     featureCol: 'Feature',
     included: 'Included',
     notIncluded: 'Not included',
@@ -2515,64 +2946,68 @@ home: {
       {
         title: 'Booking page',
         rows: [
-          ['Public booking page at your own link', true, true],
-          ['Customers book without creating an account', true, true],
-          ['Customer cancel and reschedule links, with a cutoff you set', true, true],
-          ['Greek and English', true, true],
+          ['Public booking page at your own link', true, true, true],
+          ['Customers book without creating an account', true, true, true],
+          ['Customer cancel and reschedule links, with a cutoff you set', true, true, true],
+          ['Greek and English', true, true, true],
         ],
       },
       {
         title: 'Calendar and bookings',
         rows: [
-          ['Daily calendar with a column per staff member', true, true],
-          ['Bookings you add yourself, including outside opening hours', true, true],
-          ['Block time slots in the calendar', true, true],
-          ['Booking statuses: completed, no-show, cancelled', true, true],
-          ['Double-booking protection', true, true],
-          ['Overview of booking counts by week, month and quarter', true, true],
+          ['Daily calendar with a column per staff member', true, true, true],
+          ['Bookings you add yourself, including outside opening hours', true, true, true],
+          ['Block time slots in the calendar', true, true, true],
+          ['Booking statuses: completed, no-show, cancelled', true, true, true],
+          ['Double-booking protection', true, true, true],
+          ['Overview of booking counts by week, month and quarter', true, true, true],
         ],
       },
       {
         title: 'Services and customers',
         rows: [
-          ['Services with price and duration', true, true],
-          ['Internal-only services', true, true],
-          ['Customer records with notes and history', true, true],
-          ['Custom service duration per customer', true, true],
-          ['Customer import from a file and export to Excel', true, true],
-          ['Merge duplicate customers', true, true],
+          ['Services with price and duration', true, true, true],
+          ['A photo for the shop and for each team member', true, true, true],
+          ['Products customers can reserve with a booking (pay in the shop)', false, true, true],
+          ['Internal-only services', true, true, true],
+          ['Customer records with notes and history', true, true, true],
+          ['Custom service duration per customer', true, true, true],
+          ['Customer import from a file and export to Excel', true, true, true],
+          ['Merge duplicate customers', true, true, true],
         ],
       },
       {
         title: 'Emails',
         rows: [
-          ['Booking confirmation emails', true, true],
-          ['Reminder emails, as many hours before as you choose', true, true],
-          ['Cancellation and reschedule emails', true, true],
-          ['New-booking notice to the shop', true, true],
+          ['Booking confirmation emails', true, true, true],
+          ['Reminder emails, as many hours before as you choose', true, true, true],
+          ['Cancellation and reschedule emails', true, true, true],
+          ['New-booking notice to the shop', true, true, true],
         ],
       },
       {
         title: 'Team',
         rows: [
-          ['Bookable staff members', '1', 'Up to 5'],
-          ['Opening hours', true, true],
-          ['Separate working hours per staff member', false, true],
-          ['Team invites by email', false, true],
-          ['Roles and permissions (owner, manager, staff)', false, true],
+          ['Bookable staff members', '1', 'Up to 5', 'Up to 15'],
+          ['Opening hours', true, true, true],
+          ['Separate working hours per staff member', false, true, true],
+          ['Team invites by email', false, true, true],
+          ['Roles and permissions (owner, manager, staff)', false, true, true],
         ],
       },
       {
         title: 'Limits',
         rows: [
-          ['Bookings per month', 'No limit', 'No limit'],
-          ['Shops per subscription', '1', '1'],
+          ['Bookings per month', 'No limit', 'No limit', 'No limit'],
+          ['Shops per subscription', '1', '1', '1'],
         ],
       },
     ],
     notesTitle: 'Good to know',
     notes: [
-      'Prices are per shop, per month, excluding VAT.',
+      'Prices are per shop, excluding VAT. Paying yearly costs 10 months instead of 12.',
+      'Every new shop starts with a 30-day free trial with everything in Team. No card is needed.',
+      'If the trial ends without a plan, the shop becomes read-only and the booking page stops taking new bookings. Your data stays.',
       'There is no commission on bookings.',
       'Confirmations and reminders are sent by email. There is no SMS.',
       'There are no online payments or deposits from customers.',
@@ -2679,14 +3114,6 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
-      subscription: {
-        title: 'Subscription',
-        proText: 'You are on the Pro plan and can create shops.',
-        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
-        manageBilling: 'Manage billing',
-        upgrade: 'Upgrade',
-        comingSoon: 'Billing is coming soon.',
-      },
       wrongPassword: 'Incorrect password.',
       soleOwnerOfShop: 'You are the owner of a shop. Delete the shop or transfer it to a manager first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
@@ -2984,6 +3411,157 @@ home: {
         SUN: 'Sunday',
       },
     },
+    branding: {
+      title: "Booking page look",
+      desc: "The colours and font of the public page where your customers book.",
+      colours: "Colours",
+      font: "Font",
+      fontHint: "Every font covers Greek and English.",
+      save: "Save",
+      saved: "The look was saved.",
+      errorSave: "Could not save.",
+      preview: "Preview",
+      previewUnsaved: "Not saved yet. Customers see the previous look until you press Save.",
+      previewSaved: "This is how your customers see the page.",
+      palettes: {
+        mono: "Black & white",
+        original: "Green",
+        purple: "Purple",
+        blue: "Blue",
+        rose: "Rose",
+        sand: "Sand",
+      },
+      fonts: {
+        default: "Standard (Poppins)",
+        manrope: "Manrope · modern",
+        "noto-serif": "Noto Serif · classic",
+        alegreya: "Alegreya · elegant",
+        comfortaa: "Comfortaa · rounded",
+        "roboto-slab": "Roboto Slab · bold",
+      },
+    },
+    products: {
+      title: "Products",
+      add: "Add product",
+      empty: "You have not added any products yet.",
+      emptyHint: "Add products so customers can reserve them with their booking.",
+      notInPlan: "Products are not part of the {plan} plan. Upgrade the plan to use them.",
+      colProduct: "Product",
+      colPrice: "Price",
+      colStock: "Stock",
+      colSupplier: "Supplier",
+      noSupplier: "—",
+      stockOut: "Not available",
+      stockLast: "Last one",
+      stockLow: "Only {n} left",
+      stockOk: "In stock",
+      stockCount: "{n} in stock",
+      newTitle: "New product",
+      back: "Back to products",
+      name: "Name",
+      price: "Price (€)",
+      stockLabel: "How many are left",
+      description: "Description",
+      supplier: "Where I buy it (supplier link)",
+      supplierHint: "Only you and the managers see this. Customers never do.",
+      openSupplier: "Open supplier",
+      save: "Save",
+      create: "Create product",
+      saved: "The product was saved.",
+      errorLoad: "The products could not be loaded.",
+      errorSave: "The product could not be saved.",
+      errorDelete: "The product could not be deleted.",
+      errorPhoto: "The product was created, but its photo was not saved. Add it again here.",
+      notFound: "Product not found.",
+      photoTitle: "Photo",
+      photoPending: "The photo is saved with the product.",
+      photoAlt: "Photo of {name}",
+      deleteCard: "Delete product",
+      deleteTitle: "Delete this product?",
+      deleteMessage: "The product will be deleted. Bookings that reserved it keep it with the name and price it had.",
+      delete: "Delete",
+      cancel: "Cancel",
+      readOnly: "Only owners and managers can change products.",
+      pickerTitle: "Products",
+      pickerHint: "Reserve products with your booking. You pay in the shop.",
+      payInShop: "Reservation only: you pay in the shop.",
+      total: "Total",
+      decrease: "Fewer: {name}",
+      increase: "More: {name}",
+      quantity: "Quantity: {name}",
+      overStock: "You are reserving more than what is left. It will be reserved anyway.",
+      overStockConfirm: "Reserve anyway",
+      outOfStockError: "Some products are no longer available in that quantity. Refresh the page and try again.",
+      bookingTitle: "Products",
+      sold: "Sold",
+      notSold: "Not sold",
+      leftInStock: "{n} in stock",
+      errorSale: "The product could not be updated.",
+      confirmationTitle: "Reserved products",
+      deletedProduct: "This product was deleted",
+      zeroNote: "Quantity is 0: this product no longer counts in the booking. Raise it again or remove it.",
+      serviceFee: "Service",
+      productsSubtotal: "Products",
+      removeLine: "Remove: {name}",
+      removeLineTitle: "Remove this product from the booking?",
+      removeLineMessage: "The product is removed from the booking. If it was marked sold, the stock goes back.",
+    },
+    photos: {
+      editorTitle: "Edit photo",
+      zoom: "Zoom",
+      editorHint: "Drag the photo to move it and use the slider to zoom. What is inside the frame is what will be shown.",
+      save: "Save",
+      cancel: "Cancel",
+      add: "Add photo",
+      replace: "Replace",
+      adjust: "Adjust",
+      remove: "Remove",
+      removeTitle: "Remove photo?",
+      removeMessage: "The photo will be deleted. The initial is shown again.",
+      hint: "JPEG, PNG or WebP, up to 8 MB.",
+      shopTitle: "Shop photo",
+      shopDesc: "Shown at the top of your public booking page. Saved as soon as you finish editing it.",
+      shopEmpty: "No photo added",
+      shopAlt: "Photo of {name}",
+      errorType: "The photo must be a JPEG, PNG or WebP image.",
+      errorSize: "The photo is too large (up to 8 MB).",
+      errorLoad: "The photo could not be loaded.",
+      errorSave: "The photo could not be saved.",
+      errorRemove: "The photo could not be removed.",
+    },
+    timeOff: {
+      title: "Time off",
+      shopTitle: "Closed days",
+      hint: "Days or hours this member is not working, on top of the weekly hours. Customers cannot book then.",
+      shopHint: "Days or hours the whole shop is closed, such as public holidays. They apply to every member and customers cannot book then.",
+      add: "Add",
+      firstDay: "First day",
+      lastDay: "Last day (optional)",
+      allDay: "All day",
+      startTime: "Start time",
+      endTime: "End time",
+      note: "Note (optional)",
+      notePlaceholder: "e.g. Vacation",
+      shopNotePlaceholder: "e.g. Christmas",
+      save: "Save",
+      cancel: "Cancel",
+      empty: "No time off.",
+      shopEmpty: "No closed days.",
+      wholeShop: "Whole shop",
+      remove: "Remove",
+      removeTitle: "Remove this entry?",
+      removeMessage: "This time will be bookable again, following the weekly hours.",
+      errorLoad: "Could not load time off.",
+      errorSave: "Could not save.",
+      errorDelete: "Could not remove.",
+      endBeforeStart: "The last day cannot be before the first day.",
+      timeEndBeforeStart: "The end time must be after the start time.",
+      affectedOne: "1 booking is already in this time. It was not changed; cancel or move it if needed.",
+      affectedMany: "{count} bookings are already in this time. They were not changed; cancel or move them if needed.",
+      viewCalendar: "Open calendar",
+      showPast: "Show past ({count})",
+      hidePast: "Hide past",
+    },
     toggles: {
       switchToLight: 'Switch to light mode',
       switchToDark: 'Switch to dark mode',
@@ -3062,11 +3640,24 @@ home: {
         cancel: 'Cancel',
       },
       bookAppointment: 'Book an Appointment',
+      notAcceptingTitle: 'Online booking is not available right now',
+      notAccepting: 'Contact the shop to book an appointment.',
+      notAcceptingCall: 'Call {phone} to book an appointment.',
       service: 'Service',
       staff: 'Staff',
       dateTime: 'Date & Time',
       yourDetails: 'Your Details',
       stepOf: 'Step {n} of {total}',
+      chooseService: "Choose a service",
+      chooseServiceHint: "You can pick more than one: the times add up.",
+      chooseServiceToContinue: "Choose a service to continue",
+      bookingAs: "Booking as {name}",
+      change: "Change",
+      servicesChosen: "{n} services · {duration} · {price}",
+      servicesLimit: "Up to {n} services in one booking.",
+      openMap: "Open in maps",
+      callShop: "Call {phone}",
+      stepLabel: "Step {n} of {total}",
       noServices: 'No services available.',
       noStaff: 'No staff available for this service.',
       noPreference: 'No preference',
@@ -3285,6 +3876,19 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} min",
+        noShow: "No-show",
+        cancelBooking: "Cancel booking",
+        cancelTitle: "Cancel this booking?",
+        cancelMessage: "The booking is canceled and its time is freed. You can reopen it later if the time is still free.",
+        keepBooking: "Keep it",
+        editProducts: "Edit",
+        doneEditing: "Done",
+        totalNote: "Service {service} + products {products}",
+        soldBadge: "Sold",
+        notSoldBadge: "Not sold",
+      },
       block: {
         button: 'Block this slot',
         bookCustomer: 'Book a customer instead',

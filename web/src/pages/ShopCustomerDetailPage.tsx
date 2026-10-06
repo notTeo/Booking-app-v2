@@ -24,6 +24,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
 import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
+import { bookingServiceNames } from '../utils/bookingServices';
 
 const BOOKINGS_PAGE_SIZE = 10;
 
@@ -234,7 +235,7 @@ export default function ShopCustomerDetailPage() {
                 <tbody>
                   {bookings.items.map((b) => (
                     <tr key={b.id} role="row">
-                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{b.service.name}</td>
+                      <td role="cell" data-label={t.customers.serviceCol} className="data-table__title">{bookingServiceNames(b)}</td>
                       <td role="cell" data-label={t.customers.dateTimeCol}>
                         {formatDateTimeInZone(b.startTime, shop!.timezone)}
                       </td>

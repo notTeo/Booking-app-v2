@@ -59,7 +59,7 @@ const EXEMPT_AUTHENTICATED: Record<string, string> = {
 
 // Routes with no login at all.
 const isPublic = (key: string) =>
-  /^\w+ \/(auth|public)\//.test(key) ||
+  /^\w+ \/(auth|public|media)\//.test(key) ||
   key === 'GET /api/invites/lookup' ||
   key === 'GET /health';
 

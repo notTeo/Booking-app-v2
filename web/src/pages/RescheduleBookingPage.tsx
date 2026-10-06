@@ -18,7 +18,10 @@ import RescheduleConfirmStep from '../components/booking-wizard/RescheduleConfir
 import { buildISODateTime } from '../components/booking-wizard/wizardUtils';
 import { dateInZone, formatDateTimeInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import PublicPalette from '../components/PublicPalette';
+import ReservedProducts from '../components/ReservedProducts';
+import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import '../styles/pages/public.css';
+import { bookingServiceNames, bookingServicesPrice } from '../utils/bookingServices';
 
 /** One centered card: every state of this page that isn't the wizard itself. */
 function Notice({ children }: { children: React.ReactNode }) {
@@ -80,9 +83,10 @@ export default function RescheduleBookingPage() {
       <Notice>
         <h1 className="t-heading">{t.rescheduleBooking.title}</h1>
         <p className="card__text">
-          <strong>{booking.service.name}</strong> · {booking.shop.name}
+          <strong>{bookingServiceNames(booking)}</strong> · {booking.shop.name}
         </p>
         <p className="card__text">{formatDateTimeInZone(booking.startTime, zone)}</p>
+        <ReservedProducts products={booking.products ?? []} servicePrice={bookingServicesPrice(booking)} />
         <Alert variant="warning">{blockMessage(t, booking)}</Alert>
       </Notice>
     );
@@ -90,7 +94,10 @@ export default function RescheduleBookingPage() {
 
   return (
     <div className="public-page">
-      <PublicPalette />
+      <PublicPalette
+        palette={parsePublicPalette(booking.shop.publicPalette)}
+        font={parsePublicFont(booking.shop.publicFont)}
+      />
       <header className="page-hero">
         <div className="page-hero__inner">
           <h1 className="t-title">{booking.shop.name}</h1>
@@ -240,6 +247,8 @@ function CustomerRescheduleWizard({
         <strong>{formatDateTimeInZone(booking.startTime, zone)}</strong>
         {booking.staff.name && <> · {booking.staff.name}</>}
       </p>
+      {/* Rescheduling moves the appointment; what was reserved stays with it. */}
+      <ReservedProducts products={booking.products ?? []} servicePrice={bookingServicesPrice(booking)} />
 
       <WizardStepsIndicator
         currentStep={wizard.step}

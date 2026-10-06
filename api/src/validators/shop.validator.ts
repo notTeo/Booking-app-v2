@@ -1,6 +1,7 @@
 import { body, param } from 'express-validator';
 import { checkSlug, SLUG_MESSAGES } from './slug';
 import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
+import { PUBLIC_FONTS, PUBLIC_PALETTES } from '../utils/branding';
 
 // One week: the longest notice a shop may demand for a customer change.
 export const MAX_CUTOFF_HOURS = 168;
@@ -116,6 +117,14 @@ export const updateShopValidation = [
       `reminderHoursBefore must be a whole number between 1 and ${MAX_REMINDER_HOURS}`,
     )
     .toInt(),
+  body('publicPalette')
+    .optional()
+    .isIn(PUBLIC_PALETTES)
+    .withMessage(`publicPalette must be one of ${PUBLIC_PALETTES.join(', ')}`),
+  body('publicFont')
+    .optional()
+    .isIn(PUBLIC_FONTS)
+    .withMessage(`publicFont must be one of ${PUBLIC_FONTS.join(', ')}`),
   body('isActive')
     .optional()
     .isBoolean()

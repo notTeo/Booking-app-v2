@@ -4,6 +4,7 @@ import type { BookingWithStaff } from '../../api/booking.api';
 import StatusBadge from '../StatusBadge';
 import Alert from '../Alert';
 import { formatWhen } from '../../utils/overviewFormat';
+import { bookingServiceNames } from '../../utils/bookingServices';
 
 /** A booking from another shop: carries that shop's identity and timezone. */
 export type UpcomingBooking = BookingWithStaff & {
@@ -67,7 +68,7 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone = 'U
                     <td data-label={r.customerCol} className="data-table__title">
                       {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
                     </td>
-                    <td data-label={r.serviceCol}>{b.service.name}</td>
+                    <td data-label={r.serviceCol}>{bookingServiceNames(b)}</td>
                     {showShop && <td data-label={r.shopCol}>{b.shop?.name}</td>}
                     <td data-label={r.whenCol}>{formatWhen(b.startTime, b.shop?.timezone ?? zone, language)}</td>
                     <td data-label={r.statusCol}><StatusBadge status={b.status} /></td>

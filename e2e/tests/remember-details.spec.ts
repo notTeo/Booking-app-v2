@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * "Remember my details on this device" is the customer's opt-in: nothing is
@@ -18,8 +19,7 @@ async function goToDetailsStep(page: Page, time: string, returning = false) {
   await page.goto(`/${E2E.shop.slug}`);
   // With saved details the wizard first asks whether to continue as that customer.
   if (returning) await page.getByRole('button', { name: 'Yes, continue' }).click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await page.getByRole('button', { name: time, exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
@@ -49,7 +49,7 @@ test('details are remembered only after the customer opts in, and forgotten when
   // Ticking alone stores nothing; only a completed booking does.
   expect(await storedDetails(page)).toBeNull();
 
-  await page.locator('.public-wizard-actions').getByRole('button').last().click();
+  await page.locator('.booking-card__actions').getByRole('button').last().click();
   await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
 
   // Notes are per booking and never kept.

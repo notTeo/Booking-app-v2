@@ -1,4 +1,5 @@
 import { AppError } from '../middleware/errorHandler';
+import { isShopLocked, PLAN_LIMITS, withoutPlan } from './plan.service';
 import { prisma } from '../utils/prisma';
 import { todayInZone } from '../utils/shopTime';
 import type { DayOfWeek } from '../../dist/generated/prisma';
@@ -67,6 +68,18 @@ export const getShopInfoService = async (
   const shop = await prisma.shop.findFirst({
     where: { ...by, isActive: true },
     include: {
+      // The shop's own supplier link is never selected here.
+      products: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          stock: true,
+          photoUrl: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      },
       services: {
         where: {
           isActive: true,
@@ -87,6 +100,7 @@ export const getShopInfoService = async (
           shopId: true,
           role: true,
           name: true,
+          photoUrl: true,
           createdAt: true,
           bookableByCustomers: true,
           bookableInternally: true,
@@ -117,8 +131,18 @@ export const getShopInfoService = async (
     include: { days: { include: { hours: true } } },
   });
 
+  // The public only needs the photo that is shown, not what it was cut from.
+  const { photoOriginalUrl: _original, photoCrop: _crop, ...visible } = shop;
+
+  // Products are listed only while the plan includes them.
+  const { products, ...shopFields } = visible;
+
   return {
-    ...shop,
+    ...withoutPlan(shopFields),
+    products: PLAN_LIMITS[shop.plan].products ? products : [],
+    // False while the shop is locked: the page still shows, but takes no
+    // new bookings.
+    acceptingBookings: !isShopLocked(shop),
     openingHours: deriveOpeningHours(schedules, todayInZone(shop.timezone)),
   };
 };

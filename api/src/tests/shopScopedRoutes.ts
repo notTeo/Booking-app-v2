@@ -4,6 +4,7 @@ import {
   createStaffMember,
   createTenant,
 } from './helpers';
+import { prisma } from '../utils/prisma';
 
 // Every route under /api/shops/:id or /api/shops/:shopId/..., with the request
 // each one needs. Shared by the membership matrix (membershipActive.test.ts)
@@ -16,7 +17,27 @@ export async function world() {
   const member = await createStaffMember(t, 'Target');
   const schedule = await addWeeklySchedule(t, { staffId: member.staff.id });
   const booking = await createBookingRow(t);
-  return { t, member, schedule, booking };
+  const timeOff = await prisma.timeOff.create({
+    data: {
+      shopId: t.shop.id,
+      staffId: member.staff.id,
+      startDate: new Date(Date.UTC(2030, 0, 1)),
+      endDate: new Date(Date.UTC(2030, 0, 1)),
+    },
+  });
+  const product = await prisma.product.create({
+    data: { shopId: t.shop.id, name: 'Shampoo', price: 1200, stock: 5 },
+  });
+  const line = await prisma.bookingProduct.create({
+    data: {
+      bookingId: booking.id,
+      productId: product.id,
+      name: product.name,
+      unitPrice: product.price,
+      quantity: 1,
+    },
+  });
+  return { t, member, schedule, booking, timeOff, product, line };
 }
 export type World = Awaited<ReturnType<typeof world>>;
 
@@ -29,6 +50,9 @@ export const params = (w: World): Record<string, string> => ({
   bookingId: w.booking.id,
   customerId: w.booking.customerId,
   scheduleId: w.schedule.id,
+  timeOffId: w.timeOff.id,
+  productId: w.product.id,
+  lineId: w.line.id,
   day: 'MON',
 });
 
@@ -55,6 +79,8 @@ const day = {
   hours: [{ startTime: '09:00', endTime: '12:00' }],
 };
 
+const crop = { x: 0, y: 0, width: 1, height: 1 };
+
 // Every route whose path is under /api/shops/:id or /api/shops/:shopId/... is
 // shop-scoped and must have an entry here.
 export const SHOP_SCOPED: Record<string, Fixture> = {
@@ -64,6 +90,8 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     body: () => ({ name: 'Renamed' }),
   },
   'DELETE /api/shops/:id': { minRole: 'owner' },
+  'PUT /api/shops/:id/photo': { minRole: 'manager', body: () => ({ crop }) },
+  'DELETE /api/shops/:id/photo': { minRole: 'manager' },
   'GET /api/shops/:shopId/schedules/day': { query: 'date=2027-01-04' },
   'GET /api/shops/:shopId/overview': { query: 'range=week' },
 
@@ -84,6 +112,11 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     minRole: 'owner',
   },
   'GET /api/shops/:shopId/team/:memberId/services': {},
+  'PUT /api/shops/:shopId/team/:memberId/photo': {
+    minRole: 'manager',
+    body: () => ({ crop }),
+  },
+  'DELETE /api/shops/:shopId/team/:memberId/photo': { minRole: 'manager' },
 
   'POST /api/shops/:shopId/team/:memberId/schedules': {
     minRole: 'manager',
@@ -110,6 +143,17 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     }),
   },
 
+  'GET /api/shops/:shopId/time-off': {},
+  'POST /api/shops/:shopId/time-off': {
+    minRole: 'manager',
+    body: () => ({ startDate: '2030-02-01', endDate: '2030-02-02' }),
+  },
+  'PATCH /api/shops/:shopId/time-off/:timeOffId': {
+    minRole: 'manager',
+    body: () => ({ note: 'Moved' }),
+  },
+  'DELETE /api/shops/:shopId/time-off/:timeOffId': { minRole: 'manager' },
+
   'POST /api/shops/:shopId/services': {
     minRole: 'manager',
     body: () => ({ name: 'Color', duration: 45, price: 5000 }),
@@ -126,6 +170,25 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     body: (w) => ({ userShopId: w.member.staff.id }),
   },
   'DELETE /api/shops/:shopId/services/:serviceId/staff/:userShopId': {
+    minRole: 'manager',
+  },
+
+  'POST /api/shops/:shopId/products': {
+    minRole: 'manager',
+    body: () => ({ name: 'Conditioner', price: 900, stock: 2 }),
+  },
+  'GET /api/shops/:shopId/products': {},
+  'GET /api/shops/:shopId/products/:productId': {},
+  'PATCH /api/shops/:shopId/products/:productId': {
+    minRole: 'manager',
+    body: () => ({ stock: 3 }),
+  },
+  'DELETE /api/shops/:shopId/products/:productId': { minRole: 'manager' },
+  'PUT /api/shops/:shopId/products/:productId/photo': {
+    minRole: 'manager',
+    body: () => ({ crop }),
+  },
+  'DELETE /api/shops/:shopId/products/:productId/photo': {
     minRole: 'manager',
   },
 
@@ -152,6 +215,10 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
   'PATCH /api/shops/:shopId/bookings/:bookingId/status': {
     body: () => ({ status: 'CONFIRMED' }),
+  },
+  'DELETE /api/shops/:shopId/bookings/:bookingId/products/:lineId': {},
+  'PATCH /api/shops/:shopId/bookings/:bookingId/products/:lineId': {
+    body: () => ({ saleStatus: 'NOT_SOLD', quantity: 1 }),
   },
 
   'GET /api/shops/:shopId/customers': {},

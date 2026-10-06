@@ -12,6 +12,11 @@
     "test:tz": "for tz in UTC Europe/Athens America/New_York; do echo \"== TZ=$tz\"; TZ=$tz vitest run || exit 1; done"
   },
   "dependencies": {
+    "@fontsource-variable/alegreya": "^5.3.0",
+    "@fontsource-variable/comfortaa": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource-variable/noto-serif": "^5.3.0",
+    "@fontsource-variable/roboto-slab": "^5.3.0",
     "@fontsource/gasoek-one": "^5.3.0",
     "@fontsource/league-spartan": "^5.3.0",
     "@fontsource/poppins": "^5.3.0",
@@ -26,6 +31,7 @@
     "papaparse": "^5.7.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-easy-crop": "^6.2.4",
     "react-router-dom": "^7.13.0"
   },
   "devDependencies": {

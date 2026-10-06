@@ -53,9 +53,13 @@ describe('POST /public/:slug/book response', () => {
     expect(Object.keys(res.body.data).sort()).toEqual([
       'endTime',
       'id',
+      'products',
+      'servicePrice',
+      'services',
       'startTime',
       'status',
     ]);
+    expect(res.body.data.products).toEqual([]);
     expect(res.body.data.status).toBe('CONFIRMED');
     expect(new Date(res.body.data.startTime).toISOString()).toBe(
       new Date(FIRST).toISOString(),

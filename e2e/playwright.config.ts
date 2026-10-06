@@ -1,4 +1,6 @@
 import { defineConfig } from '@playwright/test';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { E2E } from './support/env';
 
 const apiEnv = {
@@ -16,6 +18,8 @@ const apiEnv = {
   // One browser IP does many logins/page loads; the 10-per-15-min auth limiter
   // would block the suite. (Ignored by the API in production.)
   RATE_LIMIT_DISABLED: 'true',
+  // No bucket in e2e: photos go to a throwaway folder, not api/.uploads.
+  UPLOADS_DIR: join(tmpdir(), 'bebooked-e2e-uploads'),
 };
 
 export default defineConfig({

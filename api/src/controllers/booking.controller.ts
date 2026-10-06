@@ -1,3 +1,4 @@
+import { parseServiceIds } from '../utils/bookingServices';
 import { Request, Response, NextFunction } from 'express';
 import { BookingStatus } from '../../dist/generated/prisma';
 import { successResponse } from '../utils/response';
@@ -76,6 +77,7 @@ export const getAvailableSlots = async (
     const date = req.query['date'] as string;
     const staffId = (req.query['staffId'] as string | undefined) || null;
     const serviceId = req.query['serviceId'] as string;
+    const serviceIds = parseServiceIds(req.query['serviceIds']);
     const slots = await bookingService.getAvailableSlots(
       shopId,
       date,
@@ -93,6 +95,7 @@ export const getAvailableSlots = async (
         customer: req.query['customerId']
           ? { customerId: req.query['customerId'] as string }
           : undefined,
+        ...(serviceIds && { serviceIds }),
       },
     );
     successResponse(res, slots);
@@ -183,6 +186,44 @@ export const updateBooking = async (
         logger.error(err, 'Failed to send booking rescheduled email'),
       );
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeBookingProductLine = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await bookingService.removeBookingProductLine(
+      req.user!.userId!,
+      req.params['shopId'] as string,
+      req.params['bookingId'] as string,
+      req.params['lineId'] as string,
+    );
+    successResponse(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateBookingProductLine = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { saleStatus, quantity } = req.body;
+    const line = await bookingService.updateBookingProductLine(
+      req.user!.userId!,
+      req.params['shopId'] as string,
+      req.params['bookingId'] as string,
+      req.params['lineId'] as string,
+      { saleStatus, quantity },
+    );
+    successResponse(res, line);
   } catch (err) {
     next(err);
   }

@@ -28,7 +28,7 @@ const db = new pg.Client({ connectionString: dbUrl });
 await db.connect();
 const hash = await bcrypt.hash('E2e-Password1!', 10);
 const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-await db.query(`INSERT INTO "User"(id,name,email,"passwordHash","isVerified","isPro","updatedAt") VALUES ('u1','E2E Owner','owner@e2e.test',$1,true,true,now())`, [hash]);
+await db.query(`INSERT INTO "User"(id,name,email,"passwordHash","isVerified","trialUsedAt","updatedAt") VALUES ('u1','E2E Owner','owner@e2e.test',$1,true,now(),now())`, [hash]);
 await db.query(`INSERT INTO "Shop"(id,name,slug,timezone,"maxAdvanceDays","updatedAt") VALUES ('s1','E2E Shop','e2e-shop','Europe/Athens',730,now())`);
 await db.query(`INSERT INTO "UserShop"(id,"userId","shopId",role,name,email) VALUES ('us1','u1','s1','owner','E2E Owner','owner@e2e.test')`);
 await db.query(`INSERT INTO "Service"(id,"shopId",name,duration,price,"updatedAt") VALUES ('sv1','s1','Haircut',30,1500,now())`);

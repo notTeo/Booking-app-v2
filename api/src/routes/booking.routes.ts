@@ -8,6 +8,8 @@ import {
   bookingParamsValidation,
   updateBookingValidation,
   updateStatusValidation,
+  productLineValidation,
+  productLineParamsValidation,
   shopIdParamValidation,
 } from '../validators/booking.validator';
 import * as bookingController from '../controllers/booking.controller';
@@ -70,6 +72,22 @@ router.patch(
   updateStatusValidation,
   validate,
   bookingController.updateBookingStatus,
+);
+
+router.patch(
+  '/:bookingId/products/:lineId',
+  authenticate,
+  productLineValidation,
+  validate,
+  bookingController.updateBookingProductLine,
+);
+
+router.delete(
+  '/:bookingId/products/:lineId',
+  authenticate,
+  productLineParamsValidation,
+  validate,
+  bookingController.removeBookingProductLine,
 );
 
 export default router;

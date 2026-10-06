@@ -16,8 +16,11 @@ import {
   sendLoginInvite,
   cancelLoginInvite,
   transferOwnership,
+  setMemberPhoto,
+  removeMemberPhoto,
 } from '../controllers/team.controller';
 import { getMemberServices } from '../controllers/service.controller';
+import { photoUpload } from '../middleware/photoUpload';
 import workingHoursRouter from './workingHours.routes';
 
 // mergeParams: true lets us access :shopId from the parent shop router
@@ -72,6 +75,21 @@ router.post(
   memberIdParamValidation,
   validate,
   transferOwnership,
+);
+router.put(
+  '/:memberId/photo',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  photoUpload,
+  setMemberPhoto,
+);
+router.delete(
+  '/:memberId/photo',
+  authenticate,
+  memberIdParamValidation,
+  validate,
+  removeMemberPhoto,
 );
 
 // Staff services

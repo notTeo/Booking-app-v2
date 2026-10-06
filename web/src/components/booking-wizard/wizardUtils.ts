@@ -1,6 +1,6 @@
 import { wallClockToISO } from '../../utils/shopTime';
 import type { BookingRuleCode } from '../../api/booking.api';
-import type { SlotInfo, SlotsResponse } from '../../api/public.api';
+import type { Service, SlotInfo, SlotsResponse } from '../../api/public.api';
 
 export function formatDuration(mins: number): string {
   if (mins < 60) return `${mins}m`;
@@ -12,6 +12,17 @@ export function formatDuration(mins: number): string {
 export function formatPrice(cents: number): string {
   return `€${(cents / 100).toFixed(2)}`;
 }
+
+/** "2 services · 50m · €45.00" for the services chosen so far. */
+export const servicesSummary = (
+  t: { servicesChosen: string },
+  chosen: Service[],
+  durationFor: (s: Service) => number = (s) => s.duration,
+) =>
+  t.servicesChosen
+    .replace('{n}', String(chosen.length))
+    .replace('{duration}', formatDuration(chosen.reduce((sum, s) => sum + durationFor(s), 0)))
+    .replace('{price}', formatPrice(chosen.reduce((sum, s) => sum + s.price, 0)));
 
 /** Slot date + "HH:mm" label -> UTC instant, interpreted in the SHOP's timezone. */
 export function buildISODateTime(date: string, time: string, shopTimezone: string): string {

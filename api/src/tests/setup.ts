@@ -1,4 +1,5 @@
 import { prisma } from '../utils/prisma';
+import { memoryFiles } from '../services/storage.service';
 
 // Booking rules reject past times, and tests use fixed future dates, so the
 // clock is frozen (Date only — timers and I/O keep running) at a known
@@ -19,6 +20,7 @@ afterEach(async () => {
   await prisma.pendingEmailChange.deleteMany();
   await prisma.shop.deleteMany();
   await prisma.user.deleteMany();
+  memoryFiles.clear();
 });
 
 // Disconnect Prisma after all tests

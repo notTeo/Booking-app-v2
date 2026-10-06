@@ -332,6 +332,10 @@ export const getMyUpcoming = async (userId: string, now: Date = new Date()) => {
     include: {
       customer: true,
       service: true,
+      services: {
+        select: { name: true, duration: true, price: true, position: true },
+        orderBy: { position: 'asc' },
+      },
       staff: { select: { id: true, name: true, email: true } },
       shop: { select: { id: true, name: true, slug: true, timezone: true } },
     },

@@ -33,9 +33,34 @@ export interface ShopMember {
   role: ShopRole;
   createdAt: string;
   name: string;
+  photoUrl: string | null;
   bookableByCustomers: boolean;
   bookableInternally: boolean;
   staffServices: StaffService[];
+}
+
+/** A product a customer can reserve with a booking. */
+export interface PublicProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  /** In cents. */
+  price: number;
+  stock: number;
+  photoUrl: string | null;
+}
+
+/** A product reserved with a booking, as it is shown back to the customer. */
+export interface ReservedProduct {
+  name: string;
+  quantity: number;
+  /** In cents. */
+  unitPrice: number;
+}
+
+export interface ProductLine {
+  productId: string;
+  quantity: number;
 }
 
 export interface ShopInfo {
@@ -48,13 +73,22 @@ export interface ShopInfo {
   timezone: string;
   maxAdvanceDays: number;
   slotIntervalMinutes: number;
+  /** Colour set and fonts of this page (see utils/branding.ts). */
+  publicPalette: string;
+  publicFont: string;
+  /** The shop's photo, shown at the top of its page. */
+  photoUrl: string | null;
   isActive: boolean;
+  /** False while the shop takes no new online bookings (its plan has lapsed). */
+  acceptingBookings: boolean;
   createdAt: string;
   updatedAt: string;
   services: Service[];
   /** Derived from the team's own schedules: per weekday, merged ranges (empty = closed). */
   openingHours: OpeningDay[];
   members: ShopMember[];
+  /** Empty when the shop's plan has no products. */
+  products: PublicProduct[];
 }
 
 export const getShopInfo = (slug: string) =>
@@ -64,10 +98,14 @@ export interface CreateBookingPayload {
   name: string;
   phone: string;
   email?: string;
+  /** The first service (also sent as serviceIds[0]). */
   serviceId: string;
+  /** Several services, done one after another by the same provider. */
+  serviceIds?: string[];
   staffId: string;
   startTime: string;       // ISO 8601 datetime
   notes?: string;
+  products?: ProductLine[];
 }
 
 export interface BookingConfirmation {
@@ -75,6 +113,10 @@ export interface BookingConfirmation {
   status: string;
   startTime: string;
   endTime: string;
+  products: ReservedProduct[];
+  /** What the services cost together, in cents. */
+  servicePrice: number;
+  services: { name: string; duration: number; price: number }[];
 }
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>
@@ -116,9 +158,12 @@ export interface ManagedBooking {
   startTime: string;
   endTime: string;
   customerName: string;
-  shop: { slug: string; name: string; timezone: string };
+  shop: { slug: string; name: string; timezone: string; publicPalette: string; publicFont: string };
   service: { id: string; name: string; duration: number; price: number };
   staff: { id: string; name: string | null };
+  /** Every service of the booking, in order (the first is `service`). */
+  services: { id: string; name: string; duration: number; price: number }[];
+  products: ReservedProduct[];
   rescheduledTo: { startTime: string } | null;
   cancel: CustomerAction;
   reschedule: CustomerAction;
@@ -162,6 +207,9 @@ export type SlotsResponse =
   | { status: 'closed'; slots?: SlotInfo[] }
   | { status: 'ok'; slots: SlotInfo[] };
 
+/** The `serviceIds` query value for several services; none for a single one. */
+export const joinIds = (ids?: string[]) => (ids && ids.length > 1 ? ids.join(',') : undefined);
+
 export const getPublicSlots = (
   slug: string,
   date: string,
@@ -174,10 +222,12 @@ export const getPublicSlots = (
    * duration for the service. A header, so it stays out of URLs and logs.
    */
   customerPhone?: string,
+  /** All the services when there are several: the times fit them added up. */
+  serviceIds?: string[],
 ) =>
   client
     .get(`/public/${slug}/slots`, {
-      params: { date, staffId, serviceId, rescheduleToken },
+      params: { date, staffId, serviceId, rescheduleToken, serviceIds: joinIds(serviceIds) },
       ...(customerPhone && isPlausiblePhone(customerPhone) && { headers: { 'X-Customer-Phone': customerPhone.trim() } }),
     })
     .then((r) => r.data.data as SlotsResponse);

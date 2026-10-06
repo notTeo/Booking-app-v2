@@ -7,9 +7,9 @@ export const USER_SELECT = {
   name: true,
   email: true,
   isVerified: true,
-  isPro: true,
   createdAt: true,
   passwordHash: true,
+  trialUsedAt: true,
 } as const;
 
 export interface UserRow {
@@ -17,9 +17,9 @@ export interface UserRow {
   name: string;
   email: string;
   isVerified: boolean;
-  isPro: boolean;
   createdAt: Date;
   passwordHash: string | null;
+  trialUsedAt: Date | null;
 }
 
 export interface UserDto {
@@ -27,9 +27,10 @@ export interface UserDto {
   name: string;
   email: string;
   isVerified: boolean;
-  isPro: boolean;
   createdAt: Date;
   hasPassword: boolean;
+  // Their first shop gets the free trial; false once they have created one.
+  trialAvailable: boolean;
 }
 
 export const toUserDto = (user: UserRow): UserDto => ({
@@ -37,7 +38,7 @@ export const toUserDto = (user: UserRow): UserDto => ({
   name: user.name,
   email: user.email,
   isVerified: user.isVerified,
-  isPro: user.isPro,
   createdAt: user.createdAt,
   hasPassword: !!user.passwordHash,
+  trialAvailable: !user.trialUsedAt,
 });

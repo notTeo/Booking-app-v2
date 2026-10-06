@@ -112,7 +112,9 @@ export const deleteService = async (
 
   // Bookings (past or future) reference the service and are never deleted
   // with it; the owner deactivates it instead.
-  const bookingCount = await prisma.booking.count({ where: { serviceId } });
+  const bookingCount =
+    (await prisma.booking.count({ where: { serviceId } })) +
+    (await prisma.bookingService.count({ where: { serviceId } }));
   if (bookingCount > 0)
     throw new AppError(
       409,

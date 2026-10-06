@@ -1,3 +1,4 @@
+import { parseServiceIds } from '../utils/bookingServices';
 import { parseLocale } from '../utils/locale';
 import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
@@ -20,6 +21,10 @@ import {
 } from '../services/email.service';
 import { bookingEmailParams } from '../utils/bookingEmail';
 import { prisma } from '../utils/prisma';
+import {
+  bookingServiceNames,
+  bookingServicesPrice,
+} from '../utils/bookingServices';
 import { AppError } from '../middleware/errorHandler';
 import { isPlausiblePhone } from '../validators/common';
 
@@ -54,6 +59,19 @@ export const createBooking = async (
         status: booking.status,
         startTime: booking.startTime,
         endTime: booking.endTime,
+        servicePrice: bookingServicesPrice(booking),
+        services: booking.services.map(({ name, duration, price }) => ({
+          name,
+          duration,
+          price,
+        })),
+        products: booking.products
+          .filter((p) => p.quantity > 0)
+          .map(({ name, quantity, unitPrice }) => ({
+            name,
+            quantity,
+            unitPrice,
+          })),
       },
       201,
     );
@@ -77,10 +95,12 @@ export const createBooking = async (
           customerName: booking.customer.name,
           customerPhone: booking.customer.phone,
           shopName: booking.shop.name,
-          serviceName: booking.service.name,
+          serviceName: bookingServiceNames(booking),
           staffName: booking.staff.name ?? 'Staff',
           startTime: booking.startTime,
           timezone: booking.shop.timezone,
+          products: booking.products.filter((p) => p.quantity > 0),
+          servicePrice: bookingServicesPrice(booking),
           // The owner's own language, not the customer's.
           locale: parseLocale(owner.user?.locale),
         });
@@ -104,7 +124,7 @@ export const cancelBooking = async (
       id: booking.id,
       status: booking.status,
       shopName: booking.shop.name,
-      serviceName: booking.service.name,
+      serviceName: bookingServiceNames(booking),
       startTime: booking.startTime,
       customerName: booking.customer.name,
     });
@@ -114,7 +134,7 @@ export const cancelBooking = async (
         email: booking.customer.email,
         customerName: booking.customer.name,
         shopName: booking.shop.name,
-        serviceName: booking.service.name,
+        serviceName: bookingServiceNames(booking),
         startTime: booking.startTime,
         timezone: booking.shop.timezone,
         locale: parseLocale(booking.locale),
@@ -148,6 +168,8 @@ export const getBookingForCustomer = async (
         slug: booking.shop.slug,
         name: booking.shop.name,
         timezone: booking.shop.timezone,
+        publicPalette: booking.shop.publicPalette,
+        publicFont: booking.shop.publicFont,
       },
       service: {
         id: booking.service.id,
@@ -156,6 +178,21 @@ export const getBookingForCustomer = async (
         price: booking.service.price,
       },
       staff: { id: booking.staff.id, name: booking.staff.name },
+      services: booking.services.map(
+        ({ serviceId, name, duration, price }) => ({
+          id: serviceId,
+          name,
+          duration,
+          price,
+        }),
+      ),
+      products: booking.products
+        .filter((p) => p.quantity > 0)
+        .map(({ name, quantity, unitPrice }) => ({
+          name,
+          quantity,
+          unitPrice,
+        })),
       rescheduledTo: booking.rescheduledTo
         ? { startTime: booking.rescheduledTo.startTime }
         : null,
@@ -245,6 +282,7 @@ export const getPublicSlots = async (
     const date = req.query['date'] as string;
     const staffId = (req.query['staffId'] as string) ?? null;
     const serviceId = req.query['serviceId'] as string;
+    const serviceIds = parseServiceIds(req.query['serviceIds']);
     const rescheduleToken = req.query['rescheduleToken'] as string | undefined;
     const phone = req.get('x-customer-phone')?.trim();
     const shop = await prisma.shop.findUnique({
@@ -266,11 +304,19 @@ export const getPublicSlots = async (
       // offered fit their own duration for the service. Sent as a header to
       // keep the phone out of URLs and access logs; whether it is known is
       // never revealed, and a malformed one is ignored.
-      rescheduleToken
-        ? { forBookingId: await findBookingIdByToken(shop.id, rescheduleToken) }
-        : isPlausiblePhone(phone)
-          ? { customer: { phone: phone as string } }
-          : {},
+      {
+        ...(serviceIds && { serviceIds }),
+        ...(rescheduleToken
+          ? {
+              forBookingId: await findBookingIdByToken(
+                shop.id,
+                rescheduleToken,
+              ),
+            }
+          : isPlausiblePhone(phone)
+            ? { customer: { phone: phone as string } }
+            : {}),
+      },
     );
     successResponse(res, slots);
   } catch (err) {

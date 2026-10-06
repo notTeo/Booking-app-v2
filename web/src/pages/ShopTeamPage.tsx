@@ -8,10 +8,12 @@ import { useLang } from '../context/LanguageContext';
 import { getMembers, removeMember, sendLoginInvite, cancelLoginInvite, type TeamMember } from '../api/team.api';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddMemberModal from '../components/AddMemberModal';
+import { planErrorMessage, staffLimitText } from '../utils/plan';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -32,6 +34,9 @@ export default function ShopTeamPage() {
   const [confirmCancelInvite, setConfirmCancelInvite] = useState<string | null>(null);
 
   const canManage = canManageShop(shop?.role);
+  // Members who can be booked take the plan's staff places.
+  const staffUsed = members.filter((m) => m.active && (m.bookableByCustomers || m.bookableInternally)).length;
+  const atStaffLimit = !!shop && staffUsed >= shop.staffLimit;
 
   useEffect(() => {
     if (!shop) return;
@@ -67,7 +72,7 @@ export default function ShopTeamPage() {
       setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
     } catch (err: unknown) {
       const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
-      setInviteError(code === 'MEMBER_INACTIVE' ? t.team.errorInviteInactive : t.invites.errorResend);
+      setInviteError(code === 'MEMBER_INACTIVE' ? t.team.errorInviteInactive : planErrorMessage(err, t.shopPlan) ?? t.invites.errorResend);
     } finally {
       setInvitePendingId(null);
     }
@@ -97,7 +102,7 @@ export default function ShopTeamPage() {
     const resending = invitePendingId === member.id && confirmCancelInvite !== member.id;
     return (
       <div className="cluster cluster--tight">
-        {!member.userId && (
+        {!member.userId && shop?.teamFeatures && (
           <>
             <button
               className={`btn btn--secondary btn--sm${resending ? ' is-loading' : ''}`}
@@ -144,7 +149,7 @@ export default function ShopTeamPage() {
       <div className="page-header">
         <h1 className="t-title">{t.team.title}</h1>
         {canManage && (
-          <button type="button" className="btn btn--sm" onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
+          <button type="button" className="btn btn--sm" disabled={atStaffLimit} onClick={() => { setShowAdd(true); setAddFeedback(''); }}>
             <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             {t.invites.addMember}
           </button>
@@ -152,6 +157,11 @@ export default function ShopTeamPage() {
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
+      {canManage && shop && atStaffLimit && (
+        <Alert variant="info" actions={<Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>}>
+          {staffLimitText(t.shopPlan, shop.plan, shop.staffLimit)}
+        </Alert>
+      )}
       {addFeedback && <Alert variant="success">{addFeedback}</Alert>}
       {inviteError && <Alert variant="danger">{inviteError}</Alert>}
 
@@ -175,6 +185,7 @@ export default function ShopTeamPage() {
                 {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
+                      <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
                       <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
                       {!member.userId && (
                         <>
@@ -218,6 +229,8 @@ export default function ShopTeamPage() {
       {showAdd && shop && (
         <AddMemberModal
           canAddManager={!!shop.canManageManagers}
+          plan={shop.plan}
+          teamFeatures={shop.teamFeatures}
           shopId={shop.id}
           onCreated={(member, emailSent) => {
             setMembers((prev) => [member, ...prev]);

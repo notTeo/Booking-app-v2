@@ -1,8 +1,11 @@
 import client from './client';
+import { deletePhoto, putPhoto, type PhotoCrop, type PhotoFields } from './photo.api';
 
 export type ShopRole = 'owner' | 'manager' | 'staff';
+export type ShopPlan = 'SOLO' | 'TEAM' | 'BUSINESS';
+export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'INACTIVE';
 
-export interface Shop {
+export interface Shop extends PhotoFields {
   id: string;
   name: string;
   slug: string;
@@ -19,7 +22,22 @@ export interface Shop {
   rescheduleCutoffHours: number;
   reminderEnabled: boolean;
   reminderHoursBefore: number;
+  /** Colour set and fonts of the public booking page (see utils/branding.ts). */
+  publicPalette: string;
+  publicFont: string;
   isActive: boolean;
+  plan: ShopPlan;
+  subscriptionStatus: SubscriptionStatus;
+  /** When the free trial ends (null unless it is, or was, on a trial). */
+  trialEndsAt: string | null;
+  /** Read-only, and taking no new public bookings: the trial ended or the subscription is inactive. */
+  locked: boolean;
+  /** How many bookable staff the plan allows. */
+  staffLimit: number;
+  /** Whether the plan has invites, the manager role and per-staff working hours. */
+  teamFeatures: boolean;
+  /** Whether the plan has products. */
+  products: boolean;
   createdAt: string;
   updatedAt: string;
   role: ShopRole;
@@ -47,6 +65,8 @@ export interface UpdateShopDto extends Partial<CreateShopDto> {
   rescheduleCutoffHours?: number;
   reminderEnabled?: boolean;
   reminderHoursBefore?: number;
+  publicPalette?: string;
+  publicFont?: string;
   isActive?: boolean;
 }
 
@@ -58,6 +78,12 @@ export const getShop = (id: string) =>
 
 export const createShop = (dto: CreateShopDto) =>
   client.post('/api/shops', dto).then((r) => r.data.data as Shop);
+
+/** The shop's photo on its booking page: a new file, or (file null) a new crop of the stored one. */
+export const setShopPhoto = (id: string, file: File | null, crop: PhotoCrop) =>
+  putPhoto<Shop>(`/api/shops/${id}/photo`, file, crop);
+
+export const removeShopPhoto = (id: string) => deletePhoto<Shop>(`/api/shops/${id}/photo`);
 
 export const updateShop = (id: string, dto: UpdateShopDto) =>
   client.patch(`/api/shops/${id}`, dto).then((r) => r.data.data as Shop);

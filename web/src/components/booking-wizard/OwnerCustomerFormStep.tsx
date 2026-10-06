@@ -3,7 +3,9 @@ import { fillIfEmpty, isExactPhoneMatch, shouldLookUpCustomer } from './customer
 import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
-import type { Service, ShopMember } from '../../api/public.api';
+import type { PublicProduct, Service, ShopMember } from '../../api/public.api';
+import ProductPicker from './ProductPicker';
+import { exceedsStock, toProductLines } from '../../utils/productLines';
 import { useLang } from '../../context/LanguageContext';
 import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
@@ -17,6 +19,10 @@ export interface OwnerCustomerFormValues {
   notes?: string;
   /** Block the slot instead of booking a customer; name, phone and email are then unused. */
   block?: boolean;
+  /** Products reserved with the booking. */
+  products?: { productId: string; quantity: number }[];
+  /** The user accepted reserving more of a product than is left. */
+  acceptStockOverride?: boolean;
 }
 
 export default function OwnerCustomerFormStep({
@@ -27,6 +33,8 @@ export default function OwnerCustomerFormStep({
   date,
   time,
   outsideRules = [],
+  products = [],
+  canOverStock = false,
   onSubmit,
   onBack,
   submitting,
@@ -43,6 +51,10 @@ export default function OwnerCustomerFormStep({
   time: string;
   /** Rules the chosen time is known to break; non-empty shows the confirmation panel. */
   outsideRules?: BookingRuleCode[];
+  /** The shop's products, offered to reserve with the booking. */
+  products?: PublicProduct[];
+  /** Owner and managers may reserve more than what is left (after the warning). */
+  canOverStock?: boolean;
   onSubmit: (values: OwnerCustomerFormValues) => void;
   onBack: () => void;
   submitting: boolean;
@@ -67,6 +79,9 @@ export default function OwnerCustomerFormStep({
   const [notes, setNotes] = useState('');
   // "Block this slot": the time is held with no customer, only a note.
   const [blocking, setBlocking] = useState(false);
+  // Products reserved with the booking: quantity per product id.
+  const [reserved, setReserved] = useState<Record<string, number>>({});
+  const overStock = !blocking && canOverStock && exceedsStock(products, reserved);
 
   function handleToggleBlock(next: boolean) {
     setBlocking(next);
@@ -129,7 +144,17 @@ export default function OwnerCustomerFormStep({
   function handleSubmit() {
     if (submitting) return;
     if (blocking) onSubmit({ block: true, name: '', phone: '', notes: notes || undefined });
-    else onSubmit({ name, phone, email: email || undefined, notes: notes || undefined });
+    else {
+      const lines = toProductLines(reserved);
+      onSubmit({
+        name,
+        phone,
+        email: email || undefined,
+        notes: notes || undefined,
+        ...(lines.length > 0 && { products: lines }),
+        ...(overStock && { acceptStockOverride: true }),
+      });
+    }
   }
 
   return (
@@ -245,6 +270,11 @@ export default function OwnerCustomerFormStep({
           />
         </div>
 
+        {!blocking && (
+          <ProductPicker products={products} value={reserved} onChange={setReserved} canOverStock={canOverStock} showHint={false} servicePrice={selectedService?.price} />
+        )}
+        {overStock && <Alert variant="warning">{t.products.overStock}</Alert>}
+
         {outsideRules.length > 0 && (
           <Alert
             variant="warning"
@@ -275,6 +305,8 @@ export default function OwnerCustomerFormStep({
             ? onlyOffGrid
               ? t.bookings.intervalPicker.confirmButton
               : t.bookings.outsideHours.confirmButton
+            : overStock
+            ? t.products.overStockConfirm
             : t.bookings.createBooking}
         </button>
       </div>

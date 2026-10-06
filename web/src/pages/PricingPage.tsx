@@ -1,12 +1,10 @@
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import PlanCards from '../components/PlanCards';
-import Wordmark from '../components/Wordmark';
+import SiteNav from '../components/SiteNav';
 import '../styles/pages/legal.css';
-import '../styles/pages/home.css';
 
 // Reference only: what each plan includes. There is nothing to buy here.
 export default function PricingPage() {
@@ -19,19 +17,19 @@ export default function PricingPage() {
       value
     ) : (
       <>
-        <FontAwesomeIcon icon={value ? faCheck : faMinus} className={value ? 'feat-check' : 'feat-x'} aria-hidden="true" />
+        <FontAwesomeIcon icon={value ? faCheck : faMinus} className={value ? 'pricing-yes' : 'pricing-no'} aria-hidden="true" />
         <span className="visually-hidden">{value ? p.included : p.notIncluded}</span>
       </>
     );
 
   return (
     <>
+      <SiteNav solid />
       <div className="pricing-page">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <div className="legal-section">
-          <h1 className="t-title">{p.title}</h1>
+        <header className="pricing-page__header">
+          <h1 className="t-display">{p.title}</h1>
           <p className="t-body t-muted">{p.intro}</p>
-        </div>
+        </header>
 
         <PlanCards />
 
@@ -46,14 +44,16 @@ export default function PricingPage() {
                     <th scope="col">{p.featureCol}</th>
                     <th scope="col">{t.home.pricingSoloName}</th>
                     <th scope="col">{t.home.pricingTeamName}</th>
+                    <th scope="col">{t.home.pricingBusinessName}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {group.rows.map(([label, solo, team]) => (
+                  {group.rows.map(([label, solo, team, business]) => (
                     <tr key={label}>
                       <td className="data-table__title">{label}</td>
                       <td>{cell(solo)}</td>
                       <td>{cell(team)}</td>
+                      <td>{cell(business)}</td>
                     </tr>
                   ))}
                 </tbody>

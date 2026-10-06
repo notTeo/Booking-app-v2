@@ -8,7 +8,7 @@ import {
   weekdayOf,
   wallClockToUtcLenient,
 } from '../utils/shopTime';
-import { buildSlotCandidates } from '../utils/slots';
+import { buildSlotCandidates, subtractRanges } from '../utils/slots';
 
 /**
  * Booking rules, enforced server-side on every path.
@@ -57,6 +57,9 @@ export interface DayHours {
  * Opening ranges for a calendar date, or null if the team member has no active
  * schedule or the day is closed. Team members' own schedules are the only
  * source of working hours; a member with no schedule is simply not working.
+ *
+ * Time off (the member's own, or the whole shop's) is applied on top: a whole
+ * day off closes the day, part of a day is cut out of the ranges.
  */
 export const loadDayHours = async (
   db: Prisma.TransactionClient,
@@ -80,7 +83,25 @@ export const loadDayHours = async (
   });
   const day = schedule?.days[0];
   if (!day || !day.isOpen || day.hours.length === 0) return null;
-  return day.hours;
+
+  const timeOff = await db.timeOff.findMany({
+    where: {
+      shopId,
+      OR: [{ staffId: null }, { staffId: scheduleStaffId }],
+      startDate: { lte: requestedDate },
+      endDate: { gte: requestedDate },
+    },
+    select: { startTime: true, endTime: true },
+  });
+  if (timeOff.length === 0) return day.hours;
+
+  const cuts: DayHours[] = [];
+  for (const { startTime, endTime } of timeOff) {
+    if (!startTime || !endTime) return null; // the whole day
+    cuts.push({ startTime, endTime });
+  }
+  const hours = subtractRanges(day.hours, cuts);
+  return hours.length > 0 ? hours : null;
 };
 
 interface RuleParams {

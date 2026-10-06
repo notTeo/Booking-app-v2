@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickService } from '../support/booking';
 
 /**
  * The shop's booking wizard can block a slot instead of booking a customer:
@@ -18,7 +19,7 @@ test.afterAll(async () => {
 
 async function publicTimes(page: Page) {
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radio', { name: /Haircut/ }).click();
+  await pickService(page, /Haircut/);
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
   await expect(page.getByRole('button', { name: '09:00', exact: true })).toBeVisible();
@@ -33,7 +34,7 @@ test('block a slot from the wizard, see it on the calendar, then unblock it', as
   await waitForLanding(page);
 
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radio', { name: /Haircut/ }).click();
+  await pickService(page, /Haircut/);
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   await page.locator('#booking-date').fill(date);
   await page.getByRole('button', { name: '10:00', exact: true }).click();
