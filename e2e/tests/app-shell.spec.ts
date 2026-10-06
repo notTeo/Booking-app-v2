@@ -30,7 +30,7 @@ const bar = (page: Page) => page.locator('header.navbar');
 const sidebar = (page: Page) => page.locator('aside.sidebar');
 const item = (page: Page, name: string) => sidebar(page).getByRole('link', { name, exact: true });
 const logout = (page: Page) => page.getByRole('button', { name: 'Log out', exact: true });
-const SHOP_ITEMS = ['Overview', 'Bookings', 'Services', 'Team', 'Customers', 'Settings'];
+const SHOP_ITEMS = ['Overview', 'Bookings', 'Services', 'Products', 'Team', 'Customers', 'Settings'];
 
 test.afterEach(async () => {
   await query(`update "UserShop" set active = true, role = 'owner' where id = 'us1'`);

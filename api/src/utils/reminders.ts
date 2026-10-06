@@ -26,7 +26,14 @@ export const sendDueReminders = async (now: Date = new Date()) => {
       customer: { isSystem: false, email: { not: null } },
       shop: { isActive: true, reminderEnabled: true },
     },
-    include: { customer: true, service: true, staff: true, shop: true },
+    include: {
+      customer: true,
+      service: true,
+      services: { orderBy: { position: 'asc' } },
+      staff: true,
+      shop: true,
+      products: true,
+    },
     orderBy: { startTime: 'asc' },
   });
 

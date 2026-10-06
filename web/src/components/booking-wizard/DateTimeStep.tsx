@@ -39,6 +39,7 @@ export default function DateTimeStep({
   onSelectTime,
   onBack,
   onContinue,
+  hideActions,
 }: {
   date: string;
   time: string;
@@ -66,6 +67,8 @@ export default function DateTimeStep({
   onSelectTime: (time: string) => void;
   onBack: () => void;
   onContinue: () => void;
+  /** The page shows Back and Continue itself (the public page's footer). */
+  hideActions?: boolean;
 }) {
   const { t } = useLang();
 
@@ -294,12 +297,14 @@ export default function DateTimeStep({
         </div>
       )}
 
-      <div className="cluster public-wizard-actions">
-        <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
-        {date !== '' && time !== '' && (
-          <button className="btn" onClick={onContinue}>{t.public.continue}</button>
-        )}
-      </div>
+      {!hideActions && (
+        <div className="cluster public-wizard-actions">
+          <button className="btn btn--ghost" onClick={onBack}>{t.public.back}</button>
+          {date !== '' && time !== '' && (
+            <button className="btn" onClick={onContinue}>{t.public.continue}</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

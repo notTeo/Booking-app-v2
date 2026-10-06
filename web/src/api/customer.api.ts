@@ -39,6 +39,8 @@ export interface CustomerBooking {
     duration: number;
     price: number;
   };
+  /** Every service of the booking, in order (the first is `service`). */
+  services?: { name: string; duration: number; price: number }[];
   staff: { name: string };
 }
 

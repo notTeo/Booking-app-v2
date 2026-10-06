@@ -1,0 +1,9 @@
+/* Layout only — every visual comes from components.css. */
+.products-page { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: 53.75rem; }
+.product-page { display: flex; flex-direction: column; gap: var(--space-6); width: 100%; max-width: 42.5rem; }
+.product-page__form { display: flex; flex-direction: column; gap: var(--space-4); }
+.product-page__form .field { margin-bottom: 0; }
+.product-page__head { display: flex; flex-direction: column; gap: var(--space-4); }
+.product-page__title { overflow-wrap: anywhere; }
+.product-page__supplier { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.product-page__supplier .input { flex: 1 1 14rem; min-width: 0; }

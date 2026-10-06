@@ -50,6 +50,8 @@ export interface UseBookingWizardOptions {
    * page identifies by phone, the shop's wizard by customer id.
    */
   slotCustomer?: { phone?: string; customerId?: string } | null;
+  /** The picked customer's own minutes per service id (owner wizard): used for the summed duration shown. */
+  customDurations?: Record<string, number>;
 }
 
 export interface UseBookingWizardResult {
@@ -60,7 +62,10 @@ export interface UseBookingWizardResult {
   notFound: boolean;
   step: WizardStep;
   setStep: (s: WizardStep) => void;
+  /** The first chosen service (a booking's primary one). */
   selectedServiceId: string | null;
+  /** Every chosen service, in the order they were picked. */
+  selectedServiceIds: string[];
   selectedMemberId: string | null;
   date: string;
   time: string;
@@ -69,7 +74,17 @@ export interface UseBookingWizardResult {
   /** The last slot fetch failed — distinct from a successful 'closed' response. */
   slotsError: boolean;
   retrySlots: () => void;
+  /**
+   * The chosen service. With several chosen it stands for all of them: their
+   * names joined, their durations and prices added up.
+   */
   selectedService: Service | null;
+  /** The chosen services one by one, in order. */
+  selectedServices: Service[];
+  /** Pick or drop a service (step 1 with several allowed). Nothing else changes. */
+  toggleService: (serviceId: string) => void;
+  /** Leave step 1 with the services chosen so far. */
+  continueFromServices: () => void;
   /** What step 1 offers: the shop's active services, plus a rescheduled booking's own. */
   services: Service[];
   /** The first step this wizard has (2 when the service is fixed). */
@@ -95,6 +110,29 @@ export const wizardServices = (active: Service[], own?: Service): Service[] =>
 export const nextStepBack = (step: WizardStep, firstStep: WizardStep): WizardStep | null =>
   step > firstStep ? ((step - 1) as WizardStep) : null;
 
+/** A booking has at most this many services (the API's limit too). */
+export const MAX_SERVICES = 5;
+
+/**
+ * The chosen services as one: names joined, durations (each possibly the
+ * customer's own) and prices added up. A single service is returned as it is
+ * (with its own duration for the customer), none as null.
+ */
+export const combineServices = (
+  chosen: Service[],
+  durationFor: (service: Service) => number = (s) => s.duration,
+): Service | null => {
+  if (chosen.length === 0) return null;
+  const first = chosen[0];
+  return {
+    ...first,
+    name: chosen.map((s) => s.name).join(' + '),
+    description: chosen.length === 1 ? first.description : null,
+    duration: chosen.reduce((sum, s) => sum + durationFor(s), 0),
+    price: chosen.reduce((sum, s) => sum + s.price, 0),
+  };
+};
+
 export function useBookingWizard({
   slug,
   shopId,
@@ -103,6 +141,7 @@ export function useBookingWizard({
   internal,
   reschedule,
   slotCustomer,
+  customDurations,
 }: UseBookingWizardOptions): UseBookingWizardResult {
   const { t } = useLang();
 
@@ -112,7 +151,8 @@ export function useBookingWizard({
   const [notFound, setNotFound] = useState(false);
 
   const [step, setStep] = useState<WizardStep>(reschedule ? 3 : 1);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(reschedule?.service.id ?? null);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(reschedule ? [reschedule.service.id] : []);
+  const selectedServiceId = selectedServiceIds[0] ?? null;
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(initialMemberId ?? null);
   const [date, setDate] = useState(initialDate ?? '');
   const [time, setTime] = useState('');
@@ -137,34 +177,43 @@ export function useBookingWizard({
 
   // Rescheduling opens straight on the date/time step: load its slots once.
   useEffect(() => {
-    if (reschedule && date && selectedMemberId) fetchSlots(date, selectedMemberId, reschedule.service.id);
+    if (reschedule && date && selectedMemberId) fetchSlots(date, selectedMemberId, [reschedule.service.id]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // A deactivated service is missing from the public shop info; a reschedule
   // keeps it, so the booking's own copy is offered alongside the active ones.
   const services = wizardServices(shop?.services ?? [], reschedule?.service);
-  const selectedService = services.find((s) => s.id === selectedServiceId) ?? null;
+  const customDurationFor = (s: Service) => customDurations?.[s.id] ?? s.duration;
+  const selectedServices = selectedServiceIds
+    .map((id) => services.find((s) => s.id === id))
+    .filter((s): s is Service => !!s);
+  const selectedService = combineServices(selectedServices, customDurationFor);
   const firstStep: WizardStep = reschedule?.fixedService ? 2 : 1;
   const bookableMembers = (shop?.members ?? []).filter((m) =>
     internal ? m.bookableInternally : m.bookableByCustomers,
   );
-  const eligibleMembers = selectedServiceId
-    ? bookableMembers.filter((m) => m.staffServices.some((ss) => ss.service.id === selectedServiceId))
-    : bookableMembers;
+  // With several services, only members who do every one of them.
+  const eligibleMembers =
+    selectedServiceIds.length > 0
+      ? bookableMembers.filter((m) =>
+          selectedServiceIds.every((id) => m.staffServices.some((ss) => ss.service.id === id)),
+        )
+      : bookableMembers;
 
   function fetchSlots(
     targetDate: string,
     memberId: string | null,
-    serviceId: string,
+    serviceIds: string[],
     interval: number | null = intervalMinutes,
   ) {
+    const serviceId = serviceIds[0];
     const request =
       internal && shopId
-        ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId, slotCustomer?.customerId)
-        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token, slotCustomer?.phone);
+        ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId, slotCustomer?.customerId, serviceIds)
+        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token, slotCustomer?.phone, serviceIds);
     const seq = ++slotsSeq.current;
-    lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceId, interval);
+    lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceIds, interval);
     setSlotsError(false);
     request
       .then((r) => {
@@ -179,8 +228,25 @@ export function useBookingWizard({
     lastSlotsRequest.current?.();
   }
 
+  function toggleService(serviceId: string) {
+    setSelectedServiceIds((ids) =>
+      ids.includes(serviceId)
+        ? ids.filter((id) => id !== serviceId)
+        : ids.length >= MAX_SERVICES ? ids : [...ids, serviceId],
+    );
+  }
+
+  /** One service picked on its own (a reschedule changing the service): select it and move on. */
   function handleSelectService(serviceId: string) {
-    setSelectedServiceId(serviceId);
+    setSelectedServiceIds([serviceId]);
+    goOnFromServices([serviceId]);
+  }
+
+  function continueFromServices() {
+    if (selectedServiceIds.length > 0) goOnFromServices(selectedServiceIds);
+  }
+
+  function goOnFromServices(ids: string[]) {
     setTime('');
 
     if (reschedule) {
@@ -191,7 +257,7 @@ export function useBookingWizard({
     if (initialMemberId) {
       setSelectedMemberId(initialMemberId);
       setStep(3);
-      if (date) fetchSlots(date, initialMemberId, serviceId);
+      if (date) fetchSlots(date, initialMemberId, ids);
     } else {
       setSelectedMemberId(null);
       setDate('');
@@ -205,7 +271,7 @@ export function useBookingWizard({
       // Same day, another provider: keep the date and show their slots.
       setTime('');
       setStep(3);
-      if (date && memberId && selectedServiceId) fetchSlots(date, memberId, selectedServiceId);
+      if (date && memberId && selectedServiceIds.length > 0) fetchSlots(date, memberId, selectedServiceIds);
       return;
     }
     setDate('');
@@ -217,14 +283,14 @@ export function useBookingWizard({
     const newDate = e.target.value;
     setDate(newDate);
     setTime('');
-    if (!selectedServiceId) return;
-    fetchSlots(newDate, selectedMemberId, selectedServiceId);
+    if (selectedServiceIds.length === 0) return;
+    fetchSlots(newDate, selectedMemberId, selectedServiceIds);
   }
 
   function handleIntervalChange(minutes: number | null) {
     setIntervalMinutes(minutes);
     setTime('');
-    if (date && selectedServiceId) fetchSlots(date, selectedMemberId, selectedServiceId, minutes);
+    if (date && selectedServiceIds.length > 0) fetchSlots(date, selectedMemberId, selectedServiceIds, minutes);
   }
 
   function goBack() {
@@ -239,13 +305,12 @@ export function useBookingWizard({
       }
       return;
     }
+    // Going back keeps the services chosen, so they can be changed.
     if (step === 2) {
-      setSelectedServiceId(null);
       setStep(1);
     } else if (step === 3) {
       if (initialMemberId) {
         // Step 2 was skipped on the way in, so go straight back to step 1.
-        setSelectedServiceId(null);
         setStep(1);
       } else {
         setSelectedMemberId(null);
@@ -264,6 +329,7 @@ export function useBookingWizard({
     step,
     setStep,
     selectedServiceId,
+    selectedServiceIds,
     selectedMemberId,
     date,
     time,
@@ -272,6 +338,9 @@ export function useBookingWizard({
     slotsError,
     retrySlots,
     selectedService,
+    selectedServices,
+    toggleService,
+    continueFromServices,
     services,
     firstStep,
     eligibleMembers,

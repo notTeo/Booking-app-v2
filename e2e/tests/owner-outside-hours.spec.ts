@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { bookingCount, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * Owner/staff booking outside working hours.
@@ -35,8 +36,7 @@ async function openWizard(
   await page.locator('button[type=submit]').click();
   await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(targetDate);
   if (targetDate === date) {
     await expect(page.getByRole('button', { name: '10:00', exact: true })).toBeVisible();

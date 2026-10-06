@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickService } from '../support/booking';
 
 /**
  * A returning customer's own duration for a service decides which times they
@@ -59,7 +60,7 @@ const saveDetails = (page: Page) =>
   );
 
 async function pickServiceAndDate(page: Page, day = date) {
-  await page.getByRole('radio', { name: /Identity Service/ }).click();
+  await pickService(page, /Identity Service/);
   // The public page shows the service's standard duration.
   await expect(page.getByText('Service: Identity Service (30m)')).toBeVisible();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
@@ -79,7 +80,7 @@ test('saved details: "yes" offers their own times, "no" the standard ones', asyn
 
   // The question comes before anything else.
   await expect(page.getByText('Continue as Ida Returning?')).toBeVisible();
-  await expect(page.getByRole('radiogroup')).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Service', exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Yes, continue' }).click();
   await expect(page.getByText('Booking as Ida Returning')).toBeVisible();
@@ -90,7 +91,7 @@ test('saved details: "yes" offers their own times, "no" the standard ones', asyn
   await page.getByRole('button', { name: '22:30', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
   await expect(page.locator('#b-phone')).toHaveValue(PHONE);
-  await page.locator('.public-wizard-actions').getByRole('button').last().click();
+  await page.locator('.booking-card__actions').getByRole('button').last().click();
   await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
   const [booking] = await query<{ minutes: number }>(
     `select extract(epoch from ("endTime" - "startTime")) / 60 as minutes from "Booking" where "serviceId" = 'sv-ident'`,
@@ -111,7 +112,7 @@ test('saved details: "yes" offers their own times, "no" the standard ones', asyn
 test('nothing saved: the phone is optional, and entering it offers their own times', async ({ page }) => {
   await page.goto(`/${E2E.shop.slug}`);
   // Services are offered straight away.
-  await expect(page.getByRole('radio', { name: /Identity Service/ })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /Identity Service/ })).toBeVisible();
 
   await page.getByRole('button', { name: /Booked with us before/ }).click();
   const use = page.getByRole('button', { name: 'Use this number' });
@@ -137,10 +138,11 @@ test('shop wizard: picking the customer first shows their duration and times', a
   await page.getByRole('button', { name: /Ida Returning/ }).click();
   await expect(page.getByText('Booking for Ida Returning')).toBeVisible();
 
-  const service = page.getByRole('radio', { name: /Identity Service/ });
+  const service = page.getByRole('checkbox', { name: /Identity Service/ });
   await expect(service).toContainText('1h');
   await expect(service).toContainText('Custom duration');
   await service.click();
+  await page.getByRole('button', { name: /^continue/i }).click();
   await page.getByRole('radiogroup').getByRole('radio').first().click();
   // The steps after it keep showing the service with the customer's duration.
   await expect(page.getByText('Service: Identity Service (1h)')).toBeVisible();

@@ -7,6 +7,7 @@ import {
   faGear,
   faCalendar,
   faScissors,
+  faBoxOpen,
   faUsers,
   faMagnifyingGlass,
   faHouse,
@@ -65,6 +66,7 @@ function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => 
             <Item to={base} end icon={faTableCells} label={t.sidebar.overview} collapsed={collapsed} onNavigate={onNavigate} />
             <Item to={`${base}/bookings`} icon={faCalendar} label={t.sidebar.bookings} collapsed={collapsed} onNavigate={onNavigate} />
             <Item to={`${base}/services`} icon={faScissors} label={t.sidebar.services} collapsed={collapsed} onNavigate={onNavigate} />
+            <Item to={`${base}/products`} icon={faBoxOpen} label={t.sidebar.products} collapsed={collapsed} onNavigate={onNavigate} />
             {canManage && (
               <>
                 <Item to={`${base}/team`} icon={faUsers} label={t.sidebar.team} collapsed={collapsed} onNavigate={onNavigate} />

@@ -331,9 +331,37 @@ export interface BookingEmailParams {
   canReschedule: boolean;
   cancelCutoffHours: number;
   rescheduleCutoffHours: number;
+  // Products reserved with the booking (price in cents, as stored).
+  products?: { name: string; quantity: number; unitPrice: number }[];
+  // The service's price in cents, so the total can include it.
+  servicePrice?: number;
   // The language the customer booked in; the request's when not given.
   locale?: EmailLocale;
 }
+
+export const formatPrice = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+
+/** The reserved products as one detail row, with the total and the pay-in-shop note. */
+const productRows = (
+  products: BookingEmailParams['products'],
+  servicePrice: number | undefined,
+  lang: EmailLocale,
+  detailRow: (label: string, value: string) => string,
+) => {
+  if (!products || products.length === 0) return '';
+  const t = emailStrings[lang];
+  const total =
+    (servicePrice ?? 0) +
+    products.reduce((sum, p) => sum + p.quantity * p.unitPrice, 0);
+  const lines = products.map(
+    (p) =>
+      `${p.quantity} × ${escapeHtml(p.name)} — ${formatPrice(p.quantity * p.unitPrice)}`,
+  );
+  return detailRow(
+    t.labels.products,
+    `${lines.join('<br>')}<br>${escapeHtml(t.productsNote(formatPrice(total)))}`,
+  );
+};
 
 /** One line telling the customer until when the links below still work. */
 const changePolicyNote = (p: BookingEmailParams, lang: EmailLocale) => {
@@ -391,7 +419,8 @@ const appointmentRows = (p: BookingEmailParams, lang: EmailLocale) => {
         ${detailRow(labels.time, formatTime(p.startTime, p.timezone, lang))}
         ${detailRow(labels.service, escapeHtml(p.serviceName))}
         ${detailRow(labels.provider, escapeHtml(p.staffName))}
-        ${detailRow(labels.location, escapeHtml(p.formattedAddress ?? p.shopName))}`;
+        ${detailRow(labels.location, escapeHtml(p.formattedAddress ?? p.shopName))}
+        ${productRows(p.products, p.servicePrice, lang, detailRow)}`;
 };
 
 export const sendBookingConfirmationEmail = async (
@@ -527,6 +556,8 @@ interface BookingNoticeParams {
   staffName: string;
   startTime: Date;
   timezone: string;
+  products?: BookingEmailParams['products'];
+  servicePrice?: number;
   locale?: EmailLocale;
 }
 
@@ -555,6 +586,7 @@ export const sendNewBookingNotificationEmail = async (
         ${detailRow(labels.provider, escapeHtml(params.staffName))}
         ${detailRow(labels.date, formatDate(params.startTime, params.timezone, lang))}
         ${detailRow(labels.time, formatTime(params.startTime, params.timezone, lang))}
+        ${productRows(params.products, params.servicePrice, lang, detailRow)}
       </table>
     `,
     ),

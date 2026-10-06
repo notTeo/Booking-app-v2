@@ -25,7 +25,19 @@ export async function world() {
       endDate: new Date(Date.UTC(2030, 0, 1)),
     },
   });
-  return { t, member, schedule, booking, timeOff };
+  const product = await prisma.product.create({
+    data: { shopId: t.shop.id, name: 'Shampoo', price: 1200, stock: 5 },
+  });
+  const line = await prisma.bookingProduct.create({
+    data: {
+      bookingId: booking.id,
+      productId: product.id,
+      name: product.name,
+      unitPrice: product.price,
+      quantity: 1,
+    },
+  });
+  return { t, member, schedule, booking, timeOff, product, line };
 }
 export type World = Awaited<ReturnType<typeof world>>;
 
@@ -39,6 +51,8 @@ export const params = (w: World): Record<string, string> => ({
   customerId: w.booking.customerId,
   scheduleId: w.schedule.id,
   timeOffId: w.timeOff.id,
+  productId: w.product.id,
+  lineId: w.line.id,
   day: 'MON',
 });
 
@@ -159,6 +173,25 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     minRole: 'manager',
   },
 
+  'POST /api/shops/:shopId/products': {
+    minRole: 'manager',
+    body: () => ({ name: 'Conditioner', price: 900, stock: 2 }),
+  },
+  'GET /api/shops/:shopId/products': {},
+  'GET /api/shops/:shopId/products/:productId': {},
+  'PATCH /api/shops/:shopId/products/:productId': {
+    minRole: 'manager',
+    body: () => ({ stock: 3 }),
+  },
+  'DELETE /api/shops/:shopId/products/:productId': { minRole: 'manager' },
+  'PUT /api/shops/:shopId/products/:productId/photo': {
+    minRole: 'manager',
+    body: () => ({ crop }),
+  },
+  'DELETE /api/shops/:shopId/products/:productId/photo': {
+    minRole: 'manager',
+  },
+
   'POST /api/shops/:shopId/bookings': {
     body: (w) => ({
       name: 'Walk In',
@@ -182,6 +215,10 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
   'PATCH /api/shops/:shopId/bookings/:bookingId/status': {
     body: () => ({ status: 'CONFIRMED' }),
+  },
+  'DELETE /api/shops/:shopId/bookings/:bookingId/products/:lineId': {},
+  'PATCH /api/shops/:shopId/bookings/:bookingId/products/:lineId': {
+    body: () => ({ saleStatus: 'NOT_SOLD', quantity: 1 }),
   },
 
   'GET /api/shops/:shopId/customers': {},

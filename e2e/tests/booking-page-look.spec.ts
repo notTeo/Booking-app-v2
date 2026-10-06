@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
+import { pickService } from '../support/booking';
 
 /**
  * A shop picks the colours and font of its public booking page in its
@@ -62,7 +63,7 @@ test('the look picked in settings is previewed, then applied to the public page'
 test('a shop with one provider does not offer "No preference"', async ({ page, context }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickService(page);
   const providers = page.getByRole('radiogroup').getByRole('radio');
   await expect(providers).toHaveCount(1);
   await expect(page.getByText('No preference')).toHaveCount(0);

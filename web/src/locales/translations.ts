@@ -32,6 +32,7 @@ export interface Translations {
     manageSection: string;
     bookings: string;
     services: string;
+    products: string;
     team: string;
     invites: string;
     customers: string;
@@ -689,6 +690,72 @@ export interface Translations {
     palettes: Record<PublicPalette, string>;
     fonts: Record<PublicFont, string>;
   };
+  products: {
+    title: string;
+    add: string;
+    empty: string;
+    emptyHint: string;
+    notInPlan: string;
+    colProduct: string;
+    colPrice: string;
+    colStock: string;
+    colSupplier: string;
+    noSupplier: string;
+    stockOut: string;
+    stockLast: string;
+    stockLow: string;
+    stockOk: string;
+    stockCount: string;
+    newTitle: string;
+    back: string;
+    name: string;
+    price: string;
+    stockLabel: string;
+    description: string;
+    supplier: string;
+    supplierHint: string;
+    openSupplier: string;
+    save: string;
+    create: string;
+    saved: string;
+    errorLoad: string;
+    errorSave: string;
+    errorDelete: string;
+    errorPhoto: string;
+    notFound: string;
+    photoTitle: string;
+    photoPending: string;
+    photoAlt: string;
+    deleteCard: string;
+    deleteTitle: string;
+    deleteMessage: string;
+    delete: string;
+    cancel: string;
+    readOnly: string;
+    pickerTitle: string;
+    pickerHint: string;
+    payInShop: string;
+    total: string;
+    decrease: string;
+    increase: string;
+    quantity: string;
+    overStock: string;
+    overStockConfirm: string;
+    outOfStockError: string;
+    bookingTitle: string;
+    sold: string;
+    notSold: string;
+    leftInStock: string;
+    errorSale: string;
+    confirmationTitle: string;
+    deletedProduct: string;
+    zeroNote: string;
+    serviceFee: string;
+    productsSubtotal: string;
+    removeLine: string;
+    removeLineTitle: string;
+    removeLineMessage: string;
+  };
   photos: {
     editorTitle: string;
     zoom: string;
@@ -831,6 +898,16 @@ export interface Translations {
     dateTime: string;
     yourDetails: string;
     stepOf: string;
+    chooseService: string;
+    chooseServiceHint: string;
+    chooseServiceToContinue: string;
+    bookingAs: string;
+    change: string;
+    servicesChosen: string;
+    servicesLimit: string;
+    openMap: string;
+    callShop: string;
+    stepLabel: string;
     noServices: string;
     noStaff: string;
     noPreference: string;
@@ -1028,6 +1105,19 @@ export interface Translations {
     pageOf: string;
   };
   bookings: {
+    detail: {
+      minutes: string;
+      noShow: string;
+      cancelBooking: string;
+      cancelTitle: string;
+      cancelMessage: string;
+      keepBooking: string;
+      editProducts: string;
+      doneEditing: string;
+      totalNote: string;
+      soldBadge: string;
+      notSoldBadge: string;
+    };
     block: {
       button: string;
       bookCustomer: string;
@@ -1202,6 +1292,7 @@ export const translations: Record<Language, Translations> = {
       manageSection: 'Διαχείριση',
       bookings: 'Ραντεβού',
       services: 'Υπηρεσίες',
+      products: 'Προϊόντα',
       team: 'Ομάδα',
       invites: 'Προσκλήσεις',
       customers: 'Πελάτες',
@@ -1300,6 +1391,7 @@ home: {
       'Προσκλήσεις ομάδας με email',
       'Ρόλοι και δικαιώματα',
       'Ωράριο ανά μέλος προσωπικού',
+      'Προϊόντα που κρατούν οι πελάτες με το ραντεβού τους',
     ],
     pricingBusinessName: 'Business',
     pricingBusinessDesc: 'Για καταστήματα με 6 έως 15 άτομα.',
@@ -1488,6 +1580,8 @@ home: {
         title: 'Υπηρεσίες και πελάτες',
         rows: [
           ['Υπηρεσίες με τιμή και διάρκεια', true, true, true],
+          ['Φωτογραφία για το κατάστημα και για κάθε μέλος', true, true, true],
+          ['Προϊόντα που κρατούν οι πελάτες με το ραντεβού τους (πληρωμή στο κατάστημα)', false, true, true],
           ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true, true],
           ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true, true],
           ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true, true],
@@ -1959,6 +2053,72 @@ home: {
         "roboto-slab": "Roboto Slab · έντονη",
       },
     },
+    products: {
+      title: "Προϊόντα",
+      add: "Προσθήκη προϊόντος",
+      empty: "Δεν έχεις προσθέσει προϊόντα ακόμη.",
+      emptyHint: "Πρόσθεσε προϊόντα για να τα κρατούν οι πελάτες μαζί με το ραντεβού τους.",
+      notInPlan: "Τα προϊόντα δεν περιλαμβάνονται στο πακέτο {plan}. Αναβάθμισε το πακέτο για να τα χρησιμοποιήσεις.",
+      colProduct: "Προϊόν",
+      colPrice: "Τιμή",
+      colStock: "Απόθεμα",
+      colSupplier: "Προμηθευτής",
+      noSupplier: "—",
+      stockOut: "Δεν είναι διαθέσιμο",
+      stockLast: "Τελευταίο κομμάτι",
+      stockLow: "Μόνο {n} ακόμη",
+      stockOk: "Διαθέσιμο",
+      stockCount: "{n} σε απόθεμα",
+      newTitle: "Νέο προϊόν",
+      back: "Πίσω στα προϊόντα",
+      name: "Όνομα",
+      price: "Τιμή (€)",
+      stockLabel: "Πόσα έχουν απομείνει",
+      description: "Περιγραφή",
+      supplier: "Πού το αγοράζω (σύνδεσμος προμηθευτή)",
+      supplierHint: "Τον βλέπεις μόνο εσύ και οι διαχειριστές. Δεν φαίνεται ποτέ στους πελάτες.",
+      openSupplier: "Άνοιγμα προμηθευτή",
+      save: "Αποθήκευση",
+      create: "Δημιουργία προϊόντος",
+      saved: "Το προϊόν αποθηκεύτηκε.",
+      errorLoad: "Δεν ήταν δυνατή η φόρτωση των προϊόντων.",
+      errorSave: "Δεν ήταν δυνατή η αποθήκευση του προϊόντος.",
+      errorDelete: "Δεν ήταν δυνατή η διαγραφή του προϊόντος.",
+      errorPhoto: "Το προϊόν δημιουργήθηκε, αλλά η φωτογραφία δεν αποθηκεύτηκε. Πρόσθεσέ την ξανά εδώ.",
+      notFound: "Το προϊόν δεν βρέθηκε.",
+      photoTitle: "Φωτογραφία",
+      photoPending: "Η φωτογραφία αποθηκεύεται μαζί με το προϊόν.",
+      photoAlt: "Φωτογραφία του {name}",
+      deleteCard: "Διαγραφή προϊόντος",
+      deleteTitle: "Διαγραφή προϊόντος;",
+      deleteMessage: "Το προϊόν θα διαγραφεί. Οι κρατήσεις που το περιέχουν το κρατούν με το όνομα και την τιμή που είχε.",
+      delete: "Διαγραφή",
+      cancel: "Άκυρο",
+      readOnly: "Μόνο οι ιδιοκτήτες και οι διαχειριστές αλλάζουν τα προϊόντα.",
+      pickerTitle: "Προϊόντα",
+      pickerHint: "Κράτησε προϊόντα μαζί με το ραντεβού. Πληρώνεις στο κατάστημα.",
+      payInShop: "Κράτηση μόνο: πληρώνεις στο κατάστημα.",
+      total: "Σύνολο",
+      decrease: "Λιγότερα: {name}",
+      increase: "Περισσότερα: {name}",
+      quantity: "Ποσότητα: {name}",
+      overStock: "Ζητάς περισσότερα από όσα έχουν απομείνει. Θα κρατηθούν παρ’ όλα αυτά.",
+      overStockConfirm: "Κράτηση παρ’ όλα αυτά",
+      outOfStockError: "Κάποια προϊόντα δεν είναι πια διαθέσιμα σε αυτή την ποσότητα. Ανανέωσε τη σελίδα και δοκίμασε ξανά.",
+      bookingTitle: "Προϊόντα",
+      sold: "Πουλήθηκε",
+      notSold: "Δεν πουλήθηκε",
+      leftInStock: "{n} σε απόθεμα",
+      errorSale: "Δεν ήταν δυνατή η ενημέρωση του προϊόντος.",
+      confirmationTitle: "Προϊόντα που κρατήθηκαν",
+      deletedProduct: "Το προϊόν έχει διαγραφεί",
+      zeroNote: "Η ποσότητα είναι 0: το προϊόν δεν υπολογίζεται στην κράτηση. Αύξησέ την ή αφαίρεσέ το.",
+      serviceFee: "Υπηρεσία",
+      productsSubtotal: "Προϊόντα",
+      removeLine: "Αφαίρεση: {name}",
+      removeLineTitle: "Αφαίρεση προϊόντος από την κράτηση;",
+      removeLineMessage: "Το προϊόν αφαιρείται από την κράτηση. Αν είχε σημειωθεί ως πουλημένο, το απόθεμα επιστρέφει.",
+    },
     photos: {
       editorTitle: "Επεξεργασία φωτογραφίας",
       zoom: "Μεγέθυνση",
@@ -2101,6 +2261,16 @@ home: {
       dateTime: 'Ημερομηνία & Ώρα',
       yourDetails: 'Τα Στοιχεία σας',
       stepOf: 'Βήμα {n} από {total}',
+      chooseService: "Διάλεξε υπηρεσία",
+      chooseServiceHint: "Μπορείς να διαλέξεις περισσότερες από μία: οι ώρες προστίθενται.",
+      chooseServiceToContinue: "Διάλεξε υπηρεσία για να συνεχίσεις",
+      bookingAs: "Κράτηση ως {name}",
+      change: "Αλλαγή",
+      servicesChosen: "{n} υπηρεσίες · {duration} · {price}",
+      servicesLimit: "Έως {n} υπηρεσίες σε μία κράτηση.",
+      openMap: "Άνοιγμα στους χάρτες",
+      callShop: "Κλήση στο {phone}",
+      stepLabel: "Βήμα {n} από {total}",
       noServices: 'Δεν υπάρχουν διαθέσιμες υπηρεσίες.',
       noStaff: 'Δεν υπάρχει διαθέσιμο προσωπικό για αυτήν την υπηρεσία.',
       noPreference: 'Χωρίς προτίμηση',
@@ -2319,6 +2489,19 @@ home: {
       pageOf: 'Σελίδα {page} από {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} λεπτά",
+        noShow: "Δεν ήρθε",
+        cancelBooking: "Ακύρωση ραντεβού",
+        cancelTitle: "Ακύρωση ραντεβού;",
+        cancelMessage: "Το ραντεβού ακυρώνεται και η ώρα ελευθερώνεται. Μπορείς να το ξαναανοίξεις αργότερα αν η ώρα είναι ακόμη ελεύθερη.",
+        keepBooking: "Κράτηση του ραντεβού",
+        editProducts: "Επεξεργασία",
+        doneEditing: "Τέλος",
+        totalNote: "Υπηρεσία {service} + προϊόντα {products}",
+        soldBadge: "Πουλήθηκε",
+        notSoldBadge: "Δεν πουλήθηκε",
+      },
       block: {
         button: 'Κλείδωμα ώρας',
         bookCustomer: 'Κράτηση για πελάτη',
@@ -2496,6 +2679,7 @@ home: {
       manageSection: 'Manage',
       bookings: 'Bookings',
       services: 'Services',
+      products: 'Products',
       team: 'Team',
       invites: 'Invites',
       customers: 'Customers',
@@ -2594,6 +2778,7 @@ home: {
       'Team invites by email',
       'Roles and permissions',
       'Working hours per staff member',
+      'Products customers can reserve with a booking',
     ],
     pricingBusinessName: 'Business',
     pricingBusinessDesc: 'For shops with 6 to 15 people.',
@@ -2782,6 +2967,8 @@ home: {
         title: 'Services and customers',
         rows: [
           ['Services with price and duration', true, true, true],
+          ['A photo for the shop and for each team member', true, true, true],
+          ['Products customers can reserve with a booking (pay in the shop)', false, true, true],
           ['Internal-only services', true, true, true],
           ['Customer records with notes and history', true, true, true],
           ['Custom service duration per customer', true, true, true],
@@ -3253,6 +3440,72 @@ home: {
         "roboto-slab": "Roboto Slab · bold",
       },
     },
+    products: {
+      title: "Products",
+      add: "Add product",
+      empty: "You have not added any products yet.",
+      emptyHint: "Add products so customers can reserve them with their booking.",
+      notInPlan: "Products are not part of the {plan} plan. Upgrade the plan to use them.",
+      colProduct: "Product",
+      colPrice: "Price",
+      colStock: "Stock",
+      colSupplier: "Supplier",
+      noSupplier: "—",
+      stockOut: "Not available",
+      stockLast: "Last one",
+      stockLow: "Only {n} left",
+      stockOk: "In stock",
+      stockCount: "{n} in stock",
+      newTitle: "New product",
+      back: "Back to products",
+      name: "Name",
+      price: "Price (€)",
+      stockLabel: "How many are left",
+      description: "Description",
+      supplier: "Where I buy it (supplier link)",
+      supplierHint: "Only you and the managers see this. Customers never do.",
+      openSupplier: "Open supplier",
+      save: "Save",
+      create: "Create product",
+      saved: "The product was saved.",
+      errorLoad: "The products could not be loaded.",
+      errorSave: "The product could not be saved.",
+      errorDelete: "The product could not be deleted.",
+      errorPhoto: "The product was created, but its photo was not saved. Add it again here.",
+      notFound: "Product not found.",
+      photoTitle: "Photo",
+      photoPending: "The photo is saved with the product.",
+      photoAlt: "Photo of {name}",
+      deleteCard: "Delete product",
+      deleteTitle: "Delete this product?",
+      deleteMessage: "The product will be deleted. Bookings that reserved it keep it with the name and price it had.",
+      delete: "Delete",
+      cancel: "Cancel",
+      readOnly: "Only owners and managers can change products.",
+      pickerTitle: "Products",
+      pickerHint: "Reserve products with your booking. You pay in the shop.",
+      payInShop: "Reservation only: you pay in the shop.",
+      total: "Total",
+      decrease: "Fewer: {name}",
+      increase: "More: {name}",
+      quantity: "Quantity: {name}",
+      overStock: "You are reserving more than what is left. It will be reserved anyway.",
+      overStockConfirm: "Reserve anyway",
+      outOfStockError: "Some products are no longer available in that quantity. Refresh the page and try again.",
+      bookingTitle: "Products",
+      sold: "Sold",
+      notSold: "Not sold",
+      leftInStock: "{n} in stock",
+      errorSale: "The product could not be updated.",
+      confirmationTitle: "Reserved products",
+      deletedProduct: "This product was deleted",
+      zeroNote: "Quantity is 0: this product no longer counts in the booking. Raise it again or remove it.",
+      serviceFee: "Service",
+      productsSubtotal: "Products",
+      removeLine: "Remove: {name}",
+      removeLineTitle: "Remove this product from the booking?",
+      removeLineMessage: "The product is removed from the booking. If it was marked sold, the stock goes back.",
+    },
     photos: {
       editorTitle: "Edit photo",
       zoom: "Zoom",
@@ -3395,6 +3648,16 @@ home: {
       dateTime: 'Date & Time',
       yourDetails: 'Your Details',
       stepOf: 'Step {n} of {total}',
+      chooseService: "Choose a service",
+      chooseServiceHint: "You can pick more than one: the times add up.",
+      chooseServiceToContinue: "Choose a service to continue",
+      bookingAs: "Booking as {name}",
+      change: "Change",
+      servicesChosen: "{n} services · {duration} · {price}",
+      servicesLimit: "Up to {n} services in one booking.",
+      openMap: "Open in maps",
+      callShop: "Call {phone}",
+      stepLabel: "Step {n} of {total}",
       noServices: 'No services available.',
       noStaff: 'No staff available for this service.',
       noPreference: 'No preference',
@@ -3613,6 +3876,19 @@ home: {
       pageOf: 'Page {page} of {total}',
     },
     bookings: {
+      detail: {
+        minutes: "{n} min",
+        noShow: "No-show",
+        cancelBooking: "Cancel booking",
+        cancelTitle: "Cancel this booking?",
+        cancelMessage: "The booking is canceled and its time is freed. You can reopen it later if the time is still free.",
+        keepBooking: "Keep it",
+        editProducts: "Edit",
+        doneEditing: "Done",
+        totalNote: "Service {service} + products {products}",
+        soldBadge: "Sold",
+        notSoldBadge: "Not sold",
+      },
       block: {
         button: 'Block this slot',
         bookCustomer: 'Book a customer instead',

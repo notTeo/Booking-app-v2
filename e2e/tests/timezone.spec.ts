@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { latestBookingStart } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc, testDates } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * The public booking page must work in the SHOP's timezone (Europe/Athens)
@@ -31,8 +32,7 @@ async function pickDate(page: Page, date: string) {
 async function startPublicBooking(page: Page, date: string) {
   await page.context().addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await expect(page.locator('#booking-date')).toBeVisible();
   await pickDate(page, date);
   await expect(page.getByRole('button', { pressed: false }).first()).toBeVisible();
@@ -77,7 +77,7 @@ for (const c of CASES) {
       await page.locator('#b-name').fill('E2E Tester');
       await page.locator('#b-phone').fill(`69${String(Date.now()).slice(-8)}`);
       await page.getByRole('button', { name: /confirm booking/i }).click();
-      await expect(page.locator('.public-main .card--center')).toBeVisible();
+      await expect(page.locator('.booking-card__body .card--center')).toBeVisible();
 
       expect(await latestBookingStart()).toBe(athensWallClockToUtc(c.date, '10:00').toISOString());
     });

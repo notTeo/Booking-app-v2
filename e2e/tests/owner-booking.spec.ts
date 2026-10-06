@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { latestBookingStart } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * Owner wizard smoke test: log in through the real form, create an in-hours
@@ -38,8 +39,7 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
 
   // wizard: service -> team member -> date -> in-hours slot
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await page.getByRole('button', { name: '10:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();

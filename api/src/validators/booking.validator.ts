@@ -22,9 +22,11 @@ const overrideRulesValidation = [
     .withMessage('overrideRules must be an array of rule codes'),
   body('overrideRules.*')
     .isString()
-    .isIn([...OVERRIDABLE_RULE_CODES])
+    // PRODUCT_OUT_OF_STOCK is accepted here but only honoured for the owner
+    // and managers (booking.service.ts), and is not a time rule.
+    .isIn([...OVERRIDABLE_RULE_CODES, 'PRODUCT_OUT_OF_STOCK'])
     .withMessage(
-      `overrideRules may only contain: ${OVERRIDABLE_RULE_CODES.join(', ')}`,
+      `overrideRules may only contain: ${OVERRIDABLE_RULE_CODES.join(', ')}, PRODUCT_OUT_OF_STOCK`,
     ),
 ];
 
@@ -67,16 +69,52 @@ const notesValidation = body('notes')
   .isLength({ max: NOTES_MAX_LENGTH })
   .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`);
 
+// Products reserved with the booking: [{ productId, quantity }].
+const productsValidation = [
+  body('products')
+    .optional()
+    .isArray({ max: 20 })
+    .withMessage('products must be a list of at most 20 items'),
+  body('products.*.productId')
+    .isString()
+    .notEmpty()
+    .withMessage('productId is required'),
+  body('products.*.quantity')
+    .isInt({ min: 1, max: 99 })
+    .withMessage('quantity must be a whole number from 1 to 99'),
+];
+
+// One service (serviceId) or several, done one after another (serviceIds, at
+// most five; the first is the booking's primary).
+const servicesValidation = [
+  body('serviceId')
+    .optional()
+    .isString()
+    .withMessage('serviceId must be a string'),
+  body('serviceIds')
+    .optional()
+    .isArray({ min: 1, max: 5 })
+    .withMessage('serviceIds must be a list of 1 to 5 services'),
+  body('serviceIds.*')
+    .isString()
+    .notEmpty()
+    .withMessage('serviceIds must be ids'),
+  body()
+    .custom((value) => !!value?.serviceId || value?.serviceIds?.length > 0)
+    .withMessage('serviceId is required'),
+];
+
 export const createBookingValidation = [
   param('slug').notEmpty().withMessage('slug is required'),
   ...customerFieldsValidation(),
-  body('serviceId').notEmpty().withMessage('serviceId is required'),
+  ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
   notesValidation,
+  ...productsValidation,
 ];
 
 export const getPublicSlotsValidation = [
@@ -87,6 +125,8 @@ export const getPublicSlotsValidation = [
     .withMessage('date must be a valid ISO 8601 date'),
   query('staffId').optional({ nullable: true }),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  // All the services when there are several ("a,b,c"); serviceId is the first.
+  query('serviceIds').optional({ values: 'falsy' }).isString(),
   // A customer rescheduling from their email link: frees their own slot.
   query('rescheduleToken').optional({ values: 'falsy' }).isUUID(),
 ];
@@ -99,6 +139,7 @@ export const ownerSlotsValidation = [
     .isISO8601({ strict: true })
     .withMessage('date must be a valid calendar date'),
   query('serviceId').notEmpty().withMessage('serviceId is required'),
+  query('serviceIds').optional({ values: 'falsy' }).isString(),
   query('staffId').optional({ values: 'falsy' }).isString(),
   // Rescheduling: lets this booking's own (possibly deactivated) service be
   // looked up. Has no effect for any other service.
@@ -129,14 +170,45 @@ export const ownerCreateBookingValidation = [
     .isBoolean({ strict: true })
     .withMessage('block must be true or false'),
   ...customerFieldsValidation(true),
-  body('serviceId').notEmpty().withMessage('serviceId is required'),
+  ...servicesValidation,
   body('staffId').optional().isString().withMessage('staffId must be a string'),
   body('startTime')
     .notEmpty()
     .isISO8601()
     .withMessage('startTime must be a valid ISO 8601 timestamp'),
   notesValidation,
+  ...productsValidation,
+  body('products')
+    .custom((products, { req }) => !(isBlock(req) && products?.length > 0))
+    .withMessage('A blocked slot cannot have products'),
   ...overrideRulesValidation,
+];
+
+export const productLineParamsValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  param('bookingId').notEmpty().withMessage('bookingId is required'),
+  param('lineId').notEmpty().withMessage('lineId is required'),
+];
+
+export const productLineValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  param('bookingId').notEmpty().withMessage('bookingId is required'),
+  param('lineId').notEmpty().withMessage('lineId is required'),
+  body('saleStatus')
+    .optional()
+    .isIn(['RESERVED', 'SOLD', 'NOT_SOLD'])
+    .withMessage('saleStatus must be RESERVED, SOLD or NOT_SOLD'),
+  // 0 keeps the line but it no longer counts; DELETE removes it.
+  body('quantity')
+    .optional()
+    .isInt({ min: 0, max: 99 })
+    .withMessage('quantity must be a whole number from 0 to 99'),
+  body()
+    .custom(
+      (value) =>
+        value?.saleStatus !== undefined || value?.quantity !== undefined,
+    )
+    .withMessage('Send saleStatus, quantity or both'),
 ];
 
 export const shopIdParamValidation = [

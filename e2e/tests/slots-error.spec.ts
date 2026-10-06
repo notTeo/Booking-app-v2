@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * A failed slot fetch is an error with a Retry, never "closed this day".
@@ -33,8 +34,7 @@ test('public page: a failed slot fetch shows an error with Retry', async ({ page
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await failSlotsOnce(page, /\/public\/[^/]+\/slots/);
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await expectErrorThenRetry(page);
 });
@@ -48,8 +48,7 @@ test('owner wizard: a failed slot fetch shows an error with Retry', async ({ pag
   await waitForLanding(page);
   await failSlotsOnce(page, /\/api\/shops\/[^/]+\/bookings\/slots/);
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(date);
   await expectErrorThenRetry(page);
 });

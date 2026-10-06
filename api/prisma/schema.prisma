@@ -88,6 +88,7 @@ model Shop {
   customers            Customer[]
   bookings             Booking[]
   timeOff              TimeOff[]
+  products             Product[]
 }
 
 model ShopWorkingSchedule {
@@ -228,6 +229,7 @@ model Service {
   staffServices     StaffService[]
   bookings          Booking[]
   customerDurations CustomerServiceDuration[]
+  bookingServices BookingService[]
 }
 
 model StaffService {
@@ -307,6 +309,85 @@ model CustomerServiceDuration {
   @@index([serviceId])
 }
 
+// One service of a booking. A booking has one or more, done one after another
+// by the same provider; its length is their durations added up. The name,
+// duration and price are copied, so the booking keeps what was agreed. The
+// first (position 0) is also Booking.serviceId.
+model BookingService {
+  id        String   @id @default(cuid())
+  bookingId String
+  serviceId String
+  name      String
+  // Minutes it took in this booking (the customer's own duration, if any).
+  duration  Int
+  // In cents.
+  price     Int
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, serviceId])
+  @@index([bookingId])
+  @@index([serviceId])
+}
+
+// A product the shop sells and customers can reserve with a booking. Stock
+// only changes by hand, or when a reservation is marked sold.
+model Product {
+  id               String   @id @default(cuid())
+  shopId           String
+  name             String
+  description      String?
+  // In cents, like Service.price.
+  price            Int
+  // Where the shop buys it. For the shop only: never in a public response.
+  supplierUrl      String?
+  // How many are left.
+  stock            Int      @default(0)
+  photoUrl         String?
+  photoOriginalUrl String?
+  photoCrop        Json?
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+
+  shop            Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  bookingProducts BookingProduct[]
+
+  @@index([shopId])
+}
+
+enum ProductSaleStatus {
+  RESERVED
+  SOLD
+  NOT_SOLD
+}
+
+// One product reserved with a booking. The name and price are copied, so a
+// booking keeps what the customer saw after the product is edited or deleted
+// (productId is then null).
+model BookingProduct {
+  id         String            @id @default(cuid())
+  bookingId  String
+  productId  String?
+  name       String
+  unitPrice  Int
+  quantity   Int
+  saleStatus ProductSaleStatus @default(RESERVED)
+  // How many this line took out of the product's stock when it was marked
+  // sold, so that marking it not sold gives exactly that back.
+  stockTaken Int               @default(0)
+  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
+
+  booking Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@unique([bookingId, productId])
+  @@index([bookingId])
+  @@index([productId])
+}
+
 model Booking {
   id                String        @id @default(cuid())
   shopId            String
@@ -335,6 +416,8 @@ model Booking {
 
   rescheduledFrom Booking? @relation("BookingReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
   rescheduledTo   Booking? @relation("BookingReschedule")
+  products        BookingProduct[]
+  services        BookingService[]
 
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)

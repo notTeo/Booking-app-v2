@@ -115,3 +115,7 @@ Left:
 ## Photos
 
 Shop and team member photos added the `cover`, `photo-field`, `photo-editor` and `range` classes to `components.css` (section "Photos") and the `Avatar`, `PhotoField`, `PhotoEditorModal` components. No new tokens.
+
+## Products
+
+The Products tab, product pages and the reserve-with-a-booking picker added `thumb`, `stepper` and `product-row` to `components.css` (section "Products") and the `StockBadge`, `ProductThumb`, `ProductPicker`, `ReservedProducts` and `BookingProducts` components. No new tokens.

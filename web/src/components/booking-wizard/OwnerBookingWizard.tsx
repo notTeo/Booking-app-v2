@@ -7,11 +7,13 @@ import {
   createOwnerBooking,
   getApiError,
   isBookingRuleViolation,
+  PRODUCT_OUT_OF_STOCK,
   rescheduleBooking,
   type Booking,
   type BookingRuleCode,
 } from '../../api/booking.api';
 import Alert from '../Alert';
+import { canManageShop } from '../../utils/roles';
 import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
@@ -25,6 +27,19 @@ import { dateInZone, shiftDate, todayInZone } from '../../utils/shopTime';
 import { anticipatedRuleCodes, buildISODateTime } from './wizardUtils';
 
 const SLOT_INTERVAL_OPTIONS = [10, 15, 20, 30] as const;
+
+/** A booking's service for the reschedule wizard: with several services they stand as one (names joined, its own length, prices added up). */
+const rescheduledService = (booking: Booking) => {
+  const lines = booking.services ?? [];
+  if (lines.length < 2) return { ...booking.service, description: null };
+  return {
+    ...booking.service,
+    name: lines.map((l) => l.name).join(' + '),
+    duration: (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / 60_000,
+    price: lines.reduce((sum, l) => sum + l.price, 0),
+    description: null,
+  };
+};
 
 export default function OwnerBookingWizard({
   shopId,
@@ -66,9 +81,11 @@ export default function OwnerBookingWizard({
     initialMemberId: reschedule ? reschedule.booking.staffId : initialMemberId,
     initialDate: reschedule ? dateInZone(reschedule.booking.startTime, reschedule.zone) : initialDate,
     internal: true,
+    customDurations,
     reschedule: reschedule && {
       bookingId: reschedule.booking.id,
-      service: { ...reschedule.booking.service, description: null },
+      // A booking with several services moves as a whole: shown as one (its id is the first service's).
+      service: rescheduledService(reschedule.booking),
       onExit: onCancel,
     },
   });
@@ -112,11 +129,8 @@ export default function OwnerBookingWizard({
   }
 
   const selectedMember = wizard.shop.members.find((m) => m.id === wizard.selectedMemberId) ?? null;
-  // The service as the steps show it: with the picked customer's own duration, when they have one.
-  const shownService = wizard.selectedService && {
-    ...wizard.selectedService,
-    duration: customDurations[wizard.selectedService.id] ?? wizard.selectedService.duration,
-  };
+  // The service(s) as the steps show them: several as one, each with the picked customer's own duration when they have one.
+  const shownService = wizard.selectedService;
   // Rules the chosen slot is known to break, confirmed on the last step. null
   // (a typed-in "Other time") = unknown; a 422 then falls back to the dialog.
   const anticipated = anticipatedRuleCodes(wizard.slots, wizard.time);
@@ -156,6 +170,9 @@ export default function OwnerBookingWizard({
     } else if (info.code === 'SLOT_TAKEN') {
       setPendingOverride(null);
       setSubmitError(t.bookings.override.SLOT_TAKEN);
+    } else if (info.code === PRODUCT_OUT_OF_STOCK) {
+      setPendingOverride(null);
+      setSubmitError(t.products.outOfStockError);
     } else if (reschedule && info.status === 404) {
       setPendingOverride(null);
       setSubmitError(t.bookings.reschedule.notFound);
@@ -190,10 +207,17 @@ export default function OwnerBookingWizard({
             ? { block: true }
             : { name: values.name, phone: values.phone, email: values.email }),
           serviceId: wizard.selectedServiceId!,
+          ...(wizard.selectedServiceIds.length > 1 && { serviceIds: wizard.selectedServiceIds }),
           staffId: wizard.selectedMemberId ?? undefined,
           startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
           notes: values.notes,
-          ...(acceptedRules && { overrideRules: acceptedRules }),
+          ...((acceptedRules || values.acceptStockOverride) && {
+            overrideRules: [
+              ...(acceptedRules ?? []),
+              ...(values.acceptStockOverride ? [PRODUCT_OUT_OF_STOCK] as const : []),
+            ],
+          }),
+          ...(values.products && { products: values.products }),
         }),
       values,
     );
@@ -252,8 +276,15 @@ export default function OwnerBookingWizard({
       {wizard.step === 1 && (
         <ServiceSelectStep
           services={wizard.services}
-          onSelect={wizard.handleSelectService}
           customDurations={customDurations}
+          // Rescheduling changes the one service; a new booking can have several.
+          {...(reschedule
+            ? { onSelect: wizard.handleSelectService }
+            : {
+                selectedIds: wizard.selectedServiceIds,
+                onToggle: wizard.toggleService,
+                onContinue: wizard.continueFromServices,
+              })}
         />
       )}
 
@@ -331,6 +362,8 @@ export default function OwnerBookingWizard({
           date={wizard.date}
           time={wizard.time}
           outsideRules={anticipated ?? []}
+          products={wizard.shop.products}
+          canOverStock={canManageShop(memberShop?.role)}
           onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}
           submitting={submitting}

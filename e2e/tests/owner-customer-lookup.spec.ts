@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
+import { pickServiceAndProvider } from '../support/booking';
 
 /**
  * The owner wizard's phone field looks up existing customers. Rules:
@@ -31,8 +32,7 @@ async function openCustomerForm(page: Page) {
   await page.locator('button[type=submit]').click();
   await waitForLanding(page);
   await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
-  await page.getByRole('radiogroup').getByRole('radio').first().click();
+  await pickServiceAndProvider(page);
   await page.locator('#booking-date').fill(addDays(athensDate(), 5));
   await page.getByRole('button', { name: '11:00', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();

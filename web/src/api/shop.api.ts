@@ -36,6 +36,8 @@ export interface Shop extends PhotoFields {
   staffLimit: number;
   /** Whether the plan has invites, the manager role and per-staff working hours. */
   teamFeatures: boolean;
+  /** Whether the plan has products. */
+  products: boolean;
   createdAt: string;
   updatedAt: string;
   role: ShopRole;
