@@ -9,7 +9,8 @@ interface User {
   name: string;
   email: string;
   isVerified: boolean;
-  isPro: boolean;
+  /** Their first shop gets the free trial; false once they have created one. */
+  trialAvailable: boolean;
   createdAt: string;
   hasPassword: boolean;
 }

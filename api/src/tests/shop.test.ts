@@ -14,11 +14,11 @@ vi.mock('../services/email.service', () => ({
 
 const TEST_PASSWORD = 'password123';
 
-async function createVerifiedUser(email: string, isPro: boolean) {
+async function createVerifiedUser(email: string) {
   const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(TEST_PASSWORD, 4);
   return prisma.user.create({
-    data: { name: 'Test User', email, passwordHash, isVerified: true, isPro },
+    data: { name: 'Test User', email, passwordHash, isVerified: true },
   });
 }
 
@@ -30,8 +30,8 @@ async function loginUser(email: string) {
 }
 
 describe('POST /api/shops', () => {
-  it('creates a shop for a Pro user', async () => {
-    await createVerifiedUser('pro@example.com', true);
+  it("starts a user's first shop on a 30-day Team trial", async () => {
+    await createVerifiedUser('pro@example.com');
     const token = await loginUser('pro@example.com');
 
     const res = await api
@@ -42,10 +42,21 @@ describe('POST /api/shops', () => {
     expect(res.status).toBe(201);
     expect(res.body.data.name).toBe('Test Shop');
     expect(res.body.data.role).toBe('owner');
+    expect(res.body.data).toMatchObject({
+      plan: 'TEAM',
+      subscriptionStatus: 'TRIALING',
+      locked: false,
+      staffLimit: 5,
+      teamFeatures: true,
+    });
+    const days =
+      (new Date(res.body.data.trialEndsAt).getTime() - Date.now()) / 86_400_000;
+    expect(days).toBeGreaterThan(29.9);
+    expect(days).toBeLessThanOrEqual(30);
   });
 
-  it('allows a Pro user to create more than one shop', async () => {
-    await createVerifiedUser('pro2@example.com', true);
+  it('starts any later shop inactive, with no second trial', async () => {
+    await createVerifiedUser('pro2@example.com');
     const token = await loginUser('pro2@example.com');
 
     const first = await api
@@ -59,6 +70,11 @@ describe('POST /api/shops', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Shop Two', slug: 'shop-two' });
     expect(second.status).toBe(201);
+    expect(second.body.data).toMatchObject({
+      subscriptionStatus: 'INACTIVE',
+      trialEndsAt: null,
+      locked: true,
+    });
   });
 
   it.each([
@@ -70,7 +86,7 @@ describe('POST /api/shops', () => {
     ['reserved (route)', 'dashboard'],
     ['reserved (owner list)', 'admin'],
   ])('rejects an invalid slug: %s', async (_label, slug) => {
-    await createVerifiedUser('slug@example.com', true);
+    await createVerifiedUser('slug@example.com');
     const token = await loginUser('slug@example.com');
 
     const res = await api
@@ -80,19 +96,6 @@ describe('POST /api/shops', () => {
 
     expect(res.status).toBe(400);
     expect(await prisma.shop.count()).toBe(0);
-  });
-
-  it('returns 403 for a Free user', async () => {
-    await createVerifiedUser('free@example.com', false);
-    const token = await loginUser('free@example.com');
-
-    const res = await api
-      .post('/api/shops')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Test Shop', slug: 'free-user-shop' });
-
-    expect(res.status).toBe(403);
-    expect(res.body.message).toContain('Pro account');
   });
 
   it('returns 401 without a token', async () => {

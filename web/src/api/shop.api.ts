@@ -1,6 +1,8 @@
 import client from './client';
 
 export type ShopRole = 'owner' | 'manager' | 'staff';
+export type ShopPlan = 'SOLO' | 'TEAM' | 'BUSINESS';
+export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'INACTIVE';
 
 export interface Shop {
   id: string;
@@ -20,6 +22,16 @@ export interface Shop {
   reminderEnabled: boolean;
   reminderHoursBefore: number;
   isActive: boolean;
+  plan: ShopPlan;
+  subscriptionStatus: SubscriptionStatus;
+  /** When the free trial ends (null unless it is, or was, on a trial). */
+  trialEndsAt: string | null;
+  /** Read-only, and taking no new public bookings: the trial ended or the subscription is inactive. */
+  locked: boolean;
+  /** How many bookable staff the plan allows. */
+  staffLimit: number;
+  /** Whether the plan has invites, the manager role and per-staff working hours. */
+  teamFeatures: boolean;
   createdAt: string;
   updatedAt: string;
   role: ShopRole;

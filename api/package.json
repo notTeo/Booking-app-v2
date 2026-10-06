@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "audit:schedule-overlaps": "ts-node --transpile-only scripts/audit-schedule-overlaps.ts",
     "tenant:create": "ts-node --transpile-only scripts/create-tenant.ts",
+    "shop:plan": "ts-node --transpile-only scripts/set-shop-plan.ts",
     "seed:hairology": "ts-node --transpile-only scripts/seed-hairology.ts",
     "preview:emails": "EMAIL_PREVIEW_DIR=${EMAIL_PREVIEW_DIR:-email-previews} vitest run src/tests/emailTemplates.test.ts",
     "seed:dev-visual-check": "ts-node --transpile-only scripts/dev-seed-visual-check.ts",

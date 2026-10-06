@@ -39,7 +39,6 @@ export interface Translations {
   dashboard: {
     title: string;
     createShop: string;
-    plan: { pro: string; free: string };
     /** from: "{email} invited you as {role}" */
     invites: { title: string; from: string; empty: string };
     shops: { title: string };
@@ -95,6 +94,15 @@ export interface Translations {
     pricingTitle: string;
     pricingSub: string;
     pricingPerMonth: string;
+    pricingPerYear: string;
+    pricingBillingLabel: string;
+    pricingMonthly: string;
+    pricingYearly: string;
+    pricingPopular: string;
+    pricingWas: string;
+    pricingSaving: string;
+    pricingCta: string;
+    pricingFeaturesLabel: string;
     pricingExclVat: string;
     pricingSoloName: string;
     pricingSoloDesc: string;
@@ -102,6 +110,9 @@ export interface Translations {
     pricingTeamName: string;
     pricingTeamDesc: string;
     pricingTeamFeatures: string[];
+    pricingBusinessName: string;
+    pricingBusinessDesc: string;
+    pricingBusinessFeatures: string[];
     pricingDetailsLink: string;
     previewHint: string;
     step1Title: string;
@@ -233,14 +244,33 @@ export interface Translations {
     intro: string;
     buttonLabel: string;
   };
+  shopPlan: {
+    newShopTrial: string;
+    newShopInactive: string;
+    staffLimitReached: string;
+    featureNotInPlan: string;
+    locked: string;
+    contactUs: string;
+    title: string;
+    active: string;
+    trialUntil: string;
+    trialEnded: string;
+    inactive: string;
+    staffLimit: string;
+    changePlan: string;
+    seePlans: string;
+    lockedTitle: string;
+    lockedOwner: string;
+    trialEnding: string;
+  };
   pricingPage: {
     title: string;
     intro: string;
     featureCol: string;
     included: string;
     notIncluded: string;
-    /** Each row: the feature, then Solo and Team (true/false, or a short text). */
-    groups: { title: string; rows: [string, boolean | string, boolean | string][] }[];
+    /** Each row: the feature, then Solo, Team and Business (true/false, or a short text). */
+    groups: { title: string; rows: [string, boolean | string, boolean | string, boolean | string][] }[];
     notesTitle: string;
     notes: string[];
   };
@@ -345,14 +375,6 @@ export interface Translations {
     backToSettings: string;
   };
   settings: {
-    subscription: {
-      title: string;
-      proText: string;
-      freeText: string;
-      manageBilling: string;
-      upgrade: string;
-      comingSoon: string;
-    };
     wrongPassword: string;
     soleOwnerOfShop: string;
     deleteAccountMessage: string;
@@ -727,6 +749,9 @@ export interface Translations {
       usePhone: string;
       cancel: string;
     };
+    notAcceptingTitle: string;
+    notAccepting: string;
+    notAcceptingCall: string;
     bookAppointment: string;
     service: string;
     staff: string;
@@ -1113,7 +1138,6 @@ export const translations: Record<Language, Translations> = {
     dashboard: {
       title: 'Επισκόπηση',
       createShop: 'Νέο κατάστημα',
-      plan: { pro: 'Pro', free: 'Δωρεάν' },
       invites: {
         title: 'Προσκλήσεις',
         from: 'Ο/Η {email} σε προσκάλεσε ως {role}',
@@ -1172,8 +1196,17 @@ home: {
     contactBadge: 'Επικοινωνία',
     pricingBadge: 'Τιμές',
     pricingTitle: 'Απλή, χωρίς κρυφά κόστη',
-    pricingSub: 'Δύο πακέτα, με τιμή ανά κατάστημα. Χωρίς προμήθεια στις κρατήσεις.',
+    pricingSub: 'Τρία πακέτα, με τιμή ανά κατάστημα. 30 ημέρες δωρεάν χωρίς κάρτα, και χωρίς προμήθεια στις κρατήσεις.',
     pricingPerMonth: '/μήνα',
+    pricingPerYear: '/έτος',
+    pricingBillingLabel: 'Χρέωση',
+    pricingMonthly: 'Μηνιαία',
+    pricingYearly: 'Ετήσια · 2 μήνες δώρο',
+    pricingPopular: 'Το πιο δημοφιλές',
+    pricingWas: 'Αντί για',
+    pricingSaving: 'Κερδίζεις €{amount}: 2 μήνες δώρο',
+    pricingCta: 'Ξεκίνα δωρεάν',
+    pricingFeaturesLabel: 'Περιλαμβάνει',
     pricingExclVat: 'χωρίς ΦΠΑ',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'Για όποιον δουλεύει μόνος του.',
@@ -1195,6 +1228,12 @@ home: {
       'Ρόλοι και δικαιώματα',
       'Ωράριο ανά μέλος προσωπικού',
     ],
+    pricingBusinessName: 'Business',
+    pricingBusinessDesc: 'Για καταστήματα με 6 έως 15 άτομα.',
+    pricingBusinessFeatures: [
+      'Έως 15 μέλη προσωπικού με κρατήσεις',
+      'Όλα όσα έχει το Team',
+    ],
     pricingDetailsLink: 'Δες αναλυτικά τι περιλαμβάνει κάθε πακέτο',
     previewHint: 'Έλα, κάνε κλικ τριγύρω — είναι διαδραστικό',
     step1Title: 'Δημιούργησε τον λογαριασμό σου',
@@ -1207,7 +1246,7 @@ home: {
     faqSub: 'Βρες απαντήσεις σε συχνές ερωτήσεις.',
     faqContact: 'Επικοινώνησε μαζί μας',
     faq1Q: 'Πόσο κοστίζει το BeBooked;',
-    faq1A: 'Το Solo κοστίζει €15 τον μήνα και το Team €25 τον μήνα, ανά κατάστημα και χωρίς ΦΠΑ. Δεν υπάρχει προμήθεια στις κρατήσεις.',
+    faq1A: 'Το Solo κοστίζει €19 τον μήνα, το Team €35 και το Business €59, ανά κατάστημα και χωρίς ΦΠΑ. Με ετήσια πληρωμή, 2 μήνες είναι δώρο. Οι πρώτες 30 ημέρες είναι δωρεάν και δεν υπάρχει προμήθεια στις κρατήσεις.',
     faq2Q: 'Μπορούν οι πελάτες μου να κλείσουν ραντεβού χωρίς να δημιουργήσουν λογαριασμό;',
     faq2A: 'Ναι. Οι πελάτες απλώς επιλέγουν υπηρεσία, μέλος προσωπικού και ώρα από τη δημόσια σελίδα κρατήσεων του καταστήματός σου — δεν χρειάζεται εγγραφή από τη δική τους πλευρά.',
     faq3Q: 'Πώς διαγράφω τον λογαριασμό μου;',
@@ -1326,9 +1365,28 @@ home: {
     intro: 'Βρήκες κάποιο bug, έχεις κάποια ερώτηση ή μια ιδέα για το BeBooked; Στείλε μου ένα μήνυμα και θα σου απαντήσω το συντομότερο δυνατό.',
     buttonLabel: 'Επικοινώνησε μαζί μου',
   },
+  shopPlan: {
+    newShopTrial: 'Το πρώτο σου κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+    newShopInactive: 'Έχεις ήδη χρησιμοποιήσει τη δωρεάν δοκιμή. Το νέο κατάστημα θα μείνει ανενεργό μέχρι να επικοινωνήσεις μαζί μας για να του ορίσουμε πακέτο.',
+    staffLimitReached: 'Το πακέτο {plan} επιτρέπει έως {n} μέλη προσωπικού με κρατήσεις. Για περισσότερα χρειάζεται αναβάθμιση.',
+    featureNotInPlan: 'Οι προσκλήσεις ομάδας και ο ρόλος διαχειριστή δεν περιλαμβάνονται στο πακέτο {plan}.',
+    locked: 'Το κατάστημα είναι μόνο για ανάγνωση μέχρι να οριστεί πακέτο.',
+    contactUs: 'Επικοινώνησε μαζί μας',
+    title: 'Πακέτο',
+    active: 'Η συνδρομή είναι ενεργή.',
+    trialUntil: 'Δωρεάν δοκιμή έως {date}.',
+    trialEnded: 'Η δωρεάν δοκιμή τελείωσε. Το κατάστημα είναι μόνο για ανάγνωση.',
+    inactive: 'Δεν υπάρχει ενεργή συνδρομή. Το κατάστημα είναι μόνο για ανάγνωση.',
+    staffLimit: 'Έως {n} μέλη προσωπικού με κρατήσεις.',
+    changePlan: 'Για να ξεκινήσεις ή να αλλάξεις πακέτο, επικοινώνησε μαζί μας.',
+    seePlans: 'Δες τα πακέτα',
+    lockedTitle: 'Το κατάστημα είναι μόνο για ανάγνωση',
+    lockedOwner: 'Η δοκιμή τελείωσε ή δεν υπάρχει ενεργή συνδρομή. Βλέπεις τα πάντα και μπορείς να εξάγεις τους πελάτες σου, αλλά δεν γίνονται αλλαγές και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού.',
+    trialEnding: 'Η δωρεάν δοκιμή τελειώνει στις {date}. Επικοινώνησε μαζί μας για να διαλέξεις πακέτο.',
+  },
   pricingPage: {
     title: 'Τιμές',
-    intro: 'Δύο πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
+    intro: 'Τρία πακέτα, με τιμή ανά κατάστημα τον μήνα. Παρακάτω φαίνεται τι ακριβώς περιλαμβάνει το καθένα.',
     featureCol: 'Δυνατότητα',
     included: 'Περιλαμβάνεται',
     notIncluded: 'Δεν περιλαμβάνεται',
@@ -1336,64 +1394,66 @@ home: {
       {
         title: 'Σελίδα κρατήσεων',
         rows: [
-          ['Δημόσια σελίδα κρατήσεων στον δικό σου σύνδεσμο', true, true],
-          ['Οι πελάτες κλείνουν χωρίς να φτιάξουν λογαριασμό', true, true],
-          ['Ακύρωση και αλλαγή ώρας από τον πελάτη, με όριο ωρών που ορίζεις', true, true],
-          ['Ελληνικά και Αγγλικά', true, true],
+          ['Δημόσια σελίδα κρατήσεων στον δικό σου σύνδεσμο', true, true, true],
+          ['Οι πελάτες κλείνουν χωρίς να φτιάξουν λογαριασμό', true, true, true],
+          ['Ακύρωση και αλλαγή ώρας από τον πελάτη, με όριο ωρών που ορίζεις', true, true, true],
+          ['Ελληνικά και Αγγλικά', true, true, true],
         ],
       },
       {
         title: 'Ημερολόγιο και ραντεβού',
         rows: [
-          ['Ημερήσιο ημερολόγιο με στήλη ανά μέλος προσωπικού', true, true],
-          ['Ραντεβού που καταχωρείς εσύ, και εκτός ωραρίου', true, true],
-          ['Κλείδωμα ωρών στο ημερολόγιο', true, true],
-          ['Καταστάσεις ραντεβού: ολοκληρώθηκε, δεν εμφανίστηκε, ακυρώθηκε', true, true],
-          ['Προστασία από διπλές κρατήσεις', true, true],
-          ['Σύνοψη με αριθμό ραντεβού ανά εβδομάδα, μήνα και τρίμηνο', true, true],
+          ['Ημερήσιο ημερολόγιο με στήλη ανά μέλος προσωπικού', true, true, true],
+          ['Ραντεβού που καταχωρείς εσύ, και εκτός ωραρίου', true, true, true],
+          ['Κλείδωμα ωρών στο ημερολόγιο', true, true, true],
+          ['Καταστάσεις ραντεβού: ολοκληρώθηκε, δεν εμφανίστηκε, ακυρώθηκε', true, true, true],
+          ['Προστασία από διπλές κρατήσεις', true, true, true],
+          ['Σύνοψη με αριθμό ραντεβού ανά εβδομάδα, μήνα και τρίμηνο', true, true, true],
         ],
       },
       {
         title: 'Υπηρεσίες και πελάτες',
         rows: [
-          ['Υπηρεσίες με τιμή και διάρκεια', true, true],
-          ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true],
-          ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true],
-          ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true],
-          ['Εισαγωγή πελατών από αρχείο και εξαγωγή σε Excel', true, true],
-          ['Συγχώνευση διπλών πελατών', true, true],
+          ['Υπηρεσίες με τιμή και διάρκεια', true, true, true],
+          ['Υπηρεσίες μόνο για εσωτερική χρήση', true, true, true],
+          ['Καρτέλα πελάτη με σημειώσεις και ιστορικό', true, true, true],
+          ['Δική του διάρκεια υπηρεσίας ανά πελάτη', true, true, true],
+          ['Εισαγωγή πελατών από αρχείο και εξαγωγή σε Excel', true, true, true],
+          ['Συγχώνευση διπλών πελατών', true, true, true],
         ],
       },
       {
         title: 'Email',
         rows: [
-          ['Email επιβεβαίωσης ραντεβού', true, true],
-          ['Email υπενθύμισης, όσες ώρες πριν ορίσεις', true, true],
-          ['Email ακύρωσης και αλλαγής ώρας', true, true],
-          ['Ειδοποίηση στο κατάστημα για κάθε νέο ραντεβού', true, true],
+          ['Email επιβεβαίωσης ραντεβού', true, true, true],
+          ['Email υπενθύμισης, όσες ώρες πριν ορίσεις', true, true, true],
+          ['Email ακύρωσης και αλλαγής ώρας', true, true, true],
+          ['Ειδοποίηση στο κατάστημα για κάθε νέο ραντεβού', true, true, true],
         ],
       },
       {
         title: 'Ομάδα',
         rows: [
-          ['Μέλη προσωπικού με κρατήσεις', '1', 'Έως 5'],
-          ['Ωράριο λειτουργίας', true, true],
-          ['Ξεχωριστό ωράριο ανά μέλος προσωπικού', false, true],
-          ['Προσκλήσεις ομάδας με email', false, true],
-          ['Ρόλοι και δικαιώματα (ιδιοκτήτης, διαχειριστής, προσωπικό)', false, true],
+          ['Μέλη προσωπικού με κρατήσεις', '1', 'Έως 5', 'Έως 15'],
+          ['Ωράριο λειτουργίας', true, true, true],
+          ['Ξεχωριστό ωράριο ανά μέλος προσωπικού', false, true, true],
+          ['Προσκλήσεις ομάδας με email', false, true, true],
+          ['Ρόλοι και δικαιώματα (ιδιοκτήτης, διαχειριστής, προσωπικό)', false, true, true],
         ],
       },
       {
         title: 'Όρια',
         rows: [
-          ['Κρατήσεις τον μήνα', 'Χωρίς όριο', 'Χωρίς όριο'],
-          ['Καταστήματα ανά συνδρομή', '1', '1'],
+          ['Κρατήσεις τον μήνα', 'Χωρίς όριο', 'Χωρίς όριο', 'Χωρίς όριο'],
+          ['Καταστήματα ανά συνδρομή', '1', '1', '1'],
         ],
       },
     ],
     notesTitle: 'Καλό να γνωρίζεις',
     notes: [
-      'Οι τιμές είναι ανά κατάστημα, τον μήνα, χωρίς ΦΠΑ.',
+      'Οι τιμές είναι ανά κατάστημα, χωρίς ΦΠΑ. Με ετήσια πληρωμή πληρώνεις 10 μήνες αντί για 12.',
+      'Κάθε νέο κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+      'Αν η δοκιμή τελειώσει χωρίς πακέτο, το κατάστημα γίνεται μόνο για ανάγνωση και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού. Τα δεδομένα σου μένουν.',
       'Δεν υπάρχει προμήθεια στις κρατήσεις.',
       'Οι επιβεβαιώσεις και οι υπενθυμίσεις στέλνονται με email. Δεν υπάρχουν SMS.',
       'Δεν υπάρχουν online πληρωμές ή προκαταβολές από πελάτες.',
@@ -1500,14 +1560,6 @@ home: {
       backToSettings: 'Πίσω στις Ρυθμίσεις',
     },
     settings: {
-      subscription: {
-        title: 'Συνδρομή',
-        proText: 'Έχεις το πλάνο Pro και μπορείς να δημιουργείς καταστήματα.',
-        freeText: 'Έχεις το δωρεάν πλάνο. Η δημιουργία καταστήματος χρειάζεται Pro.',
-        manageBilling: 'Διαχείριση χρέωσης',
-        upgrade: 'Αναβάθμιση',
-        comingSoon: 'Η χρέωση θα είναι διαθέσιμη σύντομα.',
-      },
       wrongPassword: 'Λάθος κωδικός.',
       soleOwnerOfShop: 'Είστε ο ιδιοκτήτης ενός καταστήματος. Διαγράψτε το κατάστημα ή μεταβιβάστε το πρώτα σε έναν διαχειριστή.',
       deleteAccountMessage: 'Αυτό θα διαγράψει οριστικά τον λογαριασμό σας και όλα τα δεδομένα σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
@@ -1883,6 +1935,9 @@ home: {
         cancel: 'Άκυρο',
       },
       bookAppointment: 'Κλείστε Ραντεβού',
+      notAcceptingTitle: 'Οι online κρατήσεις δεν είναι διαθέσιμες αυτή τη στιγμή',
+      notAccepting: 'Επικοινωνήστε με το κατάστημα για να κλείσετε ραντεβού.',
+      notAcceptingCall: 'Καλέστε στο {phone} για να κλείσετε ραντεβού.',
       service: 'Υπηρεσία',
       staff: 'Προσωπικό',
       dateTime: 'Ημερομηνία & Ώρα',
@@ -2292,7 +2347,6 @@ home: {
     dashboard: {
       title: 'Overview',
       createShop: 'Create shop',
-      plan: { pro: 'Pro', free: 'Free' },
       invites: {
         title: 'Invitations',
         from: '{email} invited you as {role}',
@@ -2351,8 +2405,17 @@ home: {
     contactBadge: 'Contact',
     pricingBadge: 'Pricing',
     pricingTitle: 'Simple, with no surprises',
-    pricingSub: 'Two plans, priced per shop. No commission on bookings.',
+    pricingSub: 'Three plans, priced per shop. 30 days free with no card, and no commission on bookings.',
     pricingPerMonth: '/month',
+    pricingPerYear: '/year',
+    pricingBillingLabel: 'Billing',
+    pricingMonthly: 'Monthly',
+    pricingYearly: 'Yearly · 2 months free',
+    pricingPopular: 'Most popular',
+    pricingWas: 'Instead of',
+    pricingSaving: 'You save €{amount}: 2 months free',
+    pricingCta: 'Start free trial',
+    pricingFeaturesLabel: 'Features',
     pricingExclVat: 'excl. VAT',
     pricingSoloName: 'Solo',
     pricingSoloDesc: 'For anyone working on their own.',
@@ -2374,6 +2437,12 @@ home: {
       'Roles and permissions',
       'Working hours per staff member',
     ],
+    pricingBusinessName: 'Business',
+    pricingBusinessDesc: 'For shops with 6 to 15 people.',
+    pricingBusinessFeatures: [
+      'Up to 15 bookable staff',
+      'Everything in Team',
+    ],
     pricingDetailsLink: 'See everything each plan includes',
     previewHint: "Go ahead, click around — it's interactive",
     step1Title: 'Create your account',
@@ -2386,7 +2455,7 @@ home: {
     faqSub: 'Find answers to frequently asked questions.',
     faqContact: 'Contact us',
     faq1Q: 'How much does BeBooked cost?',
-    faq1A: 'Solo is €15 a month and Team is €25 a month, per shop and excluding VAT. There is no commission on bookings.',
+    faq1A: 'Solo is €19 a month, Team is €35 and Business is €59, per shop and excluding VAT. Paying yearly gives 2 months free. The first 30 days are free and there is no commission on bookings.',
     faq2Q: 'Can my clients book without creating an account?',
     faq2A: 'Yes. Clients just pick a service, staff member, and time slot from your public booking page — no sign-up required on their end.',
     faq3Q: 'How do I delete my account?',
@@ -2505,9 +2574,28 @@ home: {
     intro: "Found a bug, have a question, or have an idea for BeBooked? I’d like to hear it. Send me a message and I’ll get back to you.",
     buttonLabel: 'Contact me',
   },
+  shopPlan: {
+    newShopTrial: 'Your first shop starts with a 30-day free trial with everything in Team. No card is needed.',
+    newShopInactive: 'You have already used your free trial. The new shop stays inactive until you contact us to set a plan for it.',
+    staffLimitReached: 'The {plan} plan allows up to {n} bookable staff. Adding more needs an upgrade.',
+    featureNotInPlan: 'Team invites and the manager role are not part of the {plan} plan.',
+    locked: 'This shop is read-only until a plan is set for it.',
+    contactUs: 'Contact us',
+    title: 'Plan',
+    active: 'The subscription is active.',
+    trialUntil: 'Free trial until {date}.',
+    trialEnded: 'The free trial has ended. The shop is read-only.',
+    inactive: 'There is no active subscription. The shop is read-only.',
+    staffLimit: 'Up to {n} bookable staff.',
+    changePlan: 'To start or change a plan, contact us.',
+    seePlans: 'See the plans',
+    lockedTitle: 'This shop is read-only',
+    lockedOwner: 'The trial has ended or there is no active subscription. You can see everything and export your customers, but nothing can be changed and the booking page takes no new bookings.',
+    trialEnding: 'Your free trial ends on {date}. Contact us to choose a plan.',
+  },
   pricingPage: {
     title: 'Pricing',
-    intro: 'Two plans, priced per shop per month. Below is exactly what each one includes.',
+    intro: 'Three plans, priced per shop per month. Below is exactly what each one includes.',
     featureCol: 'Feature',
     included: 'Included',
     notIncluded: 'Not included',
@@ -2515,64 +2603,66 @@ home: {
       {
         title: 'Booking page',
         rows: [
-          ['Public booking page at your own link', true, true],
-          ['Customers book without creating an account', true, true],
-          ['Customer cancel and reschedule links, with a cutoff you set', true, true],
-          ['Greek and English', true, true],
+          ['Public booking page at your own link', true, true, true],
+          ['Customers book without creating an account', true, true, true],
+          ['Customer cancel and reschedule links, with a cutoff you set', true, true, true],
+          ['Greek and English', true, true, true],
         ],
       },
       {
         title: 'Calendar and bookings',
         rows: [
-          ['Daily calendar with a column per staff member', true, true],
-          ['Bookings you add yourself, including outside opening hours', true, true],
-          ['Block time slots in the calendar', true, true],
-          ['Booking statuses: completed, no-show, cancelled', true, true],
-          ['Double-booking protection', true, true],
-          ['Overview of booking counts by week, month and quarter', true, true],
+          ['Daily calendar with a column per staff member', true, true, true],
+          ['Bookings you add yourself, including outside opening hours', true, true, true],
+          ['Block time slots in the calendar', true, true, true],
+          ['Booking statuses: completed, no-show, cancelled', true, true, true],
+          ['Double-booking protection', true, true, true],
+          ['Overview of booking counts by week, month and quarter', true, true, true],
         ],
       },
       {
         title: 'Services and customers',
         rows: [
-          ['Services with price and duration', true, true],
-          ['Internal-only services', true, true],
-          ['Customer records with notes and history', true, true],
-          ['Custom service duration per customer', true, true],
-          ['Customer import from a file and export to Excel', true, true],
-          ['Merge duplicate customers', true, true],
+          ['Services with price and duration', true, true, true],
+          ['Internal-only services', true, true, true],
+          ['Customer records with notes and history', true, true, true],
+          ['Custom service duration per customer', true, true, true],
+          ['Customer import from a file and export to Excel', true, true, true],
+          ['Merge duplicate customers', true, true, true],
         ],
       },
       {
         title: 'Emails',
         rows: [
-          ['Booking confirmation emails', true, true],
-          ['Reminder emails, as many hours before as you choose', true, true],
-          ['Cancellation and reschedule emails', true, true],
-          ['New-booking notice to the shop', true, true],
+          ['Booking confirmation emails', true, true, true],
+          ['Reminder emails, as many hours before as you choose', true, true, true],
+          ['Cancellation and reschedule emails', true, true, true],
+          ['New-booking notice to the shop', true, true, true],
         ],
       },
       {
         title: 'Team',
         rows: [
-          ['Bookable staff members', '1', 'Up to 5'],
-          ['Opening hours', true, true],
-          ['Separate working hours per staff member', false, true],
-          ['Team invites by email', false, true],
-          ['Roles and permissions (owner, manager, staff)', false, true],
+          ['Bookable staff members', '1', 'Up to 5', 'Up to 15'],
+          ['Opening hours', true, true, true],
+          ['Separate working hours per staff member', false, true, true],
+          ['Team invites by email', false, true, true],
+          ['Roles and permissions (owner, manager, staff)', false, true, true],
         ],
       },
       {
         title: 'Limits',
         rows: [
-          ['Bookings per month', 'No limit', 'No limit'],
-          ['Shops per subscription', '1', '1'],
+          ['Bookings per month', 'No limit', 'No limit', 'No limit'],
+          ['Shops per subscription', '1', '1', '1'],
         ],
       },
     ],
     notesTitle: 'Good to know',
     notes: [
-      'Prices are per shop, per month, excluding VAT.',
+      'Prices are per shop, excluding VAT. Paying yearly costs 10 months instead of 12.',
+      'Every new shop starts with a 30-day free trial with everything in Team. No card is needed.',
+      'If the trial ends without a plan, the shop becomes read-only and the booking page stops taking new bookings. Your data stays.',
       'There is no commission on bookings.',
       'Confirmations and reminders are sent by email. There is no SMS.',
       'There are no online payments or deposits from customers.',
@@ -2679,14 +2769,6 @@ home: {
       backToSettings: 'Back to Settings',
     },
     settings: {
-      subscription: {
-        title: 'Subscription',
-        proText: 'You are on the Pro plan and can create shops.',
-        freeText: 'You are on the Free plan. Creating a shop needs Pro.',
-        manageBilling: 'Manage billing',
-        upgrade: 'Upgrade',
-        comingSoon: 'Billing is coming soon.',
-      },
       wrongPassword: 'Incorrect password.',
       soleOwnerOfShop: 'You are the owner of a shop. Delete the shop or transfer it to a manager first.',
       deleteAccountMessage: 'This will permanently delete your account and all associated data. This can\'t be undone.',
@@ -3062,6 +3144,9 @@ home: {
         cancel: 'Cancel',
       },
       bookAppointment: 'Book an Appointment',
+      notAcceptingTitle: 'Online booking is not available right now',
+      notAccepting: 'Contact the shop to book an appointment.',
+      notAcceptingCall: 'Call {phone} to book an appointment.',
       service: 'Service',
       staff: 'Staff',
       dateTime: 'Date & Time',

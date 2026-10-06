@@ -18,7 +18,7 @@ export const authHeader = (token: string) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// A fully-formed tenant: verified Pro owner, shop, owner membership (who is
+// A fully-formed tenant: verified owner, shop (active, Team plan), owner membership (who is
 // also the bookable staff member), one service assigned to that staff member.
 export async function createTenant(label: string) {
   const id = unique();
@@ -27,7 +27,6 @@ export async function createTenant(label: string) {
       name: label,
       email: `${label.toLowerCase()}-${id}@example.com`,
       isVerified: true,
-      isPro: true,
     },
   });
   const shop = await prisma.shop.create({

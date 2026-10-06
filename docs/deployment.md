@@ -229,7 +229,25 @@ TENANT_PASSWORD='…' npm run tenant:create -- --owner-name "Maria K" \
 HAIROLOGY_OWNER_NAME='…' HAIROLOGY_OWNER_EMAIL='…' npm run seed:hairology
 ```
 
+`tenant:create` takes `--plan solo|team|business` (default team) and creates the shop already active, with no trial.
+
 Both refuse to overwrite an existing email or slug. Without a password variable, one is generated and printed **once**: share it securely and tell the owner to use "Forgot password" to choose their own. **Never run `seed:dev-visual-check`** against production (it refuses when `NODE_ENV` is `production` or unset, but don't rely on that).
+
+### Plans (admin CLI)
+
+There is no checkout yet: plans are set by hand. A shop someone creates for themselves starts a 30-day Team trial (only their first shop; later ones start inactive). When the trial ends, or while a shop is inactive, it is read-only and its public page takes no new bookings. Limits live in `api/src/services/plan.service.ts`.
+
+```bash
+cd api
+# they paid: activate a plan (ends any trial)
+npm run shop:plan -- --slug marias-salon --plan team
+# stopped paying: read-only, data kept
+npm run shop:plan -- --slug marias-salon --status inactive
+# extend or restart a trial
+npm run shop:plan -- --slug marias-salon --status trialing --trial-days 14
+```
+
+Without `--status` the shop becomes active; without `--plan` it keeps its plan. The script refuses a plan with fewer staff places than the shop has bookable staff (Solo 1, Team 5, Business 15): have the owner deactivate staff first. Shops that existed before plans were added are active on Business until you change them.
 
 ### Logs
 

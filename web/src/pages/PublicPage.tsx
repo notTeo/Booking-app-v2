@@ -201,6 +201,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
               )}
             </div>
           </section>
+        ) : !shop.acceptingBookings ? (
+          <section className="public-section">
+            <Alert variant="info" title={t.public.notAcceptingTitle}>
+              {shop.phone ? t.public.notAcceptingCall.replace('{phone}', shop.phone) : t.public.notAccepting}
+            </Alert>
+          </section>
         ) : (
           <section className="public-section">
             <h2 className="t-heading">{t.public.bookAppointment}</h2>

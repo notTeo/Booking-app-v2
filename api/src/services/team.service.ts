@@ -8,6 +8,11 @@ import {
   hashToken,
 } from '../utils/jwt';
 import { sendInviteEmail } from './email.service';
+import {
+  assertStaffCapacity,
+  assertTeamFeatures,
+  countsAsStaff,
+} from './plan.service';
 
 export interface UpdateMemberRoleDto {
   role: 'owner' | 'manager' | 'staff';
@@ -108,6 +113,11 @@ export const createTeamMember = async (
 ) => {
   const caller = await requireShopAccess(userId, shopId, MANAGER_ONLY);
   requireManagerAccess(caller, dto.role);
+
+  // A new member is bookable, so they take one of the plan's staff places.
+  await assertStaffCapacity(shopId);
+  if (dto.role === 'manager' || dto.sendEmail !== false)
+    await assertTeamFeatures(shopId);
 
   const email = dto.email ? dto.email.toLowerCase() : null;
 
@@ -240,6 +250,14 @@ export const updateMemberRole = async (
         ? dto.bookableInternally
         : member.bookableInternally;
 
+  if (
+    countsAsStaff({ active, bookableByCustomers, bookableInternally }) &&
+    !countsAsStaff(member)
+  )
+    await assertStaffCapacity(shopId, memberId);
+  if (dto.role === 'manager' && member.role !== 'manager')
+    await assertTeamFeatures(shopId);
+
   const updated = await prisma.userShop.update({
     where: { id: memberId },
     data: {
@@ -348,6 +366,7 @@ export const sendLoginInvite = async (
   requireManagerAccess(caller, member.role);
 
   if (member.userId) throw new AppError(400, 'This member already has a login');
+  await assertTeamFeatures(shopId);
   if (!member.active)
     throw new AppError(
       400,

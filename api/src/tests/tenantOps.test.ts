@@ -23,11 +23,13 @@ describe('createTenant', () => {
     expect(r.user).toMatchObject({
       email: 'maria@example.com', // lower-cased
       isVerified: true,
-      isPro: true,
     });
+    expect(r.user.trialUsedAt).not.toBeNull();
     expect(r.shop).toMatchObject({
       slug: 'marias-salon',
       timezone: 'Europe/Athens',
+      plan: 'TEAM',
+      subscriptionStatus: 'ACTIVE',
     });
     expect(r.membership).toMatchObject({
       userId: r.user.id,

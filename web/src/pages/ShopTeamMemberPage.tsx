@@ -30,6 +30,7 @@ import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { planErrorMessage } from '../utils/plan';
 
 export default function ShopTeamMemberPage() {
   const uid = useId();
@@ -197,7 +198,7 @@ export default function ShopTeamMemberPage() {
       const msg =
         err instanceof Error && (err as { response?: { data?: { message?: string } } }).response?.data?.message;
       setConfirmRoleChange(false);
-      setMemberError(msg || t.team.errorUpdateRole);
+      setMemberError(planErrorMessage(err, t.shopPlan) ?? (msg || t.team.errorUpdateRole));
     } finally {
       setSavingMember(false);
     }
@@ -394,7 +395,7 @@ export default function ShopTeamMemberPage() {
                   onChange={(e) => handleRoleChange(e.target.value as ShopRole)}
                 >
                   <option value="staff">{t.team.roles.staff}</option>
-                  {shop?.canManageManagers && <option value="manager">{t.team.roles.manager}</option>}
+                  {shop?.canManageManagers && (shop.teamFeatures || memberIsManager) && <option value="manager">{t.team.roles.manager}</option>}
                 </select></div>
               </div>
             )}
@@ -493,7 +494,7 @@ export default function ShopTeamMemberPage() {
 
             {/* Login invite — only relevant until they accept and get a login;
                 sends an email, so it stays a distinct action from the save above. */}
-            {!member.userId && (
+            {!member.userId && shop?.teamFeatures && (
               <div className="card__section">
                 <p className="card__text">
                   {member.hasPendingInvite ? t.team.inviteAlreadySent : t.team.noInviteSentYet}

@@ -62,9 +62,9 @@ describe('GET /user/me', () => {
       'email',
       'hasPassword',
       'id',
-      'isPro',
       'isVerified',
       'name',
+      'trialAvailable',
     ]);
     expect(me.body.data.user.hasPassword).toBe(true);
   });

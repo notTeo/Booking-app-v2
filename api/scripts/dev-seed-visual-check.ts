@@ -28,13 +28,12 @@ async function main() {
         email,
         passwordHash,
         isVerified: true,
-        isPro: true,
       },
     });
   } else {
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash, isVerified: true, isPro: true },
+      data: { passwordHash, isVerified: true },
     });
   }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 import { createShop, type CreateShopDto } from '../api/shop.api';
 import '../styles/pages/shops.css';
 import { apiErrorMessage } from '../utils/apiError';
@@ -10,6 +11,7 @@ const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
 export default function ShopNewPage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -21,17 +23,6 @@ export default function ShopNewPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  if (!user?.isPro) {
-    return (
-      <div className="shops-page">
-        <div className="card">
-          <h2 className="card__title">Pro Account Required</h2>
-          <p className="card__text">Creating a shop requires a Pro account. Contact us to upgrade.</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleSlugInput = (value: string) => {
     setSlug(value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
@@ -68,6 +59,9 @@ export default function ShopNewPage() {
 
       <div className="card">
         <h1 className="t-heading">New Shop</h1>
+        <Alert variant="info">
+          {user?.trialAvailable ? t.shopPlan.newShopTrial : t.shopPlan.newShopInactive}
+        </Alert>
 
         <form onSubmit={handleSubmit}>
           <div className="field">

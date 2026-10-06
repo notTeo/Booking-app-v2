@@ -4,6 +4,8 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { createTeamMember, type TeamMember, type AssignableRole } from '../api/team.api';
 import { apiErrorMessage } from '../utils/apiError';
+import { featureNotInPlanText, planErrorMessage } from '../utils/plan';
+import type { ShopPlan } from '../api/shop.api';
 import Alert from './Alert';
 import ConfirmDialog from './ConfirmDialog';
 import Modal from './Modal';
@@ -13,6 +15,9 @@ interface Props {
   shopId: string;
   /** Whether the manager role is on offer (the owner, or a manager allowed to manage managers). */
   canAddManager: boolean;
+  /** The shop's plan, and whether it has invites and the manager role. */
+  plan: ShopPlan;
+  teamFeatures: boolean;
   /** Called with the new member and whether the invite email was sent. */
   onCreated: (member: TeamMember, emailSent: boolean) => void;
   onClose: () => void;
@@ -20,7 +25,7 @@ interface Props {
 
 // Add a team member (the form that used to live on the shop Invites page).
 // Giving someone the manager role goes through an extra confirmation.
-export default function AddMemberModal({ shopId, canAddManager, onCreated, onClose }: Props) {
+export default function AddMemberModal({ shopId, canAddManager, plan, teamFeatures, onCreated, onClose }: Props) {
   const uid = useId();
   const { t } = useLang();
 
@@ -28,7 +33,7 @@ export default function AddMemberModal({ shopId, canAddManager, onCreated, onClo
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<AssignableRole>('staff');
   const [canViewCustomerDetails, setCanViewCustomerDetails] = useState(true);
-  const [sendEmail, setSendEmail] = useState(true);
+  const [sendEmail, setSendEmail] = useState(teamFeatures);
   const [confirmManager, setConfirmManager] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -48,7 +53,7 @@ export default function AddMemberModal({ shopId, canAddManager, onCreated, onClo
       onCreated(member, sendEmail);
     } catch (err: unknown) {
       setConfirmManager(false);
-      setError(apiErrorMessage(err, t.invites.errorSend));
+      setError(planErrorMessage(err, t.shopPlan) ?? apiErrorMessage(err, t.invites.errorSend));
       setSending(false);
     }
   };
@@ -123,7 +128,7 @@ export default function AddMemberModal({ shopId, canAddManager, onCreated, onClo
                   disabled={sending}
                 >
                   <option value="staff">{t.invites.roles.staff}</option>
-                  {canAddManager && <option value="manager">{t.invites.roles.manager}</option>}
+                  {canAddManager && teamFeatures && <option value="manager">{t.invites.roles.manager}</option>}
                 </select>
               </div>
             </div>
@@ -143,13 +148,17 @@ export default function AddMemberModal({ shopId, canAddManager, onCreated, onClo
               </div>
             )}
 
-            <div className="setting-row">
-              <div className="setting-row__label">
-                <span className="setting-row__title">{t.invites.sendEmailNow}</span>
-                <span className="setting-row__text">{t.invites.sendEmailNowDesc}</span>
+            {teamFeatures ? (
+              <div className="setting-row">
+                <div className="setting-row__label">
+                  <span className="setting-row__title">{t.invites.sendEmailNow}</span>
+                  <span className="setting-row__text">{t.invites.sendEmailNowDesc}</span>
+                </div>
+                <Switch checked={sendEmail} onChange={setSendEmail} label={t.invites.sendEmailNow} disabled={sending} />
               </div>
-              <Switch checked={sendEmail} onChange={setSendEmail} label={t.invites.sendEmailNow} disabled={sending} />
-            </div>
+            ) : (
+              <p className="field__hint">{featureNotInPlanText(t.shopPlan, plan)}</p>
+            )}
           </form>
         </div>
         <div className="modal__footer">

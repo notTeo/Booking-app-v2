@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import AppPalette from './AppPalette';
 import Sidebar from './Sidebar';
+import ShopPlanBanner from './ShopPlanBanner';
 import Wordmark from './Wordmark';
 import { useLang } from '../context/LanguageContext';
 import { useIsCompact } from '../hooks/useIsCompact';
@@ -82,6 +83,7 @@ export default function AppSidebarLayout() {
       )}
       <Sidebar compact={compact} isOpen={isDrawerOpen} onClose={closeDrawer} resize={compact ? undefined : resize} />
       <main className="app-shell__main">
+        <ShopPlanBanner />
         <Outlet />
       </main>
     </div>

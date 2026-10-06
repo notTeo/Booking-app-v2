@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
 import { useLang } from '../context/LanguageContext';
 import Footer from '../components/Footer';
 import '../styles/pages/legal.css';
-import Wordmark from '../components/Wordmark';
+import SiteNav from '../components/SiteNav';
 import BrandText from '../components/BrandText';
 
 export default function DpaPage() {
@@ -16,8 +15,8 @@ export default function DpaPage() {
   ];
   return (
     <>
+      <SiteNav solid />
       <div className="legal-page">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
         <h1 className="t-title"><BrandText text={t.dpa.title} /></h1>
         <p className="t-body-sm t-muted"><BrandText text={t.dpa.lastUpdated} muted /></p>
         <p className="t-body"><strong><BrandText text={t.dpa.placeholderNotice} muted /></strong></p>

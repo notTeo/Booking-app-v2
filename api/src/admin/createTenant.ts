@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { prisma } from '../utils/prisma';
 import { checkSlug, SLUG_MESSAGES } from '../validators/slug';
+import type { ShopPlan } from '../../dist/generated/prisma';
 
 export interface CreateTenantInput {
   ownerName: string;
@@ -11,6 +12,8 @@ export interface CreateTenantInput {
   shopName: string;
   slug: string;
   timezone?: string;
+  // The plan the shop starts on, already active (default TEAM).
+  plan?: ShopPlan;
 }
 
 // Same shape rule as the register endpoint; lower-cased like normalizeEmail.
@@ -21,7 +24,7 @@ const generatePassword = (): string =>
   // upper/number/special rules the login/reset flows enforce on new passwords.
   `${crypto.randomBytes(18).toString('base64url')}Aa1!`;
 
-// Admin-only: creates a verified Pro owner, their shop and the owner
+// Admin-only: creates a verified owner, their shop (active, no trial) and the owner
 // membership (also the first bookable staff member) in one transaction.
 // Never overwrites: an existing email or slug is an error.
 export const createTenant = async (input: CreateTenantInput) => {
@@ -64,11 +67,17 @@ export const createTenant = async (input: CreateTenantInput) => {
         email,
         passwordHash,
         isVerified: true,
-        isPro: true,
+        trialUsedAt: new Date(),
       },
     });
     const shop = await tx.shop.create({
-      data: { name: input.shopName.trim(), slug: input.slug, timezone },
+      data: {
+        name: input.shopName.trim(),
+        slug: input.slug,
+        timezone,
+        plan: input.plan ?? 'TEAM',
+        subscriptionStatus: 'ACTIVE',
+      },
     });
     const membership = await tx.userShop.create({
       data: {

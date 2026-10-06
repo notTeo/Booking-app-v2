@@ -7,6 +7,7 @@ import {
 } from '../../dist/generated/prisma';
 import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
+import { isShopLocked } from './plan.service';
 import { redactCustomer } from '../utils/customerVisibility';
 import { canViewCustomerDetails, requireShopAccess } from '../utils/shopAccess';
 import {
@@ -363,6 +364,12 @@ export const createBooking = async (
   return serializableTransaction(async (tx) => {
     const shop = await tx.shop.findFirst({ where: { slug, isActive: true } });
     if (!shop) throw new AppError(404, 'Shop not found');
+    if (isShopLocked(shop))
+      throw new AppError(
+        403,
+        'This shop is not taking online bookings right now.',
+        'SHOP_LOCKED',
+      );
 
     const service = await tx.service.findFirst({
       where: {
