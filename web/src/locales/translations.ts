@@ -1,3 +1,5 @@
+import type { PublicFont, PublicPalette } from '../utils/branding';
+
 export type Language = 'el' | 'en';
 
 // Messages for the server's booking-rule violations (422 `code`s) + slot conflict.
@@ -671,6 +673,21 @@ export interface Translations {
       SAT: string;
       SUN: string;
     };
+  };
+  branding: {
+    title: string;
+    desc: string;
+    colours: string;
+    font: string;
+    fontHint: string;
+    save: string;
+    saved: string;
+    errorSave: string;
+    preview: string;
+    previewUnsaved: string;
+    previewSaved: string;
+    palettes: Record<PublicPalette, string>;
+    fonts: Record<PublicFont, string>;
   };
   timeOff: {
     title: string;
@@ -1888,6 +1905,35 @@ home: {
         FRI: 'Παρασκευή',
         SAT: 'Σάββατο',
         SUN: 'Κυριακή',
+      },
+    },
+    branding: {
+      title: "Εμφάνιση σελίδας κρατήσεων",
+      desc: "Χρώματα και γραμματοσειρά της δημόσιας σελίδας όπου κλείνουν ραντεβού οι πελάτες σου.",
+      colours: "Χρώματα",
+      font: "Γραμματοσειρά",
+      fontHint: "Όλες οι γραμματοσειρές υποστηρίζουν ελληνικά.",
+      save: "Αποθήκευση",
+      saved: "Η εμφάνιση αποθηκεύτηκε.",
+      errorSave: "Αποτυχία αποθήκευσης.",
+      preview: "Προεπισκόπηση",
+      previewUnsaved: "Δεν έχει αποθηκευτεί ακόμα. Οι πελάτες βλέπουν την προηγούμενη εμφάνιση μέχρι να πατήσεις Αποθήκευση.",
+      previewSaved: "Έτσι βλέπουν τη σελίδα οι πελάτες σου.",
+      palettes: {
+        mono: "Ασπρόμαυρο",
+        original: "Πράσινο",
+        purple: "Μωβ",
+        blue: "Μπλε",
+        rose: "Ροζ",
+        sand: "Άμμος",
+      },
+      fonts: {
+        default: "Κανονική (Poppins)",
+        manrope: "Manrope · μοντέρνα",
+        "noto-serif": "Noto Serif · κλασική",
+        alegreya: "Alegreya · κομψή",
+        comfortaa: "Comfortaa · στρογγυλή",
+        "roboto-slab": "Roboto Slab · έντονη",
       },
     },
     timeOff: {
@@ -3130,6 +3176,35 @@ home: {
         FRI: 'Friday',
         SAT: 'Saturday',
         SUN: 'Sunday',
+      },
+    },
+    branding: {
+      title: "Booking page look",
+      desc: "The colours and font of the public page where your customers book.",
+      colours: "Colours",
+      font: "Font",
+      fontHint: "Every font covers Greek and English.",
+      save: "Save",
+      saved: "The look was saved.",
+      errorSave: "Could not save.",
+      preview: "Preview",
+      previewUnsaved: "Not saved yet. Customers see the previous look until you press Save.",
+      previewSaved: "This is how your customers see the page.",
+      palettes: {
+        mono: "Black & white",
+        original: "Green",
+        purple: "Purple",
+        blue: "Blue",
+        rose: "Rose",
+        sand: "Sand",
+      },
+      fonts: {
+        default: "Standard (Poppins)",
+        manrope: "Manrope · modern",
+        "noto-serif": "Noto Serif · classic",
+        alegreya: "Alegreya · elegant",
+        comfortaa: "Comfortaa · rounded",
+        "roboto-slab": "Roboto Slab · bold",
       },
     },
     timeOff: {

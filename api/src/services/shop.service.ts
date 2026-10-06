@@ -33,6 +33,8 @@ export interface UpdateShopDto {
   rescheduleCutoffHours?: number;
   reminderEnabled?: boolean;
   reminderHoursBefore?: number;
+  publicPalette?: string;
+  publicFont?: string;
   isActive?: boolean;
 }
 
@@ -63,6 +65,8 @@ const UPDATE_FIELDS = [
   'rescheduleCutoffHours',
   'reminderEnabled',
   'reminderHoursBefore',
+  'publicPalette',
+  'publicFont',
   'isActive',
 ] as const;
 

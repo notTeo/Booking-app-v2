@@ -148,6 +148,8 @@ export const getBookingForCustomer = async (
         slug: booking.shop.slug,
         name: booking.shop.name,
         timezone: booking.shop.timezone,
+        publicPalette: booking.shop.publicPalette,
+        publicFont: booking.shop.publicFont,
       },
       service: {
         id: booking.service.id,

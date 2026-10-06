@@ -48,6 +48,9 @@ export interface ShopInfo {
   timezone: string;
   maxAdvanceDays: number;
   slotIntervalMinutes: number;
+  /** Colour set and fonts of this page (see utils/branding.ts). */
+  publicPalette: string;
+  publicFont: string;
   isActive: boolean;
   /** False while the shop takes no new online bookings (its plan has lapsed). */
   acceptingBookings: boolean;
@@ -118,7 +121,7 @@ export interface ManagedBooking {
   startTime: string;
   endTime: string;
   customerName: string;
-  shop: { slug: string; name: string; timezone: string };
+  shop: { slug: string; name: string; timezone: string; publicPalette: string; publicFont: string };
   service: { id: string; name: string; duration: number; price: number };
   staff: { id: string; name: string | null };
   rescheduledTo: { startTime: string } | null;

@@ -65,6 +65,9 @@ model Shop {
   // Email the customer a reminder this many hours before the appointment.
   reminderEnabled           Boolean  @default(true)
   reminderHoursBefore       Int      @default(24)
+  // Colour set and fonts of the public booking page (utils/branding.ts).
+  publicPalette             String   @default("mono")
+  publicFont                String   @default("default")
   isActive                  Boolean  @default(true)
   plan                      ShopPlan           @default(TEAM)
   subscriptionStatus        SubscriptionStatus @default(ACTIVE)

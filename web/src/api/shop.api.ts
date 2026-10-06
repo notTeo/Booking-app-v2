@@ -21,6 +21,9 @@ export interface Shop {
   rescheduleCutoffHours: number;
   reminderEnabled: boolean;
   reminderHoursBefore: number;
+  /** Colour set and fonts of the public booking page (see utils/branding.ts). */
+  publicPalette: string;
+  publicFont: string;
   isActive: boolean;
   plan: ShopPlan;
   subscriptionStatus: SubscriptionStatus;
@@ -59,6 +62,8 @@ export interface UpdateShopDto extends Partial<CreateShopDto> {
   rescheduleCutoffHours?: number;
   reminderEnabled?: boolean;
   reminderHoursBefore?: number;
+  publicPalette?: string;
+  publicFont?: string;
   isActive?: boolean;
 }
 
