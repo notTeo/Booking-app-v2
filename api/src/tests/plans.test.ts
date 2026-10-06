@@ -11,6 +11,7 @@ import {
   type Tenant,
 } from './helpers';
 import { loadApp } from './routeRegistry';
+import { setShopPlan } from '../admin/setShopPlan';
 import type { ShopPlan } from '../../dist/generated/prisma';
 
 vi.mock('../services/email.service');
@@ -312,5 +313,56 @@ describe('locked shop', () => {
     expect(page.body.data).not.toHaveProperty('plan');
     expect(page.body.data).not.toHaveProperty('subscriptionStatus');
     expect(page.body.data).not.toHaveProperty('trialEndsAt');
+  });
+});
+
+describe('setShopPlan (admin)', () => {
+  it('activates a plan and ends a trial', async () => {
+    const t = await createTenant('Admin');
+    await prisma.shop.update({
+      where: { id: t.shop.id },
+      data: { subscriptionStatus: 'TRIALING', trialEndsAt: new Date(0) },
+    });
+
+    const r = await setShopPlan({ slug: t.shop.slug, plan: 'SOLO' });
+    expect(r.shop).toMatchObject({
+      plan: 'SOLO',
+      subscriptionStatus: 'ACTIVE',
+    });
+  });
+
+  it('refuses a plan with fewer places than the shop has bookable staff', async () => {
+    const t = await createTenant('Admin');
+    await addMember(t);
+
+    await expect(
+      setShopPlan({ slug: t.shop.slug, plan: 'SOLO' }),
+    ).rejects.toThrow(/2 bookable staff but SOLO allows 1/);
+    expect(
+      (await prisma.shop.findUniqueOrThrow({ where: { id: t.shop.id } })).plan,
+    ).toBe('TEAM');
+  });
+
+  it('starts a new trial of the given length, and can deactivate', async () => {
+    const t = await createTenant('Admin');
+
+    const trial = await setShopPlan({
+      slug: t.shop.slug,
+      status: 'TRIALING',
+      trialDays: 14,
+    });
+    const days = (trial.shop.trialEndsAt!.getTime() - Date.now()) / 86_400_000;
+    expect(days).toBeGreaterThan(13.9);
+    expect(days).toBeLessThanOrEqual(14);
+    expect(trial.shop.plan).toBe('TEAM');
+
+    const off = await setShopPlan({ slug: t.shop.slug, status: 'INACTIVE' });
+    expect(off.shop.subscriptionStatus).toBe('INACTIVE');
+  });
+
+  it('rejects an unknown shop', async () => {
+    await expect(setShopPlan({ slug: 'nope', plan: 'TEAM' })).rejects.toThrow(
+      /No shop with slug/,
+    );
   });
 });
