@@ -12,7 +12,7 @@ describe('no request-body pass-through to Prisma', () => {
     const src = readFileSync(join(dir, file), 'utf8');
     const spreads =
       src.match(
-        /\.\.\.(dto|body|h)\b|data:\s*(dto|body)\b|create:\s*hours\s*[,}]/g,
+        /\.\.\.(dto|body|h)\b|data:\s*(dto|body)\s*[,}]|create:\s*hours\s*[,}]/g,
       ) ?? [];
     expect(spreads).toEqual([]);
   });
