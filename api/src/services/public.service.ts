@@ -1,4 +1,5 @@
 import { AppError } from '../middleware/errorHandler';
+import { isShopLocked, withoutPlan } from './plan.service';
 import { prisma } from '../utils/prisma';
 import { todayInZone } from '../utils/shopTime';
 import type { DayOfWeek } from '../../dist/generated/prisma';
@@ -118,7 +119,10 @@ export const getShopInfoService = async (
   });
 
   return {
-    ...shop,
+    ...withoutPlan(shop),
+    // False while the shop is locked: the page still shows, but takes no
+    // new bookings.
+    acceptingBookings: !isShopLocked(shop),
     openingHours: deriveOpeningHours(schedules, todayInZone(shop.timezone)),
   };
 };

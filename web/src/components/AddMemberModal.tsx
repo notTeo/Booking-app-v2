@@ -4,7 +4,7 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { createTeamMember, type TeamMember, type AssignableRole } from '../api/team.api';
 import { apiErrorMessage } from '../utils/apiError';
-import { featureNotInPlanText, planErrorMessage } from '../utils/planError';
+import { featureNotInPlanText, planErrorMessage } from '../utils/plan';
 import type { ShopPlan } from '../api/shop.api';
 import Alert from './Alert';
 import ConfirmDialog from './ConfirmDialog';

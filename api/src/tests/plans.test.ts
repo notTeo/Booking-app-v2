@@ -1,7 +1,15 @@
+import { randomUUID } from 'crypto';
 import { describe, it, expect, vi } from 'vitest';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
-import { authHeader, createTenant, type Tenant } from './helpers';
+import {
+  authHeader,
+  createBookingRow,
+  createStaffMember,
+  createTenant,
+  unique,
+  type Tenant,
+} from './helpers';
 import { loadApp } from './routeRegistry';
 import type { ShopPlan } from '../../dist/generated/prisma';
 
@@ -143,5 +151,166 @@ describe('team features', () => {
       role: 'manager',
     });
     expect(invited.status).toBe(201);
+  });
+});
+
+describe('locked shop', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const lock = (t: Tenant, how: 'inactive' | 'trial-ended') =>
+    prisma.shop.update({
+      where: { id: t.shop.id },
+      data:
+        how === 'inactive'
+          ? { subscriptionStatus: 'INACTIVE' }
+          : {
+              subscriptionStatus: 'TRIALING',
+              trialEndsAt: new Date(Date.now() - DAY),
+            },
+    });
+
+  it('a running trial is not locked', async () => {
+    const t = await createTenant('Trial');
+    await prisma.shop.update({
+      where: { id: t.shop.id },
+      data: {
+        subscriptionStatus: 'TRIALING',
+        trialEndsAt: new Date(Date.now() + DAY),
+      },
+    });
+
+    const shop = await api
+      .get(`/api/shops/${t.shop.id}`)
+      .set(authHeader(t.token));
+    expect(shop.body.data.locked).toBe(false);
+    expect((await addMember(t)).status).toBe(201);
+  });
+
+  it.each(['inactive', 'trial-ended'] as const)(
+    '%s: members can read but not write',
+    async (how) => {
+      const t = await createTenant('Locked');
+      const booking = await createBookingRow(t);
+      await lock(t, how);
+      const base = `/api/shops/${t.shop.id}`;
+      const auth = authHeader(t.token);
+
+      const shop = await api.get(base).set(auth);
+      expect(shop.status).toBe(200);
+      expect(shop.body.data.locked).toBe(true);
+      for (const path of ['/team', '/services', '/bookings', '/customers']) {
+        expect((await api.get(base + path).set(auth)).status).toBe(200);
+      }
+
+      const writes = [
+        api.patch(base).set(auth).send({ name: 'Renamed' }),
+        addMember(t),
+        api
+          .post(`${base}/services`)
+          .set(auth)
+          .send({ name: 'New', duration: 30, price: 1000 }),
+        api
+          .patch(`${base}/bookings/${booking.id}/status`)
+          .set(auth)
+          .send({ status: 'COMPLETED' }),
+        api
+          .post(`${base}/customers`)
+          .set(auth)
+          .send({ name: 'New', phone: '6900000001' }),
+      ];
+      for (const res of await Promise.all(writes)) {
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe('SHOP_LOCKED');
+      }
+      expect(
+        (await prisma.shop.findUniqueOrThrow({ where: { id: t.shop.id } }))
+          .name,
+      ).toBe('Locked');
+    },
+  );
+
+  it('customers can still be deleted, and the owner can delete the shop', async () => {
+    const t = await createTenant('Locked');
+    const customer = await prisma.customer.create({
+      data: { shopId: t.shop.id, name: 'Gone', phone: unique() },
+    });
+    await lock(t, 'inactive');
+    const base = `/api/shops/${t.shop.id}`;
+
+    const removed = await api
+      .delete(`${base}/customers/${customer.id}`)
+      .set(authHeader(t.token));
+    expect(removed.status).toBeLessThan(300);
+
+    const deleted = await api.delete(base).set(authHeader(t.token));
+    expect(deleted.status).toBeLessThan(300);
+  });
+
+  it('does not tell a non-member that the shop is locked', async () => {
+    const t = await createTenant('Locked');
+    const other = await createTenant('Other');
+    await lock(t, 'inactive');
+
+    const res = await api
+      .post(`/api/shops/${t.shop.id}/services`)
+      .set(authHeader(other.token))
+      .send({ name: 'New', duration: 30, price: 1000 });
+    expect(res.status).toBe(404);
+  });
+
+  it('staff of a locked shop are read-only too', async () => {
+    const t = await createTenant('Locked');
+    const staff = await createStaffMember(t);
+    const booking = await createBookingRow(t);
+    await lock(t, 'trial-ended');
+
+    const res = await api
+      .patch(`/api/shops/${t.shop.id}/bookings/${booking.id}/status`)
+      .set(authHeader(staff.token))
+      .send({ status: 'COMPLETED' });
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('SHOP_LOCKED');
+  });
+
+  it('the public page shows but takes no new bookings; cancel links still work', async () => {
+    const t = await createTenant('Locked');
+    const cancelToken = randomUUID();
+    const booking = await createBookingRow(t);
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: { cancelToken },
+    });
+    await lock(t, 'inactive');
+
+    const page = await api.get(`/public/${t.shop.slug}`);
+    expect(page.status).toBe(200);
+    expect(page.body.data.acceptingBookings).toBe(false);
+
+    const book = await api.post(`/public/${t.shop.slug}/book`).send({
+      name: 'Nikos',
+      phone: '6900001000',
+      serviceId: t.service.id,
+      staffId: t.staff.id,
+      startTime: '2027-07-02T09:00:00.000Z',
+    });
+    expect(book.status).toBe(403);
+    expect(book.body.code).toBe('SHOP_LOCKED');
+    expect(await prisma.booking.count({ where: { shopId: t.shop.id } })).toBe(
+      1,
+    );
+
+    const cancel = await api
+      .post('/public/cancel')
+      .send({ token: cancelToken });
+    expect(cancel.status).toBe(200);
+  });
+
+  it('the public page never shows the plan', async () => {
+    const t = await createTenant('Open');
+
+    const page = await api.get(`/public/${t.shop.slug}`);
+    expect(page.body.data.acceptingBookings).toBe(true);
+    expect(page.body.data).not.toHaveProperty('plan');
+    expect(page.body.data).not.toHaveProperty('subscriptionStatus');
+    expect(page.body.data).not.toHaveProperty('trialEndsAt');
   });
 });

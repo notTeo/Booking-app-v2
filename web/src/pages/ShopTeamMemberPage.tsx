@@ -30,7 +30,7 @@ import Switch from '../components/Switch';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { planErrorMessage } from '../utils/planError';
+import { planErrorMessage } from '../utils/plan';
 
 export default function ShopTeamMemberPage() {
   const uid = useId();

@@ -12,7 +12,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddMemberModal from '../components/AddMemberModal';
-import { planErrorMessage, staffLimitText } from '../utils/planError';
+import { planErrorMessage, staffLimitText } from '../utils/plan';
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();

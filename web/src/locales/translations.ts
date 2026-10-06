@@ -242,6 +242,17 @@ export interface Translations {
     featureNotInPlan: string;
     locked: string;
     contactUs: string;
+    title: string;
+    active: string;
+    trialUntil: string;
+    trialEnded: string;
+    inactive: string;
+    staffLimit: string;
+    changePlan: string;
+    seePlans: string;
+    lockedTitle: string;
+    lockedOwner: string;
+    trialEnding: string;
   };
   pricingPage: {
     title: string;
@@ -729,6 +740,9 @@ export interface Translations {
       usePhone: string;
       cancel: string;
     };
+    notAcceptingTitle: string;
+    notAccepting: string;
+    notAcceptingCall: string;
     bookAppointment: string;
     service: string;
     staff: string;
@@ -1340,6 +1354,17 @@ home: {
     featureNotInPlan: 'Οι προσκλήσεις ομάδας και ο ρόλος διαχειριστή δεν περιλαμβάνονται στο πακέτο {plan}.',
     locked: 'Το κατάστημα είναι μόνο για ανάγνωση μέχρι να οριστεί πακέτο.',
     contactUs: 'Επικοινώνησε μαζί μας',
+    title: 'Πακέτο',
+    active: 'Η συνδρομή είναι ενεργή.',
+    trialUntil: 'Δωρεάν δοκιμή έως {date}.',
+    trialEnded: 'Η δωρεάν δοκιμή τελείωσε. Το κατάστημα είναι μόνο για ανάγνωση.',
+    inactive: 'Δεν υπάρχει ενεργή συνδρομή. Το κατάστημα είναι μόνο για ανάγνωση.',
+    staffLimit: 'Έως {n} μέλη προσωπικού με κρατήσεις.',
+    changePlan: 'Για να ξεκινήσεις ή να αλλάξεις πακέτο, επικοινώνησε μαζί μας.',
+    seePlans: 'Δες τα πακέτα',
+    lockedTitle: 'Το κατάστημα είναι μόνο για ανάγνωση',
+    lockedOwner: 'Η δοκιμή τελείωσε ή δεν υπάρχει ενεργή συνδρομή. Βλέπεις τα πάντα και μπορείς να εξάγεις τους πελάτες σου, αλλά δεν γίνονται αλλαγές και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού.',
+    trialEnding: 'Η δωρεάν δοκιμή τελειώνει στις {date}. Επικοινώνησε μαζί μας για να διαλέξεις πακέτο.',
   },
   pricingPage: {
     title: 'Τιμές',
@@ -1892,6 +1917,9 @@ home: {
         cancel: 'Άκυρο',
       },
       bookAppointment: 'Κλείστε Ραντεβού',
+      notAcceptingTitle: 'Οι online κρατήσεις δεν είναι διαθέσιμες αυτή τη στιγμή',
+      notAccepting: 'Επικοινωνήστε με το κατάστημα για να κλείσετε ραντεβού.',
+      notAcceptingCall: 'Καλέστε στο {phone} για να κλείσετε ραντεβού.',
       service: 'Υπηρεσία',
       staff: 'Προσωπικό',
       dateTime: 'Ημερομηνία & Ώρα',
@@ -2526,6 +2554,17 @@ home: {
     featureNotInPlan: 'Team invites and the manager role are not part of the {plan} plan.',
     locked: 'This shop is read-only until a plan is set for it.',
     contactUs: 'Contact us',
+    title: 'Plan',
+    active: 'The subscription is active.',
+    trialUntil: 'Free trial until {date}.',
+    trialEnded: 'The free trial has ended. The shop is read-only.',
+    inactive: 'There is no active subscription. The shop is read-only.',
+    staffLimit: 'Up to {n} bookable staff.',
+    changePlan: 'To start or change a plan, contact us.',
+    seePlans: 'See the plans',
+    lockedTitle: 'This shop is read-only',
+    lockedOwner: 'The trial has ended or there is no active subscription. You can see everything and export your customers, but nothing can be changed and the booking page takes no new bookings.',
+    trialEnding: 'Your free trial ends on {date}. Contact us to choose a plan.',
   },
   pricingPage: {
     title: 'Pricing',
@@ -3078,6 +3117,9 @@ home: {
         cancel: 'Cancel',
       },
       bookAppointment: 'Book an Appointment',
+      notAcceptingTitle: 'Online booking is not available right now',
+      notAccepting: 'Contact the shop to book an appointment.',
+      notAcceptingCall: 'Call {phone} to book an appointment.',
       service: 'Service',
       staff: 'Staff',
       dateTime: 'Date & Time',

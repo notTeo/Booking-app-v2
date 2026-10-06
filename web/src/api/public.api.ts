@@ -49,6 +49,8 @@ export interface ShopInfo {
   maxAdvanceDays: number;
   slotIntervalMinutes: number;
   isActive: boolean;
+  /** False while the shop takes no new online bookings (its plan has lapsed). */
+  acceptingBookings: boolean;
   createdAt: string;
   updatedAt: string;
   services: Service[];

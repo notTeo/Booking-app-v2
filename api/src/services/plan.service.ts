@@ -101,3 +101,14 @@ export const assertTeamFeatures = async (shopId: string) => {
       { plan },
     );
 };
+
+// A shop row without its plan columns, for responses the public can read.
+export const withoutPlan = <T extends PlanFields>(
+  shop: T,
+): Omit<T, keyof PlanFields> => {
+  const rest: Partial<T> = { ...shop };
+  delete rest.plan;
+  delete rest.subscriptionStatus;
+  delete rest.trialEndsAt;
+  return rest as Omit<T, keyof PlanFields>;
+};

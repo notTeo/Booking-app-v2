@@ -28,3 +28,11 @@ export const planErrorMessage = (err: unknown, s: PlanStrings): string | undefin
   if (data.code === 'SHOP_LOCKED') return s.locked;
   return undefined;
 };
+
+/** Whether the shop is on a free trial that is still running. */
+export const isOnTrial = (shop: { subscriptionStatus: string; locked: boolean }) =>
+  shop.subscriptionStatus === 'TRIALING' && !shop.locked;
+
+/** Whole days until the trial ends, counting a started day as one (0 once it has ended). */
+export const trialDaysLeft = (trialEndsAt: string | null, now = Date.now()) =>
+  trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - now) / 86_400_000)) : 0;

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
+import { requireWritableShop } from '../middleware/requireWritableShop';
 import {
   createShopValidation,
   updateShopValidation,
@@ -44,7 +45,14 @@ router.get(
 );
 router.get('/upcoming', authenticate, getMyUpcoming);
 router.get('/:id', authenticate, shopIdParamValidation, validate, getShop);
-router.patch('/:id', authenticate, updateShopValidation, validate, updateShop);
+router.patch(
+  '/:id',
+  authenticate,
+  requireWritableShop(),
+  updateShopValidation,
+  validate,
+  updateShop,
+);
 router.delete(
   '/:id',
   authenticate,
@@ -69,9 +77,26 @@ router.get(
   validate,
   getOverview,
 );
-router.use('/:shopId/team', teamRouter);
-router.use('/:shopId/services', serviceRouter);
-router.use('/:shopId/bookings', bookingRouter);
-router.use('/:shopId/customers', customerRouter);
+// A locked shop is read-only: its members' writes stop here. Deleting the shop
+// itself (above) and deleting a customer stay possible.
+router.use('/:shopId/team', authenticate, requireWritableShop(), teamRouter);
+router.use(
+  '/:shopId/services',
+  authenticate,
+  requireWritableShop(),
+  serviceRouter,
+);
+router.use(
+  '/:shopId/bookings',
+  authenticate,
+  requireWritableShop(),
+  bookingRouter,
+);
+router.use(
+  '/:shopId/customers',
+  authenticate,
+  requireWritableShop({ allowDelete: true }),
+  customerRouter,
+);
 
 export default router;
