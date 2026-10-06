@@ -291,9 +291,13 @@ const SERVICE_LINES = {
 } as const;
 
 // A booking's cancelToken is the customer's only credential on the public
-// cancel and reschedule links, so a query whose rows go back to a shop member
-// leaves it out. Only the rows that feed the customer's emails keep it.
-export const NO_CANCEL_TOKEN = { cancelToken: true } as const;
+// cancel and reschedule links, and contactEmail is the customer's address, so
+// a query whose rows go back to a shop member leaves both out. Only the rows
+// that feed the customer's emails keep them.
+export const NO_CANCEL_TOKEN = {
+  cancelToken: true,
+  contactEmail: true,
+} as const;
 
 const BOOKING_INCLUDE = {
   customer: true,
@@ -526,6 +530,7 @@ const claimSlotAndCreate = async (
     overwriteCustomer: boolean;
     notes?: string;
     cancelToken: string;
+    contactEmail?: string | null;
     // Owner/staff creation only: the rules accepted, and who created it.
     overriddenRules?: string[];
     createdById?: string;
@@ -559,6 +564,7 @@ const claimSlotAndCreate = async (
       endTime: p.endTime,
       notes: p.notes,
       cancelToken: p.cancelToken,
+      contactEmail: p.contactEmail ?? null,
       overriddenRules: p.overriddenRules ?? [],
       createdById: p.createdById ?? null,
       locale: currentLocale(),
@@ -670,6 +676,7 @@ export const createBooking = async (
         overwriteCustomer: false,
         notes: data.notes,
         cancelToken,
+        contactEmail: data.email || null,
         products: reserved.create,
       });
     });
@@ -1308,6 +1315,13 @@ const rescheduleInTx = async (
   assertBookingLength(p.startTime, p.endTime);
   await lockProvider(tx, p.staffId); // queue behind other writes for this provider
 
+  // The address typed for the old booking moves to the new one. Read here
+  // because callers load the booking without it (it is the customer's).
+  const { contactEmail } = await tx.booking.findUniqueOrThrow({
+    where: { id: existing.id },
+    select: { contactEmail: true },
+  });
+
   // Conditional on the status so two reschedules of the same booking racing
   // each other can't both win: the second one finds it already CANCELED.
   const released = await tx.booking.updateMany({
@@ -1339,6 +1353,7 @@ const rescheduleInTx = async (
       createdById: existing.createdById,
       rescheduledFromId: existing.id,
       locale: existing.locale,
+      contactEmail,
     },
   });
   // Its services come with it: a different one replaces them, otherwise they

@@ -24,7 +24,7 @@ export const createBooking = async (
     const { callerCanViewCustomer, ...booking } =
       await bookingService.createBookingForShop(userId, shopId, req.body);
     // The cancel token is the customer's; it only goes into their email.
-    const { cancelToken: _token, ...row } = booking;
+    const { cancelToken: _token, contactEmail: _contact, ...row } = booking;
     // Redact here, not in the service: the confirmation email below needs the
     // customer's real name and email.
     successResponse(
@@ -172,7 +172,13 @@ export const updateBooking = async (
       await bookingService.updateBooking(userId, shopId, bookingId, req.body);
     // The shop and staff rows are only loaded for the email below.
     // Nor does the cancel token leave: it is the customer's, for their email.
-    const { shop: _shop, staff: _staff, cancelToken: _token, ...row } = booking;
+    const {
+      shop: _shop,
+      staff: _staff,
+      cancelToken: _token,
+      contactEmail: _contact,
+      ...row
+    } = booking;
     successResponse(res, {
       ...row,
       customer: redactCustomer(booking.customer, callerCanViewCustomer),

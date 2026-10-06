@@ -399,6 +399,10 @@ model Booking {
   status            BookingStatus @default(CONFIRMED)
   notes             String?
   cancelToken       String?       @unique
+  // The email typed for this booking on the public page (null = none typed,
+  // or created by the shop). This booking's emails go there before the
+  // customer's own address; the customer record is never changed from it.
+  contactEmail      String?
   // Booking rules the owner/staff explicitly accepted when creating this
   // booking (e.g. OUTSIDE_OPENING_HOURS). Stored at creation, never recomputed.
   overriddenRules   String[]      @default([])
