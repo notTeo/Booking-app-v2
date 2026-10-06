@@ -369,10 +369,32 @@ export const revokeAllSessions = async (
 
 export const updateUser = async (
   userId: string,
-  data: { email?: string; password?: string; name?: string },
+  data: {
+    email?: string;
+    password?: string;
+    name?: string;
+    currentPassword?: string;
+  },
 ): Promise<
   { user: UserDto } | { message: string } | { user: UserDto; message: string }
 > => {
+  // A new password or email takes over the account, so an access token alone
+  // is not enough: the caller proves they know the current password.
+  if (data.email || data.password) {
+    const current = await prisma.user.findUnique({ where: { id: userId } });
+    const ok =
+      !!current?.passwordHash &&
+      typeof data.currentPassword === 'string' &&
+      (await bcrypt.compare(data.currentPassword, current.passwordHash));
+    if (!ok)
+      // 403, not 401: a 401 would send the client off to refresh its token.
+      throw new AppError(
+        403,
+        'Current password is incorrect',
+        'INVALID_PASSWORD',
+      );
+  }
+
   // Name and password apply immediately, in one update; email goes through a
   // pending verification instead, so it's handled separately below.
   const immediateChanges: { name?: string; passwordHash?: string } = {};
@@ -410,6 +432,9 @@ export const updateUser = async (
 
   if (data.password) {
     await prisma.refreshToken.deleteMany({ where: { userId } });
+    // An email change queued before this must not outlive the new password.
+    if (!data.email)
+      await prisma.pendingEmailChange.deleteMany({ where: { userId } });
     logger.info(`Password updated for userId: ${userId}`);
   }
   if (data.name) {
@@ -559,6 +584,10 @@ export const resetPassword = async (token: string, newPassword: string) => {
   });
 
   await prisma.refreshToken.deleteMany({
+    where: { userId: resetToken.userId },
+  });
+  // Whoever queued an email change may be who the reset is locking out.
+  await prisma.pendingEmailChange.deleteMany({
     where: { userId: resetToken.userId },
   });
 

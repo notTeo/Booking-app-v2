@@ -56,6 +56,7 @@ export default function AccountPage() {
   const [email, setEmail] = useState(user?.email ?? '');
   const [name, setName] = useState(user?.name ?? '');
   const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -82,17 +83,20 @@ export default function AccountPage() {
 
   const isProfileDirty =
     (!!name && name !== user?.name) || (!!email && email !== user?.email) || password.length > 0;
+  // A new email or password needs the current password; a new name does not.
+  const needsCurrentPassword = (!!email && email !== user?.email) || password.length > 0;
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (profileLoading) return;
     setProfileError('');
     setProfileSuccess('');
-    const payload: { name?: string; email?: string; password?: string } = {};
+    const payload: Parameters<typeof updateMe>[0] = {};
     if (name && name !== user?.name) payload.name = name;
     if (email && email !== user?.email) payload.email = email;
     if (password) payload.password = password;
     if (Object.keys(payload).length === 0) return;
+    if (needsCurrentPassword) payload.currentPassword = currentPassword;
 
     setProfileLoading(true);
     try {
@@ -110,8 +114,13 @@ export default function AccountPage() {
         setProfileSuccess(t.settings.successProfile);
       }
       setPassword('');
+      setCurrentPassword('');
     } catch (err: unknown) {
-      setProfileError(apiErrorMessage(err, t.settings.errorProfile));
+      setProfileError(
+        apiErrorField(err, 'code') === 'INVALID_PASSWORD'
+          ? t.settings.wrongPassword
+          : apiErrorMessage(err, t.settings.errorProfile),
+      );
     } finally {
       setProfileLoading(false);
     }
@@ -239,13 +248,25 @@ export default function AccountPage() {
               </ul>
             )}
           </div>
+          {needsCurrentPassword && (
+            <div className="field">
+              <label className="field__label" htmlFor="settings-current-password">{t.settings.currentPasswordLabel}</label>
+              <PasswordInput
+                id="settings-current-password"
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+            </div>
+          )}
           {profileError && <Alert variant="danger">{profileError}</Alert>}
           {profileSuccess && <Alert variant="success">{profileSuccess}</Alert>}
           <button
             className={`btn btn--sm${profileLoading ? ' is-loading' : ''}`}
             type="submit"
             aria-busy={profileLoading}
-            disabled={!isProfileDirty || !passwordValid}
+            disabled={!isProfileDirty || !passwordValid || (needsCurrentPassword && !currentPassword)}
           >
             {t.settings.saveProfile}
           </button>

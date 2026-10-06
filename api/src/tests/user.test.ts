@@ -85,7 +85,7 @@ describe('PATCH /user/me', () => {
     const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
-      .send({ email: 'new@example.com' });
+      .send({ email: 'new@example.com', currentPassword: TEST_PASSWORD });
 
     expect(res.status).toBe(200);
     expect(res.body.data.message).toBeTruthy();
@@ -107,7 +107,7 @@ describe('PATCH /user/me', () => {
     const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
-      .send({ password: 'Newpassword456!' });
+      .send({ password: 'Newpassword456!', currentPassword: TEST_PASSWORD });
 
     expect(res.status).toBe(200);
 
@@ -119,13 +119,41 @@ describe('PATCH /user/me', () => {
     expect(sessions).toHaveLength(0);
   });
 
+  it('returns 403 INVALID_PASSWORD for a new password or email without the current password', async () => {
+    const token = await loginUser();
+    for (const body of [
+      { password: 'Newpassword456!' },
+      { email: 'new@example.com' },
+      { password: 'Newpassword456!', currentPassword: 'wrongpassword' },
+    ]) {
+      const res = await api
+        .patch('/user/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send(body);
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('INVALID_PASSWORD');
+    }
+    // The old password still signs in, and no email change was queued.
+    expect(await loginUser()).toBeTruthy();
+    expect(await prisma.pendingEmailChange.count()).toBe(0);
+  });
+
+  it('changes the name without the current password', async () => {
+    const token = await loginUser();
+    const res = await api
+      .patch('/user/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Renamed' });
+    expect(res.status).toBe(200);
+  });
+
   it('returns 409 if new email is already taken', async () => {
     await createVerifiedUser('other@example.com');
     const token = await loginUser();
     const res = await api
       .patch('/user/me')
       .set('Authorization', `Bearer ${token}`)
-      .send({ email: 'other@example.com' });
+      .send({ email: 'other@example.com', currentPassword: TEST_PASSWORD });
 
     expect(res.status).toBe(409);
   });

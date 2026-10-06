@@ -22,6 +22,10 @@ export const updateMeValidation = [
     .withMessage('Password must contain at least one number')
     .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character'),
+  body('currentPassword')
+    .optional()
+    .isString()
+    .withMessage('currentPassword must be a string'),
 ];
 
 export const deleteAccountValidation = [body('password').optional().isString()];
