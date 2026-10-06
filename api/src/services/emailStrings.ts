@@ -49,6 +49,15 @@ const en = {
       "If you didn't create a BeBooked account, you can ignore this email.",
     button: 'Verify email',
   },
+  accountExists: {
+    subject: 'You already have a BeBooked account',
+    page: 'Sign in',
+    heading: 'You already have an account.',
+    body: 'Someone tried to sign up with this email address, which already has a BeBooked account. If it was you, sign in instead, or reset your password from the sign-in page if you have forgotten it.',
+    ignore:
+      'If it was not you, you can ignore this email. Nothing has changed.',
+    button: 'Sign in',
+  },
   emailChange: {
     subject: 'Verify your new email address',
     page: 'Verify email change',
@@ -187,6 +196,14 @@ const el: EmailStrings = {
     ignore:
       'Αν δεν δημιούργησες λογαριασμό στο BeBooked, αγνόησε αυτό το email.',
     button: 'Επιβεβαίωση email',
+  },
+  accountExists: {
+    subject: 'Έχεις ήδη λογαριασμό στο BeBooked',
+    page: 'Σύνδεση',
+    heading: 'Έχεις ήδη λογαριασμό.',
+    body: 'Κάποιος προσπάθησε να κάνει εγγραφή με αυτό το email, που έχει ήδη λογαριασμό στο BeBooked. Αν ήσουν εσύ, συνδέσου, ή άλλαξε τον κωδικό σου από τη σελίδα σύνδεσης αν τον έχεις ξεχάσει.',
+    ignore: 'Αν δεν ήσουν εσύ, αγνόησε αυτό το email. Δεν άλλαξε τίποτα.',
+    button: 'Σύνδεση',
   },
   emailChange: {
     subject: 'Επιβεβαίωσε τη νέα διεύθυνση email',

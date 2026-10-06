@@ -263,6 +263,32 @@ export const sendVerificationEmail = async (
   });
 };
 
+// Sent instead of an error when someone signs up with an address that already
+// has an account, so the sign-up form answers the same either way.
+export const sendAccountExistsEmail = async (
+  email: string,
+  lang: EmailLocale = currentLocale(),
+) => {
+  const { styles } = accountKit;
+  const t = emailStrings[lang];
+
+  await deliver('account exists', {
+    to: email,
+    subject: t.accountExists.subject,
+    html: accountTemplate(
+      lang,
+      t.accountExists.subject,
+      t.accountExists.page,
+      `
+      <h1 style="${styles.h1}">${t.accountExists.heading}</h1>
+      <p style="${styles.p}">${t.accountExists.body}</p>
+      <p style="${styles.note}">${t.accountExists.ignore}</p>
+      ${linkBlock(`${env.clientUrl}/login`, t.accountExists.button, lang)}
+    `,
+    ),
+  });
+};
+
 export const sendEmailChangeVerification = async (
   newEmail: string,
   token: string,

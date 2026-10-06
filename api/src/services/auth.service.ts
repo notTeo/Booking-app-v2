@@ -18,21 +18,43 @@ import { randomUUID } from 'crypto';
 import { TERMS_VERSION } from '../config/terms';
 import { USER_SELECT, toUserDto, type UserDto } from '../utils/userDto';
 import {
+  sendAccountExistsEmail,
   sendEmailChangeVerification,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from './email.service';
 
+// What a login for an unknown email is compared against (see loginUser).
+const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
+
 export const registerUser = async ({ name, email, password }: RegisterDto) => {
+  // The form answers the same whether or not the address has an account; the
+  // account's owner is told by email instead.
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     logger.warn('Registration attempt with existing email');
-    throw new AppError(409, 'Email already in use');
+    // Not awaited: a slow or failed send must not make this answer differ
+    // from a new sign-up's. The hash below is the work a new sign-up does.
+    sendAccountExistsEmail(email).catch((err) =>
+      logger.error(err, 'Failed to send account exists email'),
+    );
+    await bcrypt.hash(password, 12);
+    return;
   }
 
   const existingPending = await prisma.pendingRegistration.findUnique({
     where: { email },
   });
+  if (existingPending && existingPending.expiresAt > new Date()) {
+    // Someone already started signing up with this address. Whoever reads the
+    // mailbox finishes that sign-up; a later request cannot swap its password.
+    await sendVerificationEmail(
+      email,
+      existingPending.token,
+      existingPending.name,
+    );
+    return;
+  }
   if (existingPending) {
     await prisma.pendingRegistration.delete({ where: { email } });
   }
@@ -157,20 +179,19 @@ export const loginUser = async ({
     where: { email },
   });
 
-  if (!user) {
-    logger.warn('Login attempt for unknown email');
-    throw new AppError(401, 'Invalid credentials');
-  }
+  // Always one bcrypt comparison, so an unknown email (or an account with no
+  // password) takes as long to refuse as a wrong password.
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    user?.passwordHash ?? DUMMY_HASH,
+  );
 
-  if (!user.passwordHash) {
-    // OAuth-only account — no password set
-    throw new AppError(401, 'Invalid credentials');
-  }
-
-  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-  if (!isPasswordValid) {
-    logger.warn(`Failed login attempt for userId: ${user.id}`);
+  if (!user || !user.passwordHash || !isPasswordValid) {
+    logger.warn(
+      user
+        ? `Failed login attempt for userId: ${user.id}`
+        : 'Login attempt for unknown email',
+    );
     throw new AppError(401, 'Invalid credentials');
   }
 
