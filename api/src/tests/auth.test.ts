@@ -3,6 +3,7 @@ import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { REFRESH_RACE_WINDOW_MS } from '../services/auth.service';
+import * as emailService from '../services/email.service';
 
 const api = await serve(app);
 
@@ -10,6 +11,7 @@ const api = await serve(app);
 vi.mock('../services/email.service', () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+  sendAccountExistsEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 const TEST_EMAIL = 'test@example.com';
@@ -41,6 +43,10 @@ async function loginUser(email = TEST_EMAIL, password = TEST_PASSWORD) {
 }
 
 describe('POST /auth/register', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('creates a pending registration and sends verification email', async () => {
     const { sendVerificationEmail } = await import('../services/email.service');
 
@@ -65,7 +71,7 @@ describe('POST /auth/register', () => {
     expect(pending).not.toBeNull();
   });
 
-  it('returns 409 if email already registered', async () => {
+  it('answers like a new sign-up when the email is already registered, and emails the account instead', async () => {
     await createVerifiedUser();
 
     const res = await api.post('/auth/register').send({
@@ -75,8 +81,37 @@ describe('POST /auth/register', () => {
       acceptTerms: true,
     });
 
-    expect(res.status).toBe(409);
-    expect(res.body.message).toBe('Email already in use');
+    // Same answer as a new address: the form never says the account exists.
+    expect(res.status).toBe(201);
+    expect(res.body.data.message).toBe(
+      'Verification email sent. Please check your inbox.',
+    );
+    expect(emailService.sendAccountExistsEmail).toHaveBeenCalledWith(
+      TEST_EMAIL,
+    );
+    expect(emailService.sendVerificationEmail).not.toHaveBeenCalled();
+    expect(await prisma.pendingRegistration.count()).toBe(0);
+  });
+
+  it('keeps the first pending sign-up when the same email registers again', async () => {
+    const body = { name: 'First', email: TEST_EMAIL, acceptTerms: true };
+    await api.post('/auth/register').send({ ...body, password: TEST_PASSWORD });
+    const first = await prisma.pendingRegistration.findUniqueOrThrow({
+      where: { email: TEST_EMAIL },
+    });
+
+    const again = await api
+      .post('/auth/register')
+      .send({ ...body, name: 'Second', password: 'Another-Pass-9!' });
+
+    expect(again.status).toBe(201);
+    const after = await prisma.pendingRegistration.findUniqueOrThrow({
+      where: { email: TEST_EMAIL },
+    });
+    // Same row, same password: the later request only re-sent the email.
+    expect(after.passwordHash).toBe(first.passwordHash);
+    expect(after.token).toBe(first.token);
+    expect(emailService.sendVerificationEmail).toHaveBeenCalledTimes(2);
   });
 
   it('returns 400 for invalid email', async () => {

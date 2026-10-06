@@ -60,16 +60,18 @@ describe('AU-02 sensitive account changes without re-authentication', () => {
     const session = await login(api, victim.email, victim.password);
     const attackerEmail = uniqueEmail('attacker');
 
-    // Attacker, with the stolen access token, queues an email change to a
-    // mailbox they control. The link goes to THEIR inbox.
+    // Attacker queues an email change to a mailbox they control. The link
+    // goes to THEIR inbox. (Since the AU-02 fix this needs the current
+    // password too, so this is an attacker who also phished the password:
+    // exactly the case a password reset is meant to recover from.)
     await api
       .patch('/user/me')
       .set(authHeader(session.accessToken!))
-      .send({ email: attackerEmail });
+      .send({ email: attackerEmail, currentPassword: victim.password });
     const pending = await prisma.pendingEmailChange.findUnique({
       where: { userId: victim.user.id },
     });
-    expect(pending).not.toBeNull(); // setup: today this is accepted (see above)
+    expect(pending).not.toBeNull(); // setup
 
     // Victim notices something is off and recovers the account properly.
     await api.post('/auth/forgot-password').send({ email: victim.email });

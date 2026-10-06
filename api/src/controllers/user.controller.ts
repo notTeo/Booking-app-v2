@@ -32,11 +32,12 @@ export const updateMe = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, currentPassword } = req.body;
     const result = await updateUser(req.user!.userId!, {
       email,
       password,
       name,
+      currentPassword,
     });
     successResponse(res, result);
   } catch (err) {
