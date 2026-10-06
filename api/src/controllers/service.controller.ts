@@ -2,6 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import * as serviceService from '../services/service.service';
 
+// Only the fields a service has; anything else in the body is dropped here.
+const pickServiceBody = (body: Record<string, unknown> = {}) => {
+  const { name, description, duration, price, isActive, showOnPublicPage } =
+    body as Parameters<typeof serviceService.createService>[2];
+  return { name, description, duration, price, isActive, showOnPublicPage };
+};
+
 export const createService = async (
   req: Request,
   res: Response,
@@ -13,7 +20,7 @@ export const createService = async (
     const service = await serviceService.createService(
       userId,
       shopId,
-      req.body,
+      pickServiceBody(req.body),
     );
     successResponse(res, service, 201);
   } catch (err) {
@@ -67,7 +74,7 @@ export const updateService = async (
       userId,
       shopId,
       serviceId,
-      req.body,
+      pickServiceBody(req.body),
     );
     successResponse(res, service);
   } catch (err) {
