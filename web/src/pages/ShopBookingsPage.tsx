@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
+import { usePolling } from '../hooks/usePolling';
 import {
   listBookings,
   updateBookingStatus,
@@ -60,6 +61,9 @@ interface CreatingSlot {
 
 // ── component ────────────────────────────────────────────────────────────────
 
+// How often the open calendar looks for bookings made elsewhere.
+const BOOKINGS_REFRESH_MS = 30_000;
+
 export default function ShopBookingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -103,16 +107,26 @@ export default function ShopBookingsPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const colRefs = useRef(new Map<string, HTMLDivElement>());
 
-  const refetchBookings = () => {
+  // `silent` is the background refresh: no spinner, and a failure leaves what
+  // is on screen alone instead of replacing the calendar with an error.
+  const refetchBookings = ({ silent = false }: { silent?: boolean } = {}) => {
     if (!shop) return;
     const seq = ++requestSeq.current;
-    setLoading(true);
-    setError('');
+    if (!silent) {
+      setLoading(true);
+      setError('');
+    }
     listBookings(shop.id, { date })
       .then((bkgs) => { if (seq === requestSeq.current) setBookings(bkgs); })
-      .catch(() => { if (seq === requestSeq.current) setError(t.bookings.errorLoad); })
-      .finally(() => { if (seq === requestSeq.current) setLoading(false); });
+      .catch(() => { if (!silent && seq === requestSeq.current) setError(t.bookings.errorLoad); })
+      .finally(() => { if (!silent && seq === requestSeq.current) setLoading(false); });
   };
+
+  // Bookings made elsewhere (a customer, a colleague) show up on their own.
+  // Never while a load is on screen: bumping requestSeq would discard it.
+  usePolling(() => {
+    if (!loading) refetchBookings({ silent: true });
+  }, BOOKINGS_REFRESH_MS);
 
   useEffect(() => {
     if (!shop) return;

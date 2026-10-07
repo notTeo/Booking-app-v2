@@ -423,8 +423,9 @@ const resolveProductLines = async (
   const ids = lines.map((l) => l.productId);
   if (new Set(ids).size !== ids.length)
     throw new AppError(400, 'A product can only be listed once');
+  // A deactivated product is not on offer, the same as one that is gone.
   const products = await tx.product.findMany({
-    where: { id: { in: ids }, shopId },
+    where: { id: { in: ids }, shopId, isActive: true },
   });
   if (products.length !== ids.length)
     throw new AppError(404, 'Product not found', 'PRODUCT_NOT_FOUND');

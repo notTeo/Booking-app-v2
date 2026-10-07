@@ -1,5 +1,6 @@
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { inheritUserPhoto } from './userPhoto.service';
 import { prisma } from '../utils/prisma';
 import { hashToken } from '../utils/jwt';
 
@@ -85,6 +86,8 @@ export const acceptInvite = async (userId: string, inviteId: string) => {
       data: { status: 'accepted', acceptedById: userId },
     }),
   ]);
+
+  await inheritUserPhoto(userId, invite.userShopId);
 
   logger.info(`Invite ${inviteId} accepted by user ${userId}`);
   return {

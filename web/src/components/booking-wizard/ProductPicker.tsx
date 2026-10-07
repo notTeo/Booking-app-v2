@@ -21,6 +21,7 @@ export default function ProductPicker({
   onChange,
   canOverStock = false,
   showHint = true,
+  showTitle = true,
   servicePrice,
 }: {
   products: PublicProduct[];
@@ -29,6 +30,8 @@ export default function ProductPicker({
   onChange: (value: Record<string, number>) => void;
   canOverStock?: boolean;
   showHint?: boolean;
+  /** Off when the step around it already has the heading. */
+  showTitle?: boolean;
   /** The chosen service's fee in cents: shown in the sum-up so the total includes it. */
   servicePrice?: number;
 }) {
@@ -43,8 +46,8 @@ export default function ProductPicker({
   const chosen = toProductLines(value).length > 0;
 
   return (
-    <section className="product-picker" aria-labelledby={`${id}-title`}>
-      <h3 className="t-subheading" id={`${id}-title`}>{tp.pickerTitle}</h3>
+    <section className="product-picker" {...(showTitle ? { 'aria-labelledby': `${id}-title` } : { 'aria-label': tp.pickerTitle })}>
+      {showTitle && <h3 className="t-subheading" id={`${id}-title`}>{tp.pickerTitle}</h3>}
       {showHint && <p className="field__hint">{tp.pickerHint}</p>}
       <ul className="list product-list">
         {products.map((p) => {

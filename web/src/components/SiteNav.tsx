@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faMoon, faSun, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useLang } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import AppPalette from './AppPalette';
 import Wordmark from './Wordmark';
 import '../styles/pages/home.css';
 
@@ -29,6 +30,7 @@ export default function SiteNav({ rowRef, solid = false }: Props) {
 
   return (
     <>
+      <AppPalette />
       <nav className={`home-nav-bar${solid ? ' home-nav-bar--solid' : ''}`}>
         <div className="home-container home-nav" ref={rowRef}>
 

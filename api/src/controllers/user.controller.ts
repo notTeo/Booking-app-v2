@@ -4,6 +4,8 @@ import { AppError } from '../middleware/errorHandler';
 import { successResponse } from '../utils/response';
 import { updateUser, deleteUser } from '../services/auth.service';
 import { USER_SELECT, toUserDto } from '../utils/userDto';
+import { parseCrop } from '../services/photo.service';
+import { removeUserPhoto, setUserPhoto } from '../services/userPhoto.service';
 
 export const getMe = async (
   req: Request,
@@ -61,6 +63,35 @@ export const deleteMe = async (
     });
 
     successResponse(res, { message: 'Account deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setMyPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = await setUserPhoto(
+      req.user!.userId!,
+      req.file?.buffer,
+      parseCrop(req.body?.crop),
+    );
+    successResponse(res, { user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeMyPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    successResponse(res, { user: await removeUserPhoto(req.user!.userId!) });
   } catch (err) {
     next(err);
   }

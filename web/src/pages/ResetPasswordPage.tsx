@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { resetPassword } from '../api/auth.api';
+import { useLang } from '../context/LanguageContext';
 import PasswordRequirement from '../components/PasswordRequirement';
 import { apiErrorMessage } from '../utils/apiError';
-import Wordmark from '../components/Wordmark';
+import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useLang();
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -22,13 +24,13 @@ export default function ResetPasswordPage() {
     setError('');
 
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t.resetPassword.mismatch);
       return;
     }
 
     const token = searchParams.get('token');
     if (!token) {
-      setError('Invalid reset link.');
+      setError(t.resetPassword.invalidLink);
       return;
     }
 
@@ -37,7 +39,7 @@ export default function ResetPasswordPage() {
       await resetPassword(token, password);
       navigate('/login');
     } catch (err: unknown) {
-      setError(apiErrorMessage(err, 'Reset failed.'));
+      setError(apiErrorMessage(err, t.resetPassword.error));
     } finally {
       setIsLoading(false);
     }
@@ -46,11 +48,11 @@ export default function ResetPasswordPage() {
   return (
     <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <h1 className="t-heading">Reset Password</h1>
+        <AuthTop />
+        <h1 className="t-heading">{t.resetPassword.title}</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label className="field__label" htmlFor="password">New Password</label>
+            <label className="field__label" htmlFor="password">{t.resetPassword.newPasswordLabel}</label>
             <PasswordInput
               id="password"
               value={password}
@@ -59,15 +61,15 @@ export default function ResetPasswordPage() {
             />
             {password.length > 0 && (
               <ul className="password-requirements">
-                <PasswordRequirement met={password.length >= 8} label="At least 8 characters" />
-                <PasswordRequirement met={/[A-Z]/.test(password)} label="One uppercase letter" />
-                <PasswordRequirement met={/[0-9]/.test(password)} label="One number" />
-                <PasswordRequirement met={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)} label="One special character (!@#$%...)" />
+                <PasswordRequirement met={password.length >= 8} label={t.resetPassword.pwMin} />
+                <PasswordRequirement met={/[A-Z]/.test(password)} label={t.resetPassword.pwUpper} />
+                <PasswordRequirement met={/[0-9]/.test(password)} label={t.resetPassword.pwNumber} />
+                <PasswordRequirement met={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)} label={t.resetPassword.pwSpecial} />
               </ul>
             )}
           </div>
           <div className="field">
-            <label className="field__label" htmlFor="confirm">Confirm Password</label>
+            <label className="field__label" htmlFor="confirm">{t.resetPassword.confirmLabel}</label>
             <PasswordInput
               id="confirm"
               value={confirm}
@@ -77,11 +79,11 @@ export default function ResetPasswordPage() {
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
           <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading}>
-            Reset Password
+            {t.resetPassword.submit}
           </button>
         </form>
         <div className="form-links">
-          <span><Link to="/login">Back to Login</Link></span>
+          <span><Link to="/login">{t.resetPassword.backToLogin}</Link></span>
         </div>
       </div>
     </div>

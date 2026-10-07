@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import type { PhotoFields } from '../api/photo.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { login as loginApi, logout as logoutApi, refreshTokens } from '../api/auth.api';
 import { getMe } from '../api/user.api';
 import { authStore } from '../store/authStore';
 
-interface User {
+interface User extends PhotoFields {
   id: string;
   name: string;
   email: string;

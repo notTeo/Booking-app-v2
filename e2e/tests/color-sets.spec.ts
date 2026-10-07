@@ -5,9 +5,8 @@ import { waitForLanding } from '../support/auth';
 /**
  * Colour sets: Original, Black & white and Purple, picked with one click in
  * Account > Preferences and remembered on the device. They apply inside the
- * app only (data-palette on <html>); the landing and login pages always keep
- * the original colours, and the public booking page is always black and
- * white. The logo's "Be" follows the set.
+ * app and on the marketing and login pages (data-palette on <html>); the
+ * public booking page is always black and white. The logo's "Be" follows the set.
  */
 const SHOP = `/shops/${E2E.shop.slug}`;
 
@@ -67,7 +66,7 @@ test('one click in Preferences changes the set at once, and it survives a reload
   expect(await colours(page)).toEqual(original);
 });
 
-test('the set follows into shop pages, and never onto the landing, legal or public booking pages', async ({ page }) => {
+test('the set follows into shop, marketing and login pages, and never onto the public booking page', async ({ page }) => {
   await login(page);
   await pick(page, 'Purple').click();
 
@@ -75,22 +74,22 @@ test('the set follows into shop pages, and never onto the landing, legal or publ
   await page.locator('.app-shell').waitFor();
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'purple');
 
-  for (const path of ['/', '/privacy']) {
+  // On a reload too: the pre-paint script sets it before React does.
+  for (const path of ['/', '/privacy', '/reset-password']) {
     await page.goto(path);
-    await expect(page.locator('#root > *').first(), path).toBeVisible();
-    expect(await palette(page), path).toBeNull();
+    await expect(page.locator('html'), path).toHaveAttribute('data-palette', 'purple');
   }
 
   // The public booking page is black and white whatever the visitor picked.
   await page.goto(`/${E2E.shop.slug}`);
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'mono');
 
-  // Leaving the app by a link inside it (no reload) drops the set too.
-  await page.goto('/dashboard');
+  // Leaving for a shop's booking page by a link (no reload) swaps the set for the shop's.
+  await page.goto('/privacy');
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'purple');
-  await page.evaluate(() => window.history.pushState({}, '', '/privacy'));
+  await page.evaluate((slug) => window.history.pushState({}, '', `/${slug}`), E2E.shop.slug);
   await page.evaluate(() => window.dispatchEvent(new PopStateEvent('popstate')));
-  await expect.poll(() => palette(page)).toBeNull();
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'mono');
 });
 
 for (const set of ['mono', 'purple'] as const) {

@@ -159,6 +159,15 @@ describe('reserving products on the public page', () => {
     const foreign = await lines([{ productId: other.product.id, quantity: 1 }]);
     expect(foreign.status).toBe(404);
     expect(foreign.body.code).toBe('PRODUCT_NOT_FOUND');
+
+    // A deactivated product is not on offer.
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { isActive: false },
+    });
+    const off = await lines([{ productId: product.id, quantity: 1 }]);
+    expect(off.status).toBe(404);
+    expect(off.body.code).toBe('PRODUCT_NOT_FOUND');
     expect((await lines('nope')).status).toBe(400);
     expect(await prisma.booking.count({ where: { shopId: t.shop.id } })).toBe(
       0,

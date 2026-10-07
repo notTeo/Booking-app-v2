@@ -52,6 +52,12 @@ test('owner books through the wizard (authenticated slots) and sees it in the ca
   await expect(page.locator('#b-name')).toHaveValue('Smoke Test');
   await page.getByRole('button', { name: /create booking/i }).click();
 
+  // a short "done" moment with the animated check, before the calendar
+  const done = page.getByRole('status').filter({ hasText: 'Booking created' });
+  await expect(done).toBeVisible();
+  await expect(done.locator('.success-check')).toBeVisible();
+  await expect(done).toContainText('Haircut');
+
   // lands on the calendar (today); go to the booking's day
   await page.waitForURL(`**/shops/${E2E.shop.slug}/bookings`);
   await page.locator('#bookings-date').fill(date);
