@@ -25,8 +25,9 @@ export interface Storage {
 
 export const MEDIA_PREFIX = '/media/';
 
-// Every stored file is a WebP under its shop's folder.
-export const MEDIA_KEY_PATTERN = /^shops\/[a-z0-9]+\/[a-z0-9-]+\.webp$/;
+// Every stored file is a WebP under its shop's folder, or its user's (the
+// account photo).
+export const MEDIA_KEY_PATTERN = /^(shops|users)\/[a-z0-9]+\/[a-z0-9-]+\.webp$/;
 
 export const mediaUrl = (key: string) => `${MEDIA_PREFIX}${key}`;
 
@@ -34,6 +35,8 @@ export const mediaKey = (url: string | null | undefined): string | null =>
   url && url.startsWith(MEDIA_PREFIX) ? url.slice(MEDIA_PREFIX.length) : null;
 
 export const shopPrefix = (shopId: string) => `shops/${shopId}/`;
+
+export const userPrefix = (userId: string) => `users/${userId}/`;
 
 const s3Storage = (config: NonNullable<typeof env.storage>): Storage => {
   const client = new S3Client({
@@ -181,5 +184,13 @@ export const removeShopFiles = async (shopId: string) => {
     await storage.removePrefix(shopPrefix(shopId));
   } catch (err) {
     logger.error({ err, shopId }, 'Could not delete the shop’s stored files');
+  }
+};
+
+export const removeUserFiles = async (userId: string) => {
+  try {
+    await storage.removePrefix(userPrefix(userId));
+  } catch (err) {
+    logger.error({ err, userId }, 'Could not delete the user’s stored files');
   }
 };

@@ -10,6 +10,9 @@ export const USER_SELECT = {
   createdAt: true,
   passwordHash: true,
   trialUsedAt: true,
+  photoUrl: true,
+  photoOriginalUrl: true,
+  photoCrop: true,
 } as const;
 
 export interface UserRow {
@@ -20,6 +23,9 @@ export interface UserRow {
   createdAt: Date;
   passwordHash: string | null;
   trialUsedAt: Date | null;
+  photoUrl: string | null;
+  photoOriginalUrl: string | null;
+  photoCrop: unknown;
 }
 
 export interface UserDto {
@@ -31,6 +37,10 @@ export interface UserDto {
   hasPassword: boolean;
   // Their first shop gets the free trial; false once they have created one.
   trialAvailable: boolean;
+  // The account photo: the shown image, its original and the crop.
+  photoUrl: string | null;
+  photoOriginalUrl: string | null;
+  photoCrop: unknown;
 }
 
 export const toUserDto = (user: UserRow): UserDto => ({
@@ -41,4 +51,7 @@ export const toUserDto = (user: UserRow): UserDto => ({
   createdAt: user.createdAt,
   hasPassword: !!user.passwordHash,
   trialAvailable: !user.trialUsedAt,
+  photoUrl: user.photoUrl,
+  photoOriginalUrl: user.photoOriginalUrl,
+  photoCrop: user.photoCrop ?? null,
 });

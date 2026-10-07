@@ -1,5 +1,6 @@
 import { useRouteMeta } from './hooks/usePageMeta';
 import { BrowserRouter, Navigate, Routes, Route, useLocation, useParams } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './context/AuthContext';
 import { ShopContextProvider } from './context/ShopContext';
@@ -59,6 +60,9 @@ function RouteMeta() {
   return null;
 }
 
+// Tells Sentry which route matched, so pages are grouped by route.
+const SentryRoutes = Sentry.withSentryReactRouterV7Routing(Routes);
+
 export default function App() {
   return (
     <ThemeProvider>
@@ -69,7 +73,7 @@ export default function App() {
           <RouteMeta />
           <AuthProvider>
             <ShopContextProvider>
-              <Routes>
+              <SentryRoutes>
                 <Route path="/" element={<HomePage />} />
 
                 <Route element={<PublicRoute />}>
@@ -125,7 +129,7 @@ export default function App() {
                     collide with them (API RESERVED_SLUGS). Unknown -> NotFoundPage. */}
                 <Route path="/:slug" element={<PublicPage />} />
                 <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+              </SentryRoutes>
             </ShopContextProvider>
           </AuthProvider>
         </BrowserRouter>

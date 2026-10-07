@@ -4,8 +4,8 @@ import { useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import type { BookingRuleCode } from '../../api/booking.api';
 import type { PublicProduct, Service, ShopMember } from '../../api/public.api';
-import ProductPicker from './ProductPicker';
-import { exceedsStock, toProductLines } from '../../utils/productLines';
+import ReservedProducts from '../ReservedProducts';
+import { exceedsStock, toProductLines, toReservedProducts } from '../../utils/productLines';
 import { useLang } from '../../context/LanguageContext';
 import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
@@ -34,6 +34,7 @@ export default function OwnerCustomerFormStep({
   time,
   outsideRules = [],
   products = [],
+  reserved = {},
   canOverStock = false,
   onSubmit,
   onBack,
@@ -51,8 +52,10 @@ export default function OwnerCustomerFormStep({
   time: string;
   /** Rules the chosen time is known to break; non-empty shows the confirmation panel. */
   outsideRules?: BookingRuleCode[];
-  /** The shop's products, offered to reserve with the booking. */
+  /** The shop's products on offer. */
   products?: PublicProduct[];
+  /** What was chosen on the products step: quantity per product id. Dropped when the slot is blocked instead. */
+  reserved?: Record<string, number>;
   /** Owner and managers may reserve more than what is left (after the warning). */
   canOverStock?: boolean;
   onSubmit: (values: OwnerCustomerFormValues) => void;
@@ -79,8 +82,6 @@ export default function OwnerCustomerFormStep({
   const [notes, setNotes] = useState('');
   // "Block this slot": the time is held with no customer, only a note.
   const [blocking, setBlocking] = useState(false);
-  // Products reserved with the booking: quantity per product id.
-  const [reserved, setReserved] = useState<Record<string, number>>({});
   const overStock = !blocking && canOverStock && exceedsStock(products, reserved);
 
   function handleToggleBlock(next: boolean) {
@@ -271,7 +272,11 @@ export default function OwnerCustomerFormStep({
         </div>
 
         {!blocking && (
-          <ProductPicker products={products} value={reserved} onChange={setReserved} canOverStock={canOverStock} showHint={false} servicePrice={selectedService?.price} />
+          <ReservedProducts
+            title={t.products.pickerTitle}
+            products={toReservedProducts(products, reserved)}
+            servicePrice={selectedService?.price}
+          />
         )}
         {overStock && <Alert variant="warning">{t.products.overStock}</Alert>}
 

@@ -370,3 +370,160 @@ describe('serving and the public page', () => {
     expect(res.body.data).not.toHaveProperty('photoCrop');
   });
 });
+
+describe('account photo', () => {
+  const ME = '/user/me/photo';
+  const me = (token: string) => api.get('/user/me').set(authHeader(token));
+
+  // A placeholder member for `joiner`'s email, invited and accepted.
+  const join = async (t: Tenant, joiner: Tenant) => {
+    const member = await prisma.userShop.create({
+      data: { shopId: t.shop.id, name: 'Joiner', email: joiner.user.email },
+    });
+    const sent = await api
+      .post(`/api/shops/${t.shop.id}/team/${member.id}/invite`)
+      .set(authHeader(t.token));
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+    const invite = await prisma.shopInvite.findFirstOrThrow({
+      where: { userShopId: member.id },
+    });
+    return {
+      member,
+      accept: () =>
+        api
+          .post(`/api/invites/${invite.id}/accept`)
+          .set(authHeader(joiner.token)),
+    };
+  };
+  const memberRow = (id: string) =>
+    prisma.userShop.findUniqueOrThrow({ where: { id } });
+
+  it("stores a square photo under the user's own folder, re-crops and removes it", async () => {
+    const t = await createTenant('Acct');
+    const res = await upload(ME, t.token, await image(3000, 2000));
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    const { photoUrl, photoOriginalUrl } = res.body.data.user;
+    expect(photoUrl).toMatch(
+      new RegExp(`^/media/users/${t.user.id}/user-[a-f0-9]+\\.webp$`),
+    );
+    expect(await sizeOf(photoUrl)).toEqual({
+      width: 640,
+      height: 640,
+      format: 'webp',
+    });
+    expect((await me(t.token)).body.data.user.photoUrl).toBe(photoUrl);
+    // Served like any other photo.
+    expect((await api.get(photoUrl)).status).toBe(200);
+
+    const half = { x: 0, y: 0, width: 0.5, height: 0.5 };
+    const again = await upload(ME, t.token, null, half);
+    expect(again.status).toBe(200);
+    expect(again.body.data.user.photoOriginalUrl).toBe(photoOriginalUrl);
+    expect(again.body.data.user.photoCrop).toEqual(half);
+    expect(memoryFiles.has(keyOf(photoUrl))).toBe(false);
+    expect(memoryFiles.size).toBe(2);
+
+    const removed = await api.delete(ME).set(authHeader(t.token));
+    expect(removed.body.data.user.photoUrl).toBeNull();
+    expect(memoryFiles.size).toBe(0);
+  });
+
+  it('needs a login, and a real image', async () => {
+    const t = await createTenant('Acct');
+    expect((await api.put(ME).field('crop', '{}')).status).toBe(401);
+    const bad = await upload(ME, t.token, Buffer.from('not an image'));
+    expect(bad.status).toBe(400);
+    expect(memoryFiles.size).toBe(0);
+  });
+
+  it('a new shop gives its owner a copy of the account photo', async () => {
+    const t = await createTenant('Acct');
+    const mine = (await upload(ME, t.token, await image())).body.data.user;
+    const res = await api
+      .post('/api/shops')
+      .set(authHeader(t.token))
+      .send({ name: 'Second', slug: `second-${t.user.id}` });
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+
+    const owner = await prisma.userShop.findFirstOrThrow({
+      where: { shopId: res.body.data.id, userId: t.user.id },
+    });
+    expect(owner.photoUrl).toMatch(
+      new RegExp(`^/media/shops/${res.body.data.id}/member-[a-f0-9]+\\.webp$`),
+    );
+    expect(owner.photoUrl).not.toBe(mine.photoUrl);
+    expect(owner.photoOriginalUrl).not.toBe(mine.photoOriginalUrl);
+    expect(owner.photoCrop).toEqual(FULL);
+    expect(memoryFiles.size).toBe(4);
+  });
+
+  it('accepting an invite copies it too, and the two are then independent', async () => {
+    const t = await createTenant('Acct');
+    const joiner = await createTenant('Joiner');
+    const mine = (await upload(ME, joiner.token, await image())).body.data.user;
+    const { member, accept } = await join(t, joiner);
+    expect((await accept()).status).toBe(200);
+
+    const copy = await memberRow(member.id);
+    expect(copy.photoUrl).toMatch(/\/member-[a-f0-9]+\.webp$/);
+    expect(memoryFiles.size).toBe(4);
+
+    // The owner replaces the member's photo: the account's is untouched.
+    const replaced = await upload(
+      memberPhoto(t, member.id),
+      t.token,
+      await image(800, 800),
+    );
+    expect(replaced.status).toBe(200);
+    expect(memoryFiles.has(keyOf(copy.photoUrl!))).toBe(false);
+    expect(memoryFiles.has(keyOf(mine.photoUrl))).toBe(true);
+    expect(memoryFiles.has(keyOf(mine.photoOriginalUrl))).toBe(true);
+    expect((await me(joiner.token)).body.data.user.photoUrl).toBe(
+      mine.photoUrl,
+    );
+
+    // The user changes or removes their own: the member's is untouched.
+    await upload(ME, joiner.token, await image(900, 900));
+    await api.delete(ME).set(authHeader(joiner.token));
+    const after = await memberRow(member.id);
+    expect(after.photoUrl).toBe(replaced.body.data.photoUrl);
+    expect(memoryFiles.has(keyOf(after.photoUrl!))).toBe(true);
+    expect(memoryFiles.size).toBe(2);
+  });
+
+  it('keeps a photo the shop already gave the member, and joins fine with no account photo', async () => {
+    const t = await createTenant('Acct');
+    const joiner = await createTenant('Joiner');
+    await upload(ME, joiner.token, await image());
+    const { member, accept } = await join(t, joiner);
+    const given = await upload(
+      memberPhoto(t, member.id),
+      t.token,
+      await image(),
+    );
+    expect((await accept()).status).toBe(200);
+    expect((await memberRow(member.id)).photoUrl).toBe(
+      given.body.data.photoUrl,
+    );
+    expect(memoryFiles.size).toBe(4);
+
+    const plain = await createTenant('Plain');
+    const other = await join(t, plain);
+    expect((await other.accept()).status).toBe(200);
+    expect((await memberRow(other.member.id)).photoUrl).toBeNull();
+  });
+
+  it("deleting the account deletes its photo's files", async () => {
+    const joiner = await createTenant('Joiner');
+    await upload(ME, joiner.token, await image());
+    expect(memoryFiles.size).toBe(2);
+    // An owner cannot delete their account, so drop the membership first.
+    await prisma.userShop.deleteMany({ where: { userId: joiner.user.id } });
+    const res = await api
+      .delete('/user/me')
+      .set(authHeader(joiner.token))
+      .send({});
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(memoryFiles.size).toBe(0);
+  });
+});

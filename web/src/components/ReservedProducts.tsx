@@ -9,17 +9,20 @@ import { formatPrice } from './booking-wizard/wizardUtils';
 export default function ReservedProducts({
   products,
   servicePrice,
+  title,
 }: {
   products: ReservedProduct[];
   /** The service's fee in cents, so the total includes it. */
   servicePrice?: number;
+  /** Replaces "Reserved products" before the booking is made. */
+  title?: string;
 }) {
   const { t } = useLang();
   if (products.length === 0) return null;
   const productsTotal = products.reduce((sum, p) => sum + p.quantity * p.unitPrice, 0);
   return (
     <div className="reserved-products">
-      <h3 className="t-subheading">{t.products.confirmationTitle}</h3>
+      <h3 className="t-subheading">{title ?? t.products.confirmationTitle}</h3>
       <ul className="list">
         {products.map((p, i) => (
           <li key={`${p.name}-${i}`} className="list__item">

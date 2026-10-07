@@ -5,7 +5,7 @@ import { useLang } from '../context/LanguageContext';
 
 const NO_SLOTS: SlotsResponse = { status: 'ok', slots: [] };
 
-export type WizardStep = 1 | 2 | 3 | 4;
+export type WizardStep = 1 | 2 | 3 | 4 | 5;
 
 export interface UseBookingWizardOptions {
   slug: string;
@@ -89,6 +89,10 @@ export interface UseBookingWizardResult {
   services: Service[];
   /** The first step this wizard has (2 when the service is fixed). */
   firstStep: WizardStep;
+  /** The products step, when this wizard has one (see `lastSteps`). */
+  productsStep: WizardStep | null;
+  /** The last step: the customer's details, or confirming a reschedule. */
+  detailsStep: WizardStep;
   eligibleMembers: ShopMember[];
   handleSelectService: (serviceId: string) => void;
   handleSelectMember: (memberId: string | null) => void;
@@ -109,6 +113,14 @@ export const wizardServices = (active: Service[], own?: Service): Service[] =>
  */
 export const nextStepBack = (step: WizardStep, firstStep: WizardStep): WizardStep | null =>
   step > firstStep ? ((step - 1) as WizardStep) : null;
+
+/**
+ * The steps after date and time. A new booking in a shop with products on
+ * offer gets a products step before the details; everything else goes
+ * straight to the last step.
+ */
+export const lastSteps = (withProducts: boolean): { productsStep: WizardStep | null; detailsStep: WizardStep } =>
+  withProducts ? { productsStep: 4, detailsStep: 5 } : { productsStep: null, detailsStep: 4 };
 
 /** A booking has at most this many services (the API's limit too). */
 export const MAX_SERVICES = 5;
@@ -190,6 +202,8 @@ export function useBookingWizard({
     .filter((s): s is Service => !!s);
   const selectedService = combineServices(selectedServices, customDurationFor);
   const firstStep: WizardStep = reschedule?.fixedService ? 2 : 1;
+  // Products are reserved with a new booking only; a reschedule keeps its own.
+  const { productsStep, detailsStep } = lastSteps(!reschedule && (shop?.products.length ?? 0) > 0);
   const bookableMembers = (shop?.members ?? []).filter((m) =>
     internal ? m.bookableInternally : m.bookableByCustomers,
   );
@@ -318,6 +332,9 @@ export function useBookingWizard({
         setTime('');
         setStep(2);
       }
+    } else if (step > 3) {
+      // Products and details: the date and time stay as picked.
+      setStep((step - 1) as WizardStep);
     }
   }
 
@@ -343,6 +360,8 @@ export function useBookingWizard({
     continueFromServices,
     services,
     firstStep,
+    productsStep,
+    detailsStep,
     eligibleMembers,
     handleSelectService,
     handleSelectMember,

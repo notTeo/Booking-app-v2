@@ -254,6 +254,11 @@ model User {
   trialUsedAt     DateTime? @db.Timestamptz(3)
   // The language they last signed in with (el or en); their emails use it.
   locale          String    @default("el")
+  // The account's own photo (same three as Shop). A team member starts with
+  // a copy of it; after that the two are independent.
+  photoUrl        String?
+  photoOriginalUrl String?
+  photoCrop       Json?
   // Version of the terms accepted at registration (null = account predates
   // versioned acceptance), and when.
   termsVersion    String?
@@ -346,6 +351,8 @@ model Product {
   supplierUrl      String?
   // How many are left.
   stock            Int      @default(0)
+  // Off = kept in the shop's list, but not offered with a booking.
+  isActive         Boolean  @default(true)
   photoUrl         String?
   photoOriginalUrl String?
   photoCrop        Json?

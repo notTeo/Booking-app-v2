@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getCustomer, type Customer } from '../../api/customer.api';
 import { useShop } from '../../context/ShopContext';
 import OwnerCustomerPicker from './OwnerCustomerPicker';
@@ -18,6 +18,8 @@ import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
 import WizardStepsIndicator from './WizardStepsIndicator';
+import ProductsStep from './ProductsStep';
+import SuccessCheck from '../SuccessCheck';
 import ServiceSelectStep from './ServiceSelectStep';
 import StaffSelectStep from './StaffSelectStep';
 import DateTimeStep from './DateTimeStep';
@@ -40,6 +42,9 @@ const rescheduledService = (booking: Booking) => {
     description: null,
   };
 };
+
+// How long the success mark stays before the wizard hands over.
+const CREATED_SHOWN_MS = 1400;
 
 export default function OwnerBookingWizard({
   shopId,
@@ -74,6 +79,12 @@ export default function OwnerBookingWizard({
   // own service durations then show on the service cards and decide the slots.
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [customDurations, setCustomDurations] = useState<Record<string, number>>({});
+  // The new booking was made: the success mark shows before onDone runs.
+  const [created, setCreated] = useState(false);
+  const doneTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(doneTimer.current), []);
+  // Products reserved with the booking (the products step): quantity per product id.
+  const [reserved, setReserved] = useState<Record<string, number>>({});
   const wizard = useBookingWizard({
     slug,
     shopId,
@@ -191,6 +202,12 @@ export default function OwnerBookingWizard({
     try {
       const booking = await request();
       setPendingOverride(null);
+      if (values && !values.block) {
+        // A new booking: show that it worked for a moment, then hand over.
+        setCreated(true);
+        doneTimer.current = window.setTimeout(() => onDone(booking), CREATED_SHOWN_MS);
+        return;
+      }
       onDone(booking);
       setSubmitting(false);
     } catch (err: unknown) {
@@ -240,7 +257,23 @@ export default function OwnerBookingWizard({
   function handleBackFromForm() {
     setSubmitError(null);
     setBusyNotice(null);
-    wizard.setStep(3);
+    wizard.goBack();
+  }
+
+  if (created) {
+    return (
+      <section className="public-section">
+        <div className="card card--center" role="status">
+          <SuccessCheck />
+          <h2 className="card__title">{t.bookings.bookingCreated}</h2>
+          <p className="card__text">
+            {shownService && <strong>{shownService.name}</strong>}
+            {selectedMember && <> · {selectedMember.name}</>}
+            {' · '}{wizard.date} {t.public.atLabel} {wizard.time}
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -261,6 +294,7 @@ export default function OwnerBookingWizard({
       <WizardStepsIndicator
         currentStep={wizard.step}
         lastLabel={reschedule ? t.bookings.reschedule.confirmStep : undefined}
+        withProducts={wizard.productsStep !== null}
       />
 
       {/* Searching customers needs permission to see them; the API returns nothing otherwise. */}
@@ -327,7 +361,19 @@ export default function OwnerBookingWizard({
         />
       )}
 
-      {wizard.step === 4 && reschedule && newStartISO && (
+      {wizard.step === wizard.productsStep && (
+        <ProductsStep
+          products={wizard.shop.products}
+          value={reserved}
+          onChange={setReserved}
+          canOverStock={canManageShop(memberShop?.role)}
+          servicePrice={shownService?.price}
+          onBack={wizard.goBack}
+          onContinue={() => wizard.setStep(wizard.detailsStep)}
+        />
+      )}
+
+      {wizard.step === wizard.detailsStep && reschedule && newStartISO && (
         <RescheduleConfirmStep
           customerName={
             reschedule.booking.customer.contactHidden ? t.customers.hiddenLabel : reschedule.booking.customer.name
@@ -353,7 +399,7 @@ export default function OwnerBookingWizard({
         />
       )}
 
-      {wizard.step === 4 && !reschedule && (
+      {wizard.step === wizard.detailsStep && !reschedule && (
         <OwnerCustomerFormStep
           shopId={shopId}
           initialCustomer={customer}
@@ -363,6 +409,7 @@ export default function OwnerBookingWizard({
           time={wizard.time}
           outsideRules={anticipated ?? []}
           products={wizard.shop.products}
+          reserved={reserved}
           canOverStock={canManageShop(memberShop?.role)}
           onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}

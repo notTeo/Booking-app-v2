@@ -295,6 +295,8 @@ export interface Translations {
     forgotPassword: string;
     noAccount: string;
     registerLink: string;
+    rememberMe: string;
+    error: string;
   };
   register: {
     title: string;
@@ -319,6 +321,7 @@ export interface Translations {
     acceptPrefix: string;
     acceptAnd: string;
     termsRequired: string;
+    error: string;
   };
   dpa: {
     linkLabel: string;
@@ -345,6 +348,7 @@ export interface Translations {
     submitting: string;
     success: string;
     backToLogin: string;
+    error: string;
   };
   resetPassword: {
     title: string;
@@ -359,6 +363,7 @@ export interface Translations {
     pwUpper: string;
     pwNumber: string;
     pwSpecial: string;
+    error: string;
   };
   verifyEmail: {
     title: string;
@@ -370,12 +375,23 @@ export interface Translations {
     resending: string;
     resentOk: string;
     backToRegister: string;
+    passwordIntro: string;
+    passwordLabel: string;
+    submit: string;
+    wrongPassword: string;
+    success: string;
+    invalidLink: string;
+    error: string;
+    resendError: string;
   };
   verifyEmailChange: {
     title: string;
     verifying: string;
-    goToDashboard: string;
-    backToSettings: string;
+    success: string;
+    invalidLink: string;
+    error: string;
+    continue: string;
+    backToAccount: string;
   };
   settings: {
     wrongPassword: string;
@@ -442,6 +458,7 @@ export interface Translations {
     errorPassword: string;
     successRevoke: string;
     errorRevoke: string;
+    photoHint: string;
   };
   notFound: {
     code: string;
@@ -586,6 +603,8 @@ export interface Translations {
     errorCancel: string;
     statusLabel: string;
     optional: string;
+    dashboard: string;
+    invitedToJoin: string;
   };
   services: {
     errorHasBookings: string;
@@ -756,6 +775,9 @@ export interface Translations {
     removeLine: string;
     removeLineTitle: string;
     removeLineMessage: string;
+    active: string;
+    activeHint: string;
+    inactive: string;
   };
   photos: {
     editorTitle: string;
@@ -818,6 +840,7 @@ export interface Translations {
     switchToDark: string;
     lightMode: string;
     darkMode: string;
+    language: string;
   };
   shopSettings: {
     deleteShopConfirmButton: string;
@@ -948,6 +971,8 @@ export interface Translations {
     serviceContext: string;
     staffContext: string;
     atLabel: string;
+    bookAnother: string;
+    scrollForMore: string;
   };
   shopGate: {
     notFoundTitle: string;
@@ -1226,6 +1251,7 @@ export interface Translations {
       showing: string;
       status: Record<'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW', string>;
     };
+    bookingCreated: string;
   };
   cancelBooking: {
     invalidLink: string;
@@ -1488,9 +1514,9 @@ home: {
     useHeading: 'Πώς τα χρησιμοποιούμε',
     useBody: 'Χρησιμοποιούμε τα δεδομένα σου για να λειτουργήσει η υπηρεσία: να δημιουργούμε και να διαχειριζόμαστε ραντεβού, να στέλνουμε emails επιβεβαίωσης ή ειδοποιήσεων και να σου παρέχουμε υποστήριξη όταν τη χρειάζεσαι. Δεν πουλάμε ούτε νοικιάζουμε τα δεδομένα σου σε τρίτους.',
     cookiesHeading: 'Cookies και τοπική αποθήκευση',
-    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Αν επιλέξεις «Αποθήκευση των στοιχείων μου» σε μια σελίδα κρατήσεων, το όνομα, το τηλέφωνο και το email σου αποθηκεύονται στην τοπική αποθήκευση του browser σου για να συμπληρωθούν στην επόμενη κράτηση· μένουν στη συσκευή σου για έως 12 μήνες και διαγράφονται μόλις αποεπιλέξεις το πεδίο ή καθαρίσεις τα δεδομένα του ιστότοπου. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
+    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Αν επιλέξεις «Αποθήκευση των στοιχείων μου» σε μια σελίδα κρατήσεων, το όνομα, το τηλέφωνο και το email σου αποθηκεύονται στην τοπική αποθήκευση του browser σου για να συμπληρωθούν στην επόμενη κράτηση· μένουν στη συσκευή σου για έως 12 μήνες και διαγράφονται μόλις αποεπιλέξεις το πεδίο ή καθαρίσεις τα δεδομένα του ιστότοπου. Μετά από μια κράτηση, η επιβεβαίωσή της κρατιέται στην καρτέλα του browser μέχρι να την κλείσεις, ώστε να φαίνεται ξανά αν ανανεώσεις τη σελίδα. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
     sharingHeading: 'Κοινοποίηση δεδομένων',
-    sharingBody: 'Δεν μοιραζόμαστε τα δεδομένα σου με τρίτους, εκτός από τους παρόχους υπηρεσιών που χρειαζόμαστε για να λειτουργήσει το BeBooked (π.χ. αποστολή email, φιλοξενία). Αυτοί οι πάροχοι έχουν πρόσβαση μόνο στα δεδομένα που χρειάζονται για να παρέχουν την υπηρεσία τους.',
+    sharingBody: 'Δεν μοιραζόμαστε τα δεδομένα σου με τρίτους, εκτός από τους παρόχους υπηρεσιών που χρειαζόμαστε για να λειτουργήσει το BeBooked (π.χ. αποστολή email, φιλοξενία, παρακολούθηση σφαλμάτων). Αυτοί οι πάροχοι έχουν πρόσβαση μόνο στα δεδομένα που χρειάζονται για να παρέχουν την υπηρεσία τους. Όταν κάτι πάει στραβά στην εφαρμογή, μια τεχνική αναφορά σφάλματος (το σφάλμα, η σελίδα, ο τύπος του browser και ενδεχομένως η διεύθυνση IP) στέλνεται στη Sentry, τον πάροχο παρακολούθησης σφαλμάτων μας, σε διακομιστές εντός ΕΕ, για να μπορέσουμε να το διορθώσουμε. Έχουμε απενεργοποιήσει τη συλλογή του περιεχομένου των φορμών και των cookies σε αυτές τις αναφορές.',
     rightsHeading: 'Τα δικαιώματά σου',
     rightsBody: 'Μπορείς να ζητήσεις πρόσβαση, διόρθωση ή διαγραφή των δεδομένων σου ανά πάσα στιγμή, επικοινωνώντας μαζί μας. Διατηρούμε τα δεδομένα σου όσο ο λογαριασμός σου παραμένει ενεργός, εκτός αν μας ζητήσεις κάτι διαφορετικό.',
     changesHeading: 'Αλλαγές σε αυτή την πολιτική',
@@ -1645,6 +1671,8 @@ home: {
       forgotPassword: 'Ξεχάσατε τον κωδικό;',
       noAccount: 'Δεν έχετε λογαριασμό;',
       registerLink: 'Εγγραφή',
+      rememberMe: 'Να με θυμάσαι',
+      error: 'Η σύνδεση απέτυχε.',
     },
     register: {
       title: 'Εγγραφή',
@@ -1669,11 +1697,12 @@ home: {
       acceptPrefix: 'Αποδέχομαι τους',
       acceptAnd: 'και την',
       termsRequired: 'Πρέπει να αποδεχτείτε τους Όρους Χρήσης και την Πολιτική Απορρήτου για να συνεχίσετε.',
+      error: 'Η εγγραφή απέτυχε.',
     },
     dpa: {
       linkLabel: 'Συμφωνία Επεξεργασίας Δεδομένων',
       title: 'Συμφωνία Επεξεργασίας Δεδομένων (DPA)',
-      lastUpdated: 'Τελευταία ενημέρωση: Σεπτέμβριος 2026',
+      lastUpdated: 'Τελευταία ενημέρωση: Οκτώβριος 2026',
       placeholderNotice: 'Προσωρινό κείμενο: η τελική Συμφωνία Επεξεργασίας Δεδομένων θα δημοσιευτεί πριν την επίσημη λειτουργία της υπηρεσίας.',
       intro: 'Το παρόν περιγράφει πώς το BeBooked επεξεργάζεται προσωπικά δεδομένα για λογαριασμό των καταστημάτων που το χρησιμοποιούν.',
       rolesHeading: 'Ρόλοι',
@@ -1681,7 +1710,7 @@ home: {
       processingHeading: 'Αντικείμενο επεξεργασίας',
       processingBody: 'Όνομα, τηλέφωνο, προαιρετικό email και σημειώσεις πελατών, καθώς και το ιστορικό των κρατήσεών τους, με σκοπό τη διαχείριση ραντεβού.',
       subprocessorsHeading: 'Υπο-εκτελούντες',
-      subprocessorsBody: 'Πάροχος φιλοξενίας της εφαρμογής και της βάσης δεδομένων, και πάροχος αποστολής email συναλλαγών. Ο ακριβής κατάλογος θα δημοσιευτεί στην τελική έκδοση.',
+      subprocessorsBody: 'Πάροχος φιλοξενίας της εφαρμογής και της βάσης δεδομένων, πάροχος αποστολής email συναλλαγών, και πάροχος παρακολούθησης σφαλμάτων (Sentry, με αποθήκευση εντός ΕΕ), που λαμβάνει τεχνικές αναφορές σφαλμάτων χωρίς το περιεχόμενο των φορμών. Ο ακριβής κατάλογος θα δημοσιευτεί στην τελική έκδοση.',
       securityHeading: 'Ασφάλεια',
       securityBody: 'Κρυπτογραφημένες συνδέσεις (HTTPS), περιορισμένη πρόσβαση ανά κατάστημα και κατακερματισμός κωδικών πρόσβασης.',
       rightsHeading: 'Δικαιώματα υποκειμένων',
@@ -1695,6 +1724,7 @@ home: {
       submitting: 'Αποστολή...',
       success: 'Εάν αυτό το email υπάρχει θα λάβετε έναν σύνδεσμο επαναφοράς σύντομα.',
       backToLogin: 'Πίσω στη Σύνδεση',
+      error: 'Κάτι πήγε στραβά.',
     },
     resetPassword: {
       title: 'Επαναφορά Κωδικού',
@@ -1709,6 +1739,7 @@ home: {
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
       pwSpecial: 'Ένας ειδικός χαρακτήρας (!@#$%...)',
+      error: 'Η επαναφορά απέτυχε.',
     },
     verifyEmail: {
       title: 'Επαλήθευση Email',
@@ -1720,12 +1751,23 @@ home: {
       resending: 'Αποστολή...',
       resentOk: 'Email εστάλη! Ελέγξτε εισερχόμενα και ανεπιθύμητα.',
       backToRegister: 'Πίσω στην Εγγραφή',
+      passwordIntro: 'Εισάγετε τον κωδικό που επιλέξατε στην εγγραφή για να ολοκληρώσετε τη δημιουργία του λογαριασμού σας.',
+      passwordLabel: 'Κωδικός',
+      submit: 'Επαλήθευση email',
+      wrongPassword: 'Αυτός δεν είναι ο κωδικός με τον οποίο εγγραφήκατε.',
+      success: 'Το email επαληθεύτηκε. Μπορείτε τώρα να συνδεθείτε.',
+      invalidLink: 'Μη έγκυρος σύνδεσμος επαλήθευσης.',
+      error: 'Η επαλήθευση απέτυχε.',
+      resendError: 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.',
     },
     verifyEmailChange: {
       title: 'Επαλήθευση Αλλαγής Email',
       verifying: 'Επαλήθευση...',
-      goToDashboard: 'Μετάβαση στο Ταμπλό',
-      backToSettings: 'Πίσω στις Ρυθμίσεις',
+      success: 'Η διεύθυνση email σας ενημερώθηκε.',
+      invalidLink: 'Μη έγκυρος σύνδεσμος επαλήθευσης.',
+      error: 'Η επαλήθευση απέτυχε.',
+      continue: 'Συνέχεια',
+      backToAccount: 'Πίσω στον Λογαριασμό',
     },
     settings: {
       wrongPassword: 'Λάθος κωδικός.',
@@ -1792,6 +1834,7 @@ home: {
       errorPassword: 'Αποτυχία ενημέρωσης κωδικού.',
       successRevoke: 'Όλες οι άλλες συνεδρίες ανακλήθηκαν.',
       errorRevoke: 'Αποτυχία ανάκλησης συνεδριών.',
+      photoHint: "Όταν μπαίνεις σε μια ομάδα, η φωτογραφία αυτή γίνεται η αρχική σου φωτογραφία εκεί. Το κατάστημα μπορεί να την αλλάξει χωρίς να επηρεαστεί αυτή.",
     },
     notFound: {
       code: '404',
@@ -1936,6 +1979,8 @@ home: {
       errorCancel: 'Αποτυχία ακύρωσης πρόσκλησης.',
       statusLabel: 'Κατάσταση',
       optional: 'προαιρετικό',
+      dashboard: 'Ταμπλό',
+      invitedToJoin: 'σας προσκάλεσε στο',
     },
     services: {
       errorHasBookings: 'Αυτή η υπηρεσία έχει κρατήσεις. Απενεργοποιήστε την ώστε να μην μπορούν οι πελάτες να την κλείσουν.',
@@ -2120,6 +2165,9 @@ home: {
       removeLine: "Αφαίρεση: {name}",
       removeLineTitle: "Αφαίρεση προϊόντος από την κράτηση;",
       removeLineMessage: "Το προϊόν αφαιρείται από την κράτηση. Αν είχε σημειωθεί ως πουλημένο, το απόθεμα επιστρέφει.",
+      active: "Προσφέρεται στις κρατήσεις",
+      activeHint: "Όταν είναι κλειστό, το προϊόν μένει στη λίστα σου αλλά δεν προτείνεται σε πελάτες ή στο προσωπικό κατά την κράτηση.",
+      inactive: "Ανενεργό",
     },
     photos: {
       editorTitle: "Επεξεργασία φωτογραφίας",
@@ -2182,6 +2230,7 @@ home: {
       switchToDark: 'Εναλλαγή σε σκοτεινή λειτουργία',
       lightMode: 'Φωτεινή λειτουργία',
       darkMode: 'Σκοτεινή λειτουργία',
+      language: 'Γλώσσα',
     },
     shopSettings: {
       deleteShopConfirmButton: 'Διαγραφή καταστήματος',
@@ -2319,6 +2368,8 @@ home: {
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
+      bookAnother: 'Νέα κράτηση',
+      scrollForMore: 'Κύλισε για περισσότερα',
     },
     shopGate: {
       notFoundTitle: 'Το κατάστημα δεν είναι διαθέσιμο',
@@ -2618,6 +2669,7 @@ home: {
           NO_SHOW: 'Δεν προσήλθε',
         },
       },
+      bookingCreated: 'Το ραντεβού δημιουργήθηκε',
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -2876,9 +2928,9 @@ home: {
     useHeading: 'How We Use It',
     useBody: "We use your data to run the service: creating and managing bookings, sending confirmation or notification emails, and providing support when you need it. We don't sell or rent your data to third parties.",
     cookiesHeading: 'Cookies & Local Storage',
-    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. If you tick \"Remember my details\" on a booking page, your name, phone number and email are kept in your browser's local storage to fill in your next booking; they stay on your device for up to 12 months and are removed as soon as you untick the box or clear the site's data. We don't use third-party cookies for advertising or tracking.",
+    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. If you tick \"Remember my details\" on a booking page, your name, phone number and email are kept in your browser's local storage to fill in your next booking; they stay on your device for up to 12 months and are removed as soon as you untick the box or clear the site's data. After you book, the confirmation is kept in that browser tab until you close it, so it is still shown if you reload the page. We don't use third-party cookies for advertising or tracking.",
     sharingHeading: 'Data Sharing',
-    sharingBody: "We don't share your data with third parties, except the service providers we rely on to run BeBooked (e.g. email delivery, hosting). Those providers only get access to what they need to provide their service.",
+    sharingBody: "We don't share your data with third parties, except the service providers we rely on to run BeBooked (e.g. email delivery, hosting, error monitoring). Those providers only get access to what they need to provide their service. When something goes wrong in the app, a technical error report (the error, the page, the browser type and possibly the IP address) is sent to Sentry, our error-monitoring provider, on servers in the EU, so that we can fix it. We have switched off the collection of form contents and cookies in these reports.",
     rightsHeading: 'Your Rights',
     rightsBody: "You can request access to, correction of, or deletion of your data at any time by reaching out to us. We keep your data for as long as your account is active, unless you ask us to do otherwise.",
     changesHeading: 'Changes to This Policy',
@@ -3033,6 +3085,8 @@ home: {
       forgotPassword: 'Forgot password?',
       noAccount: "Don't have an account?",
       registerLink: 'Register',
+      rememberMe: 'Remember me',
+      error: 'Login failed.',
     },
     register: {
       title: 'Register',
@@ -3057,11 +3111,12 @@ home: {
       acceptPrefix: 'I accept the',
       acceptAnd: 'and the',
       termsRequired: 'You must accept the Terms of Service and Privacy Policy to continue.',
+      error: 'Registration failed.',
     },
     dpa: {
       linkLabel: 'Data Processing Agreement',
       title: 'Data Processing Agreement (DPA)',
-      lastUpdated: 'Last updated: September 2026',
+      lastUpdated: 'Last updated: October 2026',
       placeholderNotice: 'Placeholder text: the final Data Processing Agreement will be published before the service officially launches.',
       intro: 'This describes how BeBooked processes personal data on behalf of the shops that use it.',
       rolesHeading: 'Roles',
@@ -3069,7 +3124,7 @@ home: {
       processingHeading: 'What is processed',
       processingBody: "Customers' name, phone number, optional email and notes, and their booking history, for the purpose of managing appointments.",
       subprocessorsHeading: 'Sub-processors',
-      subprocessorsBody: 'The hosting provider for the application and database, and a transactional email provider. The exact list will be published in the final version.',
+      subprocessorsBody: 'The hosting provider for the application and database, a transactional email provider, and an error-monitoring provider (Sentry, stored in the EU), which receives technical error reports without the contents of forms. The exact list will be published in the final version.',
       securityHeading: 'Security',
       securityBody: 'Encrypted connections (HTTPS), per-shop access restrictions, and hashed passwords.',
       rightsHeading: 'Data subject rights',
@@ -3083,6 +3138,7 @@ home: {
       submitting: 'Sending...',
       success: 'If this email exists you will receive a reset link shortly.',
       backToLogin: 'Back to Login',
+      error: 'Something went wrong.',
     },
     resetPassword: {
       title: 'Reset Password',
@@ -3097,6 +3153,7 @@ home: {
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',
       pwSpecial: 'One special character (!@#$%...)',
+      error: 'Reset failed.',
     },
     verifyEmail: {
       title: 'Email Verification',
@@ -3108,12 +3165,23 @@ home: {
       resending: 'Sending...',
       resentOk: 'Email sent! Check your inbox and spam folder.',
       backToRegister: 'Back to Register',
+      passwordIntro: 'Enter the password you chose when you signed up to finish creating your account.',
+      passwordLabel: 'Password',
+      submit: 'Verify email',
+      wrongPassword: 'That is not the password you signed up with.',
+      success: 'Email verified successfully. You can now log in.',
+      invalidLink: 'Invalid verification link.',
+      error: 'Verification failed.',
+      resendError: 'Something went wrong. Please try again.',
     },
     verifyEmailChange: {
       title: 'Email Change Verification',
       verifying: 'Verifying...',
-      goToDashboard: 'Go to Dashboard',
-      backToSettings: 'Back to Settings',
+      success: 'Your email address has been updated successfully.',
+      invalidLink: 'Invalid verification link.',
+      error: 'Verification failed.',
+      continue: 'Continue',
+      backToAccount: 'Back to Account',
     },
     settings: {
       wrongPassword: 'Incorrect password.',
@@ -3180,6 +3248,7 @@ home: {
       errorPassword: 'Failed to update password.',
       successRevoke: 'All other sessions have been revoked.',
       errorRevoke: 'Failed to revoke sessions.',
+      photoHint: "When you join a team, this becomes your starting photo there. The shop can change its copy without affecting this one.",
     },
     notFound: {
       code: '404',
@@ -3324,6 +3393,8 @@ home: {
       errorCancel: 'Failed to cancel invite.',
       statusLabel: 'Status',
       optional: 'optional',
+      dashboard: 'Dashboard',
+      invitedToJoin: 'invited you to join',
     },
     services: {
       errorHasBookings: "This service has bookings. Deactivate it instead so customers can't book it.",
@@ -3508,6 +3579,9 @@ home: {
       removeLine: "Remove: {name}",
       removeLineTitle: "Remove this product from the booking?",
       removeLineMessage: "The product is removed from the booking. If it was marked sold, the stock goes back.",
+      active: "Offered with bookings",
+      activeHint: "When off, the product stays in your list but is not offered to customers or staff when booking.",
+      inactive: "Inactive",
     },
     photos: {
       editorTitle: "Edit photo",
@@ -3570,6 +3644,7 @@ home: {
       switchToDark: 'Switch to dark mode',
       lightMode: 'Light mode',
       darkMode: 'Dark mode',
+      language: 'Language',
     },
     shopSettings: {
       deleteShopConfirmButton: 'Delete shop',
@@ -3707,6 +3782,8 @@ home: {
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
+      bookAnother: 'Book another',
+      scrollForMore: 'Scroll for more',
     },
     shopGate: {
       notFoundTitle: 'Shop not available',
@@ -4006,6 +4083,7 @@ home: {
           NO_SHOW: 'No-show',
         },
       },
+      bookingCreated: 'Booking created',
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 import { apiErrorMessage } from '../utils/apiError';
-import Wordmark from '../components/Wordmark';
+import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useLang();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +26,7 @@ export default function LoginPage() {
       // PublicRoute sees the new session and picks the landing page.
       await login(email, password, rememberMe);
     } catch (err: unknown) {
-      setError(apiErrorMessage(err, 'Login failed'));
+      setError(apiErrorMessage(err, t.login.error));
     } finally {
       setIsLoading(false);
     }
@@ -33,11 +35,11 @@ export default function LoginPage() {
   return (
     <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <h1 className="t-heading">Login</h1>
+        <AuthTop />
+        <h1 className="t-heading">{t.login.title}</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label className="field__label" htmlFor="email">Email</label>
+            <label className="field__label" htmlFor="email">{t.login.emailLabel}</label>
             <input className="input"
               id="email"
               type="email"
@@ -47,7 +49,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="field">
-            <label className="field__label" htmlFor="password">Password</label>
+            <label className="field__label" htmlFor="password">{t.login.passwordLabel}</label>
             <PasswordInput
               id="password"
               value={password}
@@ -65,17 +67,17 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               <span className="checkbox__box" />
-              Remember me
+              {t.login.rememberMe}
             </label>
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
           <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading}>
-            Login
+            {t.login.submit}
           </button>
         </form>
         <div className="form-links">
-          <span><Link to="/forgot-password">Forgot password?</Link></span>
-          <span>Don't have an account? <Link to="/register">Register</Link></span>
+          <span><Link to="/forgot-password">{t.login.forgotPassword}</Link></span>
+          <span>{t.login.noAccount} <Link to="/register">{t.login.registerLink}</Link></span>
         </div>
       </div>
     </div>

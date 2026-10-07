@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { getCookie, setCookie } from '../utils/cookies';
 import { PALETTE_COOKIE, parsePalette, type Palette } from '../utils/palette';
 
@@ -10,13 +10,16 @@ interface PaletteContextType {
 const PaletteContext = createContext<PaletteContextType | null>(null);
 
 // The chosen colour set, remembered on this device like the theme. It only
-// takes effect inside the app, where AppPalette puts it on <html>.
+// takes effect where AppPalette puts it on <html> (the app and the marketing
+// pages). The cookie is written only when a set is picked, never just for
+// visiting.
 export function PaletteProvider({ children }: { children: React.ReactNode }) {
-  const [palette, setPalette] = useState<Palette>(() => parsePalette(getCookie(PALETTE_COOKIE)));
+  const [palette, setPaletteState] = useState<Palette>(() => parsePalette(getCookie(PALETTE_COOKIE)));
 
-  useEffect(() => {
-    setCookie(PALETTE_COOKIE, palette, 365);
-  }, [palette]);
+  const setPalette = (next: Palette) => {
+    setCookie(PALETTE_COOKIE, next, 365);
+    setPaletteState(next);
+  };
 
   return <PaletteContext.Provider value={{ palette, setPalette }}>{children}</PaletteContext.Provider>;
 }

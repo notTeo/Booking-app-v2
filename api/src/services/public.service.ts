@@ -70,6 +70,7 @@ export const getShopInfoService = async (
     include: {
       // The shop's own supplier link is never selected here.
       products: {
+        where: { isActive: true },
         select: {
           id: true,
           name: true,

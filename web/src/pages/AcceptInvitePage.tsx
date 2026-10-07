@@ -8,6 +8,7 @@ import { MY_INVITES_KEY } from '../hooks/useMyInvites';
 import { MY_SHOPS_KEY } from '../hooks/useMyShops';
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import AuthTop from '../components/AuthTop';
 
 export default function AcceptInvitePage() {
   const { t } = useLang();
@@ -74,7 +75,7 @@ export default function AcceptInvitePage() {
         <div className="card card--auth card--center">
           <Alert variant="danger">{lookupError}</Alert>
           <Link to="/dashboard" className="btn btn--secondary btn--block">
-            Dashboard
+            {t.invites.dashboard}
           </Link>
         </div>
       </div>
@@ -88,10 +89,11 @@ export default function AcceptInvitePage() {
   return (
     <div className="page page--center">
       <div className="card card--auth card--center">
+        <AuthTop back={false} />
         <h1 className="t-heading">{t.invites.youreInvited}</h1>
         <div className="card__text">
           <p>
-            <strong>{invite.invitedBy}</strong> invited you to join{' '}
+            <strong>{invite.invitedBy}</strong> {t.invites.invitedToJoin}{' '}
             <strong>{invite.shopName}</strong>
           </p>
           <p>

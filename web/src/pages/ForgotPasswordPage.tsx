@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api/auth.api';
+import { useLang } from '../context/LanguageContext';
 import { apiErrorMessage } from '../utils/apiError';
-import Wordmark from '../components/Wordmark';
+import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 
 export default function ForgotPasswordPage() {
+  const { t } = useLang();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -19,9 +21,9 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       await forgotPassword(email);
-      setSuccess('If this email exists you will receive a reset link shortly.');
+      setSuccess(t.forgotPassword.success);
     } catch (err: unknown) {
-      setError(apiErrorMessage(err, 'Something went wrong.'));
+      setError(apiErrorMessage(err, t.forgotPassword.error));
     } finally {
       setIsLoading(false);
     }
@@ -30,11 +32,11 @@ export default function ForgotPasswordPage() {
   return (
     <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <h1 className="t-heading">Forgot Password</h1>
+        <AuthTop />
+        <h1 className="t-heading">{t.forgotPassword.title}</h1>
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label className="field__label" htmlFor="email">Email</label>
+            <label className="field__label" htmlFor="email">{t.forgotPassword.emailLabel}</label>
             <input className="input"
               id="email"
               type="email"
@@ -46,11 +48,11 @@ export default function ForgotPasswordPage() {
           {error && <Alert variant="danger">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
           <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading}>
-            Send Reset Link
+            {t.forgotPassword.submit}
           </button>
         </form>
         <div className="form-links">
-          <span><Link to="/login">Back to Login</Link></span>
+          <span><Link to="/login">{t.forgotPassword.backToLogin}</Link></span>
         </div>
       </div>
     </div>

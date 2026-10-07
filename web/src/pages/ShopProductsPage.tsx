@@ -89,6 +89,7 @@ export default function ShopProductsPage() {
                       <td data-label={tp.colProduct} className="data-table__title">
                         <ProductThumb photoUrl={p.photoUrl} />
                         <Link to={p.id} className="data-table__link">{p.name}</Link>
+                        {!p.isActive && <> <span className="badge badge--neutral">{tp.inactive}</span></>}
                       </td>
                       <td data-label={tp.colPrice}>{formatPrice(p.price)}</td>
                       <td data-label={tp.colStock}>

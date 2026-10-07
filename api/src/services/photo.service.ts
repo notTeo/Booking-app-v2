@@ -1,9 +1,9 @@
 import { randomBytes } from 'crypto';
 import sharp from 'sharp';
 import { AppError } from '../middleware/errorHandler';
-import { mediaKey, mediaUrl, shopPrefix, storage } from './storage.service';
+import { mediaKey, mediaUrl, storage } from './storage.service';
 
-// One photo pipeline for the shop, team members and products. The upload is
+// One photo pipeline for the shop, team members, products and accounts. The upload is
 // validated and resized here; callers store the three returned values and
 // then delete the files in `stale`.
 
@@ -132,23 +132,24 @@ const cropOriginal = async (
     .toBuffer();
 };
 
-const newKey = (shopId: string, label: string) =>
-  `${shopPrefix(shopId)}${label}-${randomBytes(12).toString('hex')}.webp`;
+const newKey = (prefix: string, label: string) =>
+  `${prefix}${label}-${randomBytes(12).toString('hex')}.webp`;
 
 /**
  * Stores a new photo, or re-crops the current one when no file is sent.
  * Returns the columns to save and the files that saving them makes stale.
  */
 export const storePhoto = async (input: {
-  shopId: string;
+  // The owner's folder: shopPrefix(shopId) or userPrefix(userId).
+  prefix: string;
   shape: PhotoShape;
-  // 'shop', 'member' or 'product': only makes the file names readable.
+  // 'shop', 'member', 'product' or 'user': only makes the file names readable.
   label: string;
   file?: Buffer;
   crop: PhotoCrop;
   current: StoredPhoto;
 }) => {
-  const { shopId, shape, label, file, crop, current } = input;
+  const { prefix, shape, label, file, crop, current } = input;
 
   let original: Buffer;
   let photoOriginalUrl: string;
@@ -157,7 +158,7 @@ export const storePhoto = async (input: {
 
   if (file) {
     original = await normaliseOriginal(file);
-    const key = newKey(shopId, `${label}-original`);
+    const key = newKey(prefix, `${label}-original`);
     await storage.put(key, original, 'image/webp');
     written.push(key);
     photoOriginalUrl = mediaUrl(key);
@@ -173,7 +174,7 @@ export const storePhoto = async (input: {
 
   try {
     const cropped = await cropOriginal(original, crop, shape);
-    const key = newKey(shopId, label);
+    const key = newKey(prefix, label);
     await storage.put(key, cropped, 'image/webp');
     return {
       data: { photoUrl: mediaUrl(key), photoOriginalUrl, photoCrop: crop },
@@ -183,4 +184,39 @@ export const storePhoto = async (input: {
     await storage.remove(written).catch(() => undefined);
     throw err;
   }
+};
+
+/**
+ * A photo's files copied into another folder, as the columns to save there.
+ * The copy is independent: replacing or removing either one leaves the other.
+ * null when the source's shown file is missing.
+ */
+export const copyPhoto = async (
+  source: StoredPhoto,
+  prefix: string,
+  label: string,
+): Promise<StoredPhoto | null> => {
+  const shownKey = mediaKey(source.photoUrl);
+  const shown = shownKey ? await storage.get(shownKey) : null;
+  if (!shown) return null;
+  const originalKey = mediaKey(source.photoOriginalUrl);
+  const original = originalKey ? await storage.get(originalKey) : null;
+
+  const key = newKey(prefix, label);
+  await storage.put(key, shown, 'image/webp');
+  // Without the original the copy cannot be re-cropped, only replaced.
+  if (!original)
+    return { photoUrl: mediaUrl(key), photoOriginalUrl: null, photoCrop: null };
+  const copyOfOriginal = newKey(prefix, `${label}-original`);
+  try {
+    await storage.put(copyOfOriginal, original, 'image/webp');
+  } catch (err) {
+    await storage.remove([key]).catch(() => undefined);
+    throw err;
+  }
+  return {
+    photoUrl: mediaUrl(key),
+    photoOriginalUrl: mediaUrl(copyOfOriginal),
+    photoCrop: source.photoCrop,
+  };
 };

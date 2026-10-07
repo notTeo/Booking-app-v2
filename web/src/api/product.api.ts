@@ -10,6 +10,8 @@ export interface Product extends PhotoFields {
   price: number;
   /** How many are left. */
   stock: number;
+  /** Off = kept in the shop's list, but not offered with a booking. */
+  isActive: boolean;
   /** Where the shop buys it. Owner and managers only: absent for staff, never public. */
   supplierUrl?: string | null;
   createdAt: string;
@@ -22,6 +24,7 @@ export interface ProductDto {
   price?: number;
   stock?: number;
   supplierUrl?: string | null;
+  isActive?: boolean;
 }
 
 const base = (shopId: string) => `/api/shops/${shopId}/products`;

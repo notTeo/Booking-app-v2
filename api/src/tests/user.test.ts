@@ -65,6 +65,9 @@ describe('GET /user/me', () => {
       'id',
       'isVerified',
       'name',
+      'photoCrop',
+      'photoOriginalUrl',
+      'photoUrl',
       'trialAvailable',
     ]);
     expect(me.body.data.user.hasPassword).toBe(true);

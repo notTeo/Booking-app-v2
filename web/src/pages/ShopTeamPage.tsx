@@ -185,8 +185,10 @@ export default function ShopTeamPage() {
                 {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
-                      <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
-                      <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
+                      <span className="data-table__identity">
+                        <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
+                        <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
+                      </span>
                       {!member.userId && (
                         <>
                           <span className="badge badge--warning">{t.team.noLoginYet}</span>

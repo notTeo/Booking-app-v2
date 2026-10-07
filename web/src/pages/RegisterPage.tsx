@@ -6,7 +6,7 @@ import { useLang } from '../context/LanguageContext';
 import { authStore } from '../store/authStore';
 import PasswordRequirement from '../components/PasswordRequirement';
 import { apiErrorMessage } from '../utils/apiError';
-import Wordmark from '../components/Wordmark';
+import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
 
@@ -52,9 +52,9 @@ export default function RegisterPage() {
 
       // Normal path: verification email sent
       setRegisteredEmail(email);
-      setSuccess('Verification email sent. Please check your inbox.');
+      setSuccess(t.register.verificationSent);
     } catch (err: unknown) {
-      setError(apiErrorMessage(err, 'Registration failed'));
+      setError(apiErrorMessage(err, t.register.error));
     } finally {
       setIsLoading(false);
     }
@@ -76,8 +76,8 @@ export default function RegisterPage() {
   return (
     <div className="page page--center">
       <div className="card card--auth">
-        <Link to="/" className="back-link">← <span className="wordmark wordmark--inline wordmark--muted"><Wordmark /></span></Link>
-        <h1 className="t-heading">Register</h1>
+        <AuthTop />
+        <h1 className="t-heading">{t.register.title}</h1>
 
         {inviteToken && (
           <p className="card__text">
@@ -97,7 +97,7 @@ export default function RegisterPage() {
             />
           </div>
           <div className="field">
-            <label className="field__label" htmlFor="email">Email</label>
+            <label className="field__label" htmlFor="email">{t.register.emailLabel}</label>
             <input className={`input${inviteToken && emailFromInvite ? ' is-disabled' : ''}`}
               id="email"
               type="email"
@@ -108,7 +108,7 @@ export default function RegisterPage() {
             />
           </div>
           <div className="field">
-            <label className="field__label" htmlFor="password">Password</label>
+            <label className="field__label" htmlFor="password">{t.register.passwordLabel}</label>
             <PasswordInput
               id="password"
               value={password}
@@ -147,13 +147,13 @@ export default function RegisterPage() {
           {success && (
             <>
               <Alert variant="success">
-                {success} Check your spam folder if you don't see it.
+                {success} {t.register.checkSpam}
               </Alert>
               {resendStatus === 'sent' && (
-                <Alert variant="success">Email resent successfully.</Alert>
+                <Alert variant="success">{t.register.resentOk}</Alert>
               )}
               {resendStatus === 'error' && (
-                <Alert variant="danger">Failed to resend. Please try again.</Alert>
+                <Alert variant="danger">{t.register.resentError}</Alert>
               )}
               <button
                 className={`btn btn--secondary btn--block${resendStatus === 'loading' ? ' is-loading' : ''}`}
@@ -161,18 +161,18 @@ export default function RegisterPage() {
                 onClick={handleResend}
                 aria-busy={resendStatus === 'loading'}
               >
-                Resend Email
+                {t.register.resend}
               </button>
             </>
           )}
           {!success && (
             <button className={`btn btn--block${isLoading ? ' is-loading' : ''}`} type="submit" aria-busy={isLoading} disabled={!acceptTerms}>
-              Register
+              {t.register.submit}
             </button>
           )}
         </form>
         <div className="form-links">
-          <span>Already have an account? <Link to="/login">Login</Link></span>
+          <span>{t.register.alreadyAccount} <Link to="/login">{t.register.loginLink}</Link></span>
         </div>
       </div>
     </div>
