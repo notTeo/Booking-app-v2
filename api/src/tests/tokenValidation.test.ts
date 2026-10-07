@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import app from '../app';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
+import { hashToken } from '../utils/jwt';
+import bcrypt from 'bcrypt';
 
 const api = await serve(app);
 
@@ -21,13 +23,15 @@ vi.mock('../services/email.service', () => ({
 // error with no .status, landing on the generic 500 branch instead of a
 // clean 400. isString() catches it before any of that runs.
 describe('token validation (group 7): a malformed token is a 400, not a 500', () => {
-  it('GET /auth/verify-email: missing token', async () => {
-    const res = await api.get('/auth/verify-email');
+  it('POST /auth/verify-email: missing token', async () => {
+    const res = await api.post('/auth/verify-email').send({ password: 'x' });
     expect(res.status).toBe(400);
   });
 
-  it('GET /auth/verify-email: array-shaped token (repeated query key)', async () => {
-    const res = await api.get('/auth/verify-email?token=a&token=b');
+  it('POST /auth/verify-email: array-shaped token', async () => {
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: ['a', 'b'], password: 'x' });
     expect(res.status).toBe(400);
   });
 
@@ -53,12 +57,14 @@ describe('token validation (group 7): a malformed token is a 400, not a 500', ()
       data: {
         name: 'Real User',
         email: 'real-token-user@example.com',
-        passwordHash: 'hash',
-        token: 'a-real-token',
+        passwordHash: await bcrypt.hash('Real-Pass-1!', 4),
+        token: hashToken('a-real-token'), // stored hashed
         expiresAt: new Date(Date.now() + 60_000),
       },
     });
-    const res = await api.get('/auth/verify-email?token=a-real-token');
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: 'a-real-token', password: 'Real-Pass-1!' });
     expect(res.status).toBe(200);
   });
 });

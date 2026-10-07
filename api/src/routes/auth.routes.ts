@@ -20,19 +20,28 @@ import {
   resendVerificationValidation,
   resetPasswordValidation,
   verifyEmailTokenValidation,
+  verifyEmailValidation,
 } from '../validators/authValidation';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
 import {
   authLimiter,
   forgotPasswordLimiter,
+  loginAccountLimiter,
   refreshLimiter,
 } from '../middleware/rateLimiter';
 
 const router = Router();
 
 router.post('/register', authLimiter, registerValidation, validate, register);
-router.post('/login', authLimiter, loginValidation, validate, login);
+router.post(
+  '/login',
+  authLimiter,
+  loginAccountLimiter,
+  loginValidation,
+  validate,
+  login,
+);
 router.post(
   '/refresh',
   refreshLimiter,
@@ -41,9 +50,12 @@ router.post(
   refresh,
 );
 router.post('/logout', refreshCookieValidation, validate, logout);
-router.get(
+// A POST: it carries the sign-up password, which must not travel in a URL.
+// Limited like login, since it checks a password.
+router.post(
   '/verify-email',
-  verifyEmailTokenValidation,
+  authLimiter,
+  verifyEmailValidation,
   validate,
   verifyEmailController,
 );

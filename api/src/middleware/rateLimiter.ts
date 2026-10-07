@@ -24,6 +24,24 @@ export const authLimiter: RequestHandler = limiter({
   },
 });
 
+// Per account, whatever address the guesses come from: the per-IP limit above
+// does nothing against one account guessed from many addresses. Counts failed
+// attempts only. The cost: anyone can lock a known email out of logging in for
+// 15 minutes (password reset still works).
+export const loginAccountLimiter: RequestHandler = limiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req: Request) =>
+    `login:${String(req.body?.email ?? '')
+      .trim()
+      .toLowerCase()}`,
+  message: {
+    status: 'error',
+    message: 'Too many requests, please try again later.',
+  },
+});
+
 export const forgotPasswordLimiter: RequestHandler = limiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
@@ -54,6 +72,8 @@ export const refreshLimiter: RequestHandler = limiter({
 // info, slots) are generous — the booking wizard refetches slots on every
 // date/staff change from one visitor. Writes (book, cancel) are stricter:
 // they create data or reveal whether a guessed cancelToken worked.
+// There is deliberately no cap on how many bookings one phone number may hold
+// (audit PB-02): the write limiter is the only brake on bulk booking.
 export const publicReadLimiter: RequestHandler = limiter({
   windowMs: 15 * 60 * 1000,
   max: 100,

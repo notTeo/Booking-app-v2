@@ -2,15 +2,24 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 import crypto from 'crypto';
 
+// What a token is for travels in the token, not only in which secret signed
+// it, and only the algorithm we sign with is accepted.
+const ACCESS = 'access';
+const REFRESH = 'refresh';
+const VERIFY = { algorithms: ['HS256' as const] };
+type Claims = { userId: string; typ?: string };
+
 export const signAccessToken = (userId: string): string => {
   const options: SignOptions = {
     expiresIn: env.jwt.accessExpiresInSeconds,
   };
-  return jwt.sign({ userId }, env.jwt.accessSecret, options);
+  return jwt.sign({ userId, typ: ACCESS }, env.jwt.accessSecret, options);
 };
 
 export const verifyAccessToken = (token: string): { userId: string } => {
-  return jwt.verify(token, env.jwt.accessSecret) as { userId: string };
+  const payload = jwt.verify(token, env.jwt.accessSecret, VERIFY) as Claims;
+  if (payload.typ !== ACCESS) throw new Error('Not an access token');
+  return payload;
 };
 
 export const signRefreshToken = (userId: string): string => {
@@ -18,11 +27,16 @@ export const signRefreshToken = (userId: string): string => {
     expiresIn: env.jwt.refreshExpiresInSeconds,
     jwtid: crypto.randomUUID(),
   };
-  return jwt.sign({ userId }, env.jwt.refreshSecret, options);
+  return jwt.sign({ userId, typ: REFRESH }, env.jwt.refreshSecret, options);
 };
 
 export const verifyRefreshToken = (token: string): { userId: string } => {
-  return jwt.verify(token, env.jwt.refreshSecret) as { userId: string };
+  const payload = jwt.verify(token, env.jwt.refreshSecret, VERIFY) as Claims;
+  // Refresh tokens issued before 2026-10 carry no typ and live up to 30 days;
+  // from 2026-12 on, require typ === REFRESH here.
+  if (payload.typ !== undefined && payload.typ !== REFRESH)
+    throw new Error('Not a refresh token');
+  return payload;
 };
 
 // Without "remember me" the cookie is session-only; the DB row still expires after a day

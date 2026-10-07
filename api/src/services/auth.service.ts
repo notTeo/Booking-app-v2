@@ -7,6 +7,7 @@ import { LoginDto, RegisterDto } from '../types/auth.types';
 import { logger } from '../utils/logger';
 import {
   generateRandomToken,
+  hashToken,
   getEmailTokenExpiry,
   getPasswordResetTokenExpiry,
   getRefreshTokenExpiry,
@@ -18,21 +19,46 @@ import { randomUUID } from 'crypto';
 import { TERMS_VERSION } from '../config/terms';
 import { USER_SELECT, toUserDto, type UserDto } from '../utils/userDto';
 import {
+  sendAccountExistsEmail,
   sendEmailChangeVerification,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from './email.service';
 
+// What a login for an unknown email is compared against (see loginUser).
+const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 12);
+
 export const registerUser = async ({ name, email, password }: RegisterDto) => {
+  // The form answers the same whether or not the address has an account; the
+  // account's owner is told by email instead.
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     logger.warn('Registration attempt with existing email');
-    throw new AppError(409, 'Email already in use');
+    // Not awaited: a slow or failed send must not make this answer differ
+    // from a new sign-up's. The hash below is the work a new sign-up does.
+    sendAccountExistsEmail(email).catch((err) =>
+      logger.error(err, 'Failed to send account exists email'),
+    );
+    await bcrypt.hash(password, 12);
+    return;
   }
 
   const existingPending = await prisma.pendingRegistration.findUnique({
     where: { email },
   });
+  if (existingPending && existingPending.expiresAt > new Date()) {
+    // Someone already started signing up with this address. Whoever reads the
+    // mailbox finishes that sign-up; a later request cannot swap its password.
+    // Only its hash is stored, so the email carries a fresh link; the name
+    // and password of the first sign-up stay.
+    const token = generateRandomToken();
+    await prisma.pendingRegistration.update({
+      where: { email },
+      data: { token: hashToken(token) },
+    });
+    await sendVerificationEmail(email, token, existingPending.name);
+    return;
+  }
   if (existingPending) {
     await prisma.pendingRegistration.delete({ where: { email } });
   }
@@ -46,7 +72,7 @@ export const registerUser = async ({ name, email, password }: RegisterDto) => {
       name,
       email,
       passwordHash,
-      token,
+      token: hashToken(token),
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
       expiresAt: getEmailTokenExpiry(),
@@ -124,7 +150,7 @@ export const registerUserWithInvite = async (
     const newRefreshToken = signRefreshToken(user.id);
     await tx.refreshToken.create({
       data: {
-        token: newRefreshToken,
+        token: hashToken(newRefreshToken),
         family,
         userId: user.id,
         expiresAt: getRefreshTokenExpiry(),
@@ -157,20 +183,19 @@ export const loginUser = async ({
     where: { email },
   });
 
-  if (!user) {
-    logger.warn('Login attempt for unknown email');
-    throw new AppError(401, 'Invalid credentials');
-  }
+  // Always one bcrypt comparison, so an unknown email (or an account with no
+  // password) takes as long to refuse as a wrong password.
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    user?.passwordHash ?? DUMMY_HASH,
+  );
 
-  if (!user.passwordHash) {
-    // OAuth-only account — no password set
-    throw new AppError(401, 'Invalid credentials');
-  }
-
-  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-  if (!isPasswordValid) {
-    logger.warn(`Failed login attempt for userId: ${user.id}`);
+  if (!user || !user.passwordHash || !isPasswordValid) {
+    logger.warn(
+      user
+        ? `Failed login attempt for userId: ${user.id}`
+        : 'Login attempt for unknown email',
+    );
     throw new AppError(401, 'Invalid credentials');
   }
 
@@ -186,7 +211,7 @@ export const loginUser = async ({
 
   await prisma.refreshToken.create({
     data: {
-      token: refreshToken,
+      token: hashToken(refreshToken),
       family,
       userId: user.id,
       expiresAt: getRefreshTokenExpiry(rememberMe),
@@ -246,13 +271,15 @@ export const refreshAccessToken = async (token: string) => {
   }
 
   const stored = await prisma.refreshToken.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!stored) return rejectRotatedToken(payload.userId);
 
   if (stored.expiresAt < new Date()) {
-    await prisma.refreshToken.deleteMany({ where: { token } });
+    await prisma.refreshToken.deleteMany({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(401, 'Refresh token expired');
   }
 
@@ -261,11 +288,13 @@ export const refreshAccessToken = async (token: string) => {
   // Claim and replace in one transaction: only one concurrent request can
   // delete the row, and a loser waits on its lock until the successor exists.
   const rotated = await prisma.$transaction(async (tx) => {
-    const { count } = await tx.refreshToken.deleteMany({ where: { token } });
+    const { count } = await tx.refreshToken.deleteMany({
+      where: { token: hashToken(token) },
+    });
     if (count !== 1) return false;
     await tx.refreshToken.create({
       data: {
-        token: newRefreshToken,
+        token: hashToken(newRefreshToken),
         family: stored.family,
         userId: payload.userId,
         expiresAt: getRefreshTokenExpiry(stored.rememberMe),
@@ -286,15 +315,18 @@ export const refreshAccessToken = async (token: string) => {
 
 export const logoutUser = async (token: string) => {
   await prisma.refreshToken.deleteMany({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   logger.info('User logged out');
 };
 
-export const verifyEmail = async (token: string) => {
+// The link proves someone can read the mailbox; the password proves they are
+// the one who signed up. Without it, anyone could register a stranger's
+// address with a password of their own and wait for the stranger to click.
+export const verifyEmail = async (token: string, password: string) => {
   const pending = await prisma.pendingRegistration.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!pending) {
@@ -302,9 +334,19 @@ export const verifyEmail = async (token: string) => {
   }
 
   if (pending.expiresAt < new Date()) {
-    await prisma.pendingRegistration.delete({ where: { token } });
+    await prisma.pendingRegistration.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Verification token expired');
   }
+
+  // A wrong password leaves the link usable, so a typo can be retried.
+  if (!(await bcrypt.compare(password, pending.passwordHash)))
+    throw new AppError(
+      403,
+      'That is not the password this account was signed up with',
+      'INVALID_PASSWORD',
+    );
 
   const user = await prisma.user.create({
     data: {
@@ -318,7 +360,9 @@ export const verifyEmail = async (token: string) => {
     select: USER_SELECT,
   });
 
-  await prisma.pendingRegistration.delete({ where: { token } });
+  await prisma.pendingRegistration.delete({
+    where: { token: hashToken(token) },
+  });
 
   logger.info(`Email verified and user created: ${user.id}`);
   return toUserDto(user);
@@ -337,7 +381,7 @@ export const forgotPassword = async (email: string) => {
 
   await prisma.passwordResetToken.create({
     data: {
-      token,
+      token: hashToken(token),
       userId: user.id,
       expiresAt: getPasswordResetTokenExpiry(),
     },
@@ -369,10 +413,32 @@ export const revokeAllSessions = async (
 
 export const updateUser = async (
   userId: string,
-  data: { email?: string; password?: string; name?: string },
+  data: {
+    email?: string;
+    password?: string;
+    name?: string;
+    currentPassword?: string;
+  },
 ): Promise<
   { user: UserDto } | { message: string } | { user: UserDto; message: string }
 > => {
+  // A new password or email takes over the account, so an access token alone
+  // is not enough: the caller proves they know the current password.
+  if (data.email || data.password) {
+    const current = await prisma.user.findUnique({ where: { id: userId } });
+    const ok =
+      !!current?.passwordHash &&
+      typeof data.currentPassword === 'string' &&
+      (await bcrypt.compare(data.currentPassword, current.passwordHash));
+    if (!ok)
+      // 403, not 401: a 401 would send the client off to refresh its token.
+      throw new AppError(
+        403,
+        'Current password is incorrect',
+        'INVALID_PASSWORD',
+      );
+  }
+
   // Name and password apply immediately, in one update; email goes through a
   // pending verification instead, so it's handled separately below.
   const immediateChanges: { name?: string; passwordHash?: string } = {};
@@ -394,11 +460,15 @@ export const updateUser = async (
     const token = generateRandomToken();
     await prisma.pendingEmailChange.upsert({
       where: { userId },
-      update: { newEmail: data.email, token, expiresAt: getEmailTokenExpiry() },
+      update: {
+        newEmail: data.email,
+        token: hashToken(token),
+        expiresAt: getEmailTokenExpiry(),
+      },
       create: {
         userId,
         newEmail: data.email,
-        token,
+        token: hashToken(token),
         expiresAt: getEmailTokenExpiry(),
       },
     });
@@ -410,6 +480,9 @@ export const updateUser = async (
 
   if (data.password) {
     await prisma.refreshToken.deleteMany({ where: { userId } });
+    // An email change queued before this must not outlive the new password.
+    if (!data.email)
+      await prisma.pendingEmailChange.deleteMany({ where: { userId } });
     logger.info(`Password updated for userId: ${userId}`);
   }
   if (data.name) {
@@ -440,7 +513,7 @@ export const updateUser = async (
 
 export const verifyEmailChange = async (token: string) => {
   const pending = await prisma.pendingEmailChange.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!pending) {
@@ -448,7 +521,9 @@ export const verifyEmailChange = async (token: string) => {
   }
 
   if (pending.expiresAt < new Date()) {
-    await prisma.pendingEmailChange.delete({ where: { token } });
+    await prisma.pendingEmailChange.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Verification token expired');
   }
 
@@ -458,7 +533,9 @@ export const verifyEmailChange = async (token: string) => {
     select: USER_SELECT,
   });
 
-  await prisma.pendingEmailChange.delete({ where: { token } });
+  await prisma.pendingEmailChange.delete({
+    where: { token: hashToken(token) },
+  });
 
   logger.info(`Email changed for userId: ${pending.userId}`);
   return toUserDto(user);
@@ -518,7 +595,7 @@ export const resendVerificationEmail = async (email: string) => {
   await prisma.pendingRegistration.update({
     where: { email },
     data: {
-      token,
+      token: hashToken(token),
       expiresAt: getEmailTokenExpiry(),
     },
   });
@@ -530,7 +607,7 @@ export const resendVerificationEmail = async (email: string) => {
 
 export const resetPassword = async (token: string, newPassword: string) => {
   const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
   });
 
   if (!resetToken) {
@@ -542,7 +619,9 @@ export const resetPassword = async (token: string, newPassword: string) => {
   }
 
   if (resetToken.expiresAt < new Date()) {
-    await prisma.passwordResetToken.delete({ where: { token } });
+    await prisma.passwordResetToken.delete({
+      where: { token: hashToken(token) },
+    });
     throw new AppError(400, 'Reset token expired');
   }
 
@@ -554,11 +633,15 @@ export const resetPassword = async (token: string, newPassword: string) => {
   });
 
   await prisma.passwordResetToken.update({
-    where: { token },
+    where: { token: hashToken(token) },
     data: { used: true },
   });
 
   await prisma.refreshToken.deleteMany({
+    where: { userId: resetToken.userId },
+  });
+  // Whoever queued an email change may be who the reset is locking out.
+  await prisma.pendingEmailChange.deleteMany({
     where: { userId: resetToken.userId },
   });
 

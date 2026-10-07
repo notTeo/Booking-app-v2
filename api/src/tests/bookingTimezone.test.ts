@@ -22,7 +22,9 @@ async function shopWithHours(opts: {
   const t = await createTenant('Tz');
   await prisma.shop.update({
     where: { id: t.shop.id },
-    data: { timezone: opts.timezone },
+    // These tests look at dates up to a year out; the public grid offers
+    // nothing beyond the shop's advance window, so widen it.
+    data: { timezone: opts.timezone, maxAdvanceDays: 730 },
   });
   await prisma.service.update({
     where: { id: t.service.id },

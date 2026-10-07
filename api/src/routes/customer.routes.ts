@@ -1,6 +1,7 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
+import { rejectControlChars } from '../middleware/rejectControlChars';
 import {
   customerParamsValidation,
   listCustomerBookingsValidation,
@@ -39,6 +40,10 @@ router.get(
 router.post(
   '/import',
   authenticate,
+  // Up to 500 rows: more than the default 100kb body, and only read once the
+  // caller is known (app.ts skips the default parser for this path).
+  express.json({ limit: '2mb' }),
+  rejectControlChars,
   importCustomersValidation,
   validate,
   importCustomers,

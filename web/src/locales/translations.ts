@@ -394,6 +394,7 @@ export interface Translations {
     passwordSection: string;
     newPasswordLabel: string;
     newPasswordOptionalLabel: string;
+    currentPasswordLabel: string;
     updatePassword: string;
     showPassword: string;
     hidePassword: string;
@@ -1743,6 +1744,7 @@ home: {
       passwordSection: 'Αλλαγή Κωδικού',
       newPasswordLabel: 'Νέος Κωδικός',
       newPasswordOptionalLabel: 'Νέος Κωδικός (προαιρετικό)',
+      currentPasswordLabel: 'Τρέχων κωδικός',
       updatePassword: 'Ενημέρωση Κωδικού',
       showPassword: 'Εμφάνιση κωδικού',
       hidePassword: 'Απόκρυψη κωδικού',
@@ -3130,6 +3132,7 @@ home: {
       passwordSection: 'Change Password',
       newPasswordLabel: 'New Password',
       newPasswordOptionalLabel: 'New Password (optional)',
+      currentPasswordLabel: 'Current password',
       updatePassword: 'Update Password',
       showPassword: 'Show password',
       hidePassword: 'Hide password',

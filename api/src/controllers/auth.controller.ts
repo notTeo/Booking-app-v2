@@ -18,6 +18,16 @@ import {
 import { successResponse } from '../utils/response';
 import { AppError } from '../middleware/errorHandler';
 
+// These two routes act on the refresh cookie alone, and in production that
+// cookie is SameSite=None, so another site's form could post to them. A
+// browser always names the page's origin on such a request; ours are the only
+// ones accepted. Requests with no Origin (curl, server to server) pass.
+const refuseForeignOrigin = (req: Request) => {
+  const origin = req.get('origin');
+  if (origin && !env.clientUrls.includes(origin))
+    throw new AppError(403, 'Forbidden');
+};
+
 export const register = async (
   req: Request,
   res: Response,
@@ -82,6 +92,7 @@ export const refresh = async (
   next: NextFunction,
 ) => {
   try {
+    refuseForeignOrigin(req);
     const token = req.cookies?.refreshToken;
 
     if (!token) {
@@ -110,6 +121,7 @@ export const logout = async (
   next: NextFunction,
 ) => {
   try {
+    refuseForeignOrigin(req);
     const token = req.cookies?.refreshToken;
 
     if (token) {
@@ -134,13 +146,12 @@ export const verifyEmailController = async (
   next: NextFunction,
 ) => {
   try {
-    const { token } = req.query as { token: string };
+    const { token, password } = req.body as {
+      token: string;
+      password: string;
+    };
 
-    if (!token) {
-      throw new AppError(400, 'Token is required');
-    }
-
-    const user = await verifyEmail(token);
+    const user = await verifyEmail(token, password);
     successResponse(res, { user });
   } catch (err) {
     next(err);

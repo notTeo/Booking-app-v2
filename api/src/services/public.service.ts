@@ -94,7 +94,11 @@ export const getShopInfoService = async (
         },
       },
       members: {
-        where: { active: true },
+        // The public page lists only the members a customer can book.
+        where: {
+          active: true,
+          ...(context === 'public' && { bookableByCustomers: true }),
+        },
         select: {
           id: true,
           shopId: true,
@@ -105,6 +109,14 @@ export const getShopInfoService = async (
           bookableByCustomers: true,
           bookableInternally: true,
           staffServices: {
+            // Same filter as the shop's own list above: an internal-only or
+            // deactivated service is not named under a member either.
+            where: {
+              service: {
+                isActive: true,
+                ...(context === 'public' && { showOnPublicPage: true }),
+              },
+            },
             include: {
               service: {
                 select: { id: true, name: true },
@@ -135,10 +147,24 @@ export const getShopInfoService = async (
   const { photoOriginalUrl: _original, photoCrop: _crop, ...visible } = shop;
 
   // Products are listed only while the plan includes them.
-  const { products, ...shopFields } = visible;
+  const { products, members, ...shopFields } = visible;
 
   return {
     ...withoutPlan(shopFields),
+    // A customer needs a member's name, photo and services, not their role or
+    // when they joined.
+    members:
+      context === 'public'
+        ? members.map(
+            ({ id, name, photoUrl, bookableByCustomers, staffServices }) => ({
+              id,
+              name,
+              photoUrl,
+              bookableByCustomers,
+              staffServices,
+            }),
+          )
+        : members,
     products: PLAN_LIMITS[shop.plan].products ? products : [],
     // False while the shop is locked: the page still shows, but takes no
     // new bookings.

@@ -6,6 +6,12 @@ import { prisma } from '../utils/prisma';
 import { requireShopAccess } from '../utils/shopAccess';
 import { loadDayHours, type DayHours } from './bookingRules.service';
 
+// Request bodies are never spread into Prisma: a range is only its two times.
+const pickRange = (h: { startTime: string; endTime: string }) => ({
+  startTime: h.startTime,
+  endTime: h.endTime,
+});
+
 export interface HourRangeDto {
   startTime: string;
   endTime: string;
@@ -174,7 +180,7 @@ export const createSchedule = async (
               create: dto.days.map(({ day, isOpen, hours }) => ({
                 day,
                 isOpen,
-                hours: hours ? { create: hours } : undefined,
+                hours: hours ? { create: hours.map(pickRange) } : undefined,
               })),
             }
           : undefined,
@@ -322,7 +328,11 @@ export const upsertDays = async (
           });
           if (hours.length > 0) {
             await tx.shopWorkingHourRange.createMany({
-              data: hours.map((h) => ({ ...h, dayId: existingDay.id })),
+              data: hours.map((h) => ({
+                startTime: h.startTime,
+                endTime: h.endTime,
+                dayId: existingDay.id,
+              })),
             });
           }
         }
@@ -332,7 +342,7 @@ export const upsertDays = async (
             scheduleId,
             day,
             isOpen,
-            hours: hours ? { create: hours } : undefined,
+            hours: hours ? { create: hours.map(pickRange) } : undefined,
           },
         });
       }
@@ -381,7 +391,11 @@ export const updateDay = async (
       });
       if (dto.hours.length > 0) {
         await tx.shopWorkingHourRange.createMany({
-          data: dto.hours.map((h) => ({ ...h, dayId: workingDay.id })),
+          data: dto.hours.map((h) => ({
+            startTime: h.startTime,
+            endTime: h.endTime,
+            dayId: workingDay.id,
+          })),
         });
       }
     }
