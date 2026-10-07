@@ -151,8 +151,14 @@ export const verifyEmailController = async (
       password: string;
     };
 
-    const user = await verifyEmail(token, password);
-    successResponse(res, { user });
+    const { refreshToken, ...result } = await verifyEmail(token, password);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: env.jwt.refreshExpiresInSeconds * 1000,
+    });
+    successResponse(res, result);
   } catch (err) {
     next(err);
   }

@@ -209,6 +209,36 @@ describe('POST /auth/verify-email', () => {
     expect(user).not.toBeNull();
   });
 
+  // Email and password were both just proven, so there is nothing left for a
+  // login form to ask: the response is already a session.
+  it('logs the new user in', async () => {
+    await api.post('/auth/register').send({
+      name: 'Test User',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+      acceptTerms: true,
+    });
+    const res = await api
+      .post('/auth/verify-email')
+      .send({ token: emailedVerifyToken(), password: TEST_PASSWORD });
+
+    const cookies = res.headers['set-cookie'] as string[] | string;
+    const cookieHeader = Array.isArray(cookies) ? cookies[0] : cookies;
+    expect(cookieHeader).toContain('refreshToken=');
+    expect(res.body.data.refreshToken).toBeUndefined();
+
+    const me = await api
+      .get('/user/me')
+      .set('Authorization', `Bearer ${res.body.data.accessToken}`);
+    expect(me.status).toBe(200);
+    expect(me.body.data.user.email).toBe(TEST_EMAIL);
+
+    const refreshed = await api
+      .post('/auth/refresh')
+      .set('Cookie', cookieHeader);
+    expect(refreshed.status).toBe(200);
+  });
+
   // The link alone must not be enough: whoever registered an address chose
   // the password, and only they can turn the sign-up into an account.
   it('needs the sign-up password, and a wrong one leaves the link usable', async () => {

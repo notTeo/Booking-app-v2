@@ -368,7 +368,6 @@ export interface Translations {
   verifyEmail: {
     title: string;
     verifying: string;
-    goToLogin: string;
     resendLabel: string;
     resendPlaceholder: string;
     resendSubmit: string;
@@ -379,7 +378,6 @@ export interface Translations {
     passwordLabel: string;
     submit: string;
     wrongPassword: string;
-    success: string;
     invalidLink: string;
     error: string;
     resendError: string;
@@ -1744,7 +1742,6 @@ home: {
     verifyEmail: {
       title: 'Επαλήθευση Email',
       verifying: 'Επαλήθευση...',
-      goToLogin: 'Μετάβαση στη Σύνδεση',
       resendLabel: 'Εισάγετε το email σας για να λάβετε νέο σύνδεσμο:',
       resendPlaceholder: 'εσεις@παραδειγμα.com',
       resendSubmit: 'Αποστολή Email Επαλήθευσης',
@@ -1755,7 +1752,6 @@ home: {
       passwordLabel: 'Κωδικός',
       submit: 'Επαλήθευση email',
       wrongPassword: 'Αυτός δεν είναι ο κωδικός με τον οποίο εγγραφήκατε.',
-      success: 'Το email επαληθεύτηκε. Μπορείτε τώρα να συνδεθείτε.',
       invalidLink: 'Μη έγκυρος σύνδεσμος επαλήθευσης.',
       error: 'Η επαλήθευση απέτυχε.',
       resendError: 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.',
@@ -3158,7 +3154,6 @@ home: {
     verifyEmail: {
       title: 'Email Verification',
       verifying: 'Verifying...',
-      goToLogin: 'Go to Login',
       resendLabel: 'Enter your email to get a new link:',
       resendPlaceholder: 'you@example.com',
       resendSubmit: 'Resend Verification Email',
@@ -3169,7 +3164,6 @@ home: {
       passwordLabel: 'Password',
       submit: 'Verify email',
       wrongPassword: 'That is not the password you signed up with.',
-      success: 'Email verified successfully. You can now log in.',
       invalidLink: 'Invalid verification link.',
       error: 'Verification failed.',
       resendError: 'Something went wrong. Please try again.',

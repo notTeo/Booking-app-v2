@@ -56,6 +56,9 @@ export async function registerAndVerify(
   if (ver.status !== 200)
     throw new Error(`setup: verify failed ${ver.status} ${ver.text}`);
   const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+  // Verifying also logs the user in. These tests start from an account with
+  // no session and count the ones they open, so that first one is dropped.
+  await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
   return { email, password, user };
 }
 
