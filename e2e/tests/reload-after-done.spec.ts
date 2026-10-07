@@ -3,6 +3,7 @@ import { E2E } from '../support/env';
 
 // A link from an email is spent by its own success. Reloading the page must
 // keep showing the success, not call the API again and report an invalid link.
+// (The sign-up link has no success page to reload: see verify-email-login.)
 
 test('email change link: a reload after success still shows the success', async ({ page, context }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
@@ -23,18 +24,4 @@ test('email change link: a reload after success still shows the success', async 
   await page.reload();
   await expect(page.getByText('Your email address has been updated successfully.')).toBeVisible();
   expect(calls).toBe(1);
-});
-
-test('email verification link: the success page survives a reload', async ({ page, context }) => {
-  await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
-  await page.route(/\/auth\/verify-email(\?|$)/, (route) =>
-    route.fulfill({ status: 200, json: { status: 'success', data: {} } }),
-  );
-  await page.goto('/verify-email?token=any');
-  await page.locator('#verify-password').fill('Whatever1!');
-  await page.getByRole('button', { name: 'Verify email' }).click();
-  await expect(page.getByText('Email verified successfully. You can now log in.')).toBeVisible();
-  await page.reload();
-  await expect(page.getByText('Email verified successfully. You can now log in.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Go to Login' })).toBeVisible();
 });

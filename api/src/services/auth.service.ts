@@ -365,8 +365,22 @@ export const verifyEmail = async (token: string, password: string) => {
     where: { token: hashToken(token) },
   });
 
+  // They have just shown both the mailbox and the password are theirs, which
+  // is all a login asks: the session starts here, as a remembered one.
+  const accessToken = signAccessToken(user.id);
+  const refreshToken = signRefreshToken(user.id);
+  await prisma.refreshToken.create({
+    data: {
+      token: hashToken(refreshToken),
+      family: randomUUID(),
+      userId: user.id,
+      expiresAt: getRefreshTokenExpiry(),
+      createdAt: new Date(),
+    },
+  });
+
   logger.info(`Email verified and user created: ${user.id}`);
-  return toUserDto(user);
+  return { user: toUserDto(user), accessToken, refreshToken };
 };
 
 export const forgotPassword = async (email: string) => {

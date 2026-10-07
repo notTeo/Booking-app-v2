@@ -355,9 +355,9 @@ paths:
       summary: Verify email address
       description: |
         Verifies the token from the verification link together with the password
-        chosen at sign-up. On success, creates the user account and marks it as
-        verified. A wrong password is a 403 (`INVALID_PASSWORD`) and leaves the
-        link usable.
+        chosen at sign-up. On success, creates the user account, marks it as
+        verified and logs the user in, as `/auth/login` does. A wrong password
+        is a 403 (`INVALID_PASSWORD`) and leaves the link usable.
       operationId: verifyEmail
       requestBody:
         required: true
@@ -375,7 +375,13 @@ paths:
                   description: The password chosen at sign-up
       responses:
         '200':
-          description: Email verified and account created
+          description: Email verified, account created and session started
+          headers:
+            Set-Cookie:
+              description: HttpOnly refresh token cookie
+              schema:
+                type: string
+                example: refreshToken=eyJ...; Path=/; HttpOnly; SameSite=Strict
           content:
             application/json:
               schema:
@@ -387,6 +393,9 @@ paths:
                   data:
                     type: object
                     properties:
+                      accessToken:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                       user:
                         $ref: '#/components/schemas/User'
         '400':
