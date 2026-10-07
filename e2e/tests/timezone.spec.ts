@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
-import { latestBookingStart } from '../support/db';
+import { latestBookingStart, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc, testDates } from '../support/dates';
 import { pickServiceAndProvider } from '../support/booking';
 
@@ -27,6 +27,20 @@ async function pickDate(page: Page, date: string) {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   }, date);
+}
+
+/**
+ * Other specs book on days counted from today (today + 18, + 16, ...). On some
+ * calendar days one of those lands on a fixed date used here and takes the
+ * 10:00 this test books. Specs run one at a time, so what is left on the day
+ * is finished with: cancel it and the day is free again.
+ */
+async function freeTheDay(date: string) {
+  await query(
+    `update "Booking" set status = 'CANCELED'
+     where status in ('PENDING', 'CONFIRMED') and "startTime" >= $1 and "startTime" < $2`,
+    [athensWallClockToUtc(date, '00:00'), athensWallClockToUtc(addDays(date, 1), '00:00')],
+  );
 }
 
 async function startPublicBooking(page: Page, date: string) {
@@ -60,6 +74,7 @@ for (const c of CASES) {
         c.browserTz,
       );
 
+      await freeTheDay(c.date);
       await startPublicBooking(page, c.date);
 
       // The date picker follows the SHOP's calendar, capped by maxAdvanceDays.
