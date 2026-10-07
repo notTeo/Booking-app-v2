@@ -32,3 +32,31 @@ export function useMoreBelow() {
 
   return more;
 }
+
+/**
+ * True once the bottom of the page has been reached while `active`, and it
+ * stays true when scrolling back up. Starts over each time `active` turns on
+ * again. A page that fits the window counts as reached at once.
+ */
+export function useReachedBottom(active: boolean) {
+  const [reached, setReached] = useState(false);
+
+  useEffect(() => {
+    if (!active) return;
+    const check = () => {
+      if (!hasMoreBelow(window.innerHeight, window.scrollY, document.documentElement.scrollHeight)) setReached(true);
+    };
+    // After the new content has been laid out.
+    const frame = requestAnimationFrame(check);
+    window.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+      setReached(false);
+    };
+  }, [active]);
+
+  return active && reached;
+}

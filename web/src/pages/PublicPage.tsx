@@ -20,7 +20,7 @@ import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/sa
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import LangSwitch from '../components/LangSwitch';
-import { useMoreBelow } from '../hooks/useMoreBelow';
+import { useMoreBelow, useReachedBottom } from '../hooks/useMoreBelow';
 import ReservedProducts from '../components/ReservedProducts';
 import SuccessCheck from '../components/SuccessCheck';
 import ProductsStep from '../components/booking-wizard/ProductsStep';
@@ -89,6 +89,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [busyNotice, setBusyNotice] = useState<string | null>(null);
   // More of the step lies under the sticky footer: a hint above it says so.
   const moreBelow = useMoreBelow();
+  // The last step can only be confirmed once all of it has been scrolled into view.
+  const seenDetails = useReachedBottom(!wizard.loading && wizard.step === wizard.detailsStep);
   // The booking that was just made. Kept for this tab, so a reload still shows it.
   const [confirmation, setConfirmation] = useState<ConfirmedBooking | null>(() =>
     // Never in the shop settings preview, which shares the tab's storage.
@@ -537,7 +539,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   className={`btn btn--block${submitting && !cooling ? ' is-loading' : ''}`}
                   onClick={handleSubmit}
                   aria-busy={submitting && !cooling}
-                  disabled={cooling || name.trim() === '' || phone.trim() === ''}
+                  disabled={cooling || !seenDetails || name.trim() === '' || phone.trim() === ''}
                 >
                   {t.public.confirmBooking}
                 </button>

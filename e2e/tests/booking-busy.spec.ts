@@ -52,6 +52,8 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
   const before = await bookingCount();
   // Located by position, not name: the label changes while the button is busy/disabled.
   const submit = page.locator('.booking-card__actions').getByRole('button').last();
+  // Confirm is enabled once the whole step has been scrolled into view.
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await submit.click();
 
   // Neutral, not the red rejection style; nothing was actually booked.

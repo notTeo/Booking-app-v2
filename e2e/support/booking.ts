@@ -16,3 +16,12 @@ export async function pickServiceAndProvider(page: Page) {
   await pickService(page);
   await page.getByRole('radiogroup').getByRole('radio').first().click();
 }
+
+/**
+ * The public page's last step: Confirm booking is only enabled once the whole
+ * step has been scrolled into view, so go to the bottom first.
+ */
+export async function confirmBooking(page: Page) {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.getByRole('button', { name: /confirm booking/i }).click();
+}

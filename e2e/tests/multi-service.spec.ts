@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { confirmBooking } from '../support/booking';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
@@ -72,7 +73,7 @@ test('a customer books two services on the public page: times and prices add up'
   await page.getByRole('button', { name: /^continue/i }).click();
   await page.locator('#b-name').fill(CUSTOMER);
   await page.locator('#b-phone').fill('6900000452');
-  await page.getByRole('button', { name: /confirm booking/i }).click();
+  await confirmBooking(page);
 
   const card = page.locator('.booking-card__body .card--center');
   await expect(card).toBeVisible();

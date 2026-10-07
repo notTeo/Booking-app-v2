@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { latestBookingStart, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc, testDates } from '../support/dates';
-import { pickServiceAndProvider } from '../support/booking';
+import { pickServiceAndProvider, confirmBooking } from '../support/booking';
 
 /**
  * The public booking page must work in the SHOP's timezone (Europe/Athens)
@@ -100,7 +100,7 @@ for (const c of CASES) {
       await page.getByRole('button', { name: /continue|συνέχεια/i }).click();
       await page.locator('#b-name').fill('E2E Tester');
       await page.locator('#b-phone').fill(`69${String(Date.now()).slice(-8)}`);
-      await page.getByRole('button', { name: /confirm booking/i }).click();
+      await confirmBooking(page);
       await expect(page.locator('.booking-card__body .card--center')).toBeVisible();
 
       expect(await latestBookingStart()).toBe(athensWallClockToUtc(c.date, '10:00').toISOString());

@@ -4,7 +4,7 @@ import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
 import { addDays, athensDate } from '../support/dates';
-import { pickServiceAndProvider } from '../support/booking';
+import { pickServiceAndProvider, confirmBooking } from '../support/booking';
 
 /**
  * Products: the owner lists one from the Products tab (with a photo from the
@@ -163,7 +163,7 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await expect(page.locator('.reserved-products').getByText('2 × E2E Shampoo')).toBeVisible();
   await page.locator('#b-name').fill(CUSTOMER);
   await page.locator('#b-phone').fill('6900000451');
-  await page.getByRole('button', { name: /confirm booking/i }).click();
+  await confirmBooking(page);
   const card = page.locator('.booking-card__body .card--center');
   await expect(card).toBeVisible();
   await expect(card.getByText('2 × E2E Shampoo')).toBeVisible();
