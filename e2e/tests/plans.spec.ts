@@ -76,7 +76,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.setViewportSize({ width: 360, height: 740 });
     await query(`update "Shop" set "subscriptionStatus" = 'INACTIVE' where id = 's1'`);
     await signIn(page, theme);
-    await page.goto(`/shops/${E2E.shop.slug}/settings`);
+    await page.goto(`/shops/${E2E.shop.slug}/settings?tab=plan`);
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await expect(page.getByText('This shop is read-only', { exact: true })).toBeVisible();
     const plan = page.locator('.card', { has: page.getByRole('heading', { name: 'Plan', exact: true }) });
@@ -89,7 +89,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 test('an active shop has no banner; its plan card says the subscription is active', async ({ page }) => {
   await signIn(page);
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=plan`);
   const plan = page.locator('.card', { has: page.getByRole('heading', { name: 'Plan', exact: true }) });
   await expect(plan).toContainText('The subscription is active.');
   await expect(page.getByText('This shop is read-only', { exact: true })).toHaveCount(0);
@@ -98,7 +98,7 @@ test('an active shop has no banner; its plan card says the subscription is activ
 test('a trial about to end is announced to the owner', async ({ page }) => {
   await query(`update "Shop" set "subscriptionStatus" = 'TRIALING', "trialEndsAt" = now() + interval '3 days' where id = 's1'`);
   await signIn(page);
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=plan`);
   await expect(page.getByText(/^Your free trial ends on /)).toBeVisible();
   await expect(page.getByText(/^Free trial until /)).toBeVisible();
 });

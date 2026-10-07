@@ -1,8 +1,10 @@
 import SaveBar from '../components/SaveBar';
+import Tabs from '../components/Tabs';
+import { tabButtonId, tabPanelId } from '../utils/tabIds';
 import { publicProfileUrl, publicShopUrl } from '../utils/publicLink';
 import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getMyShops, updateShop, deleteShop, type Shop, type UpdateShopDto } from '../api/shop.api';
 import { useLang } from '../context/LanguageContext';
 import type { Translations } from '../locales/translations';
@@ -28,6 +30,18 @@ import ShopPhotoCard from '../components/ShopPhotoCard';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
+// The page's sections. The open one is kept in the address (?tab=), so a link
+// or a reload comes back to it.
+const TAB_IDS = ['shop', 'bookings', 'customers', 'page', 'plan'] as const;
+type SettingsTab = (typeof TAB_IDS)[number];
+const TAB_LABEL = {
+  shop: 'tabShop',
+  bookings: 'tabBookings',
+  customers: 'tabCustomers',
+  page: 'tabPage',
+  plan: 'tabPlan',
+} as const satisfies Record<SettingsTab, keyof Translations['shopSettings']>;
+
 function formatDate(iso: string, language: string) {
   const locale = language === 'el' ? 'el-GR' : 'en-US';
   return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
@@ -49,6 +63,11 @@ export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { language, t } = useLang();
+
+  const [params, setParams] = useSearchParams();
+  const asked = params.get('tab') as SettingsTab | null;
+  const tab: SettingsTab = asked && TAB_IDS.includes(asked) ? asked : 'shop';
+  const selectTab = (id: SettingsTab) => setParams(id === 'shop' ? {} : { tab: id }, { replace: true });
 
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
@@ -225,81 +244,34 @@ export default function ShopSettingsPage() {
         </div>
       </div>
 
-      {/* Booking link — copyable public /:slug link */}
-      <div className="card">
-        <h2 className="card__title">
-          <FontAwesomeIcon icon={faLink} className="card__icon" />
-          {t.sharing.title}
-        </h2>
-        <p className="card__text">{t.sharing.desc}</p>
-        <CopyLinkButton
-          link={publicShopUrl(shop.slug)}
-          qr={{ title: shop.name, alt: t.customerProfile.qrTitle, fileName: `${shop.slug}-booking-qr.png` }}
-        />
-      </div>
+      <Tabs
+        label={t.shopSettings.tabsLabel}
+        idPrefix="shop-settings"
+        tabs={TAB_IDS.map((id) => ({ id, label: t.shopSettings[TAB_LABEL[id]] }))}
+        value={tab}
+        onChange={selectTab}
+      />
 
-      {/* Customer sign-up link and its QR code, once the page is switched on below */}
-      {shop.customerProfilePageEnabled && (
-        <div className="card">
-          <h2 className="card__title">
-            <FontAwesomeIcon icon={faQrcode} className="card__icon" />
-            {t.customerProfile.signupLinkTitle}
-          </h2>
-          <p className="card__text">{t.customerProfile.signupLinkDesc}</p>
-          <CopyLinkButton
-            link={publicProfileUrl(shop.slug)}
-            qr={{ title: shop.name, alt: t.customerProfile.qrAlt, fileName: `${shop.slug}-signup-qr.png` }}
-          />
-        </div>
-      )}
-
-      {/* Plan — set by us for now; there is no checkout yet */}
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">
-            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
-            {t.shopPlan.title}
-          </h2>
-          <span className={`badge badge--lg ${shop.locked ? 'badge--warning' : 'badge--accent'}`}>
-            {PLAN_NAMES[shop.plan]}
-          </span>
-        </div>
-        <p className="card__text">
-          {shop.locked
-            ? (shop.subscriptionStatus === 'TRIALING' ? t.shopPlan.trialEnded : t.shopPlan.inactive)
-            : isOnTrial(shop) && shop.trialEndsAt
-              ? t.shopPlan.trialUntil.replace('{date}', formatDate(shop.trialEndsAt, language))
-              : t.shopPlan.active}{' '}
-          {t.shopPlan.staffLimit.replace('{n}', String(shop.staffLimit))}
-        </p>
-        <p className="card__text">{t.shopPlan.changePlan}</p>
-        <div className="cluster cluster--tight">
-          <Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>
-          <Link to="/pricing" className="btn btn--ghost btn--sm">{t.shopPlan.seePlans}</Link>
-        </div>
-      </div>
-
-      <form onSubmit={handleSave}>
-        {/* Read-only for a manager the owner has not let edit settings. */}
-        <fieldset className="fieldset" disabled={!shop.canEditShopSettings}>
-        {/* Shop Details + Configuration — one card, one Save */}
-        <div className={`card${dirty ? ' card--unsaved' : ''}`}>
-          <div className="card__header">
-            <div>
-              <h2 className="card__title">
-                <FontAwesomeIcon icon={faStore} className="card__icon" />
-                {t.shopSettings.shopDetails}
-              </h2>
-              <p className="card__text">
-                {shop.canEditShopSettings ? t.shopSettings.saveHint : t.shopSettings.readOnlyHint}
-              </p>
-            </div>
-            <button className={`btn btn--sm${saveLoading ? ' is-loading' : ''}`} type="submit" aria-busy={saveLoading}>
-              {t.shopSettings.saveChanges}
-            </button>
-          </div>
+      <div
+        className="settings-panel"
+        role="tabpanel"
+        id={tabPanelId('shop-settings')}
+        aria-labelledby={tabButtonId('shop-settings', tab)}
+      >
+        {/* One form behind the first three tabs: whatever is changed in any of
+            them is saved together, from the bar that shows while it is unsaved. */}
+        <form className="settings-panel" onSubmit={handleSave}>
+          {!shop.canEditShopSettings && <Alert variant="info">{t.shopSettings.readOnlyHint}</Alert>}
           {saveError && <Alert variant="danger">{saveError}</Alert>}
-          {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
+          {saveSuccess && !dirty && <Alert variant="success">{saveSuccess}</Alert>}
+          {/* Read-only for a manager the owner has not let edit settings. */}
+          <fieldset className="fieldset settings-panel" disabled={!shop.canEditShopSettings}>
+          {tab === 'shop' && (
+          <div className={`card${dirty ? ' card--unsaved' : ''}`}>
+            <h2 className="card__title">
+              <FontAwesomeIcon icon={faStore} className="card__icon" />
+              {t.shopSettings.shopDetails}
+            </h2>
           <div className="field">
             <label className="field__label" htmlFor="detail-name">{t.shops.name}</label>
             <input className="input" id="detail-name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -347,6 +319,33 @@ export default function ShopSettingsPage() {
               ))}
             </select></div>
           </div>
+          <div className="setting-row">
+            <div className="setting-row__label">
+              <label htmlFor="detail-active" className="setting-row__title">{t.shopSettings.activeLabel}</label>
+              <span className="setting-row__text">
+                {t.shopSettings.activeDesc}
+                {shop.role !== 'owner' && ` ${t.shopSettings.activeOwnerOnly}`}
+              </span>
+            </div>
+            <Switch
+              id="detail-active"
+              checked={isActive}
+              onChange={setIsActive}
+              label={t.shopSettings.activeLabel}
+              disabled={shop.role !== 'owner'}
+            />
+          </div>
+
+          </div>
+          )}
+
+          {tab === 'bookings' && (
+          <>
+          <div className={`card${dirty ? ' card--unsaved' : ''}`}>
+            <div>
+              <h2 className="card__title">{t.shopSettings.bookingTimesTitle}</h2>
+              <p className="card__text">{t.shopSettings.bookingTimesHint}</p>
+            </div>
           <div className="field">
             <label className="field__label" htmlFor="detail-max-advance">{t.shopSettings.maxAdvanceLabel}</label>
             <input className="input"
@@ -377,26 +376,10 @@ export default function ShopSettingsPage() {
             </select></div>
             <small className="field__hint">{t.shopSettings.slotIntervalHint}</small>
           </div>
-          <div className="setting-row">
-            <div className="setting-row__label">
-              <label htmlFor="detail-active" className="setting-row__title">{t.shopSettings.activeLabel}</label>
-              <span className="setting-row__text">
-                {t.shopSettings.activeDesc}
-                {shop.role !== 'owner' && ` ${t.shopSettings.activeOwnerOnly}`}
-              </span>
-            </div>
-            <Switch
-              id="detail-active"
-              checked={isActive}
-              onChange={setIsActive}
-              label={t.shopSettings.activeLabel}
-              disabled={shop.role !== 'owner'}
-            />
           </div>
-
-          <div className="card__section">
+          <div className={`card${dirty ? ' card--unsaved' : ''}`}>
             <div>
-              <h3 className="card__title">{t.shopSettings.customerChangesTitle}</h3>
+              <h2 className="card__title">{t.shopSettings.customerChangesTitle}</h2>
               <p className="card__text">{t.shopSettings.customerChangesHint}</p>
             </div>
             <div className="setting-row">
@@ -431,30 +414,72 @@ export default function ShopSettingsPage() {
                 />
                 <small className="field__hint" id="detail-cancel-cutoff-hint">{t.shopSettings.cancelCutoffHint}</small>
               </div>
-              <div className="field">
-                <label className="field__label" htmlFor="detail-reschedule-cutoff">{t.shopSettings.rescheduleCutoffLabel}</label>
-                <input
-                  className="input"
-                  id="detail-reschedule-cutoff"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={168}
-                  step={1}
-                  value={rescheduleCutoff}
-                  onChange={(e) => setRescheduleCutoff(e.target.value)}
-                  aria-describedby="detail-reschedule-cutoff-hint"
-                  disabled={!rescheduleEnabled}
-                  required
-                />
-                <small className="field__hint" id="detail-reschedule-cutoff-hint">{t.shopSettings.rescheduleCutoffHint}</small>
-              </div>
+              {rescheduleEnabled && (
+                <div className="field">
+                  <label className="field__label" htmlFor="detail-reschedule-cutoff">{t.shopSettings.rescheduleCutoffLabel}</label>
+                  <input
+                    className="input"
+                    id="detail-reschedule-cutoff"
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={168}
+                    step={1}
+                    value={rescheduleCutoff}
+                    onChange={(e) => setRescheduleCutoff(e.target.value)}
+                    aria-describedby="detail-reschedule-cutoff-hint"
+                    required
+                  />
+                  <small className="field__hint" id="detail-reschedule-cutoff-hint">{t.shopSettings.rescheduleCutoffHint}</small>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="card__section">
+          <div className={`card${dirty ? ' card--unsaved' : ''}`}>
+            <h2 className="card__title">{t.shopSettings.remindersTitle}</h2>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <label htmlFor="detail-reminder" className="setting-row__title">
+                  {t.shopSettings.reminderEnabledLabel}
+                </label>
+                <span className="setting-row__text">{t.shopSettings.reminderEnabledDesc}</span>
+              </div>
+              <Switch
+                id="detail-reminder"
+                checked={reminderEnabled}
+                onChange={setReminderEnabled}
+                label={t.shopSettings.reminderEnabledLabel}
+              />
+            </div>
+            {reminderEnabled && (
+              <div className="field">
+                <label className="field__label" htmlFor="detail-reminder-hours">{t.shopSettings.reminderHoursLabel}</label>
+                <input
+                  className="input"
+                  id="detail-reminder-hours"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={72}
+                  step={1}
+                  value={reminderHours}
+                  onChange={(e) => setReminderHours(e.target.value)}
+                  aria-describedby="detail-reminder-hours-hint"
+                  required
+                />
+                <small className="field__hint" id="detail-reminder-hours-hint">{t.shopSettings.reminderHoursHint}</small>
+              </div>
+            )}
+          </div>
+          </>
+          )}
+
+          {tab === 'customers' && (
+          <>
+          <div className={`card${dirty ? ' card--unsaved' : ''}`}>
             <div>
-              <h3 className="card__title">{t.customerProfile.sectionTitle}</h3>
+              <h2 className="card__title">{t.customerProfile.sectionTitle}</h2>
               <p className="card__text">{t.customerProfile.sectionHint}</p>
             </div>
             <div className="setting-row">
@@ -491,47 +516,60 @@ export default function ShopSettingsPage() {
             )}
           </div>
 
-          <div className="card__section">
-            <div className="setting-row">
-              <div className="setting-row__label">
-                <label htmlFor="detail-reminder" className="setting-row__title">
-                  {t.shopSettings.reminderEnabledLabel}
-                </label>
-                <span className="setting-row__text">{t.shopSettings.reminderEnabledDesc}</span>
-              </div>
-              <Switch
-                id="detail-reminder"
-                checked={reminderEnabled}
-                onChange={setReminderEnabled}
-                label={t.shopSettings.reminderEnabledLabel}
-              />
-            </div>
-            {reminderEnabled && (
-              <div className="field">
-                <label className="field__label" htmlFor="detail-reminder-hours">{t.shopSettings.reminderHoursLabel}</label>
-                <input
-                  className="input"
-                  id="detail-reminder-hours"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={72}
-                  step={1}
-                  value={reminderHours}
-                  onChange={(e) => setReminderHours(e.target.value)}
-                  aria-describedby="detail-reminder-hours-hint"
-                  required
-                />
-                <small className="field__hint" id="detail-reminder-hours-hint">{t.shopSettings.reminderHoursHint}</small>
-              </div>
-            )}
-          </div>
-        </div>
-        {dirty && shop.canEditShopSettings && (
-          <SaveBar label={t.shopSettings.saveChanges} saving={saveLoading} />
+          </>
+          )}
+          {dirty && shop.canEditShopSettings && (
+            <SaveBar label={t.shopSettings.saveChanges} saving={saveLoading} />
+          )}
+          </fieldset>
+        </form>
+
+        {tab === 'bookings' && (
+          <>
+      {/* Shop-wide closed days, on top of every member's working hours */}
+      <TimeOffPanel
+        shopId={shop.id}
+        canManage={canManageShop(shop.role)}
+        calendarPath={`/shops/${shop.slug}/bookings`}
+      />
+
+          </>
         )}
-        </fieldset>
-      </form>
+
+        {tab === 'customers' && (
+          <>
+      {/* Customer sign-up link and its QR code, once the page is switched on below */}
+      {shop.customerProfilePageEnabled && (
+        <div className="card">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faQrcode} className="card__icon" />
+            {t.customerProfile.signupLinkTitle}
+          </h2>
+          <p className="card__text">{t.customerProfile.signupLinkDesc}</p>
+          <CopyLinkButton
+            link={publicProfileUrl(shop.slug)}
+            qr={{ title: shop.name, alt: t.customerProfile.qrAlt, fileName: `${shop.slug}-signup-qr.png` }}
+          />
+        </div>
+      )}
+
+          </>
+        )}
+
+        {tab === 'page' && (
+          <>
+      {/* Booking link — copyable public /:slug link */}
+      <div className="card">
+        <h2 className="card__title">
+          <FontAwesomeIcon icon={faLink} className="card__icon" />
+          {t.sharing.title}
+        </h2>
+        <p className="card__text">{t.sharing.desc}</p>
+        <CopyLinkButton
+          link={publicShopUrl(shop.slug)}
+          qr={{ title: shop.name, alt: t.customerProfile.qrTitle, fileName: `${shop.slug}-booking-qr.png` }}
+        />
+      </div>
 
       {/* Colours and fonts of the public booking page, with a live preview */}
       <PublicBrandingCard shop={shop} onSaved={setShop} />
@@ -539,12 +577,36 @@ export default function ShopSettingsPage() {
       {/* The shop's photo at the top of that page */}
       <ShopPhotoCard shop={shop} onSaved={setShop} />
 
-      {/* Shop-wide closed days, on top of every member's working hours */}
-      <TimeOffPanel
-        shopId={shop.id}
-        canManage={canManageShop(shop.role)}
-        calendarPath={`/shops/${shop.slug}/bookings`}
-      />
+          </>
+        )}
+
+        {tab === 'plan' && (
+          <>
+      {/* Plan — set by us for now; there is no checkout yet */}
+      <div className="card">
+        <div className="card__header">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faCreditCard} className="card__icon" />
+            {t.shopPlan.title}
+          </h2>
+          <span className={`badge badge--lg ${shop.locked ? 'badge--warning' : 'badge--accent'}`}>
+            {PLAN_NAMES[shop.plan]}
+          </span>
+        </div>
+        <p className="card__text">
+          {shop.locked
+            ? (shop.subscriptionStatus === 'TRIALING' ? t.shopPlan.trialEnded : t.shopPlan.inactive)
+            : isOnTrial(shop) && shop.trialEndsAt
+              ? t.shopPlan.trialUntil.replace('{date}', formatDate(shop.trialEndsAt, language))
+              : t.shopPlan.active}{' '}
+          {t.shopPlan.staffLimit.replace('{n}', String(shop.staffLimit))}
+        </p>
+        <p className="card__text">{t.shopPlan.changePlan}</p>
+        <div className="cluster cluster--tight">
+          <Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>
+          <Link to="/pricing" className="btn btn--ghost btn--sm">{t.shopPlan.seePlans}</Link>
+        </div>
+      </div>
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (
@@ -560,6 +622,10 @@ export default function ShopSettingsPage() {
           </button>
         </div>
       )}
+
+          </>
+        )}
+      </div>
 
       {showDeleteConfirm && (
         <ConfirmDialog

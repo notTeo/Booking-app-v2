@@ -28,7 +28,7 @@ test('a 15-minute interval offers :15 starts, and the calendar filters hide bloc
   await waitForLanding(page);
 
   // Shop settings: every 15 minutes
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=bookings`);
   await page.locator('#detail-slot-interval').selectOption('15');
   await page.getByRole('button', { name: /save changes/i }).first().click();
   await expect

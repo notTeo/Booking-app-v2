@@ -10,3 +10,5 @@
 @media (min-width: 960px) {
   .brand-settings { grid-template-columns: minmax(0, 1fr) 23.4375rem; align-items: start; }
 }
+/* Shop settings: the cards of the open tab, stacked like the page itself. */
+.settings-panel { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }

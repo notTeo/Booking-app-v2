@@ -61,7 +61,7 @@ test('the sign-up page is off until the owner turns it on, then shows its QR cod
   await expect(page.getByText('This page is not available')).toBeVisible();
 
   await signIn(page);
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=customers`);
   await page.getByRole('switch', { name: 'Customers can add a profile photo' }).check({ force: true });
   await page.getByRole('switch', { name: 'Customer sign-up page' }).check({ force: true });
   await expect(page.getByText('Save your changes to show the link and the QR code.')).toBeVisible();

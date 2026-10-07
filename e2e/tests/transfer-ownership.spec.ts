@@ -95,8 +95,9 @@ test('the owner transfers the shop to a manager and becomes a manager', async ({
     { id: 'xfer-us', role: 'owner' },
   ]);
 
-  await page.goto(`${SHOP}/settings`);
+  await page.goto(`${SHOP}/settings?tab=plan`);
   await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plan', exact: true })).toBeVisible();
   await expect(page.locator('.card--danger')).toHaveCount(0);
 });
 

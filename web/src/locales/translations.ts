@@ -872,6 +872,15 @@ export interface Translations {
     saveChanges: string;
     saveHint: string;
     unsavedChanges: string;
+    tabsLabel: string;
+    tabShop: string;
+    tabBookings: string;
+    tabCustomers: string;
+    tabPage: string;
+    tabPlan: string;
+    bookingTimesTitle: string;
+    bookingTimesHint: string;
+    remindersTitle: string;
     readOnlyHint: string;
     backToShop: string;
     created: string;
@@ -2404,6 +2413,15 @@ home: {
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
       unsavedChanges: 'Έχεις αλλαγές που δεν έχουν αποθηκευτεί.',
+      tabsLabel: "Ενότητες ρυθμίσεων",
+      tabShop: "Κατάστημα",
+      tabBookings: "Ραντεβού",
+      tabCustomers: "Πελάτες",
+      tabPage: "Σελίδα κρατήσεων",
+      tabPlan: "Πακέτο",
+      bookingTimesTitle: "Ώρες ραντεβού",
+      bookingTimesHint: "Πότε μπορούν να κλείσουν ραντεβού οι πελάτες.",
+      remindersTitle: "Υπενθυμίσεις",
       readOnlyHint: 'Μόνο για προβολή. Ο ιδιοκτήτης μπορεί να σου επιτρέψει την επεξεργασία των ρυθμίσεων.',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
@@ -3960,6 +3978,15 @@ home: {
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
       unsavedChanges: 'You have unsaved changes.',
+      tabsLabel: "Settings sections",
+      tabShop: "Shop",
+      tabBookings: "Bookings",
+      tabCustomers: "Customers",
+      tabPage: "Booking page",
+      tabPlan: "Plan",
+      bookingTimesTitle: "Booking times",
+      bookingTimesHint: "When customers can book an appointment.",
+      remindersTitle: "Reminders",
       readOnlyHint: 'View only. The owner can let you edit these settings.',
       backToShop: '← Back to Shop',
       created: 'Created',

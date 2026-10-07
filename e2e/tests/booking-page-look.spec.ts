@@ -33,7 +33,7 @@ test('the look picked in settings is previewed, then applied to the public page'
   page.on('request', (r) => {
     if (r.url().endsWith('/auth/refresh')) refreshes += 1;
   });
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=page`);
 
   const card = page.locator('.card', { has: page.getByRole('heading', { name: 'Booking page look' }) });
   const save = card.getByRole('button', { name: 'Save' }).first();
