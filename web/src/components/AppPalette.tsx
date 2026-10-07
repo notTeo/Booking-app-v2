@@ -2,10 +2,11 @@ import { useLayoutEffect } from 'react';
 import { usePalette } from '../context/PaletteContext';
 
 /**
- * Puts the chosen colour set on <html> while an app layout is mounted, and
- * takes it off again on the way out, so the landing, auth and public booking
- * pages always keep the original colours. On <html> rather than the layout so
- * the page background and modals (rendered into <body>) follow it too.
+ * Puts the chosen colour set on <html> while an app layout or a marketing
+ * page (through SiteNav) is mounted, and takes it off again on the way out,
+ * so the auth pages always keep the original colours and the public booking
+ * page its own. On <html> rather than the layout so the page background and
+ * modals (rendered into <body>) follow it too.
  */
 export default function AppPalette() {
   const { palette } = usePalette();
