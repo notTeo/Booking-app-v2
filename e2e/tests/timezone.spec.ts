@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
-import { latestBookingStart } from '../support/db';
+import { latestBookingStart, query } from '../support/db';
 import { addDays, athensDate, athensWallClockToUtc, testDates } from '../support/dates';
 import { pickServiceAndProvider } from '../support/booking';
 
@@ -29,13 +29,34 @@ async function pickDate(page: Page, date: string) {
   }, date);
 }
 
+/**
+ * Other specs book on days counted from today (today + 18, + 16, ...). On some
+ * calendar days one of those lands on a fixed date used here and takes the
+ * 10:00 this test books. Specs run one at a time, so what is left on the day
+ * is finished with: cancel it and the day is free again.
+ */
+async function freeTheDay(date: string) {
+  await query(
+    `update "Booking" set status = 'CANCELED'
+     where status in ('PENDING', 'CONFIRMED') and "startTime" >= $1 and "startTime" < $2`,
+    [athensWallClockToUtc(date, '00:00'), athensWallClockToUtc(addDays(date, 1), '00:00')],
+  );
+}
+
 async function startPublicBooking(page: Page, date: string) {
   await page.context().addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
   await pickServiceAndProvider(page);
   await expect(page.locator('#booking-date')).toBeVisible();
+  // Wait for THIS date's slots: the grid shows the default date's until they
+  // arrive, and reading it before then asserts against the wrong day.
+  const slotsLoaded = page.waitForResponse(
+    (r) => r.url().includes('/slots') && r.url().includes(`date=${date}`) && r.ok(),
+  );
   await pickDate(page, date);
-  await expect(page.getByRole('button', { pressed: false }).first()).toBeVisible();
+  await slotsLoaded;
+  // 10:00 is open on every date the suite uses, so it marks the new grid.
+  await expect(page.getByRole('button', { name: '10:00', exact: true })).toBeVisible();
 }
 
 for (const c of CASES) {
@@ -53,24 +74,27 @@ for (const c of CASES) {
         c.browserTz,
       );
 
+      await freeTheDay(c.date);
       await startPublicBooking(page, c.date);
 
       // The date picker follows the SHOP's calendar, capped by maxAdvanceDays.
       await expect(page.locator('#booking-date')).toHaveAttribute('min', athensDate());
       await expect(page.locator('#booking-date')).toHaveAttribute('max', addDays(athensDate(), 730));
 
-      const labels = await page.getByRole('button', { pressed: false }).allTextContents();
-      expect(new Set(labels).size).toBe(labels.length); // no duplicate slots
+      // Retrying assertions: they wait for the grid to settle on this date.
+      const slot = (time: string) => page.getByRole('button', { name: time, exact: true });
       if (c.kind === 'dstStart') {
         // 03:00–03:59 does not exist in Athens on the spring-forward day.
-        expect(labels).not.toContain('03:00');
-        expect(labels).not.toContain('03:30');
+        await expect(slot('03:00')).toHaveCount(0);
+        await expect(slot('03:30')).toHaveCount(0);
       }
       if (c.kind === 'dstEnd') {
         // The repeated hour is offered once, not twice.
-        expect(labels.filter((l) => l === '03:00')).toHaveLength(1);
-        expect(labels.filter((l) => l === '03:30')).toHaveLength(1);
+        await expect(slot('03:00')).toHaveCount(1);
+        await expect(slot('03:30')).toHaveCount(1);
       }
+      const labels = await page.getByRole('button', { pressed: false }).allTextContents();
+      expect(new Set(labels).size).toBe(labels.length); // no duplicate slots
 
       await page.getByRole('button', { name: '10:00', exact: true }).click();
       await page.getByRole('button', { name: /continue|συνέχεια/i }).click();
