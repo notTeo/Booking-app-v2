@@ -132,7 +132,7 @@ jobs:
       - run: npx prisma generate
       - name: Tests
         run: npm test -- --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml
-      # The security audit's regression tests (tests/audit, see its REPORT.md):
+      # The security audit's regression tests (tests/audit):
       # each one failed before its finding was fixed. Once per run is enough.
       - name: Audit regression tests
         if: matrix.tz == 'UTC'
