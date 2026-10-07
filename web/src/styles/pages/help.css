@@ -1,0 +1,7 @@
+/* Layout only — every visual comes from components.css. */
+.help-page { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; max-width: 53.75rem; }
+/* A link to a topic lands with the topic clear of the top bar. */
+.help-topic { scroll-margin-top: var(--space-16); }
+.help-topic__head { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
+.help-topic__body { display: flex; flex-direction: column; gap: var(--space-3); }
+.help-topic__body > p { max-width: 65ch; margin: 0; }

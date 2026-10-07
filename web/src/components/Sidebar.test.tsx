@@ -41,13 +41,14 @@ describe('Sidebar', () => {
     expect(html).toContain(t.home);
   });
 
-  it('not in any shop: only the logo, Home and Account', () => {
+  it('not in any shop: only the logo, Home, Help and Account', () => {
     for (const path of ['/dashboard', '/account', '/shops/new']) {
       const html = render(path);
       expect(html, path).toContain('wordmark');
       expect(html, path).toContain('href="/dashboard"');
+      expect(html, path).toContain('href="/help"');
       expect(html, path).toContain('href="/account"');
-      expect(html.match(/<a [^>]*class="nav-item/g), path).toHaveLength(2);
+      expect(html.match(/<a [^>]*class="nav-item/g), path).toHaveLength(3);
       expect(html, path).not.toContain('sidebar__title');
     }
   });
@@ -69,6 +70,14 @@ describe('Sidebar', () => {
     expect(html).toContain('href="/shops/hair/bookings"');
     expect(html).not.toContain('/shops/hair/team');
     expect(html).not.toContain('/shops/hair/settings');
+  });
+
+  it('everyone gets Help, right above Account', () => {
+    shopState.myShops = [{ name: 'Hairology', slug: 'hair', role: 'staff' }];
+    const html = render('/help');
+    expect(html).toMatch(/aria-current="page"[^>]*href="\/help"/);
+    expect(html.indexOf('href="/help"')).toBeLessThan(html.indexOf('href="/account"'));
+    expect(html.indexOf('href="/help"')).toBeGreaterThan(html.indexOf('sidebar__footer'));
   });
 
   it('marks only Home or Account as current on their own pages', () => {
