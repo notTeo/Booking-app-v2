@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextStepBack, wizardServices } from './useBookingWizard';
+import { lastSteps, nextStepBack, wizardServices } from './useBookingWizard';
 import type { Service } from '../api/public.api';
 
 const svc = (id: string): Service => ({ id, name: id, description: null, duration: 30, price: 1000 });
@@ -17,6 +17,13 @@ describe('nextStepBack (reschedule mode)', () => {
     // A customer reschedule has no service step: step 2 is the first one.
     expect(nextStepBack(3, 2)).toBe(2);
     expect(nextStepBack(2, 2)).toBeNull();
+  });
+});
+
+describe('lastSteps', () => {
+  it('puts a products step before the details only when there are products on offer', () => {
+    expect(lastSteps(true)).toEqual({ productsStep: 4, detailsStep: 5 });
+    expect(lastSteps(false)).toEqual({ productsStep: null, detailsStep: 4 });
   });
 });
 

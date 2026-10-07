@@ -18,6 +18,7 @@ import ConfirmDialog from '../ConfirmDialog';
 import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
 import WizardStepsIndicator from './WizardStepsIndicator';
+import ProductsStep from './ProductsStep';
 import ServiceSelectStep from './ServiceSelectStep';
 import StaffSelectStep from './StaffSelectStep';
 import DateTimeStep from './DateTimeStep';
@@ -74,6 +75,8 @@ export default function OwnerBookingWizard({
   // own service durations then show on the service cards and decide the slots.
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [customDurations, setCustomDurations] = useState<Record<string, number>>({});
+  // Products reserved with the booking (the products step): quantity per product id.
+  const [reserved, setReserved] = useState<Record<string, number>>({});
   const wizard = useBookingWizard({
     slug,
     shopId,
@@ -240,7 +243,7 @@ export default function OwnerBookingWizard({
   function handleBackFromForm() {
     setSubmitError(null);
     setBusyNotice(null);
-    wizard.setStep(3);
+    wizard.goBack();
   }
 
   return (
@@ -261,6 +264,7 @@ export default function OwnerBookingWizard({
       <WizardStepsIndicator
         currentStep={wizard.step}
         lastLabel={reschedule ? t.bookings.reschedule.confirmStep : undefined}
+        withProducts={wizard.productsStep !== null}
       />
 
       {/* Searching customers needs permission to see them; the API returns nothing otherwise. */}
@@ -327,7 +331,19 @@ export default function OwnerBookingWizard({
         />
       )}
 
-      {wizard.step === 4 && reschedule && newStartISO && (
+      {wizard.step === wizard.productsStep && (
+        <ProductsStep
+          products={wizard.shop.products}
+          value={reserved}
+          onChange={setReserved}
+          canOverStock={canManageShop(memberShop?.role)}
+          servicePrice={shownService?.price}
+          onBack={wizard.goBack}
+          onContinue={() => wizard.setStep(wizard.detailsStep)}
+        />
+      )}
+
+      {wizard.step === wizard.detailsStep && reschedule && newStartISO && (
         <RescheduleConfirmStep
           customerName={
             reschedule.booking.customer.contactHidden ? t.customers.hiddenLabel : reschedule.booking.customer.name
@@ -353,7 +369,7 @@ export default function OwnerBookingWizard({
         />
       )}
 
-      {wizard.step === 4 && !reschedule && (
+      {wizard.step === wizard.detailsStep && !reschedule && (
         <OwnerCustomerFormStep
           shopId={shopId}
           initialCustomer={customer}
@@ -363,6 +379,7 @@ export default function OwnerBookingWizard({
           time={wizard.time}
           outsideRules={anticipated ?? []}
           products={wizard.shop.products}
+          reserved={reserved}
           canOverStock={canManageShop(memberShop?.role)}
           onSubmit={(values) => handleSubmit(values, anticipated && anticipated.length > 0 ? anticipated : undefined)}
           onBack={handleBackFromForm}

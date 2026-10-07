@@ -13,6 +13,7 @@ export interface ProductDto {
   price?: number;
   stock?: number;
   supplierUrl?: string | null;
+  isActive?: boolean;
 }
 
 const MANAGER_ONLY = {
@@ -28,6 +29,7 @@ const pickFields = (dto: ProductDto) => {
   if (dto.price !== undefined) out.price = dto.price;
   if (dto.stock !== undefined) out.stock = dto.stock;
   if (dto.supplierUrl !== undefined) out.supplierUrl = dto.supplierUrl || null;
+  if (dto.isActive !== undefined) out.isActive = dto.isActive;
   return out;
 };
 
@@ -62,6 +64,7 @@ export const createProduct = async (
       stock: dto.stock ?? 0,
       description: dto.description || null,
       supplierUrl: dto.supplierUrl || null,
+      isActive: dto.isActive ?? true,
     },
   });
   logger.info(`Product created: ${product.id} in shop ${shopId}`);

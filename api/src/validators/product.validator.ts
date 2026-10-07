@@ -47,6 +47,10 @@ const fields = (required: boolean) => {
     opt(body('stock'))
       .isInt({ min: 0, max: MAX_STOCK })
       .withMessage(`Stock must be a whole number from 0 to ${MAX_STOCK}`),
+    body('isActive')
+      .optional()
+      .isBoolean({ strict: true })
+      .withMessage('isActive must be true or false'),
     supplierUrl,
   ];
 };

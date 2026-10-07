@@ -244,6 +244,39 @@ describe('products on the public page', () => {
     expect(JSON.stringify(res.body)).not.toContain('supplier');
   });
 
+  it('leaves out a deactivated product, for customers and for staff', async () => {
+    const t = await createTenant('Prod');
+    const shown = await create(t);
+    const hidden = await create(t, { name: 'Wax', isActive: false });
+    expect(shown.body.data.isActive).toBe(true);
+    expect(hidden.body.data.isActive).toBe(false);
+
+    const names = (res: { body: { data: { products: { name: string }[] } } }) =>
+      res.body.data.products.map((p) => p.name);
+    expect(names(await api.get(`/public/${t.shop.slug}`))).toEqual(['Shampoo']);
+    const info = () =>
+      api
+        .get(`/api/shops/${t.shop.id}/bookings/wizard-info`)
+        .set(authHeader(t.token));
+    expect(names(await info())).toEqual(['Shampoo']);
+
+    // The shop's own list keeps it, and it can be switched back on.
+    const list = await api.get(url(t)).set(authHeader(t.token));
+    expect(list.body.data).toHaveLength(2);
+    const on = await api
+      .patch(url(t, `/${hidden.body.data.id}`))
+      .set(authHeader(t.token))
+      .send({ isActive: true });
+    expect(on.status).toBe(200);
+    expect(names(await info())).toEqual(['Shampoo', 'Wax']);
+
+    const bad = await api
+      .patch(url(t, `/${hidden.body.data.id}`))
+      .set(authHeader(t.token))
+      .send({ isActive: 'no' });
+    expect(bad.status).toBe(400);
+  });
+
   it('is empty on a plan without products', async () => {
     const t = await createTenant('Prod');
     await create(t);

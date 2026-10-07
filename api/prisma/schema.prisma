@@ -346,6 +346,8 @@ model Product {
   supplierUrl      String?
   // How many are left.
   stock            Int      @default(0)
+  // Off = kept in the shop's list, but not offered with a booking.
+  isActive         Boolean  @default(true)
   photoUrl         String?
   photoOriginalUrl String?
   photoCrop        Json?

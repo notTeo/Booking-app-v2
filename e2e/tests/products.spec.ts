@@ -35,8 +35,8 @@ const stockOf = async (id: string) =>
   Number((await query(`select stock from "Product" where id = $1`, [id]))[0].stock);
 
 
-/** Public page up to the details step (service, provider, date and time chosen). */
-const openDetailsStep = async (page: Page) => {
+/** Public page up to the step after date and time: the products step when the shop offers any, else the details. */
+const openStepAfterTime = async (page: Page) => {
   await page.context().addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
   await page.goto(`/${E2E.shop.slug}`);
   await pickServiceAndProvider(page);
@@ -129,9 +129,10 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await seedProduct('p-e2e-1', 'E2E Shampoo', 3);
   await seedProduct('p-e2e-0', 'E2E Gone', 0);
 
-  await openDetailsStep(page);
-  await page.locator('#b-name').fill(CUSTOMER);
-  await page.locator('#b-phone').fill('6900000451');
+  await openStepAfterTime(page);
+  // Products have a step of their own, before the details.
+  await expect(page.getByText('Step 4 of 5')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
 
   const picker = page.locator('.product-picker');
   await expect(picker.getByText('E2E Shampoo')).toBeVisible();
@@ -156,6 +157,12 @@ test('a customer reserves a product on the public page, and the owner marks it s
   await expect(picker.locator('.sum-up__row--total')).toContainText('€40.00');
   await expect(picker.getByText('Reservation only: you pay in the shop.')).toBeVisible();
 
+  await page.getByRole('button', { name: /continue/i }).click();
+  await expect(page.getByText('Step 5 of 5')).toBeVisible();
+  // The details step repeats what was chosen.
+  await expect(page.locator('.reserved-products').getByText('2 × E2E Shampoo')).toBeVisible();
+  await page.locator('#b-name').fill(CUSTOMER);
+  await page.locator('#b-phone').fill('6900000451');
   await page.getByRole('button', { name: /confirm booking/i }).click();
   const card = page.locator('.booking-card__body .card--center');
   await expect(card).toBeVisible();
@@ -226,6 +233,63 @@ test('a customer reserves a product on the public page, and the owner marks it s
   expect(await bookingLineCount()).toBe(0);
 });
 
+test('a deactivated product is not offered, and with none on offer there is no products step', async ({ page }) => {
+  await seedProduct('p-e2e-1', 'E2E Shampoo', 3);
+  await query(`update "Product" set "isActive" = false where id = 'p-e2e-1'`);
+
+  await openStepAfterTime(page);
+  await expect(page.getByText('Step 4 of 4')).toBeVisible();
+  await expect(page.locator('#b-name')).toBeVisible();
+  await expect(page.locator('.product-picker')).toHaveCount(0);
+
+  // The shop still has it, marked, and can switch it back on.
+  await signIn(page);
+  await page.goto(`/shops/${E2E.shop.slug}/products`);
+  const row = page.getByRole('row', { name: /E2E Shampoo/ });
+  await expect(row.getByText('Inactive')).toBeVisible();
+  await row.getByRole('link', { name: /E2E Shampoo/ }).click();
+  await page.getByRole('switch', { name: 'Offered with bookings' }).check({ force: true });
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('The product was saved.')).toBeVisible();
+  expect((await query(`select "isActive" from "Product" where id = 'p-e2e-1'`))[0].isActive).toBe(true);
+});
+
+test('the shop\'s own wizard has the products step too: the owner reserves past the stock after a warning', async ({ page }) => {
+  await seedProduct('p-e2e-1', 'E2E Shampoo', 1);
+  await signIn(page);
+  await page.goto(`/shops/${E2E.shop.slug}/bookings/new`);
+  await pickServiceAndProvider(page);
+  await page.locator('#booking-date').evaluate((el, v) => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+    set.call(el, v);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, DATE);
+  await page.getByRole('button', { name: '15:00', exact: true }).click();
+  await page.getByRole('button', { name: /continue/i }).click();
+
+  // Five steps, the fourth being the products.
+  await expect(page.locator('.steps__item')).toHaveCount(5);
+  await expect(page.locator('.steps__item.is-current')).toContainText('Products');
+  const more = page.getByRole('button', { name: 'More: E2E Shampoo' });
+  await more.click();
+  await more.click();
+  await expect(page.getByText('You are reserving more than what is left.')).toBeVisible();
+  await page.locator('.public-wizard-actions').getByRole('button', { name: /continue/i }).click();
+
+  await expect(page.locator('.steps__item.is-current')).toContainText('Your Details');
+  await expect(page.locator('.reserved-products').getByText('2 × E2E Shampoo')).toBeVisible();
+  // Back keeps what was chosen.
+  await page.locator('.public-wizard-actions').getByRole('button', { name: /back/i }).click();
+  await expect(page.locator('.stepper__value')).toHaveText('2');
+  await page.locator('.public-wizard-actions').getByRole('button', { name: /continue/i }).click();
+
+  await page.locator('#b-name').fill(CUSTOMER);
+  await page.locator('#b-phone').fill('6900000452');
+  await page.getByRole('button', { name: 'Reserve anyway' }).click();
+  await expect.poll(bookingLineCount).toBe(1);
+});
+
 const noHorizontalScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 
@@ -235,7 +299,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.context().addCookies([{ name: 'theme', value: theme, url: E2E.webUrl }]);
 
-    await openDetailsStep(page);
+    await openStepAfterTime(page);
     await expect(page.locator('.product-picker')).toBeVisible();
     await page.getByRole('button', { name: /^More:/ }).click();
     expect(await noHorizontalScroll(page)).toBe(true);

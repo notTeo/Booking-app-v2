@@ -774,6 +774,9 @@ export interface Translations {
     removeLine: string;
     removeLineTitle: string;
     removeLineMessage: string;
+    active: string;
+    activeHint: string;
+    inactive: string;
   };
   photos: {
     editorTitle: string;
@@ -2157,6 +2160,9 @@ home: {
       removeLine: "Αφαίρεση: {name}",
       removeLineTitle: "Αφαίρεση προϊόντος από την κράτηση;",
       removeLineMessage: "Το προϊόν αφαιρείται από την κράτηση. Αν είχε σημειωθεί ως πουλημένο, το απόθεμα επιστρέφει.",
+      active: "Προσφέρεται στις κρατήσεις",
+      activeHint: "Όταν είναι κλειστό, το προϊόν μένει στη λίστα σου αλλά δεν προτείνεται σε πελάτες ή στο προσωπικό κατά την κράτηση.",
+      inactive: "Ανενεργό",
     },
     photos: {
       editorTitle: "Επεξεργασία φωτογραφίας",
@@ -3564,6 +3570,9 @@ home: {
       removeLine: "Remove: {name}",
       removeLineTitle: "Remove this product from the booking?",
       removeLineMessage: "The product is removed from the booking. If it was marked sold, the stock goes back.",
+      active: "Offered with bookings",
+      activeHint: "When off, the product stays in your list but is not offered to customers or staff when booking.",
+      inactive: "Inactive",
     },
     photos: {
       editorTitle: "Edit photo",

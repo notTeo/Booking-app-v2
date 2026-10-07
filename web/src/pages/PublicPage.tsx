@@ -21,8 +21,8 @@ import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import LangSwitch from '../components/LangSwitch';
 import ReservedProducts from '../components/ReservedProducts';
-import ProductPicker from '../components/booking-wizard/ProductPicker';
-import { toProductLines } from '../utils/productLines';
+import ProductsStep from '../components/booking-wizard/ProductsStep';
+import { toProductLines, toReservedProducts } from '../utils/productLines';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import NotFoundPage from './NotFoundPage';
@@ -180,12 +180,20 @@ function PublicBookingPage({ slug }: { slug: string }) {
   function handleBackFromForm() {
     setSubmitError(null);
     setBusyNotice(null);
-    wizard.setStep(3);
+    wizard.goBack();
   }
 
   const step = wizard.step;
+  const onProducts = step === wizard.productsStep;
+  const onDetails = step === wizard.detailsStep;
   const stepHeading =
-    step === 1 ? t.public.chooseService : [t.public.staff, t.public.dateTime, t.public.yourDetails][step - 2];
+    step === 1
+      ? t.public.chooseService
+      : onProducts
+        ? t.products.pickerTitle
+        : onDetails
+          ? t.public.yourDetails
+          : [t.public.staff, t.public.dateTime][step - 2];
   const picked = wizard.selectedServices;
   const showFooter = !confirmed && shop.acceptingBookings;
 
@@ -258,7 +266,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
             </Alert>
           ) : (
             <>
-              <WizardProgress step={step} />
+              <WizardProgress step={step} total={wizard.detailsStep} />
               <h2 className="booking-card__heading">{stepHeading}</h2>
               {step === 1 && picked.length === 0 && shop.services.length > 1 && (
                 <p className="booking-card__hint">{t.public.chooseServiceHint}</p>
@@ -314,7 +322,19 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 />
               )}
 
-              {step === 4 && (
+              {onProducts && (
+                <ProductsStep
+                  products={shop.products}
+                  value={reserved}
+                  onChange={setReserved}
+                  servicePrice={wizard.selectedService?.price}
+                  onBack={wizard.goBack}
+                  onContinue={() => wizard.setStep(wizard.detailsStep)}
+                  hideActions
+                />
+              )}
+
+              {onDetails && (
                 <div className="public-wizard-panel">
                   {wizard.selectedService && (
                     <p className="t-body-sm t-muted">
@@ -387,7 +407,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  <ProductPicker products={shop.products} value={reserved} onChange={setReserved} servicePrice={wizard.selectedService?.price} />
+                  <ReservedProducts
+                    title={t.products.pickerTitle}
+                    products={toReservedProducts(shop.products, reserved)}
+                    servicePrice={wizard.selectedService?.price}
+                  />
 
                   <div className="field">
                     <label className="checkbox">
@@ -438,7 +462,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 <button
                   type="button"
                   className="btn btn--secondary"
-                  onClick={step === 4 ? handleBackFromForm : wizard.goBack}
+                  onClick={onDetails ? handleBackFromForm : wizard.goBack}
                   disabled={submitting}
                 >
                   {t.public.back}
@@ -464,7 +488,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
                   {t.public.continue}
                 </button>
               )}
-              {step === 4 && (
+              {onProducts && (
+                <button type="button" className="btn btn--block" onClick={() => wizard.setStep(wizard.detailsStep)}>
+                  {t.public.continue}
+                </button>
+              )}
+              {onDetails && (
                 <button
                   type="button"
                   className={`btn btn--block${submitting && !cooling ? ' is-loading' : ''}`}

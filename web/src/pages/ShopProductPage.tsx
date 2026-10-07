@@ -23,6 +23,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import PhotoField from '../components/PhotoField';
 import ProductThumb from '../components/ProductThumb';
 import StockBadge from '../components/StockBadge';
+import Switch from '../components/Switch';
 import '../styles/pages/products.css';
 
 /** Cents from what was typed in euros ("12,50" and "12.5" both work), or null when it is not a price. */
@@ -61,6 +62,7 @@ export default function ShopProductPage() {
   const [stock, setStock] = useState('');
   const [description, setDescription] = useState('');
   const [supplierUrl, setSupplierUrl] = useState('');
+  const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -75,6 +77,7 @@ export default function ShopProductPage() {
     setStock(String(p.stock));
     setDescription(p.description ?? '');
     setSupplierUrl(p.supplierUrl ?? '');
+    setIsActive(p.isActive);
   };
 
   useEffect(() => {
@@ -120,6 +123,7 @@ export default function ShopProductPage() {
       stock: left,
       description: description.trim(),
       supplierUrl: supplierUrl.trim(),
+      isActive,
     };
     try {
       if (isNew) {
@@ -216,6 +220,7 @@ export default function ShopProductPage() {
             <span className="cluster cluster--tight">
               <span className="t-body-sm">{formatPrice(product!.price)}</span>
               <StockBadge stock={product!.stock} />
+              {!product!.isActive && <span className="badge badge--neutral">{tp.inactive}</span>}
             </span>
           )}
           {isNew && <small className="field__hint">{tp.photoPending}</small>}
@@ -260,6 +265,13 @@ export default function ShopProductPage() {
               )}
             </div>
             <small className="field__hint">{tp.supplierHint}</small>
+          </div>
+          <div className="setting-row">
+            <span className="setting-row__label">
+              <span className="setting-row__title">{tp.active}</span>
+              <span className="setting-row__text">{tp.activeHint}</span>
+            </span>
+            <Switch checked={isActive} onChange={setIsActive} label={tp.active} disabled={saving} />
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
           {saved && <Alert variant="success">{tp.saved}</Alert>}

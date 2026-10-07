@@ -7,17 +7,24 @@ export default function WizardStepsIndicator({
   currentStep: wizardStep,
   lastLabel,
   firstStep = 1,
+  withProducts = false,
 }: {
   currentStep: WizardStep;
   /** The wizard's first step, when earlier ones don't exist (a customer reschedule has no service step). */
   firstStep?: WizardStep;
   /** Replaces "Your details" when the last step is something else (e.g. confirming a reschedule). */
   lastLabel?: string;
+  /** The wizard has a products step before the last one. */
+  withProducts?: boolean;
 }) {
   const { t } = useLang();
-  const steps = [t.public.service, t.public.staff, t.public.dateTime, lastLabel ?? t.public.yourDetails].slice(
-    firstStep - 1,
-  );
+  const steps = [
+    t.public.service,
+    t.public.staff,
+    t.public.dateTime,
+    ...(withProducts ? [t.products.pickerTitle] : []),
+    lastLabel ?? t.public.yourDetails,
+  ].slice(firstStep - 1);
   // Numbered from 1 whatever the wizard's first step is.
   const currentStep = wizardStep - (firstStep - 1);
   const state = (stepNum: number) =>
