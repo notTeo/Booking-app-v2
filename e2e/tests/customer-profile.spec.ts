@@ -68,10 +68,18 @@ test('the sign-up page is off until the owner turns it on, then shows its QR cod
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('Shop updated successfully.')).toBeVisible();
 
-  const qr = page.getByRole('img', { name: 'QR code for the customer sign-up page' });
-  await loaded(qr);
-  await expect(page.getByText(`${E2E.webUrl}${profileUrl}`)).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Download PNG' })).toHaveAttribute('download', `${E2E.shop.slug}-qr.png`);
+  // The link has its own card; its QR button opens the code in a dialog.
+  const card = page.locator('.card', { hasText: 'Customer sign-up link' });
+  await expect(card.getByText(`${E2E.webUrl}${profileUrl}`)).toBeVisible();
+  await card.getByRole('button', { name: 'Show QR code' }).click();
+  const dialog = page.getByRole('dialog', { name: 'QR code' });
+  await loaded(dialog.getByRole('img', { name: 'QR code for the customer sign-up page' }));
+  await expect(dialog.getByRole('link', { name: 'Download PNG' })).toHaveAttribute(
+    'download',
+    `${E2E.shop.slug}-signup-qr.png`,
+  );
+  await dialog.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).toBeHidden();
 
   // The layout settles a moment after the resize (the sidebar becomes a drawer).
   await page.setViewportSize({ width: 360, height: 740 });

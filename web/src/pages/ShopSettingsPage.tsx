@@ -1,5 +1,4 @@
 import { publicProfileUrl, publicShopUrl } from '../utils/publicLink';
-import QrCode from '../components/QrCode';
 import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -211,7 +210,10 @@ export default function ShopSettingsPage() {
           {t.sharing.title}
         </h2>
         <p className="card__text">{t.sharing.desc}</p>
-        <CopyLinkButton link={publicShopUrl(shop.slug)} />
+        <CopyLinkButton
+          link={publicShopUrl(shop.slug)}
+          qr={{ title: shop.name, alt: t.customerProfile.qrTitle, fileName: `${shop.slug}-booking-qr.png` }}
+        />
       </div>
 
       {/* Customer sign-up link and its QR code, once the page is switched on below */}
@@ -222,12 +224,9 @@ export default function ShopSettingsPage() {
             {t.customerProfile.signupLinkTitle}
           </h2>
           <p className="card__text">{t.customerProfile.signupLinkDesc}</p>
-          <CopyLinkButton link={publicProfileUrl(shop.slug)} />
-          <QrCode
+          <CopyLinkButton
             link={publicProfileUrl(shop.slug)}
-            title={shop.name}
-            alt={t.customerProfile.qrAlt}
-            fileName={`${shop.slug}-qr.png`}
+            qr={{ title: shop.name, alt: t.customerProfile.qrAlt, fileName: `${shop.slug}-signup-qr.png` }}
           />
         </div>
       )}

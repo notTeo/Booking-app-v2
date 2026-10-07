@@ -1301,6 +1301,9 @@ export interface Translations {
     download: string;
     print: string;
     saveToShow: string;
+    showQr: string;
+    qrTitle: string;
+    close: string;
     signupLinkTitle: string;
     signupLinkDesc: string;
     changesTitle: string;
@@ -2857,6 +2860,9 @@ home: {
       download: "Λήψη PNG",
       print: "Εκτύπωση",
       saveToShow: "Αποθήκευσε τις αλλαγές για να εμφανιστούν ο σύνδεσμος και ο κωδικός QR.",
+      showQr: "Εμφάνιση κωδικού QR",
+      qrTitle: "Κωδικός QR",
+      close: "Κλείσιμο",
       signupLinkTitle: "Σύνδεσμος εγγραφής πελατών",
       signupLinkDesc: "Οι πελάτες γράφουν εδώ τα στοιχεία τους. Τύπωσε τον κωδικό QR για να τον σκανάρουν στο κατάστημα.",
       changesTitle: "Αλλαγές που ζήτησε ο πελάτης",
@@ -4409,6 +4415,9 @@ home: {
       download: "Download PNG",
       print: "Print",
       saveToShow: "Save your changes to show the link and the QR code.",
+      showQr: "Show QR code",
+      qrTitle: "QR code",
+      close: "Close",
       signupLinkTitle: "Customer sign-up link",
       signupLinkDesc: "Customers enter their own details here. Print the QR code so they can scan it in the shop.",
       changesTitle: "Changes this customer asked for",

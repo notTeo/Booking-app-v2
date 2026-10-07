@@ -574,8 +574,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 
 /* A QR code with its download and print buttons. Always dark on white, in
    both themes, so a phone camera can read it off the screen. */
-.qr-code { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
-.qr-code__image { width: 100%; max-width: 12rem; height: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.qr-code { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+.qr-code__image { width: 100%; max-width: 18rem; height: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
 
 /* ---------- 16. Navbar ---------- */
 .navbar {
@@ -829,6 +829,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .copy-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
 .copy-link__value { flex: 1 1 0; min-width: 0; font-family: monospace; font-size: var(--fs-sm); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .copy-link__btn { flex-shrink: 0; }
+/* On a phone the link gets a line to itself, so it can be read above its buttons. */
+@media (max-width: 639px) {
+  .copy-link { flex-wrap: wrap; }
+  .copy-link__value { flex-basis: 100%; white-space: normal; overflow-wrap: anywhere; }
+}
 .copy-link--compact .copy-link__value { font-size: var(--fs-xs); }
 
 /* ---------- 26. Setting row ---------- */
