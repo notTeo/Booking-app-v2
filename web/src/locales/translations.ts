@@ -871,6 +871,16 @@ export interface Translations {
     activeOwnerOnly: string;
     saveChanges: string;
     saveHint: string;
+    unsavedChanges: string;
+    tabsLabel: string;
+    tabShop: string;
+    tabBookings: string;
+    tabCustomers: string;
+    tabPage: string;
+    tabPlan: string;
+    bookingTimesTitle: string;
+    bookingTimesHint: string;
+    remindersTitle: string;
     readOnlyHint: string;
     backToShop: string;
     created: string;
@@ -1262,6 +1272,62 @@ export interface Translations {
       status: Record<'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW', string>;
     };
     bookingCreated: string;
+  };
+  customerProfile: {
+    newCustomer: string;
+    newCustomerTitle: string;
+    create: string;
+    cancel: string;
+    errorCreate: string;
+    existsError: string;
+    existsLink: string;
+    photoTitle: string;
+    photoDesc: string;
+    takePhoto: string;
+    choosePhoto: string;
+    changePhoto: string;
+    removePhoto: string;
+    photoLabel: string;
+    photoHelp: string;
+    wizardPhotoFailed: string;
+    pageTitle: string;
+    pageIntro: string;
+    submit: string;
+    successTitle: string;
+    successBody: string;
+    bookLink: string;
+    existingNote: string;
+    errorSubmit: string;
+    unavailableTitle: string;
+    unavailableBody: string;
+    sectionTitle: string;
+    sectionHint: string;
+    photosLabel: string;
+    photosDesc: string;
+    pageLabel: string;
+    pageDesc: string;
+    qrDesc: string;
+    qrAlt: string;
+    download: string;
+    print: string;
+    saveToShow: string;
+    showQr: string;
+    qrTitle: string;
+    close: string;
+    signupLinkTitle: string;
+    signupLinkDesc: string;
+    changesTitle: string;
+    changesDesc: string;
+    changesPhoto: string;
+    changesAccept: string;
+    changesReject: string;
+    changesError: string;
+    changesPhoneTaken: string;
+    changesFilter: string;
+    changesBadge: string;
+    numberChanged: string;
+    newPhoneLabel: string;
+    newPhoneHint: string;
   };
   cancelBooking: {
     invalidLink: string;
@@ -2346,6 +2412,16 @@ home: {
       activeOwnerOnly: 'Μόνο ο ιδιοκτήτης μπορεί να το αλλάξει.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
+      unsavedChanges: 'Έχεις αλλαγές που δεν έχουν αποθηκευτεί.',
+      tabsLabel: "Ενότητες ρυθμίσεων",
+      tabShop: "Κατάστημα",
+      tabBookings: "Ραντεβού",
+      tabCustomers: "Πελάτες",
+      tabPage: "Σελίδα κρατήσεων",
+      tabPlan: "Πακέτο",
+      bookingTimesTitle: "Ώρες ραντεβού",
+      bookingTimesHint: "Πότε μπορούν να κλείσουν ραντεβού οι πελάτες.",
+      remindersTitle: "Υπενθυμίσεις",
       readOnlyHint: 'Μόνο για προβολή. Ο ιδιοκτήτης μπορεί να σου επιτρέψει την επεξεργασία των ρυθμίσεων.',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
@@ -2765,6 +2841,62 @@ home: {
         },
       },
       bookingCreated: 'Το ραντεβού δημιουργήθηκε',
+    },
+    customerProfile: {
+      newCustomer: "Νέος πελάτης",
+      newCustomerTitle: "Νέος πελάτης",
+      create: "Προσθήκη πελάτη",
+      cancel: "Άκυρο",
+      errorCreate: "Δεν ήταν δυνατή η προσθήκη του πελάτη.",
+      existsError: "Υπάρχει ήδη πελάτης με αυτό το τηλέφωνο.",
+      existsLink: "Άνοιγμα της σελίδας του",
+      photoTitle: "Φωτογραφία",
+      photoDesc: "Φαίνεται δίπλα στο όνομα του πελάτη στη λίστα και στα ραντεβού του.",
+      takePhoto: "Τράβηξε φωτογραφία",
+      choosePhoto: "Διάλεξε φωτογραφία",
+      changePhoto: "Αλλαγή",
+      removePhoto: "Αφαίρεση",
+      photoLabel: "Η φωτογραφία σου",
+      photoHelp: "Βοηθά το κατάστημα να σε αναγνωρίζει. Τη βλέπει μόνο το κατάστημα.",
+      wizardPhotoFailed: "Το ραντεβού σου κλείστηκε, αλλά η φωτογραφία δεν αποθηκεύτηκε.",
+      pageTitle: "Τα στοιχεία σου",
+      pageIntro: "Συμπλήρωσε τα στοιχεία σου για να σε έχει το {shop} στους πελάτες του.",
+      submit: "Αποθήκευση",
+      successTitle: "Ευχαριστούμε!",
+      successBody: "Τα στοιχεία σου στάλθηκαν στο {shop}. Αν ήσουν ήδη πελάτης, το κατάστημα θα επιβεβαιώσει τις αλλαγές.",
+      bookLink: "Κλείσε ραντεβού",
+      existingNote: "Αν είσαι ήδη πελάτης, το κατάστημα θα δει τις αλλαγές σου και θα τις επιβεβαιώσει.",
+      errorSubmit: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
+      unavailableTitle: "Η σελίδα δεν είναι διαθέσιμη",
+      unavailableBody: "Αυτό το κατάστημα δεν δέχεται εγγραφές πελατών από εδώ.",
+      sectionTitle: "Προφίλ πελατών",
+      sectionHint: "Τι μπορούν να προσθέσουν οι πελάτες μόνοι τους.",
+      photosLabel: "Οι πελάτες μπορούν να προσθέσουν φωτογραφία",
+      photosDesc: "Προαιρετικά, όταν κλείνουν ραντεβού και στη σελίδα εγγραφής. Τη βλέπει μόνο η ομάδα σου.",
+      pageLabel: "Σελίδα εγγραφής πελατών",
+      pageDesc: "Μια δημόσια σελίδα όπου ο πελάτης γράφει το όνομα και το τηλέφωνό του. Δώσε τον σύνδεσμο ή τύπωσε τον κωδικό QR.",
+      qrDesc: "Οι πελάτες σκανάρουν τον κωδικό με την κάμερα του κινητού τους.",
+      qrAlt: "Κωδικός QR για τη σελίδα εγγραφής πελατών",
+      download: "Λήψη PNG",
+      print: "Εκτύπωση",
+      saveToShow: "Αποθήκευσε τις αλλαγές για να εμφανιστούν ο σύνδεσμος και ο κωδικός QR.",
+      showQr: "Εμφάνιση κωδικού QR",
+      qrTitle: "Κωδικός QR",
+      close: "Κλείσιμο",
+      signupLinkTitle: "Σύνδεσμος εγγραφής πελατών",
+      signupLinkDesc: "Οι πελάτες γράφουν εδώ τα στοιχεία τους. Τύπωσε τον κωδικό QR για να τον σκανάρουν στο κατάστημα.",
+      changesTitle: "Αλλαγές που ζήτησε ο πελάτης",
+      changesDesc: "Τις έστειλε από τη σελίδα εγγραφής. Δεν ισχύουν μέχρι να τις αποδεχτείς.",
+      changesPhoto: "Νέα φωτογραφία",
+      changesAccept: "Αποδοχή",
+      changesReject: "Απόρριψη",
+      changesError: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
+      changesPhoneTaken: "Το νέο τηλέφωνο ανήκει ήδη σε άλλον πελάτη. Συγχώνευσε τις δύο εγγραφές ή απόρριψε την αλλαγή.",
+      changesFilter: "Αλλαγές σε αναμονή",
+      changesBadge: "Αλλαγές σε αναμονή",
+      numberChanged: "Άλλαξα αριθμό τηλεφώνου",
+      newPhoneLabel: "Νέο τηλέφωνο",
+      newPhoneHint: "Γράψε πιο πάνω τον παλιό σου αριθμό, για να σε βρει το κατάστημα.",
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -3845,6 +3977,16 @@ home: {
       activeOwnerOnly: 'Only the owner can change this.',
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
+      unsavedChanges: 'You have unsaved changes.',
+      tabsLabel: "Settings sections",
+      tabShop: "Shop",
+      tabBookings: "Bookings",
+      tabCustomers: "Customers",
+      tabPage: "Booking page",
+      tabPlan: "Plan",
+      bookingTimesTitle: "Booking times",
+      bookingTimesHint: "When customers can book an appointment.",
+      remindersTitle: "Reminders",
       readOnlyHint: 'View only. The owner can let you edit these settings.',
       backToShop: '← Back to Shop',
       created: 'Created',
@@ -4264,6 +4406,62 @@ home: {
         },
       },
       bookingCreated: 'Booking created',
+    },
+    customerProfile: {
+      newCustomer: "New customer",
+      newCustomerTitle: "New customer",
+      create: "Add customer",
+      cancel: "Cancel",
+      errorCreate: "The customer could not be added.",
+      existsError: "A customer with this phone number already exists.",
+      existsLink: "Open their page",
+      photoTitle: "Photo",
+      photoDesc: "Shown next to the customer's name in the list and on their bookings.",
+      takePhoto: "Take a photo",
+      choosePhoto: "Choose a photo",
+      changePhoto: "Change",
+      removePhoto: "Remove",
+      photoLabel: "Your photo",
+      photoHelp: "Helps the shop recognise you. Only the shop sees it.",
+      wizardPhotoFailed: "Your booking is made, but the photo could not be saved.",
+      pageTitle: "Your details",
+      pageIntro: "Fill in your details so {shop} has you as a customer.",
+      submit: "Save",
+      successTitle: "Thank you!",
+      successBody: "Your details were sent to {shop}. If you were already a customer, the shop will confirm the changes.",
+      bookLink: "Book an appointment",
+      existingNote: "If you are already a customer, the shop will see your changes and confirm them.",
+      errorSubmit: "Your details could not be saved. Try again.",
+      unavailableTitle: "This page is not available",
+      unavailableBody: "This shop does not take customer sign-ups here.",
+      sectionTitle: "Customer profiles",
+      sectionHint: "What customers can add themselves.",
+      photosLabel: "Customers can add a profile photo",
+      photosDesc: "Optional, when they book and on the sign-up page. Only your team sees it.",
+      pageLabel: "Customer sign-up page",
+      pageDesc: "A public page where a customer enters their name and phone. Share the link or print the QR code.",
+      qrDesc: "Customers scan the code with their phone camera.",
+      qrAlt: "QR code for the customer sign-up page",
+      download: "Download PNG",
+      print: "Print",
+      saveToShow: "Save your changes to show the link and the QR code.",
+      showQr: "Show QR code",
+      qrTitle: "QR code",
+      close: "Close",
+      signupLinkTitle: "Customer sign-up link",
+      signupLinkDesc: "Customers enter their own details here. Print the QR code so they can scan it in the shop.",
+      changesTitle: "Changes this customer asked for",
+      changesDesc: "Sent from the sign-up page. Nothing changes until you accept.",
+      changesPhoto: "New photo",
+      changesAccept: "Accept",
+      changesReject: "Reject",
+      changesError: "This could not be saved. Try again.",
+      changesPhoneTaken: "The new phone number already belongs to another customer. Merge the two records, or reject the change.",
+      changesFilter: "Changes waiting",
+      changesBadge: "Changes waiting",
+      numberChanged: "My phone number has changed",
+      newPhoneLabel: "New phone number",
+      newPhoneHint: "Enter your old number above, so the shop can find you.",
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

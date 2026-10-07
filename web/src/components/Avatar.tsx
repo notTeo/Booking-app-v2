@@ -12,7 +12,7 @@ export default function Avatar({
 }: {
   name: string | null | undefined;
   photoUrl?: string | null;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'lg' | 'xl';
 }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const src = photoUrl && photoUrl !== failedUrl ? mediaUrl(photoUrl) : undefined;

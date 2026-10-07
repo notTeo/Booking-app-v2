@@ -188,6 +188,14 @@ export const updateShopValidation = [
       `reminderHoursBefore must be a whole number between 1 and ${MAX_REMINDER_HOURS}`,
     )
     .toInt(),
+  ...(['customerPhotosEnabled', 'customerProfilePageEnabled'] as const).map(
+    (field) =>
+      body(field)
+        .optional()
+        .isBoolean()
+        .withMessage(`${field} must be a boolean`)
+        .toBoolean(),
+  ),
   body('publicPalette')
     .optional()
     .isIn(PUBLIC_PALETTES)

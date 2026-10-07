@@ -36,6 +36,10 @@ export const listCustomersValidation = [
     .optional()
     .isBoolean()
     .withMessage('hasCustomDurations must be true or false'),
+  query('pendingChanges')
+    .optional()
+    .isBoolean()
+    .withMessage('pendingChanges must be true or false'),
 ];
 
 // The whole list is replaced; an empty list clears every custom duration.
@@ -53,37 +57,56 @@ export const setServiceDurationsValidation = [
     .toInt(),
 ];
 
+// The fields a customer is created or edited with. On create, name and phone
+// are required; on update every field is optional.
+const customerFields = (required: boolean) => {
+  const name = body('name');
+  const phone = body('phone');
+  return [
+    (required ? name : name.optional())
+      .isString()
+      .withMessage('Name must be text')
+      .bail()
+      .trim()
+      .notEmpty()
+      .withMessage(required ? 'Name is required' : 'Name cannot be empty')
+      .isLength({ max: NAME_MAX_LENGTH })
+      .withMessage(`Name must be ${NAME_MAX_LENGTH} characters or fewer`),
+    (required ? phone : phone.optional())
+      .isString()
+      .withMessage('Phone must be text')
+      .bail()
+      .trim()
+      .notEmpty()
+      .withMessage(required ? 'Phone is required' : 'Phone cannot be empty')
+      .custom(isPlausiblePhone)
+      .withMessage('Phone must be a valid phone number')
+      .customSanitizer(normalizePhone),
+    body('email')
+      .optional({ nullable: true })
+      .isEmail()
+      .withMessage('Invalid email')
+      .isLength({ max: 254 })
+      .withMessage('Email must be 254 characters or fewer'),
+    body('notes')
+      .optional({ nullable: true })
+      .isString()
+      .withMessage('notes must be a string')
+      .trim()
+      .isLength({ max: NOTES_MAX_LENGTH })
+      .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`),
+  ];
+};
+
+export const createCustomerValidation = [
+  param('shopId').notEmpty().withMessage('shopId is required'),
+  ...customerFields(true),
+];
+
 export const updateCustomerValidation = [
   param('shopId').notEmpty().withMessage('shopId is required'),
   param('customerId').notEmpty().withMessage('customerId is required'),
-  body('name')
-    .optional()
-    .notEmpty()
-    .withMessage('Name cannot be empty')
-    .trim()
-    .isLength({ max: NAME_MAX_LENGTH })
-    .withMessage(`Name must be ${NAME_MAX_LENGTH} characters or fewer`),
-  body('phone')
-    .optional()
-    .notEmpty()
-    .withMessage('Phone cannot be empty')
-    .trim()
-    .custom(isPlausiblePhone)
-    .withMessage('Phone must be a valid phone number')
-    .customSanitizer(normalizePhone),
-  body('email')
-    .optional({ nullable: true })
-    .isEmail()
-    .withMessage('Invalid email')
-    .isLength({ max: 254 })
-    .withMessage('Email must be 254 characters or fewer'),
-  body('notes')
-    .optional({ nullable: true })
-    .isString()
-    .withMessage('notes must be a string')
-    .trim()
-    .isLength({ max: NOTES_MAX_LENGTH })
-    .withMessage(`notes must be ${NOTES_MAX_LENGTH} characters or fewer`),
+  ...customerFields(false),
 ];
 
 export const mergeCustomersValidation = [

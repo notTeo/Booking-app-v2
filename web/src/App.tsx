@@ -38,6 +38,7 @@ import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
+import PublicProfilePage from './pages/PublicProfilePage';
 import CancelBookingPage from './pages/CancelBookingPage';
 import RescheduleBookingPage from './pages/RescheduleBookingPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -129,6 +130,7 @@ export default function App() {
 
                 {/* Last on purpose: static routes above always win, and slugs can't
                     collide with them (API RESERVED_SLUGS). Unknown -> NotFoundPage. */}
+                <Route path="/:slug/profile" element={<PublicProfilePage />} />
                 <Route path="/:slug" element={<PublicPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </SentryRoutes>

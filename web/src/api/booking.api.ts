@@ -8,6 +8,8 @@ export interface BookingCustomer {
   name: string;
   phone: string;
   email: string | null;
+  /** Their profile photo; null when there is none or the member may not see customer details. */
+  photoUrl?: string | null;
   contactHidden?: boolean;
   /** The shop's "Blocked" placeholder: this booking is a blocked slot, not an appointment. */
   isSystem?: boolean;

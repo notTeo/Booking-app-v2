@@ -1,3 +1,4 @@
+import SaveBar from './SaveBar';
 import { useEffect, useState, useId } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -91,6 +92,14 @@ function makeEditState(schedule: Schedule): ScheduleEditState {
     confirmDelete: false,
   };
 }
+
+// What of a schedule can be edited and saved, in one comparable form.
+const editable = (state: Pick<ScheduleEditState, 'days' | 'startDate' | 'endDate'>) =>
+  JSON.stringify([state.startDate, state.endDate, DAY_ORDER.map((d) => state.days[d])]);
+
+/** The schedule's form differs from what is saved. */
+const isScheduleDirty = (schedule: Schedule, state: ScheduleEditState) =>
+  editable(state) !== editable(makeEditState(schedule));
 
 const STATUS_BADGE = { current: 'badge--success', upcoming: 'badge--accent', ended: 'badge--neutral' } as const;
 
@@ -261,7 +270,13 @@ export default function WorkingHoursPanel({ api, canManage, title }: WorkingHour
       if (updated) {
         setSchedules((prev) => prev.map((s) => (s.id === scheduleId ? updated : s)));
       }
-      updateEdit(scheduleId, { saving: false, success: t.workingHours.successSave });
+      // The form now shows what was saved, so nothing is left to save.
+      const fresh = updated ? makeEditState(updated) : null;
+      updateEdit(scheduleId, {
+        ...(fresh && { days: fresh.days, startDate: fresh.startDate, endDate: fresh.endDate }),
+        saving: false,
+        success: t.workingHours.successSave,
+      });
     } catch (err: unknown) {
       updateEdit(scheduleId, { saving: false, error: apiErrorMessage(err, t.workingHours.errorSave) });
     }
@@ -439,9 +454,10 @@ const created = await api.createSchedule(dto);
         const isExpanded = expandedId === schedule.id;
         const hasErrors = Object.keys(state.slotErrors).length > 0;
         const status = scheduleStatus(schedule);
+        const dirty = canManage && isScheduleDirty(schedule, state);
 
         return (
-          <div key={schedule.id} className="card card--flush">
+          <div key={schedule.id} className={`card card--flush${dirty ? ' card--unsaved' : ''}`}>
             {/* Header — role="button" (not a real <button>) since it wraps the
                 nested active/inactive toggle button; buttons can't contain buttons. */}
             <div
@@ -635,6 +651,14 @@ const created = await api.createSchedule(dto);
                     </div>
                   );
                 })}
+                {dirty && (
+                  <SaveBar
+                    label={t.workingHours.saveDays}
+                    saving={state.saving}
+                    disabled={hasErrors}
+                    onSave={() => handleSaveSchedule(schedule.id)}
+                  />
+                )}
               </>
             )}
           </div>

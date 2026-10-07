@@ -7,10 +7,12 @@ import { exportAllCustomers, getCustomers, type Customer } from '../api/customer
 import { buildExport, downloadBlob } from '../utils/customerFiles';
 import { canManageShop } from '../utils/roles';
 import ImportCustomersModal from '../components/ImportCustomersModal';
+import CustomerFormModal from '../components/CustomerFormModal';
+import Avatar from '../components/Avatar';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
 // How long typing must pause before the search is sent.
@@ -33,7 +35,11 @@ export default function ShopCustomersPage() {
   // rows on screen instead of swapping the whole list for a spinner.
   const [loaded, setLoaded] = useState(false);
   const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
+  // Customers whose own changes (from the sign-up page) wait for approval.
+  const [onlyPending, setOnlyPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
   // Bumped after an import so the list loads again.
@@ -48,9 +54,10 @@ export default function ShopCustomersPage() {
     // whatever page happens to be loaded.
     // A slower, older answer must not overwrite a newer one.
     let stale = false;
-    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations)
+    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyPending)
       .then((result) => {
         if (stale) return;
+        setPendingCount(result.pendingChangesCount ?? 0);
         setCustomers(result.items);
         setTotal(result.total);
         setLoaded(true);
@@ -58,7 +65,7 @@ export default function ShopCustomersPage() {
       .catch(() => { if (!stale) setError(t.customers.errorLoad); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
-  }, [shop?.id, query, page, onlyCustomDurations, reloadKey]);
+  }, [shop?.id, query, page, onlyCustomDurations, onlyPending, reloadKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -98,21 +105,30 @@ export default function ShopCustomersPage() {
     <div className="team-page">
       <div className="page-header">
         <h1 className="t-title">{t.customers.title}</h1>
-        {/* Owner and managers; the API enforces it too. */}
-        {canManageShop(shop?.role) && (
-          <div className="cluster cluster--tight">
-            <button className="btn btn--sm" onClick={() => setImportOpen(true)}>
-              {t.customers.importButton}
+        <div className="cluster cluster--tight">
+          {/* Anyone who may see customer details can add one; the API enforces it too. */}
+          {shop?.canViewCustomerDetails !== false && (
+            <button className="btn btn--sm" onClick={() => setCreateOpen(true)}>
+              <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+              {t.customerProfile.newCustomer}
             </button>
-            <button
-              className={`btn btn--secondary btn--sm${exporting ? ' is-loading' : ''}`}
-              onClick={handleExport}
-              aria-busy={exporting}
-            >
-              {t.customers.exportLabel}
-            </button>
-          </div>
-        )}
+          )}
+          {/* Owner and managers; the API enforces it too. */}
+          {canManageShop(shop?.role) && (
+            <>
+              <button className="btn btn--secondary btn--sm" onClick={() => setImportOpen(true)}>
+                {t.customers.importButton}
+              </button>
+              <button
+                className={`btn btn--secondary btn--sm${exporting ? ' is-loading' : ''}`}
+                onClick={handleExport}
+                aria-busy={exporting}
+              >
+                {t.customers.exportLabel}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {exportError && <Alert variant="danger">{exportError}</Alert>}
@@ -143,6 +159,17 @@ export default function ShopCustomersPage() {
           <FontAwesomeIcon icon={faClock} aria-hidden="true" />
           <span className="chip__label">{t.customers.filterCustomDurations}</span>
         </button>
+        {(pendingCount > 0 || onlyPending) && (
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={onlyPending}
+            onClick={() => { setOnlyPending((v) => !v); setPage(1); }}
+          >
+            <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
+            <span className="chip__label">{t.customerProfile.changesFilter} ({pendingCount})</span>
+          </button>
+        )}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -159,7 +186,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {query || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
+                  {query || onlyCustomDurations || onlyPending ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -177,9 +204,16 @@ export default function ShopCustomersPage() {
                     <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
                       <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
                         <span className="cluster cluster--tight">
+                          {!c.contactHidden && <Avatar name={c.name} photoUrl={c.photoUrl} size="sm" />}
                           <Link to={c.id} className="data-table__link">
                             {c.contactHidden ? t.customers.hiddenLabel : c.name}
                           </Link>
+                          {c.hasPendingChanges && (
+                            <span className="badge badge--warning">
+                              <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
+                              {t.customerProfile.changesBadge}
+                            </span>
+                          )}
                           {c.hasCustomDurations && (
                             <span className="badge badge--info">
                               <FontAwesomeIcon icon={faClock} aria-hidden="true" />
@@ -224,6 +258,13 @@ export default function ShopCustomersPage() {
           </div>
         </div>
 
+      )}
+      {createOpen && shop && (
+        <CustomerFormModal
+          shopId={shop.id}
+          onClose={() => setCreateOpen(false)}
+          onCreated={(created) => navigate(created.id)}
+        />
       )}
       {importOpen && shop && (
         <ImportCustomersModal

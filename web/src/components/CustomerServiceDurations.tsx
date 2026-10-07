@@ -1,3 +1,4 @@
+import SaveBar from './SaveBar';
 import { useEffect, useId, useState } from 'react';
 import { useLang } from '../context/LanguageContext';
 import { getServices, type Service } from '../api/service.api';
@@ -65,7 +66,7 @@ export default function CustomerServiceDurations({ shopId, customerId, durations
   };
 
   return (
-    <div className="card">
+    <div className={`card${isDirty ? ' card--unsaved' : ''}`}>
       <h2 className="card__title">{c.durationsHeading}</h2>
       <p className="card__text">{c.durationsBody}</p>
       {loadError && <Alert variant="danger">{c.durationsErrorLoad}</Alert>}
@@ -101,16 +102,12 @@ export default function CustomerServiceDurations({ shopId, customerId, durations
       {!allValid && <Alert variant="danger">{c.durationsInvalid}</Alert>}
       {saveError && <Alert variant="danger">{c.durationsErrorSave}</Alert>}
       {saved && <Alert variant="success">{c.durationsSaved}</Alert>}
-      {rows.length > 0 && (
-        <button
-          className={`btn${saving ? ' is-loading' : ''}`}
-          onClick={handleSave}
-          aria-busy={saving}
-          disabled={!isDirty || !allValid}
-        >
-          {c.save}
-        </button>
-      )}
+      {rows.length > 0 &&
+        (isDirty ? (
+          <SaveBar label={c.save} saving={saving} disabled={!allValid} onSave={handleSave} />
+        ) : (
+          <button className="btn" disabled>{c.save}</button>
+        ))}
     </div>
   );
 }

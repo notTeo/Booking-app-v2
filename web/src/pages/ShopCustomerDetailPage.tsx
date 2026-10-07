@@ -1,3 +1,4 @@
+import SaveBar from '../components/SaveBar';
 import { formatDateTimeInZone } from '../utils/shopTime';
 import { useEffect, useState, useId } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -11,6 +12,10 @@ import {
   updateCustomer,
   exportCustomer,
   deleteCustomer,
+  removeCustomerPhoto,
+  setCustomerPhoto,
+  acceptCustomerChanges,
+  rejectCustomerChanges,
   type CustomerBookingsResult,
   type CustomerDetail,
 } from '../api/customer.api';
@@ -24,6 +29,9 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
 import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
+import { apiErrorField } from '../utils/apiError';
+import Avatar from '../components/Avatar';
+import PhotoField from '../components/PhotoField';
 import { bookingServiceNames } from '../utils/bookingServices';
 
 const BOOKINGS_PAGE_SIZE = 10;
@@ -51,6 +59,10 @@ export default function ShopCustomerDetailPage() {
 
   const [privacyBusy, setPrivacyBusy] = useState<'export' | 'delete' | null>(null);
   const [privacyError, setPrivacyError] = useState('');
+
+  // Deciding on what the customer asked to change on the sign-up page.
+  const [changesBusy, setChangesBusy] = useState<'accept' | 'reject' | null>(null);
+  const [changesError, setChangesError] = useState('');
 
   const [mergeOpen, setMergeOpen] = useState(false);
   const [mergeSuccess, setMergeSuccess] = useState('');
@@ -106,6 +118,27 @@ export default function ShopCustomerDetailPage() {
       setSaveError(t.customers.errorUpdate);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const decideChanges = async (decision: 'accept' | 'reject') => {
+    if (!shop || !customerId || changesBusy) return;
+    setChangesBusy(decision);
+    setChangesError('');
+    try {
+      const updated = await (decision === 'accept' ? acceptCustomerChanges : rejectCustomerChanges)(shop.id, customerId);
+      setCustomer(updated);
+      setEditName(updated.name);
+      setEditPhone(updated.phone);
+      setEditEmail(updated.email ?? '');
+    } catch (err: unknown) {
+      setChangesError(
+        apiErrorField(err, 'code') === 'CUSTOMER_EXISTS'
+          ? t.customerProfile.changesPhoneTaken
+          : t.customerProfile.changesError,
+      );
+    } finally {
+      setChangesBusy(null);
     }
   };
 
@@ -191,6 +224,9 @@ export default function ShopCustomerDetailPage() {
       {/* Customer info, with this customer's lifetime numbers in a column beside it */}
       <div className="customer-head">
         <div className="card team-member-card">
+          {!customer.contactHidden && customer.photoUrl && (
+            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />
+          )}
           <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
           <div className="cluster">
             <span className="t-body-sm t-muted">
@@ -203,6 +239,55 @@ export default function ShopCustomerDetailPage() {
         </div>
         <StatCards totals={customer.totals} tiles />
       </div>
+
+      {/* What the customer asked to change themselves (owner and managers; the API enforces it too) */}
+      {customer.changeRequest && (
+        <div className="card">
+          <h2 className="card__title">{t.customerProfile.changesTitle}</h2>
+          <p className="card__text">{t.customerProfile.changesDesc}</p>
+          {(
+            [
+              [t.customers.nameLabel, customer.name, customer.changeRequest.name],
+              [t.customers.phoneLabel, customer.phone, customer.changeRequest.phone],
+              [t.customers.emailLabel, customer.email, customer.changeRequest.email],
+            ] as const
+          ).map(
+            ([label, current, asked]) =>
+              asked && (
+                <p key={label} className="card__text">
+                  <span className="label-caps">{label}</span>
+                  <br />
+                  <span className="t-muted">{current || '—'}</span> → <strong>{asked}</strong>
+                </p>
+              ),
+          )}
+          {customer.changeRequest.photoUrl && (
+            <div className="cluster">
+              <Avatar name={customer.name} photoUrl={customer.changeRequest.photoUrl} size="lg" />
+              <span className="t-body-sm">{t.customerProfile.changesPhoto}</span>
+            </div>
+          )}
+          {changesError && <Alert variant="danger">{changesError}</Alert>}
+          <div className="cluster">
+            <button
+              className={`btn${changesBusy === 'accept' ? ' is-loading' : ''}`}
+              onClick={() => decideChanges('accept')}
+              aria-busy={changesBusy === 'accept'}
+              disabled={changesBusy === 'reject'}
+            >
+              {t.customerProfile.changesAccept}
+            </button>
+            <button
+              className={`btn btn--secondary${changesBusy === 'reject' ? ' is-loading' : ''}`}
+              onClick={() => decideChanges('reject')}
+              aria-busy={changesBusy === 'reject'}
+              disabled={changesBusy === 'accept'}
+            >
+              {t.customerProfile.changesReject}
+            </button>
+          </div>
+        </div>
+      )}
 
       {customer.totals.all + customer.totals.canceled > 0 && <StatusDonut totals={customer.totals} />}
 
@@ -286,7 +371,7 @@ export default function ShopCustomerDetailPage() {
           <p className="card__text">{t.customers.contactHiddenNotice}</p>
         </div>
       ) : (
-        <div className="card">
+        <div className={`card${isDirty ? ' card--unsaved' : ''}`}>
           <h2 className="card__title">{t.customers.editInfo}</h2>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-name`}>{t.customers.nameLabel}</label>
@@ -322,14 +407,39 @@ export default function ShopCustomerDetailPage() {
           </div>
           {saveError && <Alert variant="danger">{saveError}</Alert>}
           {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
-          <button
-            className={`btn${saving ? ' is-loading' : ''}`}
-            onClick={handleSave}
-            aria-busy={saving}
-            disabled={!isDirty}
+          {isDirty ? (
+            <SaveBar label={t.customers.save} saving={saving} onSave={handleSave} />
+          ) : (
+            <button className="btn" disabled>{t.customers.save}</button>
+          )}
+        </div>
+      )}
+
+      {/* The customer's photo (owner and managers; the API enforces it too) */}
+      {shop && canManageShop(shop.role) && !customer.contactHidden && (
+        <div className="card">
+          <h2 className="card__title">{t.customerProfile.photoTitle}</h2>
+          <PhotoField
+            photo={{
+              photoUrl: customer.photoUrl ?? null,
+              photoOriginalUrl: customer.photoOriginalUrl ?? null,
+              photoCrop: customer.photoCrop ?? null,
+            }}
+            shape="round"
+            canEdit
+            camera
+            preview={<Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />}
+            onUpload={async (file, crop) => {
+              const updated = await setCustomerPhoto(shop.id, customer.id, file, crop);
+              setCustomer((prev) => (prev ? { ...prev, ...updated } : prev));
+            }}
+            onRemove={async () => {
+              const updated = await removeCustomerPhoto(shop.id, customer.id);
+              setCustomer((prev) => (prev ? { ...prev, ...updated } : prev));
+            }}
           >
-            {t.customers.save}
-          </button>
+            <p className="card__text">{t.customerProfile.photoDesc}</p>
+          </PhotoField>
         </div>
       )}
 
