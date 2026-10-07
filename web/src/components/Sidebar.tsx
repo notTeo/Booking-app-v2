@@ -12,6 +12,7 @@ import {
   faMagnifyingGlass,
   faHouse,
   faUser,
+  faCircleQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useLang } from '../context/LanguageContext';
@@ -48,7 +49,7 @@ function Item({ to, icon, label, end, collapsed, onNavigate }: ItemProps) {
 
 // The one sidebar, the same on every signed-in page. Outside a shop
 // (dashboard, account) the links still lead to the user's shop (useNavShop);
-// someone who is not in any shop gets just Home and Account. Owners see Team,
+// someone who is not in any shop gets just Home, Help and Account. Owners see Team,
 // Customers and Shop settings on top of what staff see.
 function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => void }) {
   const shop = useNavShop();
@@ -78,6 +79,7 @@ function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => 
         </>
       )}
       <div className="sidebar__footer sidebar__nav">
+        <Item to="/help" icon={faCircleQuestion} label={t.sidebar.help} collapsed={collapsed} onNavigate={onNavigate} />
         <Item to="/account" icon={faUser} label={t.sidebar.account} collapsed={collapsed} onNavigate={onNavigate} />
       </div>
     </>

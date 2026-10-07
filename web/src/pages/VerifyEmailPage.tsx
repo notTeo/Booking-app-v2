@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { verifyEmail, resendVerification } from '../api/auth.api';
+import { useAuth } from '../context/AuthContext';
+import { authStore } from '../store/authStore';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import { useLang } from '../context/LanguageContext';
 import Alert from '../components/Alert';
@@ -11,16 +14,14 @@ export default function VerifyEmailPage() {
   const { t } = useLang();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { setUser } = useAuth();
+  const queryClient = useQueryClient();
   const token = searchParams.get('token');
-  // Set once verified (the token is then spent): a reload keeps the success.
-  const done = searchParams.has('done');
   // 'form' asks for the sign-up password; the link alone verifies nothing.
-  const [status, setStatus] = useState<'form' | 'loading' | 'success' | 'error'>(
-    done ? 'success' : token ? 'form' : 'error',
+  const [status, setStatus] = useState<'form' | 'loading' | 'error'>(
+    token ? 'form' : 'error',
   );
-  const [message, setMessage] = useState(
-    done ? t.verifyEmail.success : token ? '' : t.verifyEmail.invalidLink,
-  );
+  const [message, setMessage] = useState(token ? '' : t.verifyEmail.invalidLink);
   const [isExpired, setIsExpired] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -35,10 +36,14 @@ export default function VerifyEmailPage() {
     setPasswordError('');
     setStatus('loading');
     try {
-      await verifyEmail(token, password);
-      setStatus('success');
-      setMessage(t.verifyEmail.success);
-      navigate('/verify-email?done=1', { replace: true });
+      const data = await verifyEmail(token, password);
+      // Verifying is also logging in. Anything cached belongs to whoever was
+      // signed in on this tab before, so it goes first.
+      queryClient.clear();
+      authStore.setToken(data.data.accessToken);
+      setUser(data.data.user);
+      // An auth page with a live session: PublicRoute picks the landing.
+      navigate('/login', { replace: true });
     } catch (err: unknown) {
       // A wrong password leaves the link usable: stay on the form.
       if (apiErrorField(err, 'code') === 'INVALID_PASSWORD') {
@@ -100,13 +105,6 @@ export default function VerifyEmailPage() {
               {t.verifyEmail.submit}
             </button>
           </form>
-        )}
-
-        {status === 'success' && (
-          <>
-            <Alert variant="success">{message}</Alert>
-            <Link to="/login"><button className="btn btn--block">{t.verifyEmail.goToLogin}</button></Link>
-          </>
         )}
 
         {status === 'error' && (

@@ -6,7 +6,7 @@ import { query } from '../support/db';
 /**
  * Pages outside a shop (/dashboard, /account) keep the same sidebar as the
  * shop pages, its links leading to the user's shop; someone in no shop gets
- * only the logo, Home and Account. No top bar on desktop; phones get the slim
+ * only the logo, Home, Help and Account. No top bar on desktop; phones get the slim
  * bar with the menu button. Log out lives on the Account page.
  */
 const SHOP = `/shops/${E2E.shop.slug}`;
@@ -36,7 +36,7 @@ test.afterEach(async () => {
   await query(`update "UserShop" set active = true, role = 'owner' where id = 'us1'`);
 });
 
-test('not in any shop: the sidebar with only the logo, Home and Account, and no top bar', async ({ page }) => {
+test('not in any shop: the sidebar with only the logo, Home, Help and Account, and no top bar', async ({ page }) => {
   await query(`update "UserShop" set active = false where id = 'us1'`);
   await login(page);
   for (const path of ['/dashboard', '/account']) {
@@ -44,8 +44,9 @@ test('not in any shop: the sidebar with only the logo, Home and Account, and no 
     await expect(sidebar(page), path).toBeVisible();
     await expect(bar(page), path).toHaveCount(0);
     await expect(sidebar(page).locator('.wordmark'), path).toBeVisible();
-    await expect(sidebar(page).getByRole('link'), path).toHaveCount(2);
+    await expect(sidebar(page).getByRole('link'), path).toHaveCount(3);
     await expect(item(page, 'Home'), path).toHaveAttribute('href', '/dashboard');
+    await expect(item(page, 'Help'), path).toHaveAttribute('href', '/help');
     await expect(item(page, 'Account'), path).toHaveAttribute('href', '/account');
     await expect(sidebar(page).locator('.sidebar__title'), path).toHaveCount(0);
   }
@@ -57,7 +58,7 @@ test('in a shop: the sidebar is identical on the shop, Account and Home, and sur
   await expect(item(page, 'Overview')).toHaveAttribute('aria-current', 'page');
   const hrefs = () => sidebar(page).getByRole('link').evaluateAll((links) => links.map((a) => a.getAttribute('href')));
   const inShop = await hrefs();
-  expect(inShop).toHaveLength(SHOP_ITEMS.length + 2);
+  expect(inShop).toHaveLength(SHOP_ITEMS.length + 3);
   const box = await sidebar(page).boundingBox();
 
   const sameSidebar = async (current: string) => {
