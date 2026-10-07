@@ -84,6 +84,9 @@ test('a manager gets the owner menu and pages, but no way to delete the shop', a
 
     // With it they can save, but taking the shop offline stays with the owner.
     await query(`update "UserShop" set "canEditShopSettings" = true where id = 'us1'`);
+    // The branding preview is an iframe of the public page, which runs its own
+    // session refresh. Let it finish: a reload that aborts it loses the rotated cookie.
+    await page.waitForLoadState('networkidle');
     await page.reload();
     await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
     await expect(page.locator('#detail-active')).toBeDisabled();
