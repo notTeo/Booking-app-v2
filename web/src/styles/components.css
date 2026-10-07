@@ -945,9 +945,9 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .booking-card__foot { position: sticky; bottom: 0; z-index: var(--z-nav); display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-5); background: var(--surface); border-top: 1px solid var(--border); }
 .booking-card__more {
   position: absolute; bottom: calc(100% + var(--space-2)); left: 50%; transform: translateX(-50%);
-  display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); white-space: nowrap;
-  font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); color: var(--text);
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill); box-shadow: var(--shadow-md); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; width: var(--control-sm); height: var(--control-sm); padding: 0;
+  font-size: var(--fs-sm); color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-full); box-shadow: var(--shadow-md); cursor: pointer;
 }
 .booking-card__more:hover { color: var(--accent); }
 .booking-card__more:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }

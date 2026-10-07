@@ -477,10 +477,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
               <button
                 type="button"
                 className="booking-card__more"
+                aria-label={t.public.scrollForMore}
+                title={t.public.scrollForMore}
                 onClick={() => window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' })}
               >
                 <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
-                {t.public.scrollForMore}
               </button>
             )}
             {identity === 'known' && step === 1 && (
