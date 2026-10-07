@@ -113,7 +113,7 @@ export default function CancelBookingPage() {
     <div className="page page--center">
       <PublicPalette />
       <div className="card card--auth card--center">
-        <AuthTop back={false} />
+        <AuthTop back={false} palette={false} />
         <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <p className="card__text">
           {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}

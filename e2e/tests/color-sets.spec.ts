@@ -5,9 +5,8 @@ import { waitForLanding } from '../support/auth';
 /**
  * Colour sets: Original, Black & white and Purple, picked with one click in
  * Account > Preferences and remembered on the device. They apply inside the
- * app and on the marketing pages (data-palette on <html>); the login pages
- * always keep the original colours, and the public booking page is always
- * black and white. The logo's "Be" follows the set.
+ * app and on the marketing and login pages (data-palette on <html>); the
+ * public booking page is always black and white. The logo's "Be" follows the set.
  */
 const SHOP = `/shops/${E2E.shop.slug}`;
 
@@ -67,7 +66,7 @@ test('one click in Preferences changes the set at once, and it survives a reload
   expect(await colours(page)).toEqual(original);
 });
 
-test('the set follows into shop and marketing pages, and never onto the login or public booking pages', async ({ page }) => {
+test('the set follows into shop, marketing and login pages, and never onto the public booking page', async ({ page }) => {
   await login(page);
   await pick(page, 'Purple').click();
 
@@ -76,7 +75,7 @@ test('the set follows into shop and marketing pages, and never onto the login or
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'purple');
 
   // On a reload too: the pre-paint script sets it before React does.
-  for (const path of ['/', '/privacy']) {
+  for (const path of ['/', '/privacy', '/reset-password']) {
     await page.goto(path);
     await expect(page.locator('html'), path).toHaveAttribute('data-palette', 'purple');
   }
@@ -85,12 +84,12 @@ test('the set follows into shop and marketing pages, and never onto the login or
   await page.goto(`/${E2E.shop.slug}`);
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'mono');
 
-  // Leaving for a login page by a link (no reload) drops the set.
+  // Leaving for a shop's booking page by a link (no reload) swaps the set for the shop's.
   await page.goto('/privacy');
   await expect(page.locator('html')).toHaveAttribute('data-palette', 'purple');
-  await page.evaluate(() => window.history.pushState({}, '', '/reset-password'));
+  await page.evaluate((slug) => window.history.pushState({}, '', `/${slug}`), E2E.shop.slug);
   await page.evaluate(() => window.dispatchEvent(new PopStateEvent('popstate')));
-  await expect.poll(() => palette(page)).toBeNull();
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'mono');
 });
 
 for (const set of ['mono', 'purple'] as const) {

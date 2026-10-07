@@ -2,16 +2,19 @@ import { test, expect, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 
 // The login pages and the public booking page are Greek by default and carry
-// a Greek / English switch; the choice is kept in the "lang" cookie.
+// one round button that shows the current language and switches to the other;
+// the choice is kept in the "lang" cookie.
 
-const lang = (page: Page) => page.getByRole('group', { name: /Γλώσσα|Language/ });
+const lang = (page: Page) => page.getByRole('button', { name: /^(Γλώσσα|Language)$/ });
 
 test('the login page is Greek by default and switches to English and back', async ({ page }) => {
   await page.goto('/login');
   await expect(page.getByRole('heading', { name: 'Σύνδεση' })).toBeVisible();
   await expect(page.getByText('Να με θυμάσαι')).toBeVisible();
 
-  await lang(page).getByRole('button', { name: 'EN' }).click();
+  await expect(lang(page)).toHaveText('EL');
+  await lang(page).click();
+  await expect(lang(page)).toHaveText('EN');
   await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
@@ -19,14 +22,14 @@ test('the login page is Greek by default and switches to English and back', asyn
   await page.goto('/forgot-password');
   await expect(page.getByRole('heading', { name: 'Forgot Password' })).toBeVisible();
 
-  await lang(page).getByRole('button', { name: 'ΕΛ' }).click();
+  await lang(page).click();
   await expect(page.getByRole('heading', { name: 'Ξεχάσατε τον Κωδικό' })).toBeVisible();
 });
 
 test('the public booking page has the switch, and its settings preview does not', async ({ page }) => {
   await page.goto(`/${E2E.shop.slug}`);
   await expect(page.getByRole('heading', { name: 'Διάλεξε υπηρεσία' })).toBeVisible();
-  await lang(page).getByRole('button', { name: 'EN' }).click();
+  await lang(page).click();
   await expect(page.getByRole('heading', { name: 'Choose a service' })).toBeVisible();
 
   await page.goto(`/${E2E.shop.slug}?palette=rose`);
@@ -52,7 +55,7 @@ test('just visiting sets no preference cookies; picking a language or theme does
   await expect(page.getByRole('checkbox').first()).toBeVisible();
   expect(await names()).toEqual([]);
 
-  await lang(page).getByRole('button', { name: 'EN' }).click();
+  await lang(page).click();
   expect(await names()).toEqual(['lang']);
 
   await page.goto('/');

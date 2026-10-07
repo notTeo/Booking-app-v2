@@ -15,7 +15,7 @@ Import order in `main.tsx`: `tokens.css`, `components.css`, then page CSS. The `
 
 ## 2. Theme
 
-Light is the default (`:root`). Dark is `[data-theme="dark"]` on `<html>`. The app side also has colour sets: `data-palette="mono"` or `"purple"` on `<html>` (none = Original), set by `AppPalette` in the two app layouts and in `SiteNav` (the landing, pricing, about, contact and legal pages), so the auth pages stay Original. A shop's public booking page has its own look, set by `PublicPalette` from the shop's settings: any colour set (`mono` by default; `blue`, `rose` and `sand` exist only for this) and a font set, `data-font` on `<html>`, which replaces the body and display families with a bundled font that covers Greek. Each set has a light and a dark block and overrides only the brand and neutral roles; status colours never change. Set it before first paint to avoid a flash; put this inline in `index.html`:
+Light is the default (`:root`). Dark is `[data-theme="dark"]` on `<html>`. The app side also has colour sets: `data-palette="mono"` or `"purple"` on `<html>` (none = Original), set by `AppPalette` in the two app layouts and in `SiteNav` (the landing, pricing, about, contact and legal pages) and in `AuthTop` (the login pages). A shop's public booking page has its own look, set by `PublicPalette` from the shop's settings: any colour set (`mono` by default; `blue`, `rose` and `sand` exist only for this) and a font set, `data-font` on `<html>`, which replaces the body and display families with a bundled font that covers Greek. Each set has a light and a dark block and overrides only the brand and neutral roles; status colours never change. Set it before first paint to avoid a flash; put this inline in `index.html`:
 
 ```html
 <script>

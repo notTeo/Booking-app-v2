@@ -30,7 +30,7 @@ function Notice({ children }: { children: React.ReactNode }) {
     <div className="page page--center">
       <PublicPalette />
       <div className="card card--auth card--center">
-        <AuthTop back={false} />
+        <AuthTop back={false} palette={false} />
         {children}
       </div>
     </div>

@@ -1,28 +1,11 @@
 import { useLang } from '../context/LanguageContext';
-import type { Language } from '../locales/translations';
 
-const LANGUAGES: { code: Language; label: string }[] = [
-  { code: 'el', label: 'ΕΛ' },
-  { code: 'en', label: 'EN' },
-];
-
-/** Greek / English, for pages outside the app (Account > Preferences has its own). */
+/** One round button showing the current language; a click switches to the other (as in the marketing nav). */
 export default function LangSwitch() {
-  const { language, setLanguage, t } = useLang();
+  const { language, toggleLanguage, t } = useLang();
   return (
-    <div className="tabs tabs--segmented" role="group" aria-label={t.toggles.language}>
-      {LANGUAGES.map(({ code, label }) => (
-        <button
-          key={code}
-          type="button"
-          className="tab"
-          lang={code}
-          aria-pressed={language === code}
-          onClick={() => setLanguage(code)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+    <button type="button" className="lang-toggle" onClick={toggleLanguage} aria-label={t.toggles.language} title={t.toggles.language}>
+      {language === 'el' ? 'EL' : 'EN'}
+    </button>
   );
 }
