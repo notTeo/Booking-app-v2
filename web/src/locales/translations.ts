@@ -1301,6 +1301,20 @@ export interface Translations {
     download: string;
     print: string;
     saveToShow: string;
+    signupLinkTitle: string;
+    signupLinkDesc: string;
+    changesTitle: string;
+    changesDesc: string;
+    changesPhoto: string;
+    changesAccept: string;
+    changesReject: string;
+    changesError: string;
+    changesPhoneTaken: string;
+    changesFilter: string;
+    changesBadge: string;
+    numberChanged: string;
+    newPhoneLabel: string;
+    newPhoneHint: string;
   };
   cancelBooking: {
     invalidLink: string;
@@ -2826,9 +2840,9 @@ home: {
       pageIntro: "Συμπλήρωσε τα στοιχεία σου για να σε έχει το {shop} στους πελάτες του.",
       submit: "Αποθήκευση",
       successTitle: "Ευχαριστούμε!",
-      successBody: "Τα στοιχεία σου στάλθηκαν στο {shop}.",
+      successBody: "Τα στοιχεία σου στάλθηκαν στο {shop}. Αν ήσουν ήδη πελάτης, το κατάστημα θα επιβεβαιώσει τις αλλαγές.",
       bookLink: "Κλείσε ραντεβού",
-      existingNote: "Αν το κατάστημα έχει ήδη τα στοιχεία ή τη φωτογραφία σου, δεν αλλάζουν από εδώ. Ζήτησε από το κατάστημα να τα διορθώσει.",
+      existingNote: "Αν είσαι ήδη πελάτης, το κατάστημα θα δει τις αλλαγές σου και θα τις επιβεβαιώσει.",
       errorSubmit: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
       unavailableTitle: "Η σελίδα δεν είναι διαθέσιμη",
       unavailableBody: "Αυτό το κατάστημα δεν δέχεται εγγραφές πελατών από εδώ.",
@@ -2843,6 +2857,20 @@ home: {
       download: "Λήψη PNG",
       print: "Εκτύπωση",
       saveToShow: "Αποθήκευσε τις αλλαγές για να εμφανιστούν ο σύνδεσμος και ο κωδικός QR.",
+      signupLinkTitle: "Σύνδεσμος εγγραφής πελατών",
+      signupLinkDesc: "Οι πελάτες γράφουν εδώ τα στοιχεία τους. Τύπωσε τον κωδικό QR για να τον σκανάρουν στο κατάστημα.",
+      changesTitle: "Αλλαγές που ζήτησε ο πελάτης",
+      changesDesc: "Τις έστειλε από τη σελίδα εγγραφής. Δεν ισχύουν μέχρι να τις αποδεχτείς.",
+      changesPhoto: "Νέα φωτογραφία",
+      changesAccept: "Αποδοχή",
+      changesReject: "Απόρριψη",
+      changesError: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
+      changesPhoneTaken: "Το νέο τηλέφωνο ανήκει ήδη σε άλλον πελάτη. Συγχώνευσε τις δύο εγγραφές ή απόρριψε την αλλαγή.",
+      changesFilter: "Αλλαγές σε αναμονή",
+      changesBadge: "Αλλαγές σε αναμονή",
+      numberChanged: "Άλλαξα αριθμό τηλεφώνου",
+      newPhoneLabel: "Νέο τηλέφωνο",
+      newPhoneHint: "Γράψε πιο πάνω τον παλιό σου αριθμό, για να σε βρει το κατάστημα.",
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -4364,9 +4392,9 @@ home: {
       pageIntro: "Fill in your details so {shop} has you as a customer.",
       submit: "Save",
       successTitle: "Thank you!",
-      successBody: "Your details were sent to {shop}.",
+      successBody: "Your details were sent to {shop}. If you were already a customer, the shop will confirm the changes.",
       bookLink: "Book an appointment",
-      existingNote: "If the shop already has your details or a photo of you, they are not changed from here. Ask the shop to correct them.",
+      existingNote: "If you are already a customer, the shop will see your changes and confirm them.",
       errorSubmit: "Your details could not be saved. Try again.",
       unavailableTitle: "This page is not available",
       unavailableBody: "This shop does not take customer sign-ups here.",
@@ -4381,6 +4409,20 @@ home: {
       download: "Download PNG",
       print: "Print",
       saveToShow: "Save your changes to show the link and the QR code.",
+      signupLinkTitle: "Customer sign-up link",
+      signupLinkDesc: "Customers enter their own details here. Print the QR code so they can scan it in the shop.",
+      changesTitle: "Changes this customer asked for",
+      changesDesc: "Sent from the sign-up page. Nothing changes until you accept.",
+      changesPhoto: "New photo",
+      changesAccept: "Accept",
+      changesReject: "Reject",
+      changesError: "This could not be saved. Try again.",
+      changesPhoneTaken: "The new phone number already belongs to another customer. Merge the two records, or reject the change.",
+      changesFilter: "Changes waiting",
+      changesBadge: "Changes waiting",
+      numberChanged: "My phone number has changed",
+      newPhoneLabel: "New phone number",
+      newPhoneHint: "Enter your old number above, so the shop can find you.",
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

@@ -335,11 +335,13 @@ export const saveCustomerProfile = async (
   next: NextFunction,
 ) => {
   try {
-    const { name, phone, email } = req.body;
+    const { name, phone, email, newPhone, photoOnly } = req.body;
     const data = await saveCustomerProfileService(req.params.slug as string, {
       name,
       phone,
       email: email || undefined,
+      newPhone: newPhone || undefined,
+      photoOnly: photoOnly === true,
       ...(req.file && {
         photo: { file: req.file.buffer, crop: parseCrop(req.body.crop) },
       }),

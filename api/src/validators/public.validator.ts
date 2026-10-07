@@ -60,4 +60,17 @@ export const customerProfileValidation = [
     .withMessage('Invalid email')
     .isLength({ max: 254 })
     .withMessage('Email must be 254 characters or fewer'),
+  // "My number has changed": `phone` is the old one the shop knows them by.
+  body('newPhone')
+    .optional({ values: 'falsy' })
+    .isString()
+    .withMessage('New phone must be text')
+    .bail()
+    .trim()
+    .custom(isPlausiblePhone)
+    .withMessage('New phone must be a valid phone number')
+    .customSanitizer(normalizePhone),
+  // The booking wizard only sends a photo; the name typed for a booking is
+  // not a request to rename the customer.
+  body('photoOnly').optional().isBoolean().toBoolean(),
 ];

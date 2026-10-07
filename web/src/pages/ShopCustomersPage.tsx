@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
 // How long typing must pause before the search is sent.
@@ -35,6 +35,9 @@ export default function ShopCustomersPage() {
   // rows on screen instead of swapping the whole list for a spinner.
   const [loaded, setLoaded] = useState(false);
   const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
+  // Customers whose own changes (from the sign-up page) wait for approval.
+  const [onlyPending, setOnlyPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -51,9 +54,10 @@ export default function ShopCustomersPage() {
     // whatever page happens to be loaded.
     // A slower, older answer must not overwrite a newer one.
     let stale = false;
-    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations)
+    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyPending)
       .then((result) => {
         if (stale) return;
+        setPendingCount(result.pendingChangesCount ?? 0);
         setCustomers(result.items);
         setTotal(result.total);
         setLoaded(true);
@@ -61,7 +65,7 @@ export default function ShopCustomersPage() {
       .catch(() => { if (!stale) setError(t.customers.errorLoad); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
-  }, [shop?.id, query, page, onlyCustomDurations, reloadKey]);
+  }, [shop?.id, query, page, onlyCustomDurations, onlyPending, reloadKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -155,6 +159,17 @@ export default function ShopCustomersPage() {
           <FontAwesomeIcon icon={faClock} aria-hidden="true" />
           <span className="chip__label">{t.customers.filterCustomDurations}</span>
         </button>
+        {(pendingCount > 0 || onlyPending) && (
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={onlyPending}
+            onClick={() => { setOnlyPending((v) => !v); setPage(1); }}
+          >
+            <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
+            <span className="chip__label">{t.customerProfile.changesFilter} ({pendingCount})</span>
+          </button>
+        )}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -171,7 +186,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {query || onlyCustomDurations ? t.customers.noResults : t.customers.noCustomers}
+                  {query || onlyCustomDurations || onlyPending ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -193,6 +208,12 @@ export default function ShopCustomersPage() {
                           <Link to={c.id} className="data-table__link">
                             {c.contactHidden ? t.customers.hiddenLabel : c.name}
                           </Link>
+                          {c.hasPendingChanges && (
+                            <span className="badge badge--warning">
+                              <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
+                              {t.customerProfile.changesBadge}
+                            </span>
+                          )}
                           {c.hasCustomDurations && (
                             <span className="badge badge--info">
                               <FontAwesomeIcon icon={faClock} aria-hidden="true" />

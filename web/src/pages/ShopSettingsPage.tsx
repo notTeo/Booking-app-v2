@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore,
   faLink,
+  faQrcode,
   faCreditCard,
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
@@ -212,6 +213,24 @@ export default function ShopSettingsPage() {
         <p className="card__text">{t.sharing.desc}</p>
         <CopyLinkButton link={publicShopUrl(shop.slug)} />
       </div>
+
+      {/* Customer sign-up link and its QR code, once the page is switched on below */}
+      {shop.customerProfilePageEnabled && (
+        <div className="card">
+          <h2 className="card__title">
+            <FontAwesomeIcon icon={faQrcode} className="card__icon" />
+            {t.customerProfile.signupLinkTitle}
+          </h2>
+          <p className="card__text">{t.customerProfile.signupLinkDesc}</p>
+          <CopyLinkButton link={publicProfileUrl(shop.slug)} />
+          <QrCode
+            link={publicProfileUrl(shop.slug)}
+            title={shop.name}
+            alt={t.customerProfile.qrAlt}
+            fileName={`${shop.slug}-qr.png`}
+          />
+        </div>
+      )}
 
       {/* Plan — set by us for now; there is no checkout yet */}
       <div className="card">
@@ -448,18 +467,6 @@ export default function ShopSettingsPage() {
             {/* The link only works once the setting is saved. */}
             {profilePage && !shop.customerProfilePageEnabled && (
               <small className="field__hint">{t.customerProfile.saveToShow}</small>
-            )}
-            {profilePage && shop.customerProfilePageEnabled && (
-              <>
-                <CopyLinkButton link={publicProfileUrl(shop.slug)} />
-                <small className="field__hint">{t.customerProfile.qrDesc}</small>
-                <QrCode
-                  link={publicProfileUrl(shop.slug)}
-                  title={shop.name}
-                  alt={t.customerProfile.qrAlt}
-                  fileName={`${shop.slug}-qr.png`}
-                />
-              </>
             )}
           </div>
 

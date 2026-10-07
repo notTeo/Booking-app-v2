@@ -232,6 +232,12 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   'DELETE /api/shops/:shopId/customers/:customerId/photo': {
     minRole: 'manager',
   },
+  'POST /api/shops/:shopId/customers/:customerId/change-request/accept': {
+    minRole: 'manager',
+  },
+  'DELETE /api/shops/:shopId/customers/:customerId/change-request': {
+    minRole: 'manager',
+  },
   'GET /api/shops/:shopId/customers/:customerId': {},
   'GET /api/shops/:shopId/customers/:customerId/bookings': {},
   'PATCH /api/shops/:shopId/customers/:customerId': {

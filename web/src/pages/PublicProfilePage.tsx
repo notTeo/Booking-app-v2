@@ -37,6 +37,9 @@ function ProfileForm({ slug }: { slug: string }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  // "My number has changed": the phone above is then the old one.
+  const [numberChanged, setNumberChanged] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -77,6 +80,7 @@ function ProfileForm({ slug }: { slug: string }) {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim() || undefined,
+        ...(numberChanged && newPhone.trim() && { newPhone: newPhone.trim() }),
         ...(photo && { photo }),
       });
       if (photo) rememberPhotoAdded(slug);
@@ -151,6 +155,30 @@ function ProfileForm({ slug }: { slug: string }) {
                 />
               </div>
 
+              {numberChanged ? (
+                <div className="field">
+                  <label className="field__label" htmlFor={`${uid}-new-phone`}>{c.newPhoneLabel}</label>
+                  <input
+                    id={`${uid}-new-phone`}
+                    className="input"
+                    type="tel"
+                    placeholder={t.public.phonePlaceholder}
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    autoComplete="tel"
+                    aria-describedby={`${uid}-new-phone-hint`}
+                    disabled={submitting}
+                  />
+                  <p id={`${uid}-new-phone-hint`} className="field__hint">{c.newPhoneHint}</p>
+                </div>
+              ) : (
+                <div className="cluster">
+                  <button type="button" className="btn btn--ghost btn--sm btn--wrap" onClick={() => setNumberChanged(true)} disabled={submitting}>
+                    {c.numberChanged}
+                  </button>
+                </div>
+              )}
+
               <div className="field">
                 <label className="field__label" htmlFor={`${uid}-email`}>
                   {t.public.emailLabel} <span className="field__optional">{t.public.emailOptional}</span>
@@ -190,7 +218,7 @@ function ProfileForm({ slug }: { slug: string }) {
                 type="submit"
                 className={`btn btn--block${submitting ? ' is-loading' : ''}`}
                 aria-busy={submitting}
-                disabled={name.trim() === '' || !isPlausiblePhone(phone)}
+                disabled={name.trim() === '' || !isPlausiblePhone(phone) || (numberChanged && newPhone.trim() !== '' && !isPlausiblePhone(newPhone))}
               >
                 {c.submit}
               </button>

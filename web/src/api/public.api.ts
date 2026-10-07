@@ -103,19 +103,26 @@ export interface CustomerProfilePayload {
   name: string;
   phone: string;
   email?: string;
+  /** "My number has changed": `phone` is then the old one the shop knows. */
+  newPhone?: string;
   photo?: { file: File; crop: PhotoCrop };
+  /** Only the photo counts (the booking page): the name is not a request to rename. */
+  photoOnly?: boolean;
 }
 
 /**
- * The sign-up page's form (and the booking page's photo). It only ever adds:
- * a new customer, or a photo for one who has none. The answer is the same
- * either way, so it says nothing about who is already a customer.
+ * The sign-up page's form (and the booking page's photo). A new customer, or a
+ * first photo, is saved at once; changes to a customer the shop already has
+ * wait for the shop to accept them. The answer is the same either way, so it
+ * says nothing about who is already a customer.
  */
 export const submitCustomerProfile = (slug: string, payload: CustomerProfilePayload) => {
   const form = new FormData();
   form.append('name', payload.name);
   form.append('phone', payload.phone);
   if (payload.email) form.append('email', payload.email);
+  if (payload.newPhone) form.append('newPhone', payload.newPhone);
+  if (payload.photoOnly) form.append('photoOnly', 'true');
   if (payload.photo) {
     form.append('crop', JSON.stringify(payload.photo.crop));
     form.append('photo', payload.photo.file);

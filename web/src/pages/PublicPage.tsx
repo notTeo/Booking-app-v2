@@ -156,7 +156,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
       // The booking stands whatever happens to the photo.
       if (photo) {
         try {
-          await submitCustomerProfile(slug, { name: name.trim(), phone: phone.trim(), photo });
+          await submitCustomerProfile(slug, { name: name.trim(), phone: phone.trim(), photo, photoOnly: true });
           rememberPhotoAdded(slug);
         } catch {
           setPhotoFailed(true);
