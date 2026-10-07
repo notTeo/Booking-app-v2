@@ -22,3 +22,8 @@ api/email-previews/
 
 # Photos uploaded in local development (no bucket configured)
 api/.uploads/
+
+# Internal docs: kept locally, not published (the repo is public)
+tests/audit/*.md
+docs/superpowers/
+docs/deployment.md

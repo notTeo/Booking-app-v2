@@ -11,7 +11,10 @@ const EMAIL = 'verify-login@e2e.test';
 const PASSWORD = 'E2e-Verify-Pass1!';
 const TOKEN = 'e2e-verify-login-token';
 
-test.afterEach(async () => {
+test.afterEach(async ({ page }) => {
+  // Close the page first: a refresh still in flight would add a RefreshToken
+  // between the two deletes below and the User delete would hit its foreign key.
+  await page.close();
   await query('delete from "PendingRegistration" where email = $1', [EMAIL]);
   await query(
     'delete from "RefreshToken" where "userId" in (select id from "User" where email = $1)',
@@ -36,6 +39,8 @@ test('verifying the sign-up email logs the new user in', async ({ page, context 
   await expect(page).toHaveURL(/\/dashboard$/);
 
   // The session is a real one: it survives a reload.
+  const refreshed = page.waitForResponse((r) => r.url().endsWith('/auth/refresh'));
   await page.reload();
+  expect((await refreshed).ok()).toBe(true);
   await expect(page).toHaveURL(/\/dashboard$/);
 });

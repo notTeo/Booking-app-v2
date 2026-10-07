@@ -29,6 +29,10 @@ test('the look picked in settings is previewed, then applied to the public page'
   await page.locator('#password').fill(E2E.owner.password);
   await page.locator('button[type=submit]').click();
   await waitForLanding(page);
+  let refreshes = 0;
+  page.on('request', (r) => {
+    if (r.url().endsWith('/auth/refresh')) refreshes += 1;
+  });
   await page.goto(`/shops/${E2E.shop.slug}/settings`);
 
   const card = page.locator('.card', { has: page.getByRole('heading', { name: 'Booking page look' }) });
@@ -42,6 +46,9 @@ test('the look picked in settings is previewed, then applied to the public page'
   await expect(preview.locator('html')).toHaveAttribute('data-palette', 'rose');
   await expect(preview.locator('html')).toHaveAttribute('data-font', 'manrope');
   await expect(card.getByText('Not saved yet')).toBeVisible();
+  // Only the settings page refreshed the session. A refresh from the preview
+  // would rotate the cookie behind it, and a reload at that moment logged out.
+  expect(refreshes).toBe(1);
 
   // Not saved: customers still get the old look.
   const visitor = await context.newPage();

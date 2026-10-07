@@ -79,7 +79,7 @@ export const getShopInfoService = async (
           stock: true,
           photoUrl: true,
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       },
       services: {
         where: {

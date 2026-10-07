@@ -77,7 +77,8 @@ export const getProducts = async (userId: string, shopId: string) => {
   const caller = await requireShopAccess(userId, shopId);
   const products = await prisma.product.findMany({
     where: { shopId },
-    orderBy: { createdAt: 'asc' },
+    // id breaks the tie when two products share a createdAt millisecond.
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   });
   return products.map((p) => shape(p, caller.role));
 };
