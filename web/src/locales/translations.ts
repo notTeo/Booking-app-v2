@@ -971,6 +971,7 @@ export interface Translations {
     serviceContext: string;
     staffContext: string;
     atLabel: string;
+    bookAnother: string;
   };
   shopGate: {
     notFoundTitle: string;
@@ -2366,6 +2367,7 @@ home: {
         SLOT_TAKEN: 'Λυπούμαστε, η ώρα αυτή μόλις κρατήθηκε. Επιλέξτε άλλη.',
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
+      bookAnother: 'Νέα κράτηση',
     },
     shopGate: {
       notFoundTitle: 'Το κατάστημα δεν είναι διαθέσιμο',
@@ -3778,6 +3780,7 @@ home: {
         SLOT_TAKEN: 'Sorry, that time was just taken. Please choose another.',
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
+      bookAnother: 'Book another',
     },
     shopGate: {
       notFoundTitle: 'Shop not available',

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { verifyEmailChange } from '../api/auth.api';
 import { apiErrorMessage } from '../utils/apiError';
 import { useLang } from '../context/LanguageContext';
@@ -9,13 +9,16 @@ import AuthTop from '../components/AuthTop';
 export default function VerifyEmailChangePage() {
   const { t } = useLang();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  // Set once verified (the token is then spent): a reload keeps the success.
+  const done = searchParams.has('done');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(done ? 'success' : 'loading');
+  const [message, setMessage] = useState(done ? t.verifyEmailChange.success : '');
 
   const called = useRef(false);
 
   useEffect(() => {
-    if (called.current) return;
+    if (called.current || done) return;
     called.current = true;
 
     const token = searchParams.get('token');
@@ -30,6 +33,7 @@ export default function VerifyEmailChangePage() {
       .then(() => {
         setStatus('success');
         setMessage(t.verifyEmailChange.success);
+        navigate('/verify-email-change?done=1', { replace: true });
       })
       .catch((err: unknown) => {
         const msg = apiErrorMessage(err, t.verifyEmailChange.error);

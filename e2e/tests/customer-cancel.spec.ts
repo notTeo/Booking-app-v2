@@ -6,7 +6,7 @@ import { addDays, athensDate, athensWallClockToUtc } from '../support/dates';
 // A day no other spec books on.
 const date = addDays(athensDate(), 11);
 
-test('customer cancel link: cancels once, then reports "already cancelled"; a malformed link is invalid', async ({
+test('customer cancel link: cancels once, then shows it as cancelled (also after a reload); a malformed link is invalid', async ({
   page,
   context,
   request,
@@ -29,13 +29,14 @@ test('customer cancel link: cancels once, then reports "already cancelled"; a ma
   await page.getByRole('button', { name: 'Yes, cancel booking' }).click();
   await expect(page.getByRole('heading', { name: 'Booking Cancelled' })).toBeVisible();
 
-  // Same link again.
+  // A reload, or the same link again: it is cancelled, and nothing asks again.
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Booking Cancelled' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Yes, cancel booking' })).toHaveCount(0);
   await page.goto(`/cancel?token=${token}`);
-  await page.getByRole('button', { name: 'Yes, cancel booking' }).click();
-  await expect(page.getByText('This booking has already been cancelled.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Booking Cancelled' })).toBeVisible();
 
-  // Malformed token: rejected by validation, shown as an invalid link.
+  // Malformed token: rejected by validation, shown as an invalid link at once.
   await page.goto('/cancel?token=not-a-uuid');
-  await page.getByRole('button', { name: 'Yes, cancel booking' }).click();
   await expect(page.getByText('Booking not found. The link may be invalid or expired.')).toBeVisible();
 });

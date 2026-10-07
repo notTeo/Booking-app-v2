@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import { useLang } from '../context/LanguageContext';
@@ -10,12 +10,17 @@ import PasswordInput from '../components/PasswordInput';
 export default function VerifyEmailPage() {
   const { t } = useLang();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const token = searchParams.get('token');
+  // Set once verified (the token is then spent): a reload keeps the success.
+  const done = searchParams.has('done');
   // 'form' asks for the sign-up password; the link alone verifies nothing.
   const [status, setStatus] = useState<'form' | 'loading' | 'success' | 'error'>(
-    token ? 'form' : 'error',
+    done ? 'success' : token ? 'form' : 'error',
   );
-  const [message, setMessage] = useState(token ? '' : t.verifyEmail.invalidLink);
+  const [message, setMessage] = useState(
+    done ? t.verifyEmail.success : token ? '' : t.verifyEmail.invalidLink,
+  );
   const [isExpired, setIsExpired] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -33,6 +38,7 @@ export default function VerifyEmailPage() {
       await verifyEmail(token, password);
       setStatus('success');
       setMessage(t.verifyEmail.success);
+      navigate('/verify-email?done=1', { replace: true });
     } catch (err: unknown) {
       // A wrong password leaves the link usable: stay on the form.
       if (apiErrorField(err, 'code') === 'INVALID_PASSWORD') {

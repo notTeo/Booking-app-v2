@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { cancelBooking, getManagedBooking, type CancelBookingResult } from '../api/public.api';
+import { cancelBooking, getManagedBooking, type CancelBookingResult, type ManagedBooking } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
+import { getApiError } from '../api/booking.api';
 import { apiErrorField } from '../utils/apiError';
+import { bookingServiceNames } from '../utils/bookingServices';
 import Alert from '../components/Alert';
 import AuthTop from '../components/AuthTop';
 import PublicPalette from '../components/PublicPalette';
@@ -16,6 +18,22 @@ export default function CancelBookingPage() {
   const [kept, setKept] = useState(false);
   const [result, setResult] = useState<CancelBookingResult | null>(null);
   const [error, setError] = useState(token ? '' : t.cancelBooking.invalidLink);
+  // The booking as it is now, looked up first: a link opened again (or the
+  // page reloaded) after cancelling shows that it is cancelled, not the question.
+  const [booking, setBooking] = useState<ManagedBooking | null>(null);
+  const [checking, setChecking] = useState(!!token);
+
+  useEffect(() => {
+    if (!token) return;
+    getManagedBooking(token)
+      .then(setBooking)
+      .catch((err: unknown) => {
+        const { status } = getApiError(err);
+        // Anything else (offline, a server error) still lets the customer try to cancel.
+        if (status === 404 || status === 400) setError(t.cancelBooking.notFound);
+      })
+      .finally(() => setChecking(false));
+  }, [token]);
 
   const confirmCancel = () => {
     setLoading(true);
@@ -46,13 +64,13 @@ export default function CancelBookingPage() {
       .finally(() => setLoading(false));
   };
 
-  if (loading) {
+  if (loading || checking) {
     return (
       <div className="page page--center">
         <PublicPalette />
         <div className="card card--auth card--center">
           <div className="spinner spinner--lg" />
-          <p className="card__text">{t.cancelBooking.cancelling}</p>
+          {loading && <p className="card__text">{t.cancelBooking.cancelling}</p>}
         </div>
       </div>
     );
@@ -80,7 +98,14 @@ export default function CancelBookingPage() {
     );
   }
 
-  if (!result) {
+  // Cancelled just now, or already cancelled when the link was opened.
+  const cancelled =
+    result ??
+    (booking?.cancel.reason === 'BOOKING_ALREADY_CANCELED'
+      ? { serviceName: bookingServiceNames(booking), shopName: booking.shop.name, startTime: booking.startTime }
+      : null);
+
+  if (!cancelled) {
     return (
       <div className="page page--center">
         <PublicPalette />
@@ -107,7 +132,7 @@ export default function CancelBookingPage() {
     hour: 'numeric',
     minute: '2-digit',
     hour12: locale !== 'el-GR',
-  }).format(new Date(result.startTime));
+  }).format(new Date(cancelled.startTime));
 
   return (
     <div className="page page--center">
@@ -116,8 +141,8 @@ export default function CancelBookingPage() {
         <AuthTop back={false} palette={false} />
         <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <p className="card__text">
-          {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}
-          <strong>{result.shopName}</strong> {t.cancelBooking.hasCancelled}
+          {t.cancelBooking.yourText} <strong>{cancelled.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}
+          <strong>{cancelled.shopName}</strong> {t.cancelBooking.hasCancelled}
         </p>
         <p className="card__text">{formattedDate}</p>
       </div>

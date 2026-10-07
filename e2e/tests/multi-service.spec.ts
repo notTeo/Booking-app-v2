@@ -77,6 +77,14 @@ test('a customer books two services on the public page: times and prices add up'
   const card = page.locator('.booking-card__body .card--center');
   await expect(card).toBeVisible();
   await expect(card.getByText(/Haircut \+ Beard trim/)).toBeVisible();
+  await expect(card.locator('.success-check')).toBeVisible();
+
+  // A reload keeps the confirmation; "Book another" and a fresh visit start over.
+  await page.reload();
+  await expect(card.getByText(/Haircut \+ Beard trim/)).toBeVisible();
+  await card.getByRole('button', { name: 'Book another' }).click();
+  await expect(page.getByRole('heading', { name: 'Choose a service' })).toBeVisible();
+  await expect(card).toHaveCount(0);
 
   const rows = await query<{ minutes: number; names: string; lines: number }>(
     `select extract(epoch from (b."endTime" - b."startTime")) / 60 as minutes,

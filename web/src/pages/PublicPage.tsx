@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot } from '@fortawesome/free-solid-svg-icons';
-import { createBooking, type ReservedProduct } from '../api/public.api';
+import { createBooking } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
@@ -24,6 +24,12 @@ import ReservedProducts from '../components/ReservedProducts';
 import SuccessCheck from '../components/SuccessCheck';
 import ProductsStep from '../components/booking-wizard/ProductsStep';
 import { toProductLines, toReservedProducts } from '../utils/productLines';
+import {
+  clearConfirmedBooking,
+  readConfirmedBooking,
+  saveConfirmedBooking,
+  type ConfirmedBooking,
+} from '../utils/confirmedBooking';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import NotFoundPage from './NotFoundPage';
@@ -80,12 +86,14 @@ function PublicBookingPage({ slug }: { slug: string }) {
   // shown as an error; kept separate from submitError so it can't render in
   // the red error style.
   const [busyNotice, setBusyNotice] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  // Products reserved with the booking: quantity per product id, then what the server confirmed.
+  // The booking that was just made. Kept for this tab, so a reload still shows it.
+  const [confirmation, setConfirmation] = useState<ConfirmedBooking | null>(() =>
+    // Never in the shop settings preview, which shares the tab's storage.
+    look.has('palette') || look.has('font') ? null : readConfirmedBooking(slug),
+  );
+  const confirmed = confirmation !== null;
+  // Products reserved with the booking: quantity per product id.
   const [reserved, setReserved] = useState<Record<string, number>>({});
-  const [confirmedProducts, setConfirmedProducts] = useState<ReservedProduct[]>([]);
-  const [confirmedServicePrice, setConfirmedServicePrice] = useState<number | undefined>();
-  const [confirmedServiceNames, setConfirmedServiceNames] = useState('');
 
   if (wizard.loading) {
     return <div className="spinner-page"><div className="spinner spinner--lg" /></div>;
@@ -110,7 +118,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
     setSubmitError(null);
     setBusyNotice(null);
     try {
-      const confirmation = await createBooking(slug, {
+      const booked = await createBooking(slug, {
         name,
         phone,
         email: email || undefined,
@@ -121,12 +129,20 @@ function PublicBookingPage({ slug }: { slug: string }) {
         notes: notes || undefined,
         products: toProductLines(reserved),
       });
-      setConfirmedProducts(confirmation.products ?? []);
-      setConfirmedServicePrice(confirmation.servicePrice);
-      setConfirmedServiceNames((confirmation.services ?? []).map((x) => x.name).join(' + '));
+      const made: ConfirmedBooking = {
+        name,
+        serviceNames: (booked.services ?? []).map((x) => x.name).join(' + ') || (wizard.selectedService?.name ?? ''),
+        date: wizard.date,
+        time: wizard.time,
+        phone,
+        email,
+        products: booked.products ?? [],
+        servicePrice: booked.servicePrice,
+      };
       if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
       else clearSavedCustomer();
-      setConfirmed(true);
+      saveConfirmedBooking(slug, made);
+      setConfirmation(made);
       setSubmitting(false);
     } catch (err: unknown) {
       const info = getApiError(err);
@@ -176,6 +192,12 @@ function PublicBookingPage({ slug }: { slug: string }) {
   function handleUsePhone(value: string) {
     setPhone(value);
     setIdentity('known');
+  }
+
+  // Forget the confirmation and start over with an empty wizard.
+  function handleBookAnother() {
+    clearConfirmedBooking(slug);
+    window.location.reload();
   }
 
   function handleBackFromForm() {
@@ -239,25 +261,28 @@ function PublicBookingPage({ slug }: { slug: string }) {
         </header>
 
         <main className="booking-card__body">
-          {confirmed ? (
+          {confirmation ? (
             <div className="card card--center">
               <SuccessCheck />
               <h2 className="card__title">{t.public.bookingConfirmed}</h2>
               <p className="card__text">
                 {t.public.bookingConfirmedMsg
-                  .replace('{name}', name)
-                  .replace('{service}', confirmedServiceNames || (wizard.selectedService?.name ?? ''))
-                  .replace('{date}', wizard.date)
-                  .replace('{time}', wizard.time)}
+                  .replace('{name}', confirmation.name)
+                  .replace('{service}', confirmation.serviceNames)
+                  .replace('{date}', confirmation.date)
+                  .replace('{time}', confirmation.time)}
               </p>
-              {(phone || email) && (
+              {(confirmation.phone || confirmation.email) && (
                 <p className="card__text">
-                  {phone && <strong>{phone}</strong>}
-                  {phone && email && ' / '}
-                  {email && <strong>{email}</strong>}
+                  {confirmation.phone && <strong>{confirmation.phone}</strong>}
+                  {confirmation.phone && confirmation.email && ' / '}
+                  {confirmation.email && <strong>{confirmation.email}</strong>}
                 </p>
               )}
-              <ReservedProducts products={confirmedProducts} servicePrice={confirmedServicePrice} />
+              <ReservedProducts products={confirmation.products} servicePrice={confirmation.servicePrice} />
+              <button type="button" className="btn btn--secondary" onClick={handleBookAnother}>
+                {t.public.bookAnother}
+              </button>
             </div>
           ) : !shop.acceptingBookings ? (
             <Alert variant="info" title={t.public.notAcceptingTitle}>
