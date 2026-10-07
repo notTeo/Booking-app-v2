@@ -458,6 +458,7 @@ export interface Translations {
     errorPassword: string;
     successRevoke: string;
     errorRevoke: string;
+    photoHint: string;
   };
   notFound: {
     code: string;
@@ -1830,6 +1831,7 @@ home: {
       errorPassword: 'Αποτυχία ενημέρωσης κωδικού.',
       successRevoke: 'Όλες οι άλλες συνεδρίες ανακλήθηκαν.',
       errorRevoke: 'Αποτυχία ανάκλησης συνεδριών.',
+      photoHint: "Όταν μπαίνεις σε μια ομάδα, η φωτογραφία αυτή γίνεται η αρχική σου φωτογραφία εκεί. Το κατάστημα μπορεί να την αλλάξει χωρίς να επηρεαστεί αυτή.",
     },
     notFound: {
       code: '404',
@@ -3240,6 +3242,7 @@ home: {
       errorPassword: 'Failed to update password.',
       successRevoke: 'All other sessions have been revoked.',
       errorRevoke: 'Failed to revoke sessions.',
+      photoHint: "When you join a team, this becomes your starting photo there. The shop can change its copy without affecting this one.",
     },
     notFound: {
       code: '404',

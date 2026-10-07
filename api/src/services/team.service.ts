@@ -14,7 +14,7 @@ import {
   countsAsStaff,
 } from './plan.service';
 import { PhotoCrop, storePhoto } from './photo.service';
-import { removeStoredFiles } from './storage.service';
+import { removeStoredFiles, shopPrefix } from './storage.service';
 import { Prisma } from '../../dist/generated/prisma';
 
 export interface UpdateMemberRoleDto {
@@ -490,7 +490,7 @@ export const setMemberPhoto = async (
 ) => {
   const member = await requirePhotoAccess(userId, shopId, memberId);
   const { data, stale } = await storePhoto({
-    shopId,
+    prefix: shopPrefix(shopId),
     shape: 'square',
     label: 'member',
     file,

@@ -9,7 +9,12 @@ import {
 } from '../utils/shopAccess';
 import { planView, trialEndFrom, TRIAL_PLAN } from './plan.service';
 import { PhotoCrop, storePhoto } from './photo.service';
-import { removeShopFiles, removeStoredFiles } from './storage.service';
+import {
+  removeShopFiles,
+  removeStoredFiles,
+  shopPrefix,
+} from './storage.service';
+import { inheritUserPhoto } from './userPhoto.service';
 import { Prisma } from '../../dist/generated/prisma';
 
 export interface CreateShopDto {
@@ -135,6 +140,9 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
       : []),
   ]);
 
+  // The owner's own team member starts with their account photo.
+  await inheritUserPhoto(userId, shop.members[0].id);
+
   logger.info(`Shop created: ${shop.id} by user ${userId}`);
   return { ...shop, ...planView(shop), ...memberView(shop.members[0]) };
 };
@@ -237,7 +245,7 @@ export const setShopPhoto = async (
     where: { id: shopId },
   });
   const { data, stale } = await storePhoto({
-    shopId,
+    prefix: shopPrefix(shopId),
     shape: 'cover',
     label: 'shop',
     file,

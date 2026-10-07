@@ -37,6 +37,29 @@ test.afterEach(async () => {
     `update "UserShop" set "photoUrl" = null, "photoOriginalUrl" = null, "photoCrop" = null where id = 'us1'`,
   );
   await query(`update "Shop" set "photoUrl" = null, "photoOriginalUrl" = null, "photoCrop" = null`);
+  await query(`update "User" set "photoUrl" = null, "photoOriginalUrl" = null, "photoCrop" = null`);
+});
+
+test('the account has its own photo, separate from the team member it already is', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await signIn(page);
+  await page.goto('/account');
+
+  const card = page.locator('.photo-field').first();
+  await expect(card.locator('.avatar img')).toHaveCount(0);
+  await card.locator('input[type=file]').setInputFiles(PHOTO);
+  const editor = page.getByRole('dialog', { name: 'Edit photo' });
+  await editor.getByRole('button', { name: 'Save' }).click();
+  await expect(editor).toBeHidden();
+  await loaded(card.locator('.avatar img'));
+  expect(await noHorizontalScroll(page)).toBe(true);
+
+  const saved = await query(`select id, "photoUrl" from "User" where email = $1`, [E2E.owner.email]);
+  expect(saved[0].photoUrl).toMatch(new RegExp(`^/media/users/${saved[0].id}/user-`));
+  // Kept after a reload, and not pushed onto an existing team member.
+  await page.reload();
+  await loaded(page.locator('.photo-field').first().locator('.avatar img'));
+  expect((await query(`select "photoUrl" from "UserShop" where id = 'us1'`))[0].photoUrl).toBeNull();
 });
 
 test('a team member photo is edited, shown to customers, adjusted and removed', async ({ page }) => {

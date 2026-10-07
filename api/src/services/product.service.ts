@@ -5,7 +5,7 @@ import { prisma } from '../utils/prisma';
 import { canManage, requireShopAccess } from '../utils/shopAccess';
 import { assertProductsFeature } from './plan.service';
 import { PhotoCrop, storePhoto } from './photo.service';
-import { removeStoredFiles } from './storage.service';
+import { removeStoredFiles, shopPrefix } from './storage.service';
 
 export interface ProductDto {
   name?: string;
@@ -131,7 +131,7 @@ export const setProductPhoto = async (
   await assertProductsFeature(shopId);
   const current = await findProduct(shopId, productId);
   const { data, stale } = await storePhoto({
-    shopId,
+    prefix: shopPrefix(shopId),
     shape: 'square',
     label: 'product',
     file,

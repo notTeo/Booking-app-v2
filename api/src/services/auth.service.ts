@@ -5,6 +5,7 @@ import { prisma } from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { LoginDto, RegisterDto } from '../types/auth.types';
 import { logger } from '../utils/logger';
+import { removeUserFiles } from './storage.service';
 import {
   generateRandomToken,
   hashToken,
@@ -576,6 +577,7 @@ export const deleteUser = async (userId: string, password?: string) => {
   await prisma.passwordResetToken.deleteMany({ where: { userId } });
 
   await prisma.user.delete({ where: { id: userId } });
+  await removeUserFiles(userId);
   logger.info(`User deleted: ${userId}`);
 };
 

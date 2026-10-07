@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { usePalette } from '../context/PaletteContext';
 import { PALETTES } from '../utils/palette';
 import { useLang } from '../context/LanguageContext';
-import { updateMe, deleteMe } from '../api/user.api';
+import { updateMe, deleteMe, removeMyPhoto, setMyPhoto } from '../api/user.api';
 import { getSessions, revokeAllSessions, type Session } from '../api/auth.api';
 import PasswordRequirement from '../components/PasswordRequirement';
 import '../styles/pages/settings.css';
@@ -21,12 +21,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
+import PhotoField from '../components/PhotoField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PasswordInput from '../components/PasswordInput';
-
-function getInitials(email: string) {
-  return email.charAt(0).toUpperCase();
-}
 
 function formatMemberSince(iso: string, lang: string) {
   const locale = lang === 'el' ? 'el-GR' : 'en-US';
@@ -188,10 +186,14 @@ export default function AccountPage() {
 
       {/* Account Overview */}
       <div className="card">
-        <div className="account-overview">
-          <div className="avatar avatar--lg">
-            {getInitials(user?.email ?? '?')}
-          </div>
+        <PhotoField
+          photo={user ?? { photoUrl: null, photoOriginalUrl: null, photoCrop: null }}
+          shape="round"
+          canEdit={!!user}
+          preview={<Avatar name={user?.name || user?.email || '?'} photoUrl={user?.photoUrl ?? null} size="xl" />}
+          onUpload={async (file, crop) => setUser(await setMyPhoto<NonNullable<typeof user>>(file, crop))}
+          onRemove={async () => setUser(await removeMyPhoto<NonNullable<typeof user>>())}
+        >
           <div className="account-overview__info">
             <p className="t-body account-overview__email"><strong>{user?.email}</strong></p>
             {user?.isVerified ? (
@@ -202,8 +204,9 @@ export default function AccountPage() {
             {user?.createdAt && (
               <p className="t-body-sm t-muted">{t.settings.memberSince} {formatMemberSince(user.createdAt, language)}</p>
             )}
+            <p className="t-body-sm t-muted">{t.settings.photoHint}</p>
           </div>
-        </div>
+        </PhotoField>
       </div>
       {/* Profile — name, email, password, one save */}
       <div className="card">

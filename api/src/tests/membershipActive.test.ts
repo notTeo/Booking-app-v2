@@ -44,6 +44,8 @@ const EXEMPT_AUTHENTICATED: Record<string, string> = {
   'GET /user/me': "the caller's own account",
   'PATCH /user/me': "the caller's own account",
   'DELETE /user/me': "the caller's own account",
+  'PUT /user/me/photo': "the caller's own account",
+  'DELETE /user/me/photo': "the caller's own account",
   'POST /api/shops': 'creates a new shop; the caller becomes its owner',
   'GET /api/shops': "lists the caller's ACTIVE memberships (tested below)",
   'GET /api/shops/overview':
