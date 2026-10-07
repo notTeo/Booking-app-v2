@@ -17,11 +17,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    setCookie('theme', theme, 365);
   }, [theme]);
 
+  // The cookie is written only when the visitor picks a theme, never just for visiting.
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    const next: Theme = theme === 'light' ? 'dark' : 'light';
+    setCookie('theme', next, 365);
+    setTheme(next);
   };
 
   return (

@@ -40,3 +40,26 @@ test('360px: the switch fits on the login card', async ({ page }) => {
   await expect(lang(page)).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
+
+test('just visiting sets no preference cookies; picking a language or theme does', async ({ page }) => {
+  const names = async () => (await page.context().cookies()).map((c) => c.name);
+
+  await page.goto('/');
+  await expect(page.locator('#root > *').first()).toBeVisible();
+  await page.goto('/login');
+  await expect(page.locator('#email')).toBeVisible();
+  await page.goto(`/${E2E.shop.slug}`);
+  await expect(page.getByRole('checkbox').first()).toBeVisible();
+  expect(await names()).toEqual([]);
+
+  await lang(page).getByRole('button', { name: 'EN' }).click();
+  expect(await names()).toEqual(['lang']);
+
+  await page.goto('/');
+  await page.locator('.home-nav-right .home-nav-toggle').first().click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect((await names()).sort()).toEqual(['lang', 'theme']);
+  // Kept on a reload.
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
