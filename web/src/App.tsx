@@ -22,6 +22,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import AccountPage from './pages/AccountPage';
+import HelpPage from './pages/HelpPage';
 import ShopNewPage from './pages/ShopNewPage';
 import ShopOverviewPage from './pages/ShopOverviewPage';
 import ShopBookingsPage from './pages/ShopBookingsPage';
@@ -102,6 +103,7 @@ export default function App() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/shops/new" element={<ShopNewPage />} />
                     <Route path="/account" element={<AccountPage />} />
+                    <Route path="/help" element={<HelpPage />} />
 
                     <Route path="/shops/:slug" element={<ShopRouteProvider />}>
                       <Route element={<ShopGate />}>

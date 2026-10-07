@@ -25,6 +25,7 @@ export interface Translations {
     mainNav: string;
     resize: string;
     account: string;
+    help: string;
     overview: string;
     logout: string;
     home: string;
@@ -38,6 +39,17 @@ export interface Translations {
     customers: string;
     shopSettings: string;
     bookAppointment: string;
+  };
+  help: {
+    title: string;
+    intro: string;
+    managersBadge: string;
+    contactButton: string;
+    /** Keyed by the section ids in pages/HelpPage.tsx; each item is a lead and its sentence. */
+    sections: Record<
+      'gettingStarted' | 'bookings' | 'teamRoles' | 'customers' | 'products' | 'plans' | 'publicPage' | 'contact',
+      { title: string; items: { lead: string; text: string }[] }
+    >;
   };
   dashboard: {
     title: string;
@@ -1310,6 +1322,7 @@ export const translations: Record<Language, Translations> = {
       mainNav: 'Κύρια πλοήγηση',
       resize: 'Αλλαγή πλάτους μενού',
       account: 'Λογαριασμός',
+      help: 'Βοήθεια',
       overview: 'Επισκόπηση',
       logout: 'Αποσύνδεση',
       home: 'Αρχική',
@@ -1323,6 +1336,92 @@ export const translations: Record<Language, Translations> = {
       customers: 'Πελάτες',
       shopSettings: 'Ρυθμίσεις',
       bookAppointment: 'Νέο Ραντεβού',
+    },
+    help: {
+      title: 'Βοήθεια',
+      intro: 'Σύντομες απαντήσεις για το πώς δουλεύει το BeBooked. Άνοιξε ένα θέμα για να το διαβάσεις.',
+      managersBadge: 'Ιδιοκτήτες και διαχειριστές',
+      contactButton: 'Επικοινώνησε μαζί μας',
+      sections: {
+        gettingStarted: {
+          title: 'Ξεκινώντας',
+          items: [
+            { lead: 'Όρισε πότε δουλεύεις.', text: 'Άνοιξε την Ομάδα, διάλεξε τον εαυτό σου και συμπλήρωσε το Πρόγραμμα Διαθεσιμότητας. Οι πελάτες κλείνουν ραντεβού μόνο μέσα σε αυτές τις ώρες.' },
+            { lead: 'Πρόσθεσε τις υπηρεσίες σου.', text: 'Στις Υπηρεσίες, πρόσθεσε κάθε υπηρεσία με τη διάρκεια και την τιμή της και όρισε ποιος από την ομάδα την κάνει.' },
+            { lead: 'Μοιράσου τον σύνδεσμο κρατήσεων.', text: 'Ο δημόσιος σύνδεσμος του καταστήματος βρίσκεται στις Ρυθμίσεις. Βάλε τον στο Instagram, στο Google Maps ή σε ένα μήνυμα. Οι πελάτες κλείνουν ραντεβού χωρίς λογαριασμό.' },
+            { lead: 'Δοκίμασέ το.', text: 'Άνοιξε τον σύνδεσμο και κλείσε ένα δοκιμαστικό ραντεβού. Θα εμφανιστεί στα Ραντεβού.' },
+          ],
+        },
+        bookings: {
+          title: 'Ραντεβού',
+          items: [
+            { lead: 'Το ημερολόγιο.', text: 'Τα Ραντεβού δείχνουν την ημέρα, με μία στήλη για κάθε μέλος της ομάδας.' },
+            { lead: 'Νέο ραντεβού.', text: 'Ο ιδιοκτήτης και οι διαχειριστές μπορούν να καταχωρίσουν ραντεβού για έναν πελάτη, για παράδειγμα μετά από τηλεφώνημα.' },
+            { lead: 'Αλλαγή ή ακύρωση.', text: 'Άνοιξε ένα ραντεβού για να δεις τα στοιχεία του. Ο ιδιοκτήτης και οι διαχειριστές μπορούν να το μεταφέρουν ή να το ακυρώσουν οποιαδήποτε στιγμή.' },
+            { lead: 'Τι μπορεί να κάνει ο πελάτης.', text: 'Το email επιβεβαίωσης έχει συνδέσμους για ακύρωση και αλλαγή ώρας. Στις Ρυθμίσεις ορίζεις αν επιτρέπεται η αλλαγή ώρας και πόσες ώρες πριν από το ραντεβού παύουν να ισχύουν οι σύνδεσμοι.' },
+            { lead: 'Υπενθυμίσεις.', text: 'Οι πελάτες που έχουν δώσει email λαμβάνουν υπενθύμιση πριν από το ραντεβού. Την ενεργοποιείς και ορίζεις τις ώρες στις Ρυθμίσεις.' },
+            { lead: 'Κανόνες κρατήσεων.', text: 'Στις Ρυθμίσεις ορίζεις επίσης πόσες ημέρες μπροστά μπορούν να κλείσουν οι πελάτες και κάθε πόσα λεπτά εμφανίζεται διαθέσιμη ώρα.' },
+          ],
+        },
+        teamRoles: {
+          title: 'Ομάδα και ρόλοι',
+          items: [
+            { lead: 'Ιδιοκτήτης.', text: 'Έχει όλα τα δικαιώματα. Μόνο αυτός μπορεί να διαγράψει το κατάστημα ή να το μεταβιβάσει σε άλλον.' },
+            { lead: 'Διαχειριστής.', text: 'Τρέχει το κατάστημα καθημερινά: ραντεβού, υπηρεσίες, ομάδα και πελάτες. Ο ιδιοκτήτης μπορεί να του επιτρέψει επιπλέον να διαχειρίζεται άλλους διαχειριστές και να αλλάζει τις ρυθμίσεις του καταστήματος.' },
+            { lead: 'Προσωπικό.', text: 'Βλέπει το ημερολόγιο, τις υπηρεσίες και τα προϊόντα. Ο ιδιοκτήτης ορίζει αν βλέπει τα ονόματα και τα στοιχεία επικοινωνίας των πελατών.' },
+            { lead: 'Ένα μέλος δεν χρειάζεται λογαριασμό.', text: 'Πρόσθεσε κάποιον μόνο με το όνομά του για να δέχεται ραντεβού. Αν αργότερα θέλεις να χρησιμοποιεί ο ίδιος την εφαρμογή, στείλε του πρόσκληση σύνδεσης με email.' },
+            { lead: 'Ποιος δέχεται ραντεβού.', text: 'Κάθε μέλος έχει δύο διακόπτες: αν μπορούν να το επιλέξουν οι πελάτες στη σελίδα κρατήσεων, και αν μπορεί να επιλεγεί σε ραντεβού που καταχωρίζονται μέσα από την εφαρμογή. Ένα μέλος με κλειστούς και τους δύο δεν πιάνει θέση προσωπικού στο πακέτο σου.' },
+            { lead: 'Ωράριο και άδειες.', text: 'Κάθε μέλος έχει το δικό του ωράριο και τις δικές του άδειες, στη σελίδα του.' },
+            { lead: 'Όταν κάποιος φεύγει.', text: 'Απενεργοποίησε το μέλος: χάνει την πρόσβαση και δεν δέχεται πια ραντεβού, ενώ τα παλιά του ραντεβού μένουν.' },
+            { lead: 'Στο Solo.', text: 'Οι προσκλήσεις σύνδεσης και οι διαχειριστές περιλαμβάνονται στα πακέτα Team και Business.' },
+          ],
+        },
+        customers: {
+          title: 'Πελάτες',
+          items: [
+            { lead: 'Η λίστα.', text: 'Όποιος κλείνει ραντεβού αποθηκεύεται στους Πελάτες, μαζί με τα ραντεβού του.' },
+            { lead: 'Εισαγωγή.', text: 'Ανέβασε ένα αρχείο CSV, Excel ή JSON με στήλες για όνομα και τηλέφωνο, και προαιρετικά email και σημειώσεις. Αν ένα τηλέφωνο υπάρχει ήδη, ο πελάτης δεν αλλάζει· συμπληρώνονται μόνο το email ή οι σημειώσεις που λείπουν.' },
+            { lead: 'Εξαγωγή.', text: 'Κατέβασε όλους τους πελάτες σου σε αρχείο Excel.' },
+            { lead: 'Διπλές εγγραφές.', text: 'Αν ο ίδιος άνθρωπος υπάρχει δύο φορές, συγχώνευσε τη διπλή εγγραφή σε αυτήν που κρατάς.' },
+            { lead: 'Διαφορετική διάρκεια για έναν πελάτη.', text: 'Αν ένας πελάτης χρειάζεται πάντα περισσότερο ή λιγότερο χρόνο για μια υπηρεσία, όρισε τη δική του διάρκεια στη σελίδα του.' },
+            { lead: 'Αιτήματα για προσωπικά δεδομένα.', text: 'Από τη σελίδα ενός πελάτη μπορείς να εξαγάγεις ή να διαγράψεις τα δεδομένα του, αν το ζητήσει.' },
+          ],
+        },
+        products: {
+          title: 'Προϊόντα',
+          items: [
+            { lead: 'Τι είναι.', text: 'Όσα πουλάς στο κατάστημα. Για το καθένα βάζεις όνομα, τιμή, φωτογραφία και πόσα έχεις.' },
+            { lead: 'Κράτηση προϊόντος.', text: 'Οι πελάτες μπορούν να κρατήσουν ένα προϊόν την ώρα που κλείνουν ραντεβού και να το παραλάβουν όταν έρθουν. Προϊόντα προστίθενται σε ραντεβού και μέσα από την εφαρμογή.' },
+            { lead: 'Απόθεμα.', text: 'Όταν ένα προϊόν τελειώνει ή δεν είναι διαθέσιμο, αυτό φαίνεται δίπλα του.' },
+            { lead: 'Στο Solo.', text: 'Τα προϊόντα περιλαμβάνονται στα πακέτα Team και Business.' },
+          ],
+        },
+        plans: {
+          title: 'Πακέτα και δοκιμαστική περίοδος',
+          items: [
+            { lead: 'Solo.', text: 'Ένα άτομο που δέχεται ραντεβού. Ραντεβού, ημερολόγιο, υπηρεσίες, πελάτες, σελίδα κρατήσεων, email επιβεβαίωσης και υπενθύμισης.' },
+            { lead: 'Team.', text: 'Έως 5 άτομα που δέχονται ραντεβού. Προσθέτει προσκλήσεις σύνδεσης, διαχειριστές και δικαιώματα, και προϊόντα.' },
+            { lead: 'Business.', text: 'Έως 15 άτομα που δέχονται ραντεβού, με όλα όσα έχει το Team.' },
+            { lead: 'Δωρεάν δοκιμή.', text: 'Το πρώτο σου κατάστημα είναι δωρεάν για 30 ημέρες. Δεν χρειάζεται κάρτα.' },
+            { lead: 'Όταν τελειώσει η δοκιμή.', text: 'Το κατάστημα γίνεται μόνο για ανάγνωση: βλέπεις τα πάντα και μπορείς να εξαγάγεις τους πελάτες σου, αλλά τίποτα δεν αλλάζει και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού. Επικοινώνησε μαζί μας για να διαλέξεις πακέτο και ξεκλειδώνει.' },
+            { lead: 'Περισσότερα καταστήματα.', text: 'Κάθε κατάστημα έχει το δικό του πακέτο. Ένα δεύτερο κατάστημα μένει ανενεργό μέχρι να επικοινωνήσεις μαζί μας για να του οριστεί πακέτο.' },
+          ],
+        },
+        publicPage: {
+          title: 'Η δημόσια σελίδα σου',
+          items: [
+            { lead: 'Ο σύνδεσμός σου.', text: 'Οι πελάτες κλείνουν ραντεβού στον σύνδεσμο του καταστήματος. Το τελευταίο κομμάτι του το διαλέγεις όταν δημιουργείς το κατάστημα και δεν αλλάζει μετά.' },
+            { lead: 'Φωτογραφία.', text: 'Πρόσθεσε μια φωτογραφία του καταστήματος στις Ρυθμίσεις. Εμφανίζεται στη σελίδα κρατήσεων.' },
+            { lead: 'Χρώματα και γραμματοσειρές.', text: 'Στις Ρυθμίσεις διαλέγεις τα χρώματα και τη γραμματοσειρά της σελίδας κρατήσεων.' },
+          ],
+        },
+        contact: {
+          title: 'Επικοινωνία',
+          items: [
+            { lead: 'Δεν βρήκες αυτό που έψαχνες;', text: 'Γράψε μας αν έχεις απορία ή αν κάτι δεν δουλεύει. Θα σου απαντήσουμε με email.' },
+          ],
+        },
+      },
     },
     dashboard: {
       title: 'Επισκόπηση',
@@ -2722,6 +2821,7 @@ home: {
       mainNav: 'Main navigation',
       resize: 'Resize sidebar',
       account: 'Account',
+      help: 'Help',
       overview: 'Overview',
       logout: 'Logout',
       home: 'Home',
@@ -2735,6 +2835,92 @@ home: {
       customers: 'Customers',
       shopSettings: 'Settings',
       bookAppointment: 'New Booking',
+    },
+    help: {
+      title: 'Help',
+      intro: 'Short answers on how BeBooked works. Open a topic to read it.',
+      managersBadge: 'Owners and managers',
+      contactButton: 'Contact us',
+      sections: {
+        gettingStarted: {
+          title: 'Getting started',
+          items: [
+            { lead: 'Set when you work.', text: 'Open Team, choose yourself and fill in the Availability Schedule. Customers can only book inside those hours.' },
+            { lead: 'Add your services.', text: 'On Services, add each service with its duration and price, and choose who on the team does it.' },
+            { lead: 'Share your booking link.', text: "Your shop's public link is in Settings. Put it on Instagram, Google Maps or in a message. Customers book without an account." },
+            { lead: 'Try it yourself.', text: 'Open the link and make a test booking. It appears in Bookings.' },
+          ],
+        },
+        bookings: {
+          title: 'Bookings',
+          items: [
+            { lead: 'The calendar.', text: 'Bookings shows the day, with one column for each team member.' },
+            { lead: 'Adding a booking.', text: 'The owner and managers can add a booking for a customer, for example after a phone call.' },
+            { lead: 'Changing or cancelling.', text: 'Open a booking to see its details. The owner and managers can reschedule or cancel it at any time.' },
+            { lead: 'What the customer can do.', text: 'The confirmation email has links to cancel and to reschedule. In Settings you choose whether rescheduling is allowed and how many hours before the appointment the links stop working.' },
+            { lead: 'Reminders.', text: 'Customers who gave an email get a reminder before their appointment. Turn it on and set the hours in Settings.' },
+            { lead: 'Booking rules.', text: 'Settings is also where you set how many days ahead customers can book and how often a bookable time appears.' },
+          ],
+        },
+        teamRoles: {
+          title: 'Team and roles',
+          items: [
+            { lead: 'Owner.', text: 'Has every permission. Only the owner can delete the shop or transfer it to someone else.' },
+            { lead: 'Manager.', text: 'Runs the shop day to day: bookings, services, team and customers. The owner can also let a manager manage other managers and edit the shop settings.' },
+            { lead: 'Staff.', text: "Sees the calendar, the services and the products. The owner decides whether they see customers' names and contact details." },
+            { lead: 'A team member does not need a login.', text: 'Add someone with just their name so they can be booked. If they should use the app themselves later, send them a login invite by email.' },
+            { lead: 'Who can be booked.', text: "Each member has two switches: whether customers can pick them on the booking page, and whether they can be chosen for bookings made inside the app. A member with both off does not take one of your plan's staff places." },
+            { lead: 'Hours and time off.', text: 'Each member has their own working hours and time off, on their page.' },
+            { lead: 'When someone leaves.', text: 'Deactivate the member: they lose access and can no longer be booked, and their past bookings stay.' },
+            { lead: 'On Solo.', text: 'Login invites and managers are part of the Team and Business plans.' },
+          ],
+        },
+        customers: {
+          title: 'Customers',
+          items: [
+            { lead: 'The list.', text: 'Everyone who books is saved in Customers, with their bookings.' },
+            { lead: 'Import.', text: 'Upload a CSV, Excel or JSON file with name and phone columns, and optionally email and notes. If a phone already exists, that customer is not changed; only a missing email or missing notes are filled in.' },
+            { lead: 'Export.', text: 'Download all your customers as an Excel file.' },
+            { lead: 'Duplicates.', text: 'If the same person is there twice, merge the duplicate into the record you keep.' },
+            { lead: 'A different duration for one customer.', text: 'If a customer always needs more or less time for a service, set their own duration on their page.' },
+            { lead: 'Personal data requests.', text: "From a customer's page you can export or delete their data if they ask." },
+          ],
+        },
+        products: {
+          title: 'Products',
+          items: [
+            { lead: 'What they are.', text: 'The things you sell at the shop. Each has a name, a price, a photo and how many you have.' },
+            { lead: 'Reserving.', text: 'Customers can reserve a product while they book and collect it when they come in. Products can be added to a booking from inside the app too.' },
+            { lead: 'Stock.', text: 'When a product is running low or is not available, that is shown next to it.' },
+            { lead: 'On Solo.', text: 'Products are part of the Team and Business plans.' },
+          ],
+        },
+        plans: {
+          title: 'Plans and trial',
+          items: [
+            { lead: 'Solo.', text: 'One bookable person. Bookings, calendar, services, customers, booking page, confirmation and reminder emails.' },
+            { lead: 'Team.', text: 'Up to 5 bookable staff. Adds login invites, managers and permissions, and products.' },
+            { lead: 'Business.', text: 'Up to 15 bookable staff, with everything in Team.' },
+            { lead: 'Free trial.', text: 'Your first shop is free for 30 days. No card is needed.' },
+            { lead: 'When the trial ends.', text: 'The shop becomes read-only: you still see everything and can export your customers, but nothing can be changed and the booking page takes no new bookings. Contact us to choose a plan and it is unlocked.' },
+            { lead: 'More shops.', text: 'Each shop has its own plan. A second shop stays inactive until you contact us to set a plan for it.' },
+          ],
+        },
+        publicPage: {
+          title: 'Your public page',
+          items: [
+            { lead: 'Your link.', text: "Customers book at your shop's link. Its last part is chosen when the shop is created and cannot be changed later." },
+            { lead: 'Photo.', text: 'Add a photo of the shop in Settings. It is shown on the booking page.' },
+            { lead: 'Colours and fonts.', text: 'In Settings you choose the colours and the font of the booking page.' },
+          ],
+        },
+        contact: {
+          title: 'Contact',
+          items: [
+            { lead: 'Did not find your answer?', text: 'Write to us if you have a question or something is not working. We reply by email.' },
+          ],
+        },
+      },
     },
     dashboard: {
       title: 'Overview',
