@@ -3,12 +3,12 @@ import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType }
 import * as Sentry from '@sentry/react';
 
 // Error monitoring and tracing. Imported first in main.tsx, before anything
-// else runs. Without VITE_SENTRY_DSN (local development, tests, e2e) Sentry
-// stays off and nothing is sent.
+// else runs. Production builds only, and only with VITE_SENTRY_DSN set: local
+// development, tests and e2e never send anything, even with a DSN in .env.
 const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
 
-if (dsn) {
+if (dsn && import.meta.env.PROD) {
   Sentry.init({
     dsn,
     environment: import.meta.env.MODE,
