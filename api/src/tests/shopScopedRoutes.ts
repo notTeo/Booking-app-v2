@@ -222,6 +222,16 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
   },
 
   'GET /api/shops/:shopId/customers': {},
+  'POST /api/shops/:shopId/customers': {
+    body: () => ({ name: 'Added By Hand', phone: '6900000055' }),
+  },
+  'PUT /api/shops/:shopId/customers/:customerId/photo': {
+    minRole: 'manager',
+    body: () => ({ crop }),
+  },
+  'DELETE /api/shops/:shopId/customers/:customerId/photo': {
+    minRole: 'manager',
+  },
   'GET /api/shops/:shopId/customers/:customerId': {},
   'GET /api/shops/:shopId/customers/:customerId/bookings': {},
   'PATCH /api/shops/:shopId/customers/:customerId': {

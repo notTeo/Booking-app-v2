@@ -1,6 +1,7 @@
 import client from './client';
 import type { ShopRole } from './shop.api';
 import { isPlausiblePhone } from '../utils/phone';
+import type { PhotoCrop } from './photo.api';
 
 export interface OpeningRange {
   startTime: string;
@@ -78,6 +79,10 @@ export interface ShopInfo {
   publicFont: string;
   /** The shop's photo, shown at the top of its page. */
   photoUrl: string | null;
+  /** Customers may add a profile photo of themselves. */
+  customerPhotosEnabled?: boolean;
+  /** The shop's sign-up page (/<slug>/profile) is on. */
+  customerProfilePageEnabled?: boolean;
   isActive: boolean;
   /** False while the shop takes no new online bookings (its plan has lapsed). */
   acceptingBookings: boolean;
@@ -93,6 +98,30 @@ export interface ShopInfo {
 
 export const getShopInfo = (slug: string) =>
   client.get(`/public/${slug}`).then((r) => r.data.data as ShopInfo);
+
+export interface CustomerProfilePayload {
+  name: string;
+  phone: string;
+  email?: string;
+  photo?: { file: File; crop: PhotoCrop };
+}
+
+/**
+ * The sign-up page's form (and the booking page's photo). It only ever adds:
+ * a new customer, or a photo for one who has none. The answer is the same
+ * either way, so it says nothing about who is already a customer.
+ */
+export const submitCustomerProfile = (slug: string, payload: CustomerProfilePayload) => {
+  const form = new FormData();
+  form.append('name', payload.name);
+  form.append('phone', payload.phone);
+  if (payload.email) form.append('email', payload.email);
+  if (payload.photo) {
+    form.append('crop', JSON.stringify(payload.photo.crop));
+    form.append('photo', payload.photo.file);
+  }
+  return client.post(`/public/${slug}/profile`, form).then(() => undefined);
+};
 
 export interface CreateBookingPayload {
   name: string;

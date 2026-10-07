@@ -1,3 +1,4 @@
+import Avatar from '../Avatar';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../context/LanguageContext';
 import type { BookingWithStaff } from '../../api/booking.api';
@@ -66,7 +67,12 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone = 'U
                 {bookings.map((b) => (
                   <tr key={b.id}>
                     <td data-label={r.customerCol} className="data-table__title">
-                      {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                      <span className="cluster cluster--tight">
+                        {b.customer.photoUrl && !b.customer.contactHidden && (
+                          <Avatar name={b.customer.name} photoUrl={b.customer.photoUrl} size="sm" />
+                        )}
+                        {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
+                      </span>
                     </td>
                     <td data-label={r.serviceCol}>{bookingServiceNames(b)}</td>
                     {showShop && <td data-label={r.shopCol}>{b.shop?.name}</td>}

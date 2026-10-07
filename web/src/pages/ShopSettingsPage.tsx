@@ -1,4 +1,5 @@
-import { publicShopUrl } from '../utils/publicLink';
+import { publicProfileUrl, publicShopUrl } from '../utils/publicLink';
+import QrCode from '../components/QrCode';
 import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -67,6 +68,8 @@ export default function ShopSettingsPage() {
   const [rescheduleCutoff, setRescheduleCutoff] = useState('1');
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderHours, setReminderHours] = useState('24');
+  const [customerPhotos, setCustomerPhotos] = useState(false);
+  const [profilePage, setProfilePage] = useState(false);
 
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -98,6 +101,8 @@ export default function ShopSettingsPage() {
           setRescheduleCutoff(String(found.rescheduleCutoffHours));
           setReminderEnabled(found.reminderEnabled);
           setReminderHours(String(found.reminderHoursBefore));
+          setCustomerPhotos(found.customerPhotosEnabled);
+          setProfilePage(found.customerProfilePageEnabled);
         }
       })
       .catch(() => setLoadError(t.shopSettings.errorLoad))
@@ -125,6 +130,8 @@ export default function ShopSettingsPage() {
         rescheduleCutoffHours: Number(rescheduleCutoff),
         reminderEnabled,
         reminderHoursBefore: Number(reminderHours),
+        customerPhotosEnabled: customerPhotos,
+        customerProfilePageEnabled: profilePage,
       };
       const updated = await updateShop(shop.id, dto);
       setShop(updated);
@@ -403,6 +410,57 @@ export default function ShopSettingsPage() {
                 <small className="field__hint" id="detail-reschedule-cutoff-hint">{t.shopSettings.rescheduleCutoffHint}</small>
               </div>
             </div>
+          </div>
+
+          <div className="card__section">
+            <div>
+              <h3 className="card__title">{t.customerProfile.sectionTitle}</h3>
+              <p className="card__text">{t.customerProfile.sectionHint}</p>
+            </div>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <label htmlFor="detail-customer-photos" className="setting-row__title">
+                  {t.customerProfile.photosLabel}
+                </label>
+                <span className="setting-row__text">{t.customerProfile.photosDesc}</span>
+              </div>
+              <Switch
+                id="detail-customer-photos"
+                checked={customerPhotos}
+                onChange={setCustomerPhotos}
+                label={t.customerProfile.photosLabel}
+              />
+            </div>
+            <div className="setting-row">
+              <div className="setting-row__label">
+                <label htmlFor="detail-profile-page" className="setting-row__title">
+                  {t.customerProfile.pageLabel}
+                </label>
+                <span className="setting-row__text">{t.customerProfile.pageDesc}</span>
+              </div>
+              <Switch
+                id="detail-profile-page"
+                checked={profilePage}
+                onChange={setProfilePage}
+                label={t.customerProfile.pageLabel}
+              />
+            </div>
+            {/* The link only works once the setting is saved. */}
+            {profilePage && !shop.customerProfilePageEnabled && (
+              <small className="field__hint">{t.customerProfile.saveToShow}</small>
+            )}
+            {profilePage && shop.customerProfilePageEnabled && (
+              <>
+                <CopyLinkButton link={publicProfileUrl(shop.slug)} />
+                <small className="field__hint">{t.customerProfile.qrDesc}</small>
+                <QrCode
+                  link={publicProfileUrl(shop.slug)}
+                  title={shop.name}
+                  alt={t.customerProfile.qrAlt}
+                  fileName={`${shop.slug}-qr.png`}
+                />
+              </>
+            )}
           </div>
 
           <div className="card__section">

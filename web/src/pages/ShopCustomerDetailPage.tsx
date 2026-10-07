@@ -11,6 +11,8 @@ import {
   updateCustomer,
   exportCustomer,
   deleteCustomer,
+  removeCustomerPhoto,
+  setCustomerPhoto,
   type CustomerBookingsResult,
   type CustomerDetail,
 } from '../api/customer.api';
@@ -24,6 +26,8 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
 import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
+import Avatar from '../components/Avatar';
+import PhotoField from '../components/PhotoField';
 import { bookingServiceNames } from '../utils/bookingServices';
 
 const BOOKINGS_PAGE_SIZE = 10;
@@ -191,6 +195,9 @@ export default function ShopCustomerDetailPage() {
       {/* Customer info, with this customer's lifetime numbers in a column beside it */}
       <div className="customer-head">
         <div className="card team-member-card">
+          {!customer.contactHidden && customer.photoUrl && (
+            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />
+          )}
           <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
           <div className="cluster">
             <span className="t-body-sm t-muted">
@@ -330,6 +337,34 @@ export default function ShopCustomerDetailPage() {
           >
             {t.customers.save}
           </button>
+        </div>
+      )}
+
+      {/* The customer's photo (owner and managers; the API enforces it too) */}
+      {shop && canManageShop(shop.role) && !customer.contactHidden && (
+        <div className="card">
+          <h2 className="card__title">{t.customerProfile.photoTitle}</h2>
+          <PhotoField
+            photo={{
+              photoUrl: customer.photoUrl ?? null,
+              photoOriginalUrl: customer.photoOriginalUrl ?? null,
+              photoCrop: customer.photoCrop ?? null,
+            }}
+            shape="round"
+            canEdit
+            camera
+            preview={<Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />}
+            onUpload={async (file, crop) => {
+              const updated = await setCustomerPhoto(shop.id, customer.id, file, crop);
+              setCustomer((prev) => (prev ? { ...prev, ...updated } : prev));
+            }}
+            onRemove={async () => {
+              const updated = await removeCustomerPhoto(shop.id, customer.id);
+              setCustomer((prev) => (prev ? { ...prev, ...updated } : prev));
+            }}
+          >
+            <p className="card__text">{t.customerProfile.photoDesc}</p>
+          </PhotoField>
         </div>
       )}
 

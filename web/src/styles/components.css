@@ -567,9 +567,15 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
   border-radius: var(--radius-full); font: var(--fw-bold) var(--fs-sm) / 1 var(--font-display);
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar--xs { width: 1.25rem; height: 1.25rem; font-size: var(--fs-xs); }
 .avatar--sm { width: 2rem; height: 2rem; font-size: var(--fs-xs); }
 .avatar--lg { width: 4rem; height: 4rem; font-size: var(--fs-lg); }
 .avatar--xl { width: 5rem; height: 5rem; font-size: var(--fs-xl); }
+
+/* A QR code with its download and print buttons. Always dark on white, in
+   both themes, so a phone camera can read it off the screen. */
+.qr-code { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+.qr-code__image { width: 100%; max-width: 12rem; height: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
 
 /* ---------- 16. Navbar ---------- */
 .navbar {
@@ -1034,6 +1040,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* Under an hour: time, name and service share one row; the out-of-hours tag is left to the details. */
 .cal-block--compact { flex-direction: row; align-items: center; gap: var(--space-2); padding-top: 0; padding-bottom: 0; }
 .cal-block--compact .cal-block__name { flex: 0 1 auto; min-width: 0; }
+/* The customer's photo, in line with their name. */
+.cal-block__name .avatar { display: inline-grid; margin-inline-end: var(--space-1); vertical-align: middle; }
 .cal-block--compact .cal-block__service { flex: 1 1 0; min-width: 0; }
 .cal-block--compact .cal-block__tag, .cal-block--compact .cal-block__next-day { display: none; }
 /* Phones: one provider column per "page", picked with a row of chips above the calendar. */

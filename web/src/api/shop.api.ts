@@ -21,6 +21,10 @@ export interface Shop extends PhotoFields {
   cancelCutoffHours: number;
   rescheduleCutoffHours: number;
   reminderEnabled: boolean;
+  /** Customers may add a profile photo (public wizard and sign-up page). */
+  customerPhotosEnabled: boolean;
+  /** The public sign-up page at /<slug>/profile is on. */
+  customerProfilePageEnabled: boolean;
   reminderHoursBefore: number;
   /** Colour set and fonts of the public booking page (see utils/branding.ts). */
   publicPalette: string;
@@ -64,6 +68,8 @@ export interface UpdateShopDto extends Partial<CreateShopDto> {
   cancelCutoffHours?: number;
   rescheduleCutoffHours?: number;
   reminderEnabled?: boolean;
+  customerPhotosEnabled?: boolean;
+  customerProfilePageEnabled?: boolean;
   reminderHoursBefore?: number;
   publicPalette?: string;
   publicFont?: string;

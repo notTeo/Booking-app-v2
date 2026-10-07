@@ -7,10 +7,12 @@ import { exportAllCustomers, getCustomers, type Customer } from '../api/customer
 import { buildExport, downloadBlob } from '../utils/customerFiles';
 import { canManageShop } from '../utils/roles';
 import ImportCustomersModal from '../components/ImportCustomersModal';
+import CustomerFormModal from '../components/CustomerFormModal';
+import Avatar from '../components/Avatar';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const PAGE_SIZE = 20;
 // How long typing must pause before the search is sent.
@@ -34,6 +36,7 @@ export default function ShopCustomersPage() {
   const [loaded, setLoaded] = useState(false);
   const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
   // Bumped after an import so the list loads again.
@@ -98,21 +101,30 @@ export default function ShopCustomersPage() {
     <div className="team-page">
       <div className="page-header">
         <h1 className="t-title">{t.customers.title}</h1>
-        {/* Owner and managers; the API enforces it too. */}
-        {canManageShop(shop?.role) && (
-          <div className="cluster cluster--tight">
-            <button className="btn btn--sm" onClick={() => setImportOpen(true)}>
-              {t.customers.importButton}
+        <div className="cluster cluster--tight">
+          {/* Anyone who may see customer details can add one; the API enforces it too. */}
+          {shop?.canViewCustomerDetails !== false && (
+            <button className="btn btn--sm" onClick={() => setCreateOpen(true)}>
+              <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
+              {t.customerProfile.newCustomer}
             </button>
-            <button
-              className={`btn btn--secondary btn--sm${exporting ? ' is-loading' : ''}`}
-              onClick={handleExport}
-              aria-busy={exporting}
-            >
-              {t.customers.exportLabel}
-            </button>
-          </div>
-        )}
+          )}
+          {/* Owner and managers; the API enforces it too. */}
+          {canManageShop(shop?.role) && (
+            <>
+              <button className="btn btn--secondary btn--sm" onClick={() => setImportOpen(true)}>
+                {t.customers.importButton}
+              </button>
+              <button
+                className={`btn btn--secondary btn--sm${exporting ? ' is-loading' : ''}`}
+                onClick={handleExport}
+                aria-busy={exporting}
+              >
+                {t.customers.exportLabel}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {exportError && <Alert variant="danger">{exportError}</Alert>}
@@ -177,6 +189,7 @@ export default function ShopCustomersPage() {
                     <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
                       <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
                         <span className="cluster cluster--tight">
+                          {!c.contactHidden && <Avatar name={c.name} photoUrl={c.photoUrl} size="sm" />}
                           <Link to={c.id} className="data-table__link">
                             {c.contactHidden ? t.customers.hiddenLabel : c.name}
                           </Link>
@@ -224,6 +237,13 @@ export default function ShopCustomersPage() {
           </div>
         </div>
 
+      )}
+      {createOpen && shop && (
+        <CustomerFormModal
+          shopId={shop.id}
+          onClose={() => setCreateOpen(false)}
+          onCreated={(created) => navigate(created.id)}
+        />
       )}
       {importOpen && shop && (
         <ImportCustomersModal

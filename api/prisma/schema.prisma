@@ -74,6 +74,12 @@ model Shop {
   photoUrl                  String?
   photoOriginalUrl          String?
   photoCrop                 Json?
+  // Customers may add a profile photo of themselves (public wizard and the
+  // sign-up page).
+  customerPhotosEnabled      Boolean  @default(false)
+  // The public sign-up page (/<slug>/profile) where a customer creates or
+  // completes their own profile; the shop hands out its link as a QR code.
+  customerProfilePageEnabled Boolean  @default(false)
   isActive                  Boolean  @default(true)
   plan                      ShopPlan           @default(TEAM)
   subscriptionStatus        SubscriptionStatus @default(ACTIVE)
@@ -283,6 +289,10 @@ model Customer {
   phone     String
   email     String?
   notes     String?
+  // The customer's profile photo (same three as Shop).
+  photoUrl         String?
+  photoOriginalUrl String?
+  photoCrop        Json?
   // The shop's one "Blocked" placeholder: bookings on it are blocked slots,
   // not appointments. Never listed, edited, merged or deleted as a customer.
   isSystem  Boolean  @default(false)

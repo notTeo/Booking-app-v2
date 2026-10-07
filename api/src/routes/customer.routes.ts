@@ -1,8 +1,10 @@
 import express, { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
+import { photoUpload } from '../middleware/photoUpload';
 import { rejectControlChars } from '../middleware/rejectControlChars';
 import {
+  createCustomerValidation,
   customerParamsValidation,
   listCustomerBookingsValidation,
   listCustomersValidation,
@@ -23,12 +25,22 @@ import {
   exportAllCustomers,
   importCustomers,
   setCustomerServiceDurations,
+  createCustomer,
+  setCustomerPhoto,
+  removeCustomerPhoto,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
 const router = Router({ mergeParams: true });
 
 router.get('/', authenticate, listCustomersValidation, validate, listCustomers);
+router.post(
+  '/',
+  authenticate,
+  createCustomerValidation,
+  validate,
+  createCustomer,
+);
 // Before /:customerId, which would otherwise take 'export-all' for an id.
 router.get(
   '/export-all',
@@ -75,6 +87,21 @@ router.put(
   setServiceDurationsValidation,
   validate,
   setCustomerServiceDurations,
+);
+router.put(
+  '/:customerId/photo',
+  authenticate,
+  customerParamsValidation,
+  validate,
+  photoUpload,
+  setCustomerPhoto,
+);
+router.delete(
+  '/:customerId/photo',
+  authenticate,
+  customerParamsValidation,
+  validate,
+  removeCustomerPhoto,
 );
 
 router.get(

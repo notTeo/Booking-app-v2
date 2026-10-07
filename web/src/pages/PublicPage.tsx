@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { createBooking } from '../api/public.api';
+import { createBooking, submitCustomerProfile } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
@@ -16,7 +16,8 @@ import { buildISODateTime, formatDuration, servicesSummary } from '../components
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation, PRODUCT_OUT_OF_STOCK } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
-import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
+import { clearSavedCustomer, hasAddedPhoto, readSavedCustomer, rememberPhotoAdded, saveCustomer } from '../utils/savedCustomer';
+import CustomerPhotoPicker, { type PickedPhoto } from '../components/CustomerPhotoPicker';
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import LangSwitch from '../components/LangSwitch';
@@ -58,6 +59,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [email, setEmail] = useState(saved?.email ?? '');
   const [notes, setNotes] = useState('');
   const [remember, setRemember] = useState(saved !== null);
+  // An optional photo of the customer, sent once the booking is made. Not
+  // offered again in a browser that already sent one to this shop.
+  const [photo, setPhoto] = useState<PickedPhoto | null>(null);
+  const [photoOffered] = useState(() => !hasAddedPhoto(slug));
+  const [photoFailed, setPhotoFailed] = useState(false);
   // Saved details are only used to find the customer's own times once they confirm them.
   const [identity, setIdentity] = useState<PublicIdentity>(saved ? 'ask' : 'anonymous');
 
@@ -147,6 +153,15 @@ function PublicBookingPage({ slug }: { slug: string }) {
       if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
       else clearSavedCustomer();
       saveConfirmedBooking(slug, made);
+      // The booking stands whatever happens to the photo.
+      if (photo) {
+        try {
+          await submitCustomerProfile(slug, { name: name.trim(), phone: phone.trim(), photo });
+          rememberPhotoAdded(slug);
+        } catch {
+          setPhotoFailed(true);
+        }
+      }
       setConfirmation(made);
       setSubmitting(false);
     } catch (err: unknown) {
@@ -281,6 +296,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 </p>
               )}
               <ReservedProducts products={confirmation.products} servicePrice={confirmation.servicePrice} />
+              {photoFailed && <Alert variant="warning">{t.customerProfile.wizardPhotoFailed}</Alert>}
               <button type="button" className="btn btn--secondary" onClick={handleBookAnother}>
                 {t.public.bookAnother}
               </button>
@@ -431,6 +447,16 @@ function PublicBookingPage({ slug }: { slug: string }) {
                       rows={3}
                     />
                   </div>
+
+                  {shop.customerPhotosEnabled && photoOffered && (
+                    <div className="field">
+                      <span className="field__label">
+                        {t.customerProfile.photoLabel} <span className="field__optional">{t.public.emailOptional}</span>
+                      </span>
+                      <CustomerPhotoPicker value={photo} onChange={setPhoto} disabled={submitting} />
+                      <p className="field__hint">{t.customerProfile.photoHelp}</p>
+                    </div>
+                  )}
 
                   <ReservedProducts
                     title={t.products.pickerTitle}

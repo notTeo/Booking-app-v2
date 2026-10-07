@@ -4,6 +4,7 @@ import {
   getShopInfoValidation,
   cancelBookingValidation,
   rescheduleBookingValidation,
+  customerProfileValidation,
 } from '../validators/public.validator';
 import {
   createBookingValidation,
@@ -16,7 +17,10 @@ import {
   getBookingForCustomer,
   rescheduleBooking,
   getPublicSlots,
+  saveCustomerProfile,
 } from '../controllers/public.controller';
+import { photoUpload } from '../middleware/photoUpload';
+import { rejectControlChars } from '../middleware/rejectControlChars';
 import {
   publicReadLimiter,
   publicWriteLimiter,
@@ -65,6 +69,17 @@ router.post(
   createBookingValidation,
   validate,
   createBooking,
+);
+// The sign-up page's form, with an optional photo. Multipart, so its fields
+// only exist (and can only be checked) once photoUpload has read them.
+router.post(
+  '/:slug/profile',
+  publicWriteLimiter,
+  photoUpload,
+  rejectControlChars,
+  customerProfileValidation,
+  validate,
+  saveCustomerProfile,
 );
 
 export default router;

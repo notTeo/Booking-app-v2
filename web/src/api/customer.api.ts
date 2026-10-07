@@ -1,8 +1,10 @@
 import client from './client';
 import type { BookingStatus } from './booking.api';
 import type { Overview } from './overview.api';
+import { deletePhoto, putPhoto, type PhotoCrop, type PhotoFields } from './photo.api';
 
-export interface Customer {
+/** The photo is absent on rows that do not carry it; null for staff who may not see customer details. */
+export interface Customer extends Partial<PhotoFields> {
   id: string;
   shopId: string;
   name: string;
@@ -90,6 +92,24 @@ export const getCustomerBookings = (shopId: string, customerId: string, page = 1
   client
     .get(`${base(shopId)}/${customerId}/bookings`, { params: { page, limit } })
     .then((r) => r.data.data as CustomerBookingsResult);
+
+export interface CreateCustomerDto {
+  name: string;
+  phone: string;
+  email?: string | null;
+  notes?: string | null;
+}
+
+/** Add a customer by hand. A phone the shop already has is a 409 `CUSTOMER_EXISTS` carrying that customer's `customerId`. */
+export const createCustomer = (shopId: string, dto: CreateCustomerDto) =>
+  client.post(base(shopId), dto).then((r) => r.data.data as Customer);
+
+/** Owner and managers. */
+export const setCustomerPhoto = (shopId: string, customerId: string, file: File | null, crop: PhotoCrop) =>
+  putPhoto<Customer>(`${base(shopId)}/${customerId}/photo`, file, crop);
+
+export const removeCustomerPhoto = (shopId: string, customerId: string) =>
+  deletePhoto<Customer>(`${base(shopId)}/${customerId}/photo`);
 
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);

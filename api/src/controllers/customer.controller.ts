@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
+import { parseCrop } from '../services/photo.service';
 import {
   listCustomers as listCustomersService,
   getCustomer as getCustomerService,
   updateCustomer as updateCustomerService,
+  createCustomer as createCustomerService,
+  setCustomerPhoto as setCustomerPhotoService,
+  removeCustomerPhoto as removeCustomerPhotoService,
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
   mergeCustomers as mergeCustomersService,
@@ -208,6 +212,69 @@ export const listCustomerBookings = async (
         page,
         limit,
       ),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const { name, phone, email, notes } = req.body;
+    const customer = await createCustomerService(userId, shopId, {
+      name,
+      phone,
+      email,
+      notes,
+    });
+    successResponse(res, customer, 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setCustomerPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    successResponse(
+      res,
+      await setCustomerPhotoService(
+        userId,
+        shopId,
+        customerId,
+        req.file?.buffer,
+        parseCrop(req.body?.crop),
+      ),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeCustomerPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    successResponse(
+      res,
+      await removeCustomerPhotoService(userId, shopId, customerId),
     );
   } catch (err) {
     next(err);
