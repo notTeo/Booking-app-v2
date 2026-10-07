@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faLocationDot, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { createBooking } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
@@ -20,6 +20,7 @@ import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/sa
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import LangSwitch from '../components/LangSwitch';
+import { useMoreBelow } from '../hooks/useMoreBelow';
 import ReservedProducts from '../components/ReservedProducts';
 import SuccessCheck from '../components/SuccessCheck';
 import ProductsStep from '../components/booking-wizard/ProductsStep';
@@ -86,6 +87,8 @@ function PublicBookingPage({ slug }: { slug: string }) {
   // shown as an error; kept separate from submitError so it can't render in
   // the red error style.
   const [busyNotice, setBusyNotice] = useState<string | null>(null);
+  // More of the step lies under the sticky footer: a hint above it says so.
+  const moreBelow = useMoreBelow();
   // The booking that was just made. Kept for this tab, so a reload still shows it.
   const [confirmation, setConfirmation] = useState<ConfirmedBooking | null>(() =>
     // Never in the shop settings preview, which shares the tab's storage.
@@ -470,6 +473,16 @@ function PublicBookingPage({ slug }: { slug: string }) {
 
         {showFooter && (
           <footer className="booking-card__foot">
+            {moreBelow && (
+              <button
+                type="button"
+                className="booking-card__more"
+                onClick={() => window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' })}
+              >
+                <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
+                {t.public.scrollForMore}
+              </button>
+            )}
             {identity === 'known' && step === 1 && (
               <p className="booking-card__who">
                 {t.public.bookingAs.replace('{name}', '')}
