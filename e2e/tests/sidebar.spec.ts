@@ -76,16 +76,25 @@ test('a manager gets the owner menu and pages, but no way to delete the shop', a
     await page.goto(`${SHOP}/settings`);
     await expect(page).toHaveURL(new RegExp(`${SHOP}/settings$`));
     await expect(page.locator('.badge', { hasText: 'Manager' })).toBeVisible();
+    // Deleting the shop (on the Plan tab) is the owner's alone.
+    await page.getByRole('tab', { name: 'Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'Plan', exact: true })).toBeVisible();
     await expect(page.locator('.card--danger')).toHaveCount(0);
+    await page.getByRole('tab', { name: 'Shop', exact: true }).click();
     // Without the owner's permission the settings are view only.
     await expect(page.getByText('View only. The owner can let you edit these settings.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+    await expect(page.locator('#detail-name')).toBeDisabled();
     await expect(page.locator('#detail-active')).toBeDisabled();
 
-    // With it they can save, but taking the shop offline stays with the owner.
+    // With it they can change and save, but taking the shop offline stays with the owner.
     await query(`update "UserShop" set "canEditShopSettings" = true where id = 'us1'`);
     await page.reload();
+    const name = page.locator('#detail-name');
+    await expect(name).toBeEnabled();
+    const original = await name.inputValue();
+    await name.fill(`${original} x`);
     await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
+    await name.fill(original);
     await expect(page.locator('#detail-active')).toBeDisabled();
     await expect(page.getByText('Only the owner can change this.')).toBeVisible();
   } finally {

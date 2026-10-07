@@ -1,3 +1,4 @@
+import Avatar from './Avatar';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DateTime } from 'luxon';
@@ -108,6 +109,9 @@ export default function BookingDetailsModal({
     <Modal onClose={onClose} labelledBy="booking-detail-title" paused={confirmCancel}>
       <div className="modal__header">
         <div className="booking-detail__head">
+          {!isBlock && !booking.customer.contactHidden && booking.customer.photoUrl && (
+            <Avatar name={booking.customer.name} photoUrl={booking.customer.photoUrl} size="lg" />
+          )}
           {!isBlock && (
             <span className={`badge ${booking.rescheduledTo ? 'badge--canceled' : BADGE[booking.status]}`}>
               <FontAwesomeIcon icon={display.icon} aria-hidden="true" />

@@ -126,7 +126,7 @@ test('a team member photo is edited, shown to customers, adjusted and removed', 
 
 test('the shop photo is added in settings, previewed there and shown on the booking page', async ({ page }) => {
   await signIn(page);
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=page`);
 
   const card = page.locator('.card', { has: page.getByRole('heading', { name: 'Shop photo' }) });
   await expect(card.getByText('No photo added')).toBeVisible();
@@ -144,7 +144,7 @@ test('the shop photo is added in settings, previewed there and shown on the book
   await expect(page.locator('.booking-card__head .cover img')).toBeVisible();
   await loaded(page.locator('.booking-card__head .cover img'));
 
-  await page.goto(`/shops/${E2E.shop.slug}/settings`);
+  await page.goto(`/shops/${E2E.shop.slug}/settings?tab=page`);
   await card.getByRole('button', { name: 'Remove' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Remove' }).click();
   await expect(card.getByText('No photo added')).toBeVisible();

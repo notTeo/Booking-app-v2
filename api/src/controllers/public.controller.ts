@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 import { getShopInfoService } from '../services/public.service';
+import { saveCustomerProfile as saveCustomerProfileService } from '../services/customerProfile.service';
+import { parseCrop } from '../services/photo.service';
 import {
   createBooking as createBookingService,
   cancelBookingByToken,
@@ -322,6 +324,29 @@ export const getPublicSlots = async (
       },
     );
     successResponse(res, slots);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const saveCustomerProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { name, phone, email, newPhone, photoOnly } = req.body;
+    const data = await saveCustomerProfileService(req.params.slug as string, {
+      name,
+      phone,
+      email: email || undefined,
+      newPhone: newPhone || undefined,
+      photoOnly: photoOnly === true,
+      ...(req.file && {
+        photo: { file: req.file.buffer, crop: parseCrop(req.body.crop) },
+      }),
+    });
+    successResponse(res, data);
   } catch (err) {
     next(err);
   }

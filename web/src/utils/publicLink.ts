@@ -11,3 +11,9 @@ export const publicShopPath = (slug: string): string => `/${slug}`;
 
 export const publicShopUrl = (slug: string): string =>
   `${window.location.origin}${publicShopPath(slug)}`;
+
+/** The shop's customer sign-up page, the one its QR code opens. */
+export const publicProfilePath = (slug: string): string => `/${slug}/profile`;
+
+export const publicProfileUrl = (slug: string): string =>
+  `${window.location.origin}${publicProfilePath(slug)}`;

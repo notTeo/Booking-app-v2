@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCropSimple, faImage, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCamera, faCropSimple, faImage, faTrash } from '@fortawesome/free-solid-svg-icons';
 import {
   MAX_PHOTO_BYTES,
   PHOTO_TYPES,
@@ -26,6 +26,7 @@ export default function PhotoField({
   children,
   canEdit,
   stacked,
+  camera,
   onUpload,
   onRemove,
 }: {
@@ -36,6 +37,8 @@ export default function PhotoField({
   canEdit: boolean;
   /** Preview above the buttons (a wide photo), instead of beside them. */
   stacked?: boolean;
+  /** Also offer "Take a photo" (a person's photo, taken on the spot with a phone). */
+  camera?: boolean;
   /** A new file with its crop, or (file null) a new crop of the stored photo. */
   onUpload: (file: File | null, crop: PhotoCrop) => Promise<void>;
   onRemove: () => Promise<void>;
@@ -43,6 +46,7 @@ export default function PhotoField({
   const { t } = useLang();
   const tp = t.photos;
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState<{ file: File | null; src: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [editorError, setEditorError] = useState('');
@@ -122,6 +126,27 @@ export default function PhotoField({
                 e.target.value = '';
               }}
             />
+            {camera && (
+              <>
+                <input
+                  ref={cameraRef}
+                  className="visually-hidden"
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  aria-label={t.customerProfile.takePhoto}
+                  tabIndex={-1}
+                  onChange={(e) => {
+                    pickFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+                <button type="button" className="btn btn--secondary btn--sm" onClick={() => cameraRef.current?.click()}>
+                  <FontAwesomeIcon icon={faCamera} aria-hidden="true" />
+                  {t.customerProfile.takePhoto}
+                </button>
+              </>
+            )}
             <button type="button" className="btn btn--secondary btn--sm" onClick={() => inputRef.current?.click()}>
               <FontAwesomeIcon icon={faImage} aria-hidden="true" />
               {hasPhoto ? tp.replace : tp.add}

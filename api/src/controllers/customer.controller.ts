@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
+import { parseCrop } from '../services/photo.service';
 import {
   listCustomers as listCustomersService,
   getCustomer as getCustomerService,
   updateCustomer as updateCustomerService,
+  createCustomer as createCustomerService,
+  setCustomerPhoto as setCustomerPhotoService,
+  removeCustomerPhoto as removeCustomerPhotoService,
+  acceptCustomerChanges as acceptCustomerChangesService,
+  rejectCustomerChanges as rejectCustomerChangesService,
   exportCustomer as exportCustomerService,
   deleteCustomer as deleteCustomerService,
   mergeCustomers as mergeCustomersService,
@@ -33,6 +39,7 @@ export const listCustomers = async (
       page,
       limit,
       String(req.query.hasCustomDurations) === 'true',
+      String(req.query.pendingChanges) === 'true',
     );
     successResponse(res, customers);
   } catch (err) {
@@ -213,3 +220,91 @@ export const listCustomerBookings = async (
     next(err);
   }
 };
+
+export const createCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const { name, phone, email, notes } = req.body;
+    const customer = await createCustomerService(userId, shopId, {
+      name,
+      phone,
+      email,
+      notes,
+    });
+    successResponse(res, customer, 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setCustomerPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    successResponse(
+      res,
+      await setCustomerPhotoService(
+        userId,
+        shopId,
+        customerId,
+        req.file?.buffer,
+        parseCrop(req.body?.crop),
+      ),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeCustomerPhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shopId = req.params.shopId as string;
+    const customerId = req.params.customerId as string;
+    successResponse(
+      res,
+      await removeCustomerPhotoService(userId, shopId, customerId),
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Accept or reject what the customer asked to change on the sign-up page.
+const decideChanges =
+  (decide: typeof acceptCustomerChangesService) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      successResponse(
+        res,
+        await decide(
+          req.user!.userId!,
+          req.params.shopId as string,
+          req.params.customerId as string,
+        ),
+      );
+    } catch (err) {
+      next(err);
+    }
+  };
+
+export const acceptCustomerChanges = decideChanges(
+  acceptCustomerChangesService,
+);
+export const rejectCustomerChanges = decideChanges(
+  rejectCustomerChangesService,
+);

@@ -533,6 +533,10 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .data-table tbody tr:hover, .data-table tbody tr.is-hover { background: var(--accent-soft); }
 .data-table tbody tr.is-selected { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
 .data-table__title { font-weight: var(--fw-semibold); }
+/* A picture with the row's name beside it; a long name wraps next to the
+   picture, not under it. */
+.data-table__media { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.data-table__media-text { min-width: 0; overflow-wrap: anywhere; }
 .data-table__sub { display: block; font-weight: 400; color: var(--text-muted); }
 .data-table__link { color: inherit; text-decoration: none; }
 .data-table__link:hover { color: var(--accent); text-decoration: underline; }
@@ -567,9 +571,28 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
   border-radius: var(--radius-full); font: var(--fw-bold) var(--fs-sm) / 1 var(--font-display);
 }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar--xs { width: 1.25rem; height: 1.25rem; font-size: var(--fs-xs); }
 .avatar--sm { width: 2rem; height: 2rem; font-size: var(--fs-xs); }
 .avatar--lg { width: 4rem; height: 4rem; font-size: var(--fs-lg); }
 .avatar--xl { width: 5rem; height: 5rem; font-size: var(--fs-xl); }
+
+/* Unsaved changes: the card that holds them, and a bar with Save that stays at
+   the bottom of the screen until they are saved. */
+.card--unsaved { border-color: var(--warning-border); }
+.save-bar {
+  position: sticky; bottom: var(--space-4); z-index: var(--z-nav); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--space-3); margin-top: var(--space-4); padding: var(--space-3) var(--space-4); color: var(--warning); background: var(--warning-bg);
+  border: 1px solid var(--warning-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+}
+/* Inside a card that clips its content the bar cannot follow the screen: it
+   sits at the end of the card instead. */
+.card--flush .save-bar { position: static; margin: var(--space-4) var(--space-5); }
+.save-bar__text { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+
+/* A QR code with its download and print buttons. Always dark on white, in
+   both themes, so a phone camera can read it off the screen. */
+.qr-code { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+.qr-code__image { width: 100%; max-width: 18rem; height: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
 
 /* ---------- 16. Navbar ---------- */
 .navbar {
@@ -823,6 +846,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .copy-link { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
 .copy-link__value { flex: 1 1 0; min-width: 0; font-family: monospace; font-size: var(--fs-sm); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .copy-link__btn { flex-shrink: 0; }
+/* On a phone the link gets a line to itself, so it can be read above its buttons. */
+@media (max-width: 639px) {
+  .copy-link { flex-wrap: wrap; }
+  .copy-link__value { flex-basis: 100%; white-space: normal; overflow-wrap: anywhere; }
+}
 .copy-link--compact .copy-link__value { font-size: var(--fs-xs); }
 
 /* ---------- 26. Setting row ---------- */
@@ -1034,6 +1062,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 /* Under an hour: time, name and service share one row; the out-of-hours tag is left to the details. */
 .cal-block--compact { flex-direction: row; align-items: center; gap: var(--space-2); padding-top: 0; padding-bottom: 0; }
 .cal-block--compact .cal-block__name { flex: 0 1 auto; min-width: 0; }
+/* The customer's photo, in line with their name. */
+.cal-block__name .avatar { display: inline-grid; margin-inline-end: var(--space-1); vertical-align: middle; }
 .cal-block--compact .cal-block__service { flex: 1 1 0; min-width: 0; }
 .cal-block--compact .cal-block__tag, .cal-block--compact .cal-block__next-day { display: none; }
 /* Phones: one provider column per "page", picked with a row of chips above the calendar. */

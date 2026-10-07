@@ -43,6 +43,7 @@ const PUBLIC = [
   "GET /public/:slug/slots",
   "GET /public/:slug",
   "POST /public/:slug/book",
+  "POST /public/:slug/profile",
   "GET /health",
 ].sort();
 

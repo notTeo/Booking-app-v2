@@ -59,3 +59,23 @@ export function clearSavedCustomer() {
     // Nothing was stored, so there is nothing to remove.
   }
 }
+
+// Set once this browser has sent a profile photo to a shop, so its booking page
+// stops offering to add one. Only a convenience: the shop's copy is what counts.
+const photoKey = (slug: string) => `customer-photo-added:${slug}`;
+
+export function hasAddedPhoto(slug: string): boolean {
+  try {
+    return localStorage.getItem(photoKey(slug)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function rememberPhotoAdded(slug: string) {
+  try {
+    localStorage.setItem(photoKey(slug), '1');
+  } catch {
+    // Blocked storage: the photo step is simply offered again next time.
+  }
+}

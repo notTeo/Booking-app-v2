@@ -1,3 +1,4 @@
+import Avatar from '../components/Avatar';
 import { dateInZone, formatTimeInZone, minutesOfDayInZone, shiftDate, todayInZone } from '../utils/shopTime';
 import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
@@ -535,6 +536,9 @@ export default function ShopBookingsPage() {
                               <span className="visually-hidden">{statusLabel(b)}</span>
                             </span>
                             <span className="cal-block__name">
+                              {b.customer.photoUrl && !b.customer.contactHidden && (
+                                <Avatar name={b.customer.name} photoUrl={b.customer.photoUrl} size="xs" />
+                              )}
                               {customerLabel(b)}
                             </span>
                             <span className="cal-block__service">

@@ -41,6 +41,8 @@ export interface UpdateShopDto {
   rescheduleCutoffHours?: number;
   reminderEnabled?: boolean;
   reminderHoursBefore?: number;
+  customerPhotosEnabled?: boolean;
+  customerProfilePageEnabled?: boolean;
   publicPalette?: string;
   publicFont?: string;
   isActive?: boolean;
@@ -73,6 +75,8 @@ const UPDATE_FIELDS = [
   'rescheduleCutoffHours',
   'reminderEnabled',
   'reminderHoursBefore',
+  'customerPhotosEnabled',
+  'customerProfilePageEnabled',
   'publicPalette',
   'publicFont',
   'isActive',

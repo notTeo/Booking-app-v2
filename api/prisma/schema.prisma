@@ -74,6 +74,12 @@ model Shop {
   photoUrl                  String?
   photoOriginalUrl          String?
   photoCrop                 Json?
+  // Customers may add a profile photo of themselves (public wizard and the
+  // sign-up page).
+  customerPhotosEnabled      Boolean  @default(false)
+  // The public sign-up page (/<slug>/profile) where a customer creates or
+  // completes their own profile; the shop hands out its link as a QR code.
+  customerProfilePageEnabled Boolean  @default(false)
   isActive                  Boolean  @default(true)
   plan                      ShopPlan           @default(TEAM)
   subscriptionStatus        SubscriptionStatus @default(ACTIVE)
@@ -86,6 +92,7 @@ model Shop {
   invites              ShopInvite[]
   services             Service[]
   customers            Customer[]
+  customerChangeRequests CustomerChangeRequest[]
   bookings             Booking[]
   timeOff              TimeOff[]
   products             Product[]
@@ -283,6 +290,10 @@ model Customer {
   phone     String
   email     String?
   notes     String?
+  // The customer's profile photo (same three as Shop).
+  photoUrl         String?
+  photoOriginalUrl String?
+  photoCrop        Json?
   // The shop's one "Blocked" placeholder: bookings on it are blocked slots,
   // not appointments. Never listed, edited, merged or deleted as a customer.
   isSystem  Boolean  @default(false)
@@ -292,8 +303,32 @@ model Customer {
   shop             Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   bookings         Booking[]
   serviceDurations CustomerServiceDuration[]
+  changeRequest    CustomerChangeRequest?
 
   @@unique([shopId, phone])
+  @@index([shopId])
+}
+
+// What a customer asked to change about their own profile on the shop's public
+// sign-up page. Nobody is logged in there, so nothing is applied until the
+// owner or a manager accepts it. A null field is one they did not change. At
+// most one per customer: a newer request replaces the older one.
+model CustomerChangeRequest {
+  id         String  @id @default(cuid())
+  shopId     String
+  customerId String  @unique
+  name       String?
+  phone      String?
+  email      String?
+  // A new photo, stored like any other (same three as Shop).
+  photoUrl         String?
+  photoOriginalUrl String?
+  photoCrop        Json?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
   @@index([shopId])
 }
 

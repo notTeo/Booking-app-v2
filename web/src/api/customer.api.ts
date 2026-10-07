@@ -1,8 +1,10 @@
 import client from './client';
 import type { BookingStatus } from './booking.api';
 import type { Overview } from './overview.api';
+import { deletePhoto, putPhoto, type PhotoCrop, type PhotoFields } from './photo.api';
 
-export interface Customer {
+/** The photo is absent on rows that do not carry it; null for staff who may not see customer details. */
+export interface Customer extends Partial<PhotoFields> {
   id: string;
   shopId: string;
   name: string;
@@ -14,6 +16,20 @@ export interface Customer {
   contactHidden?: boolean;
   /** Customer list only: at least one service has a custom duration for them. */
   hasCustomDurations?: boolean;
+  /** Customer list only (owner and managers): their own changes wait for approval. */
+  hasPendingChanges?: boolean;
+}
+
+/**
+ * What a customer asked to change on the shop's public sign-up page. Nothing is
+ * applied until the owner or a manager accepts. A null field was not changed.
+ */
+export interface CustomerChangeRequest {
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  photoUrl: string | null;
+  createdAt: string;
 }
 
 /** How long one service takes for one customer, when not the service's standard time. */
@@ -27,6 +43,8 @@ export interface CustomerListResult {
   total: number;
   page: number;
   limit: number;
+  /** How many customers have changes waiting (0 for staff). */
+  pendingChangesCount?: number;
 }
 
 export interface CustomerBooking {
@@ -57,6 +75,8 @@ export interface CustomerDetail extends Customer {
   /** Lifetime booking counts by status, in the shop overview's shape. */
   totals: Overview['totals'];
   serviceDurations: CustomerServiceDuration[];
+  /** Owner and managers only; null when nothing is waiting. */
+  changeRequest?: CustomerChangeRequest | null;
 }
 
 export interface UpdateCustomerDto {
@@ -75,10 +95,18 @@ export const getCustomers = (
   limit = 20,
   /** Only customers with a custom duration for some service. */
   hasCustomDurations = false,
+  /** Only customers whose own changes wait for approval. */
+  pendingChanges = false,
 ) =>
   client
     .get(base(shopId), {
-      params: { ...(search ? { search } : {}), ...(hasCustomDurations ? { hasCustomDurations: true } : {}), page, limit },
+      params: {
+        ...(search ? { search } : {}),
+        ...(hasCustomDurations ? { hasCustomDurations: true } : {}),
+        ...(pendingChanges ? { pendingChanges: true } : {}),
+        page,
+        limit,
+      },
     })
     .then((r) => r.data.data as CustomerListResult);
 
@@ -90,6 +118,31 @@ export const getCustomerBookings = (shopId: string, customerId: string, page = 1
   client
     .get(`${base(shopId)}/${customerId}/bookings`, { params: { page, limit } })
     .then((r) => r.data.data as CustomerBookingsResult);
+
+export interface CreateCustomerDto {
+  name: string;
+  phone: string;
+  email?: string | null;
+  notes?: string | null;
+}
+
+/** Add a customer by hand. A phone the shop already has is a 409 `CUSTOMER_EXISTS` carrying that customer's `customerId`. */
+export const createCustomer = (shopId: string, dto: CreateCustomerDto) =>
+  client.post(base(shopId), dto).then((r) => r.data.data as Customer);
+
+/** Owner and managers. */
+export const setCustomerPhoto = (shopId: string, customerId: string, file: File | null, crop: PhotoCrop) =>
+  putPhoto<Customer>(`${base(shopId)}/${customerId}/photo`, file, crop);
+
+export const removeCustomerPhoto = (shopId: string, customerId: string) =>
+  deletePhoto<Customer>(`${base(shopId)}/${customerId}/photo`);
+
+/** Apply what the customer asked to change (owner and managers). */
+export const acceptCustomerChanges = (shopId: string, customerId: string) =>
+  client.post(`${base(shopId)}/${customerId}/change-request/accept`).then((r) => r.data.data as CustomerDetail);
+
+export const rejectCustomerChanges = (shopId: string, customerId: string) =>
+  client.delete(`${base(shopId)}/${customerId}/change-request`).then((r) => r.data.data as CustomerDetail);
 
 export const updateCustomer = (shopId: string, customerId: string, dto: UpdateCustomerDto) =>
   client.patch(`${base(shopId)}/${customerId}`, dto).then((r) => r.data.data as Customer);

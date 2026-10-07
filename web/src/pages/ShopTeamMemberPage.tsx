@@ -1,3 +1,4 @@
+import SaveBar from '../components/SaveBar';
 import { useEffect, useState, useId } from 'react';
 import { canManageShop, ROLE_BADGE } from '../utils/roles';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -495,16 +496,13 @@ export default function ShopTeamMemberPage() {
 
             {memberError && <Alert variant="danger">{memberError}</Alert>}
             {memberSuccess && <Alert variant="success">{memberSuccess}</Alert>}
-            <div className="cluster">
-              <button
-                className={`btn${savingMember ? ' is-loading' : ''}`}
-                onClick={handleSaveMember}
-                aria-busy={savingMember}
-                disabled={!isMemberDirty}
-              >
-                {t.team.saveRole}
-              </button>
-            </div>
+            {isMemberDirty ? (
+              <SaveBar label={t.team.saveRole} saving={savingMember} onSave={handleSaveMember} />
+            ) : (
+              <div className="cluster">
+                <button className="btn" disabled>{t.team.saveRole}</button>
+              </div>
+            )}
 
             {/* Login invite — only relevant until they accept and get a login;
                 sends an email, so it stays a distinct action from the save above. */}
