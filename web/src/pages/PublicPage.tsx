@@ -228,10 +228,6 @@ function PublicBookingPage({ slug }: { slug: string }) {
       />
       <div className="booking-card">
         <header className="booking-card__head">
-          {/* Not in the settings preview: it would change the owner's own language. */}
-          {!look.has('palette') && !look.has('font') && (
-            <div className="booking-card__lang"><LangSwitch /></div>
-          )}
           {shop.photoUrl && (
             <div className="cover"><img src={mediaUrl(shop.photoUrl)} alt="" /></div>
           )}
@@ -465,6 +461,10 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 </div>
               )}
             </>
+          )}
+          {/* Not in the settings preview: it would change the owner's own language. */}
+          {!look.has('palette') && !look.has('font') && (
+            <div className="booking-card__lang"><LangSwitch /></div>
           )}
         </main>
 
