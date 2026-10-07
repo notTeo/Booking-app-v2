@@ -36,7 +36,7 @@ test('the look picked in settings is previewed, then applied to the public page'
   await page.goto(`/shops/${E2E.shop.slug}/settings`);
 
   const card = page.locator('.card', { has: page.getByRole('heading', { name: 'Booking page look' }) });
-  const save = card.getByRole('button', { name: 'Save' });
+  const save = card.getByRole('button', { name: 'Save' }).first();
   await expect(save).toBeDisabled();
   await card.getByRole('button', { name: 'Rose' }).click();
   await card.getByLabel('Font').selectOption('manrope');

@@ -65,7 +65,7 @@ test('the sign-up page is off until the owner turns it on, then shows its QR cod
   await page.getByRole('switch', { name: 'Customers can add a profile photo' }).check({ force: true });
   await page.getByRole('switch', { name: 'Customer sign-up page' }).check({ force: true });
   await expect(page.getByText('Save your changes to show the link and the QR code.')).toBeVisible();
-  await page.getByRole('button', { name: 'Save changes' }).click();
+  await page.locator('.save-bar').getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('Shop updated successfully.')).toBeVisible();
 
   // The link has its own card; its QR button opens the code in a dialog.

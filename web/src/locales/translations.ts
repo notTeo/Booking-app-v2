@@ -871,6 +871,7 @@ export interface Translations {
     activeOwnerOnly: string;
     saveChanges: string;
     saveHint: string;
+    unsavedChanges: string;
     readOnlyHint: string;
     backToShop: string;
     created: string;
@@ -2402,6 +2403,7 @@ home: {
       activeOwnerOnly: 'Μόνο ο ιδιοκτήτης μπορεί να το αλλάξει.',
       saveChanges: 'Αποθήκευση Αλλαγών',
       saveHint: 'Τα στοιχεία και οι ρυθμίσεις του καταστήματος αποθηκεύονται μαζί.',
+      unsavedChanges: 'Έχεις αλλαγές που δεν έχουν αποθηκευτεί.',
       readOnlyHint: 'Μόνο για προβολή. Ο ιδιοκτήτης μπορεί να σου επιτρέψει την επεξεργασία των ρυθμίσεων.',
       backToShop: '← Πίσω στο Κατάστημα',
       created: 'Δημιουργήθηκε',
@@ -3957,6 +3959,7 @@ home: {
       activeOwnerOnly: 'Only the owner can change this.',
       saveChanges: 'Save Changes',
       saveHint: 'Shop details and settings below are saved together.',
+      unsavedChanges: 'You have unsaved changes.',
       readOnlyHint: 'View only. The owner can let you edit these settings.',
       backToShop: '← Back to Shop',
       created: 'Created',

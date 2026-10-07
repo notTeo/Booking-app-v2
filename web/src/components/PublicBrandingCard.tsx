@@ -1,3 +1,4 @@
+import SaveBar from './SaveBar';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPalette } from '@fortawesome/free-solid-svg-icons';
@@ -57,7 +58,7 @@ export default function PublicBrandingCard({
   };
 
   return (
-    <div className="card">
+    <div className={`card${dirty ? ' card--unsaved' : ''}`}>
       <div className="card__header">
         <div>
           <h2 className="card__title">
@@ -136,6 +137,7 @@ export default function PublicBrandingCard({
           <small className="field__hint">{dirty ? tb.previewUnsaved : tb.previewSaved}</small>
         </div>
       </div>
+      {dirty && canEdit && <SaveBar label={tb.save} saving={saving} onSave={handleSave} />}
     </div>
   );
 }

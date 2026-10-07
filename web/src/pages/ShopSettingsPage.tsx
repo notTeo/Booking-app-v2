@@ -1,3 +1,4 @@
+import SaveBar from '../components/SaveBar';
 import { publicProfileUrl, publicShopUrl } from '../utils/publicLink';
 import { ROLE_BADGE, canManageShop } from '../utils/roles';
 import { useEffect, useState } from 'react';
@@ -146,6 +147,27 @@ export default function ShopSettingsPage() {
     }
   };
 
+  // Anything in the form that differs from what is saved. Shown as a yellow
+  // border and a Save bar that stays in view, so the change is not lost by
+  // leaving without scrolling back up to Save.
+  const dirty =
+    !!shop &&
+    (name !== shop.name ||
+      description !== (shop.description ?? '') ||
+      phone !== (shop.phone ?? '') ||
+      address !== (shop.formattedAddress ?? '') ||
+      timezone !== shop.timezone ||
+      maxAdvanceDays !== String(shop.maxAdvanceDays) ||
+      slotInterval !== String(shop.slotIntervalMinutes) ||
+      isActive !== shop.isActive ||
+      rescheduleEnabled !== shop.customerRescheduleEnabled ||
+      cancelCutoff !== String(shop.cancelCutoffHours) ||
+      rescheduleCutoff !== String(shop.rescheduleCutoffHours) ||
+      reminderEnabled !== shop.reminderEnabled ||
+      reminderHours !== String(shop.reminderHoursBefore) ||
+      customerPhotos !== shop.customerPhotosEnabled ||
+      profilePage !== shop.customerProfilePageEnabled);
+
   const handleDelete = async () => {
     if (!shop) return;
     setDeleteError('');
@@ -261,7 +283,7 @@ export default function ShopSettingsPage() {
         {/* Read-only for a manager the owner has not let edit settings. */}
         <fieldset className="fieldset" disabled={!shop.canEditShopSettings}>
         {/* Shop Details + Configuration — one card, one Save */}
-        <div className="card">
+        <div className={`card${dirty ? ' card--unsaved' : ''}`}>
           <div className="card__header">
             <div>
               <h2 className="card__title">
@@ -505,6 +527,9 @@ export default function ShopSettingsPage() {
             )}
           </div>
         </div>
+        {dirty && shop.canEditShopSettings && (
+          <SaveBar label={t.shopSettings.saveChanges} saving={saveLoading} />
+        )}
         </fieldset>
       </form>
 

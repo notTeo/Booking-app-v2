@@ -30,7 +30,7 @@ test('a 15-minute interval offers :15 starts, and the calendar filters hide bloc
   // Shop settings: every 15 minutes
   await page.goto(`/shops/${E2E.shop.slug}/settings`);
   await page.locator('#detail-slot-interval').selectOption('15');
-  await page.getByRole('button', { name: /save changes/i }).click();
+  await page.getByRole('button', { name: /save changes/i }).first().click();
   await expect
     .poll(async () => (await query('select "slotIntervalMinutes" as n from "Shop" where id = $1', ['s1']))[0].n)
     .toBe(15);

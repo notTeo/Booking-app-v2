@@ -1,3 +1,4 @@
+import SaveBar from '../components/SaveBar';
 import { formatDateTimeInZone } from '../utils/shopTime';
 import { useEffect, useState, useId } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -370,7 +371,7 @@ export default function ShopCustomerDetailPage() {
           <p className="card__text">{t.customers.contactHiddenNotice}</p>
         </div>
       ) : (
-        <div className="card">
+        <div className={`card${isDirty ? ' card--unsaved' : ''}`}>
           <h2 className="card__title">{t.customers.editInfo}</h2>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-name`}>{t.customers.nameLabel}</label>
@@ -406,14 +407,11 @@ export default function ShopCustomerDetailPage() {
           </div>
           {saveError && <Alert variant="danger">{saveError}</Alert>}
           {saveSuccess && <Alert variant="success">{saveSuccess}</Alert>}
-          <button
-            className={`btn${saving ? ' is-loading' : ''}`}
-            onClick={handleSave}
-            aria-busy={saving}
-            disabled={!isDirty}
-          >
-            {t.customers.save}
-          </button>
+          {isDirty ? (
+            <SaveBar label={t.customers.save} saving={saving} onSave={handleSave} />
+          ) : (
+            <button className="btn" disabled>{t.customers.save}</button>
+          )}
         </div>
       )}
 

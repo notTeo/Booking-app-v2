@@ -87,9 +87,14 @@ export default function ShopProductsPage() {
                   {products.map((p) => (
                     <tr key={p.id} className="is-clickable" onClick={handleRowClick(() => navigate(p.id))}>
                       <td data-label={tp.colProduct} className="data-table__title">
-                        <ProductThumb photoUrl={p.photoUrl} />
-                        <Link to={p.id} className="data-table__link">{p.name}</Link>
-                        {!p.isActive && <> <span className="badge badge--neutral">{tp.inactive}</span></>}
+                        {/* Photo beside the name, as in the customers list */}
+                        <span className="data-table__media">
+                          <ProductThumb photoUrl={p.photoUrl} />
+                          <span className="data-table__media-text">
+                            <Link to={p.id} className="data-table__link">{p.name}</Link>
+                            {!p.isActive && <> <span className="badge badge--neutral">{tp.inactive}</span></>}
+                          </span>
+                        </span>
                       </td>
                       <td data-label={tp.colPrice}>{formatPrice(p.price)}</td>
                       <td data-label={tp.colStock}>
