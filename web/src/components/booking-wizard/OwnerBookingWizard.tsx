@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getCustomer, type Customer } from '../../api/customer.api';
 import { useShop } from '../../context/ShopContext';
 import OwnerCustomerPicker from './OwnerCustomerPicker';
@@ -19,6 +19,7 @@ import { useLang } from '../../context/LanguageContext';
 import { useBookingWizard } from '../../hooks/useBookingWizard';
 import WizardStepsIndicator from './WizardStepsIndicator';
 import ProductsStep from './ProductsStep';
+import SuccessCheck from '../SuccessCheck';
 import ServiceSelectStep from './ServiceSelectStep';
 import StaffSelectStep from './StaffSelectStep';
 import DateTimeStep from './DateTimeStep';
@@ -41,6 +42,9 @@ const rescheduledService = (booking: Booking) => {
     description: null,
   };
 };
+
+// How long the success mark stays before the wizard hands over.
+const CREATED_SHOWN_MS = 1400;
 
 export default function OwnerBookingWizard({
   shopId,
@@ -75,6 +79,10 @@ export default function OwnerBookingWizard({
   // own service durations then show on the service cards and decide the slots.
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [customDurations, setCustomDurations] = useState<Record<string, number>>({});
+  // The new booking was made: the success mark shows before onDone runs.
+  const [created, setCreated] = useState(false);
+  const doneTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(doneTimer.current), []);
   // Products reserved with the booking (the products step): quantity per product id.
   const [reserved, setReserved] = useState<Record<string, number>>({});
   const wizard = useBookingWizard({
@@ -194,6 +202,12 @@ export default function OwnerBookingWizard({
     try {
       const booking = await request();
       setPendingOverride(null);
+      if (values && !values.block) {
+        // A new booking: show that it worked for a moment, then hand over.
+        setCreated(true);
+        doneTimer.current = window.setTimeout(() => onDone(booking), CREATED_SHOWN_MS);
+        return;
+      }
       onDone(booking);
       setSubmitting(false);
     } catch (err: unknown) {
@@ -244,6 +258,22 @@ export default function OwnerBookingWizard({
     setSubmitError(null);
     setBusyNotice(null);
     wizard.goBack();
+  }
+
+  if (created) {
+    return (
+      <section className="public-section">
+        <div className="card card--center" role="status">
+          <SuccessCheck />
+          <h2 className="card__title">{t.bookings.bookingCreated}</h2>
+          <p className="card__text">
+            {shownService && <strong>{shownService.name}</strong>}
+            {selectedMember && <> · {selectedMember.name}</>}
+            {' · '}{wizard.date} {t.public.atLabel} {wizard.time}
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (

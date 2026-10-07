@@ -1249,6 +1249,7 @@ export interface Translations {
       showing: string;
       status: Record<'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW', string>;
     };
+    bookingCreated: string;
   };
   cancelBooking: {
     invalidLink: string;
@@ -2664,6 +2665,7 @@ home: {
           NO_SHOW: 'Δεν προσήλθε',
         },
       },
+      bookingCreated: 'Το ραντεβού δημιουργήθηκε',
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -4075,6 +4077,7 @@ home: {
           NO_SHOW: 'No-show',
         },
       },
+      bookingCreated: 'Booking created',
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

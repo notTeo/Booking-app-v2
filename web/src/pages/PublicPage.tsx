@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faLocationDot, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { createBooking, type ReservedProduct } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
@@ -21,6 +21,7 @@ import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
 import LangSwitch from '../components/LangSwitch';
 import ReservedProducts from '../components/ReservedProducts';
+import SuccessCheck from '../components/SuccessCheck';
 import ProductsStep from '../components/booking-wizard/ProductsStep';
 import { toProductLines, toReservedProducts } from '../utils/productLines';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
@@ -240,9 +241,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
         <main className="booking-card__body">
           {confirmed ? (
             <div className="card card--center">
-              <div className="avatar avatar--xl" aria-hidden="true">
-                <FontAwesomeIcon icon={faCircleCheck} />
-              </div>
+              <SuccessCheck />
               <h2 className="card__title">{t.public.bookingConfirmed}</h2>
               <p className="card__text">
                 {t.public.bookingConfirmedMsg
