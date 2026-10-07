@@ -147,12 +147,14 @@ export default function ShopCustomersPage() {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
+      {/* The keys keep React from reusing the spinner's elements for the list.
+          Reused, iOS left the spinner's rotation running on the customer cards. */}
       {loading && !loaded ? (
-        <div className="spinner-wrap">
+        <div key="loading" className="spinner-wrap">
           <div className="spinner spinner--lg" />
         </div>
       ) : (
-        <div className="table-wrap" aria-busy={loading}>
+        <div key="list" className="table-wrap" aria-busy={loading}>
           <div className="table-surface">
             {customers.length === 0 ? (
               <div className="empty empty--sm">
