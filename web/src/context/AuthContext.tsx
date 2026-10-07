@@ -27,12 +27,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// The shop settings preview embeds the public page in an iframe. It needs no
+// session, and a page-load refresh there rotates the cookie behind the parent
+// page: leaving the settings mid-refresh lost the new cookie and logged the
+// owner out.
+const isEmbedded = window.self !== window.top;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isEmbedded);
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if (isEmbedded) return;
     let cancelled = false;
 
     refreshTokens()
