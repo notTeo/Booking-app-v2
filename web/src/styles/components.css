@@ -934,6 +934,11 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .booking-card__link:hover { color: var(--accent); }
 .booking-card__body { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); padding: var(--space-5); }
 @media (min-width: 640px) { .booking-card__head, .booking-card__body, .booking-card__foot { padding-inline: var(--space-8); } }
+/* Desktop: the shop's photo sits flush against the top of the page. */
+@media (min-width: 640px) {
+  .booking-card__head:has(> .cover) { padding-top: 0; }
+  .booking-card__head > .cover { border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
+}
 .booking-card__step { margin: 0; font: var(--fw-semibold) var(--fs-xs) / var(--lh-xs) var(--font-body); color: var(--text-muted); }
 .booking-card__heading { margin: 0; font: var(--fw-bold) var(--fs-xl) / var(--lh-xl) var(--font-display); }
 .booking-card__hint { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
