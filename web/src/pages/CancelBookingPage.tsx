@@ -4,6 +4,7 @@ import { cancelBooking, getManagedBooking, type CancelBookingResult } from '../a
 import { useLang } from '../context/LanguageContext';
 import { apiErrorField } from '../utils/apiError';
 import Alert from '../components/Alert';
+import AuthTop from '../components/AuthTop';
 import PublicPalette from '../components/PublicPalette';
 
 export default function CancelBookingPage() {
@@ -112,6 +113,7 @@ export default function CancelBookingPage() {
     <div className="page page--center">
       <PublicPalette />
       <div className="card card--auth card--center">
+        <AuthTop back={false} />
         <h1 className="t-heading">{t.cancelBooking.cancelled}</h1>
         <p className="card__text">
           {t.cancelBooking.yourText} <strong>{result.serviceName}</strong> {t.cancelBooking.appointmentAt}{' '}

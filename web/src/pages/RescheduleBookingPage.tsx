@@ -11,6 +11,7 @@ import { getApiError, isBookingRuleViolation } from '../api/booking.api';
 import { useLang } from '../context/LanguageContext';
 import { useBookingWizard } from '../hooks/useBookingWizard';
 import Alert from '../components/Alert';
+import AuthTop from '../components/AuthTop';
 import WizardStepsIndicator from '../components/booking-wizard/WizardStepsIndicator';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
@@ -28,7 +29,10 @@ function Notice({ children }: { children: React.ReactNode }) {
   return (
     <div className="page page--center">
       <PublicPalette />
-      <div className="card card--auth card--center">{children}</div>
+      <div className="card card--auth card--center">
+        <AuthTop back={false} />
+        {children}
+      </div>
     </div>
   );
 }

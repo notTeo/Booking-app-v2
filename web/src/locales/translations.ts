@@ -295,6 +295,8 @@ export interface Translations {
     forgotPassword: string;
     noAccount: string;
     registerLink: string;
+    rememberMe: string;
+    error: string;
   };
   register: {
     title: string;
@@ -319,6 +321,7 @@ export interface Translations {
     acceptPrefix: string;
     acceptAnd: string;
     termsRequired: string;
+    error: string;
   };
   dpa: {
     linkLabel: string;
@@ -345,6 +348,7 @@ export interface Translations {
     submitting: string;
     success: string;
     backToLogin: string;
+    error: string;
   };
   resetPassword: {
     title: string;
@@ -359,6 +363,7 @@ export interface Translations {
     pwUpper: string;
     pwNumber: string;
     pwSpecial: string;
+    error: string;
   };
   verifyEmail: {
     title: string;
@@ -370,12 +375,23 @@ export interface Translations {
     resending: string;
     resentOk: string;
     backToRegister: string;
+    passwordIntro: string;
+    passwordLabel: string;
+    submit: string;
+    wrongPassword: string;
+    success: string;
+    invalidLink: string;
+    error: string;
+    resendError: string;
   };
   verifyEmailChange: {
     title: string;
     verifying: string;
-    goToDashboard: string;
-    backToSettings: string;
+    success: string;
+    invalidLink: string;
+    error: string;
+    continue: string;
+    backToAccount: string;
   };
   settings: {
     wrongPassword: string;
@@ -586,6 +602,8 @@ export interface Translations {
     errorCancel: string;
     statusLabel: string;
     optional: string;
+    dashboard: string;
+    invitedToJoin: string;
   };
   services: {
     errorHasBookings: string;
@@ -818,6 +836,7 @@ export interface Translations {
     switchToDark: string;
     lightMode: string;
     darkMode: string;
+    language: string;
   };
   shopSettings: {
     deleteShopConfirmButton: string;
@@ -1645,6 +1664,8 @@ home: {
       forgotPassword: 'Ξεχάσατε τον κωδικό;',
       noAccount: 'Δεν έχετε λογαριασμό;',
       registerLink: 'Εγγραφή',
+      rememberMe: 'Να με θυμάσαι',
+      error: 'Η σύνδεση απέτυχε.',
     },
     register: {
       title: 'Εγγραφή',
@@ -1669,6 +1690,7 @@ home: {
       acceptPrefix: 'Αποδέχομαι τους',
       acceptAnd: 'και την',
       termsRequired: 'Πρέπει να αποδεχτείτε τους Όρους Χρήσης και την Πολιτική Απορρήτου για να συνεχίσετε.',
+      error: 'Η εγγραφή απέτυχε.',
     },
     dpa: {
       linkLabel: 'Συμφωνία Επεξεργασίας Δεδομένων',
@@ -1695,6 +1717,7 @@ home: {
       submitting: 'Αποστολή...',
       success: 'Εάν αυτό το email υπάρχει θα λάβετε έναν σύνδεσμο επαναφοράς σύντομα.',
       backToLogin: 'Πίσω στη Σύνδεση',
+      error: 'Κάτι πήγε στραβά.',
     },
     resetPassword: {
       title: 'Επαναφορά Κωδικού',
@@ -1709,6 +1732,7 @@ home: {
       pwUpper: 'Ένα κεφαλαίο γράμμα',
       pwNumber: 'Ένας αριθμός',
       pwSpecial: 'Ένας ειδικός χαρακτήρας (!@#$%...)',
+      error: 'Η επαναφορά απέτυχε.',
     },
     verifyEmail: {
       title: 'Επαλήθευση Email',
@@ -1720,12 +1744,23 @@ home: {
       resending: 'Αποστολή...',
       resentOk: 'Email εστάλη! Ελέγξτε εισερχόμενα και ανεπιθύμητα.',
       backToRegister: 'Πίσω στην Εγγραφή',
+      passwordIntro: 'Εισάγετε τον κωδικό που επιλέξατε στην εγγραφή για να ολοκληρώσετε τη δημιουργία του λογαριασμού σας.',
+      passwordLabel: 'Κωδικός',
+      submit: 'Επαλήθευση email',
+      wrongPassword: 'Αυτός δεν είναι ο κωδικός με τον οποίο εγγραφήκατε.',
+      success: 'Το email επαληθεύτηκε. Μπορείτε τώρα να συνδεθείτε.',
+      invalidLink: 'Μη έγκυρος σύνδεσμος επαλήθευσης.',
+      error: 'Η επαλήθευση απέτυχε.',
+      resendError: 'Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.',
     },
     verifyEmailChange: {
       title: 'Επαλήθευση Αλλαγής Email',
       verifying: 'Επαλήθευση...',
-      goToDashboard: 'Μετάβαση στο Ταμπλό',
-      backToSettings: 'Πίσω στις Ρυθμίσεις',
+      success: 'Η διεύθυνση email σας ενημερώθηκε.',
+      invalidLink: 'Μη έγκυρος σύνδεσμος επαλήθευσης.',
+      error: 'Η επαλήθευση απέτυχε.',
+      continue: 'Συνέχεια',
+      backToAccount: 'Πίσω στον Λογαριασμό',
     },
     settings: {
       wrongPassword: 'Λάθος κωδικός.',
@@ -1936,6 +1971,8 @@ home: {
       errorCancel: 'Αποτυχία ακύρωσης πρόσκλησης.',
       statusLabel: 'Κατάσταση',
       optional: 'προαιρετικό',
+      dashboard: 'Ταμπλό',
+      invitedToJoin: 'σας προσκάλεσε στο',
     },
     services: {
       errorHasBookings: 'Αυτή η υπηρεσία έχει κρατήσεις. Απενεργοποιήστε την ώστε να μην μπορούν οι πελάτες να την κλείσουν.',
@@ -2182,6 +2219,7 @@ home: {
       switchToDark: 'Εναλλαγή σε σκοτεινή λειτουργία',
       lightMode: 'Φωτεινή λειτουργία',
       darkMode: 'Σκοτεινή λειτουργία',
+      language: 'Γλώσσα',
     },
     shopSettings: {
       deleteShopConfirmButton: 'Διαγραφή καταστήματος',
@@ -3033,6 +3071,8 @@ home: {
       forgotPassword: 'Forgot password?',
       noAccount: "Don't have an account?",
       registerLink: 'Register',
+      rememberMe: 'Remember me',
+      error: 'Login failed.',
     },
     register: {
       title: 'Register',
@@ -3057,6 +3097,7 @@ home: {
       acceptPrefix: 'I accept the',
       acceptAnd: 'and the',
       termsRequired: 'You must accept the Terms of Service and Privacy Policy to continue.',
+      error: 'Registration failed.',
     },
     dpa: {
       linkLabel: 'Data Processing Agreement',
@@ -3083,6 +3124,7 @@ home: {
       submitting: 'Sending...',
       success: 'If this email exists you will receive a reset link shortly.',
       backToLogin: 'Back to Login',
+      error: 'Something went wrong.',
     },
     resetPassword: {
       title: 'Reset Password',
@@ -3097,6 +3139,7 @@ home: {
       pwUpper: 'One uppercase letter',
       pwNumber: 'One number',
       pwSpecial: 'One special character (!@#$%...)',
+      error: 'Reset failed.',
     },
     verifyEmail: {
       title: 'Email Verification',
@@ -3108,12 +3151,23 @@ home: {
       resending: 'Sending...',
       resentOk: 'Email sent! Check your inbox and spam folder.',
       backToRegister: 'Back to Register',
+      passwordIntro: 'Enter the password you chose when you signed up to finish creating your account.',
+      passwordLabel: 'Password',
+      submit: 'Verify email',
+      wrongPassword: 'That is not the password you signed up with.',
+      success: 'Email verified successfully. You can now log in.',
+      invalidLink: 'Invalid verification link.',
+      error: 'Verification failed.',
+      resendError: 'Something went wrong. Please try again.',
     },
     verifyEmailChange: {
       title: 'Email Change Verification',
       verifying: 'Verifying...',
-      goToDashboard: 'Go to Dashboard',
-      backToSettings: 'Back to Settings',
+      success: 'Your email address has been updated successfully.',
+      invalidLink: 'Invalid verification link.',
+      error: 'Verification failed.',
+      continue: 'Continue',
+      backToAccount: 'Back to Account',
     },
     settings: {
       wrongPassword: 'Incorrect password.',
@@ -3324,6 +3378,8 @@ home: {
       errorCancel: 'Failed to cancel invite.',
       statusLabel: 'Status',
       optional: 'optional',
+      dashboard: 'Dashboard',
+      invitedToJoin: 'invited you to join',
     },
     services: {
       errorHasBookings: "This service has bookings. Deactivate it instead so customers can't book it.",
@@ -3570,6 +3626,7 @@ home: {
       switchToDark: 'Switch to dark mode',
       lightMode: 'Light mode',
       darkMode: 'Dark mode',
+      language: 'Language',
     },
     shopSettings: {
       deleteShopConfirmButton: 'Delete shop',

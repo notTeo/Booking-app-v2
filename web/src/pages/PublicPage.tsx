@@ -19,6 +19,7 @@ import { isPlausibleSlug } from '../utils/publicLink';
 import { clearSavedCustomer, readSavedCustomer, saveCustomer } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
+import LangSwitch from '../components/LangSwitch';
 import ReservedProducts from '../components/ReservedProducts';
 import ProductPicker from '../components/booking-wizard/ProductPicker';
 import { toProductLines } from '../utils/productLines';
@@ -196,6 +197,10 @@ function PublicBookingPage({ slug }: { slug: string }) {
       />
       <div className="booking-card">
         <header className="booking-card__head">
+          {/* Not in the settings preview: it would change the owner's own language. */}
+          {!look.has('palette') && !look.has('font') && (
+            <div className="booking-card__lang"><LangSwitch /></div>
+          )}
           {shop.photoUrl && (
             <div className="cover"><img src={mediaUrl(shop.photoUrl)} alt="" /></div>
           )}

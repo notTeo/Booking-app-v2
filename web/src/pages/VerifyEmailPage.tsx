@@ -2,17 +2,20 @@ import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { verifyEmail, resendVerification } from '../api/auth.api';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
+import { useLang } from '../context/LanguageContext';
 import Alert from '../components/Alert';
+import AuthTop from '../components/AuthTop';
 import PasswordInput from '../components/PasswordInput';
 
 export default function VerifyEmailPage() {
+  const { t } = useLang();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   // 'form' asks for the sign-up password; the link alone verifies nothing.
   const [status, setStatus] = useState<'form' | 'loading' | 'success' | 'error'>(
     token ? 'form' : 'error',
   );
-  const [message, setMessage] = useState(token ? '' : 'Invalid verification link.');
+  const [message, setMessage] = useState(token ? '' : t.verifyEmail.invalidLink);
   const [isExpired, setIsExpired] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -29,15 +32,15 @@ export default function VerifyEmailPage() {
     try {
       await verifyEmail(token, password);
       setStatus('success');
-      setMessage('Email verified successfully. You can now log in.');
+      setMessage(t.verifyEmail.success);
     } catch (err: unknown) {
       // A wrong password leaves the link usable: stay on the form.
       if (apiErrorField(err, 'code') === 'INVALID_PASSWORD') {
-        setPasswordError('That is not the password you signed up with.');
+        setPasswordError(t.verifyEmail.wrongPassword);
         setStatus('form');
         return;
       }
-      const msg = apiErrorMessage(err, 'Verification failed.');
+      const msg = apiErrorMessage(err, t.verifyEmail.error);
       setStatus('error');
       setMessage(msg);
       if (msg.toLowerCase().includes('expired')) setIsExpired(true);
@@ -55,7 +58,7 @@ export default function VerifyEmailPage() {
       setTimeout(() => setResendStatus('idle'), 4000);
     } catch {
       setResendStatus('error');
-      setResendError('Something went wrong. Please try again.');
+      setResendError(t.verifyEmail.resendError);
       setTimeout(() => setResendStatus('idle'), 4000);
     }
   };
@@ -63,15 +66,16 @@ export default function VerifyEmailPage() {
   return (
     <div className="page page--center">
       <div className="card card--auth">
-        <h1 className="t-heading">Email Verification</h1>
+        <AuthTop back={false} />
+        <h1 className="t-heading">{t.verifyEmail.title}</h1>
 
         {(status === 'form' || status === 'loading') && (
           <form onSubmit={handleVerify}>
             <p className="card__text">
-              Enter the password you chose when you signed up to finish creating your account.
+              {t.verifyEmail.passwordIntro}
             </p>
             <div className="field">
-              <label className="field__label" htmlFor="verify-password">Password</label>
+              <label className="field__label" htmlFor="verify-password">{t.verifyEmail.passwordLabel}</label>
               <PasswordInput
                 id="verify-password"
                 autoComplete="current-password"
@@ -87,7 +91,7 @@ export default function VerifyEmailPage() {
               aria-busy={status === 'loading'}
               disabled={!password}
             >
-              Verify email
+              {t.verifyEmail.submit}
             </button>
           </form>
         )}
@@ -95,7 +99,7 @@ export default function VerifyEmailPage() {
         {status === 'success' && (
           <>
             <Alert variant="success">{message}</Alert>
-            <Link to="/login"><button className="btn btn--block">Go to Login</button></Link>
+            <Link to="/login"><button className="btn btn--block">{t.verifyEmail.goToLogin}</button></Link>
           </>
         )}
 
@@ -106,32 +110,32 @@ export default function VerifyEmailPage() {
             {isExpired && (
               <form onSubmit={handleResend}>
                 <div className="field">
-                  <label className="field__label" htmlFor="verify-resend-email">Enter your email to get a new link:</label>
+                  <label className="field__label" htmlFor="verify-resend-email">{t.verifyEmail.resendLabel}</label>
                   <input className="input"
                     id="verify-resend-email"
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder={t.verifyEmail.resendPlaceholder}
                     required
                   />
                 </div>
                 {resendStatus === 'sent' && (
                   <Alert variant="success">
-                    Email sent! Check your inbox and spam folder.
+                    {t.verifyEmail.resentOk}
                   </Alert>
                 )}
                 {resendStatus === 'error' && (
                   <Alert variant="danger">{resendError}</Alert>
                 )}
                 <button className={`btn btn--block${resendStatus === 'loading' ? ' is-loading' : ''}`} type="submit" aria-busy={resendStatus === 'loading'}>
-                  Resend Verification Email
+                  {t.verifyEmail.resendSubmit}
                 </button>
               </form>
             )}
 
             {!isExpired && (
-              <Link to="/register"><button className="btn btn--secondary btn--block">Back to Register</button></Link>
+              <Link to="/register"><button className="btn btn--secondary btn--block">{t.verifyEmail.backToRegister}</button></Link>
             )}
           </>
         )}
