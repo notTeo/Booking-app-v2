@@ -78,7 +78,7 @@ GitHub Actions runs lint, type checks, API and web tests, a schema drift check a
 
 ## Project status
 
-In development. A pilot deployment for a barbershop is in preparation. Deployment steps are in [docs/deployment.md](docs/deployment.md).
+In development. A pilot deployment for a barbershop is in preparation.
 
 ## Known limitations
 
@@ -88,4 +88,4 @@ In development. A pilot deployment for a barbershop is in preparation. Deploymen
 
 ## License
 
-Source available for viewing. All rights reserved.
+Source available for viewing only. All rights reserved; see [LICENSE](LICENSE).
