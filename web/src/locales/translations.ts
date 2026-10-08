@@ -1813,7 +1813,7 @@ home: {
     notesTitle: 'Καλό να γνωρίζεις',
     notes: [
       'Οι τιμές είναι ανά κατάστημα, χωρίς ΦΠΑ. Με ετήσια πληρωμή πληρώνεις 10 μήνες αντί για 12.',
-      'Κάθε νέο κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, με όλες τις δυνατότητες του Team. Δεν χρειάζεται κάρτα.',
+      'Το πρώτο σου κατάστημα ξεκινά με 30 ημέρες δωρεάν δοκιμή, στο πακέτο που θα διαλέξεις. Δεν χρειάζεται κάρτα.',
       'Αν η δοκιμή τελειώσει χωρίς πακέτο, το κατάστημα γίνεται μόνο για ανάγνωση και η σελίδα κρατήσεων δεν δέχεται νέα ραντεβού. Τα δεδομένα σου μένουν.',
       'Δεν υπάρχει προμήθεια στις κρατήσεις.',
       'Οι επιβεβαιώσεις και οι υπενθυμίσεις στέλνονται με email. Δεν υπάρχουν SMS.',
@@ -3379,7 +3379,7 @@ home: {
     notesTitle: 'Good to know',
     notes: [
       'Prices are per shop, excluding VAT. Paying yearly costs 10 months instead of 12.',
-      'Every new shop starts with a 30-day free trial with everything in Team. No card is needed.',
+      'Your first shop starts with a 30-day free trial on the plan you pick. No card is needed.',
       'If the trial ends without a plan, the shop becomes read-only and the booking page stops taking new bookings. Your data stays.',
       'There is no commission on bookings.',
       'Confirmations and reminders are sent by email. There is no SMS.',
