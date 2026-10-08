@@ -8,6 +8,8 @@ import {
   deleteShop as deleteShopService,
   setShopPhoto as setShopPhotoService,
   removeShopPhoto as removeShopPhotoService,
+  changeShopPlan as changeShopPlanService,
+  getShopSetup as getShopSetupService,
   CreateShopDto,
   UpdateShopDto,
 } from '../services/shop.service';
@@ -51,6 +53,38 @@ export const getShop = async (
     const userId = req.user!.userId!;
     const shop = await getShopById(userId, req.params.id as string);
     successResponse(res, shop);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const changeShopPlan = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const shop = await changeShopPlanService(
+      userId,
+      req.params.id as string,
+      req.body.plan,
+    );
+    successResponse(res, shop);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getShopSetup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId!;
+    const setup = await getShopSetupService(userId, req.params.id as string);
+    successResponse(res, setup);
   } catch (err) {
     next(err);
   }

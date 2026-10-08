@@ -78,6 +78,66 @@ describe('POST /api/shops', () => {
   });
 
   it.each([
+    ['SOLO', 1, false],
+    ['TEAM', 5, true],
+    ['BUSINESS', 15, true],
+  ] as const)(
+    "runs the first shop's trial on the plan its owner picked: %s",
+    async (plan, staffLimit, teamFeatures) => {
+      await createVerifiedUser('pick@example.com');
+      const token = await loginUser('pick@example.com');
+
+      const res = await api
+        .post('/api/shops')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Picked', slug: 'picked-shop', plan });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toMatchObject({
+        plan,
+        subscriptionStatus: 'TRIALING',
+        locked: false,
+        staffLimit,
+        teamFeatures,
+      });
+    },
+  );
+
+  it('keeps the plan picked for a later shop, which still starts inactive', async () => {
+    await createVerifiedUser('later@example.com');
+    const token = await loginUser('later@example.com');
+    await api
+      .post('/api/shops')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'First', slug: 'first-shop' });
+
+    const second = await api
+      .post('/api/shops')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Second', slug: 'second-shop', plan: 'BUSINESS' });
+
+    expect(second.status).toBe(201);
+    expect(second.body.data).toMatchObject({
+      plan: 'BUSINESS',
+      subscriptionStatus: 'INACTIVE',
+      locked: true,
+    });
+  });
+
+  it('rejects a plan that does not exist', async () => {
+    await createVerifiedUser('gold@example.com');
+    const token = await loginUser('gold@example.com');
+
+    const res = await api
+      .post('/api/shops')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Gold', slug: 'gold-shop', plan: 'GOLD' });
+
+    expect(res.status).toBe(400);
+    expect(await prisma.shop.count()).toBe(0);
+  });
+
+  it.each([
     ['too short', 'ab'],
     ['too long', 'a'.repeat(41)],
     ['leading hyphen', '-shop'],

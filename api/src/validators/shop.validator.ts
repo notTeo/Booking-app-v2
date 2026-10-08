@@ -2,6 +2,7 @@ import { body, param } from 'express-validator';
 import { checkSlug, SLUG_MESSAGES } from './slug';
 import { SLOT_INTERVAL_OPTIONS } from '../utils/slots';
 import { PUBLIC_FONTS, PUBLIC_PALETTES } from '../utils/branding';
+import { PLANS } from '../services/plan.service';
 import {
   ADDRESS_MAX_LENGTH,
   DESCRIPTION_MAX_LENGTH,
@@ -16,7 +17,16 @@ export const MAX_CUTOFF_HOURS = 168;
 // The longest lead time a shop may set for reminder emails (3 days).
 export const MAX_REMINDER_HOURS = 72;
 
+const planField = (field: ReturnType<typeof body>) =>
+  field.isIn(PLANS).withMessage(`Plan must be one of ${PLANS.join(', ')}`);
+
+export const changeShopPlanValidation = [
+  param('id').notEmpty().withMessage('Shop ID is required'),
+  planField(body('plan')),
+];
+
 export const createShopValidation = [
+  planField(body('plan').optional()),
   body('name')
     .isString()
     .withMessage('Name is required')

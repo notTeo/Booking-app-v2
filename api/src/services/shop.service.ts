@@ -7,7 +7,12 @@ import {
   canViewCustomerDetails,
   requireShopAccess,
 } from '../utils/shopAccess';
-import { planView, trialEndFrom, TRIAL_PLAN } from './plan.service';
+import {
+  changeShopPlan as changePlan,
+  DEFAULT_PLAN,
+  planView,
+  trialEndFrom,
+} from './plan.service';
 import { PhotoCrop, storePhoto } from './photo.service';
 import {
   removeShopFiles,
@@ -15,7 +20,7 @@ import {
   shopPrefix,
 } from './storage.service';
 import { inheritUserPhoto } from './userPhoto.service';
-import { Prisma } from '../../dist/generated/prisma';
+import { Prisma, type ShopPlan } from '../../dist/generated/prisma';
 
 export interface CreateShopDto {
   name: string;
@@ -26,6 +31,8 @@ export interface CreateShopDto {
   timezone?: string;
   maxAdvanceDays?: number;
   slotIntervalMinutes?: number;
+  // The plan the owner picked for the shop (DEFAULT_PLAN without one).
+  plan?: ShopPlan;
 }
 
 export interface UpdateShopDto {
@@ -117,15 +124,15 @@ export const createShop = async (userId: string, dto: CreateShopDto) => {
   const existing = await prisma.shop.findUnique({ where: { slug: dto.slug } });
   if (existing) throw new AppError(409, 'A shop with this slug already exists');
 
-  // Only a user's first shop gets the free trial; later ones wait, inactive,
-  // until a plan is set for them.
+  // Only a user's first shop gets the free trial, on the plan picked for it;
+  // later ones keep the plan too but wait, inactive, until it is activated.
   const now = new Date();
   const trial = !user.trialUsedAt;
   const [shop] = await prisma.$transaction([
     prisma.shop.create({
       data: {
         ...pick(dto, CREATE_FIELDS),
-        plan: TRIAL_PLAN,
+        plan: dto.plan ?? DEFAULT_PLAN,
         subscriptionStatus: trial ? 'TRIALING' : 'INACTIVE',
         trialEndsAt: trial ? trialEndFrom(now) : null,
         members: {
@@ -208,6 +215,45 @@ export const updateShop = async (
 
   logger.info(`Shop updated: ${shop.id} by user ${userId}`);
   return { ...shop, ...planView(shop), ...memberView(membership) };
+};
+
+export const changeShopPlan = async (
+  userId: string,
+  shopId: string,
+  plan: ShopPlan,
+) => {
+  const membership = await requireShopAccess(userId, shopId, {
+    role: 'owner',
+    forbiddenMessage: "Only the shop owner can change the shop's plan",
+  });
+  const shop = await changePlan(shopId, plan);
+
+  logger.info(`Shop plan changed: ${shopId} to ${plan} by user ${userId}`);
+  return { ...shop, ...planView(shop), ...memberView(membership) };
+};
+
+// What the owner has set up so far, for the setup guide and the "Finish
+// setup" card. Read from the shop's own data, so it is never out of date.
+export const getShopSetup = async (userId: string, shopId: string) => {
+  const owner = await requireShopAccess(userId, shopId, {
+    role: 'owner',
+    forbiddenMessage: "Only the shop owner can see the shop's setup",
+  });
+  const [openDays, services, members, products] = await Promise.all([
+    prisma.shopWorkingDay.count({
+      where: { isOpen: true, schedule: { shopId } },
+    }),
+    prisma.service.count({ where: { shopId } }),
+    prisma.userShop.count({ where: { shopId, active: true } }),
+    prisma.product.count({ where: { shopId } }),
+  ]);
+  return {
+    hasHours: openDays > 0,
+    hasServices: services > 0,
+    hasTeam: members > 1,
+    hasProducts: products > 0,
+    ownerMemberId: owner.id,
+  };
 };
 
 export const deleteShop = async (userId: string, shopId: string) => {

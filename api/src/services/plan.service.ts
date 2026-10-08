@@ -13,9 +13,12 @@ export const PLAN_LIMITS: Record<
   BUSINESS: { staffLimit: 15, teamFeatures: true, products: true },
 };
 
-// A user's first shop is free for this long, on this plan.
+export const PLANS = Object.keys(PLAN_LIMITS) as ShopPlan[];
+
+// A user's first shop is free for this long, on the plan they picked for it.
 export const TRIAL_DAYS = 30;
-export const TRIAL_PLAN: ShopPlan = 'TEAM';
+// The plan of a shop created without one.
+export const DEFAULT_PLAN: ShopPlan = 'TEAM';
 
 export const trialEndFrom = (now: Date) =>
   new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
@@ -121,6 +124,54 @@ export const assertTeamFeatures = async (shopId: string) => {
       undefined,
       { plan },
     );
+};
+
+// An owner may switch plan while the shop's free trial runs; after it, a plan
+// is set by hand (admin/setShopPlan) until a payment provider does it.
+// A smaller plan switches off what it does not include and deletes nothing:
+// bookable staff beyond its places are deactivated (the owner stays, then the
+// longest-standing members), and so are the products when it has none.
+export const changeShopPlan = async (shopId: string, plan: ShopPlan) => {
+  const current = await loadPlan(shopId);
+  if (current.subscriptionStatus !== 'TRIALING' || isShopLocked(current))
+    throw new AppError(
+      409,
+      "The plan can only be changed during the shop's free trial. Contact us to change it.",
+      'PLAN_CHANGE_UNAVAILABLE',
+      undefined,
+      { plan: current.plan },
+    );
+
+  const limits = PLAN_LIMITS[plan];
+  return prisma.$transaction(async (tx) => {
+    const bookable = await tx.userShop.findMany({
+      where: {
+        shopId,
+        active: true,
+        OR: [{ bookableByCustomers: true }, { bookableInternally: true }],
+      },
+      select: { id: true, role: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const kept = [
+      ...bookable.filter((m) => m.role === 'owner'),
+      ...bookable.filter((m) => m.role !== 'owner'),
+    ].slice(0, limits.staffLimit);
+    const extra = bookable.filter((m) => !kept.includes(m)).map((m) => m.id);
+    if (extra.length)
+      await tx.userShop.updateMany({
+        where: { id: { in: extra } },
+        data: { active: false },
+      });
+
+    if (!limits.products)
+      await tx.product.updateMany({
+        where: { shopId, isActive: true },
+        data: { isActive: false },
+      });
+
+    return tx.shop.update({ where: { id: shopId }, data: { plan } });
+  });
 };
 
 // A shop row without its plan columns, for responses the public can read.

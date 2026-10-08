@@ -90,6 +90,11 @@ export const SHOP_SCOPED: Record<string, Fixture> = {
     body: () => ({ name: 'Renamed' }),
   },
   'DELETE /api/shops/:id': { minRole: 'owner' },
+  'GET /api/shops/:id/setup': { minRole: 'owner' },
+  'PATCH /api/shops/:id/plan': {
+    minRole: 'owner',
+    body: () => ({ plan: 'TEAM' }),
+  },
   'PUT /api/shops/:id/photo': { minRole: 'manager', body: () => ({ crop }) },
   'DELETE /api/shops/:id/photo': { minRole: 'manager' },
   'GET /api/shops/:shopId/schedules/day': { query: 'date=2027-01-04' },

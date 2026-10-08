@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
 import { requireWritableShop } from '../middleware/requireWritableShop';
 import {
+  changeShopPlanValidation,
   createShopValidation,
   updateShopValidation,
   shopIdParamValidation,
@@ -15,6 +16,8 @@ import {
   deleteShop,
   setShopPhoto,
   removeShopPhoto,
+  changeShopPlan,
+  getShopSetup,
 } from '../controllers/shop.controller';
 import { dayScheduleValidation } from '../validators/workingHours.validator';
 import { getDaySchedule } from '../controllers/workingHours.controller';
@@ -50,6 +53,22 @@ router.get(
 );
 router.get('/upcoming', authenticate, getMyUpcoming);
 router.get('/:id', authenticate, shopIdParamValidation, validate, getShop);
+router.get(
+  '/:id/setup',
+  authenticate,
+  shopIdParamValidation,
+  validate,
+  getShopSetup,
+);
+// Not behind requireWritableShop: a shop whose trial has ended is refused by
+// the plan change itself, with its own code.
+router.patch(
+  '/:id/plan',
+  authenticate,
+  changeShopPlanValidation,
+  validate,
+  changeShopPlan,
+);
 router.patch(
   '/:id',
   authenticate,
