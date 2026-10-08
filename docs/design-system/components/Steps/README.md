@@ -1,3 +1,3 @@
-Progress indicator for the booking flow: Service, Staff, Date & time, Details, with a Products step before Details when the shop has products on offer. Full row of numbered markers with a connector above 480px of container width; below, a title, "Step 2 of 4" and a segmented bar.
+Progress indicator for a flow of steps. In the booking flow: Service, Staff, Date & time, Details, with a Products step before Details when the shop has products on offer. Full row of numbered markers with a connector above 480px of container width; below, a title, "Step 2 of 4" and a segmented bar.
 
-Done steps show a check and are buttons that go back; the current step has `aria-current="step"`; upcoming steps are not clickable. Keep the step list to five or fewer.
+Done steps show a check and are buttons that go back; the current step has `aria-current="step"`; upcoming steps are not clickable. Keep the step list to seven or fewer (the new-shop flow has seven on the Team and Business plans).
