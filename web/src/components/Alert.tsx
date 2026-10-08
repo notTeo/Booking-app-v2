@@ -6,6 +6,7 @@ import {
   faCircleInfo,
   faTriangleExclamation,
   type IconDefinition,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 type AlertVariant = 'danger' | 'success' | 'warning' | 'info';
@@ -21,10 +22,13 @@ interface AlertProps {
   variant: AlertVariant;
   title?: ReactNode;
   actions?: ReactNode;
+  /** Adds a close button; `closeLabel` names it for a screen reader. */
+  onClose?: () => void;
+  closeLabel?: string;
   children: ReactNode;
 }
 
-export default function Alert({ variant, title, actions, children }: AlertProps) {
+export default function Alert({ variant, title, actions, onClose, closeLabel, children }: AlertProps) {
   const { cls, icon } = VARIANT[variant];
   return (
     <div className={`alert${cls}`} role={variant === 'danger' ? 'alert' : 'status'}>
@@ -34,6 +38,11 @@ export default function Alert({ variant, title, actions, children }: AlertProps)
         {children}
         {actions && <div className="alert__actions">{actions}</div>}
       </div>
+      {onClose && (
+        <button type="button" className="btn btn--ghost btn--icon btn--sm alert__close" onClick={onClose} aria-label={closeLabel}>
+          <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

@@ -23,6 +23,7 @@ const shopRows = (shops: Shop[]): ShopCardRow[] =>
       slug: shop.slug,
       name: shop.name,
       role: shop.role,
+      plan: shop.plan,
       address: shop.formattedAddress,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));

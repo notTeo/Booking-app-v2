@@ -149,18 +149,48 @@ test('skipping everything leaves a Finish setup card; the plan can be switched',
   await expect(page).toHaveURL(/\/setup\?step=services$/);
   await expect(page.getByRole('heading', { name: 'What do you offer?' })).toBeVisible();
 
+  // A second team member, so the move down has someone to switch off.
+  await query(
+    `insert into "UserShop"(id,"shopId",role,name) select 'onb-staff', id, 'staff', 'Sam Staff' from "Shop" where slug='onb-team-studio'`,
+  );
+
   // Down to Solo from the settings, after a confirmation.
   await page.goto('/shops/onb-team-studio/settings?tab=plan');
   await page.getByRole('radio', { name: /^Solo/ }).check({ force: true });
   await shot(page, '12-change-plan.png');
   await page.getByRole('button', { name: 'Switch to Solo' }).click();
   const confirm = page.getByRole('alertdialog');
-  await expect(confirm).toContainText('On Solo only you stay bookable.');
+  await expect(confirm).toContainText('On Solo only you, the owner, stay active.');
   await confirm.getByRole('button', { name: 'Switch to Solo' }).click();
   await expect(page.getByText('Your shop is now on Solo.')).toBeVisible();
   const shop = await query(`select plan from "Shop" where slug='onb-team-studio'`);
   expect(shop[0].plan).toBe('SOLO');
   await expect(page.getByRole('link', { name: 'Run setup again' })).toHaveAttribute('href', '/shops/onb-team-studio/setup');
+
+  // The member the move down switched off is still listed, inactive and locked; the owner is the one active.
+  await page.goto('/shops/onb-team-studio/team');
+  const staffRow = page.getByRole('row', { name: /Sam Staff/ });
+  await expect(staffRow.getByText('Locked by plan')).toBeVisible();
+  await expect(page.getByRole('row', { name: /onb-team@e2e\.test/ }).getByText('Locked by plan')).toHaveCount(0);
+  const members = await query(`select name, active from "UserShop" where "shopId" = (select id from "Shop" where slug='onb-team-studio') order by name`);
+  expect(members).toEqual([
+    { name: 'Nia Newcomer', active: true },
+    { name: 'Sam Staff', active: false },
+  ]);
+  await shot(page, '14-solo-team-locked.png');
+
+  // The note about the Team plan can be closed, and stays closed.
+  await expect(page.getByText('Working with others?')).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText('Working with others?')).toHaveCount(0);
+  await page.reload();
+  await expect(staffRow).toBeVisible();
+  await expect(page.getByText('Working with others?')).toHaveCount(0);
+
+  // The list of shops names each shop's plan.
+  await page.goto('/dashboard');
+  await expect(page.getByRole('link', { name: /Onb Team Studio/ }).getByText('Solo', { exact: true })).toBeVisible();
+  await shot(page, '15-dashboard-plan-pill.png');
 });
 
 test('a second shop is created inactive and ends on "contact us"', async ({ page }) => {

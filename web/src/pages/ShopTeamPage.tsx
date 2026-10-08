@@ -11,9 +11,25 @@ import Alert from '../components/Alert';
 import Avatar from '../components/Avatar';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faLock } from '@fortawesome/free-solid-svg-icons';
 import AddMemberModal from '../components/AddMemberModal';
 import { planErrorMessage, staffLimitText } from '../utils/plan';
+
+const readFlag = (key: string) => {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+};
+
+const writeFlag = (key: string) => {
+  try {
+    localStorage.setItem(key, '1');
+  } catch {
+    // Private mode or blocked storage: it is hidden until the page is reloaded.
+  }
+};
 
 export default function ShopTeamPage() {
   const { shop, isLoading: shopLoading } = useShop();
@@ -37,8 +53,13 @@ export default function ShopTeamPage() {
   // Members who can be booked take the plan's staff places.
   const staffUsed = members.filter((m) => m.active && (m.bookableByCustomers || m.bookableInternally)).length;
   const atStaffLimit = !!shop && staffUsed >= shop.staffLimit;
-  // A plan without team features has one person: members switched off by a move down to it stay out of sight.
-  const shown = shop && !shop.teamFeatures ? members.filter((m) => m.active) : members;
+  // The note about the Team plan can be put away; it stays away for this shop on this device.
+  const noteKey = `team-plan-note-hidden-${shop?.id}`;
+  const [noteHidden, setNoteHidden] = useState(() => readFlag(noteKey));
+  const hideNote = () => {
+    writeFlag(noteKey);
+    setNoteHidden(true);
+  };
 
   useEffect(() => {
     if (!shop) return;
@@ -159,10 +180,12 @@ export default function ShopTeamPage() {
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
-      {shop?.role === 'owner' && !shop.teamFeatures && !shop.locked && (
+      {shop?.role === 'owner' && !shop.teamFeatures && !shop.locked && !noteHidden && (
         <Alert
           variant="info"
           title={t.onboarding.solo.teamTitle}
+          onClose={hideNote}
+          closeLabel={t.customerProfile.close}
           actions={
             <>
               <Link to={`/shops/${shop.slug}/settings?tab=plan`} className="btn btn--sm">{t.onboarding.solo.upgrade}</Link>
@@ -183,7 +206,7 @@ export default function ShopTeamPage() {
 
       <div className="table-wrap">
         <div className="table-surface">
-          {shown.length === 0 ? (
+          {members.length === 0 ? (
             <div className="empty empty--sm">
               <p className="empty__text">{t.team.noMembers}</p>
             </div>
@@ -198,7 +221,7 @@ export default function ShopTeamPage() {
                 </tr>
               </thead>
               <tbody>
-                {shown.map((member) => (
+                {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
                       <span className="data-table__identity">
@@ -220,6 +243,13 @@ export default function ShopTeamPage() {
                       </span>
                       {!member.active && (
                         <span className="badge badge--neutral">{t.team.inactiveBadge}</span>
+                      )}
+                      {/* Switched off because the plan has no place for them: back on once it does. */}
+                      {!member.active && atStaffLimit && (
+                        <span className="badge badge--warning">
+                          <FontAwesomeIcon icon={faLock} aria-hidden="true" />
+                          {t.onboarding.solo.lockedByPlan}
+                        </span>
                       )}
                     </td>
                     <td role="cell" data-label={t.team.joined}>

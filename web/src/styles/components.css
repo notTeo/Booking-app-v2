@@ -377,6 +377,8 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .alert__body { flex: 1; min-width: 0; font-size: var(--fs-sm); line-height: var(--lh-sm); }
 .alert__title { display: block; font-weight: var(--fw-semibold); }
 .alert__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+/* The close button of an alert that can be put away: tucked into the top corner. */
+.alert__close { --btn-fg: var(--text-muted); margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0; }
 /* Spacing lives on the neighbour, never on the alert itself. */
 .alert + * { margin-top: var(--space-4); }
 

@@ -6,6 +6,9 @@ import { useLang } from '../../context/LanguageContext';
 import { ROLE_BADGE } from '../../utils/roles';
 import type { ShopRole } from '../../api/shop.api';
 
+import { PLAN_NAMES } from '../../config/pricing';
+import type { ShopPlan } from '../../api/shop.api';
+
 const ROLE_ICON = { owner: faStore, manager: faUserGear, staff: faUser } as const;
 
 export interface ShopCardRow {
@@ -13,6 +16,7 @@ export interface ShopCardRow {
   slug: string;
   name: string;
   role: ShopRole;
+  plan: ShopPlan;
   address?: string;
 }
 
@@ -44,9 +48,12 @@ export default function ShopCards({
                 <span className="shop-card__name">{shop.name}</span>
                 <FontAwesomeIcon icon={faArrowRight} className="shop-card__arrow" aria-hidden="true" />
               </span>
-              <span className={`badge ${ROLE_BADGE[shop.role]}`}>
-                <FontAwesomeIcon icon={ROLE_ICON[shop.role]} aria-hidden="true" />
-                {t.invites.roles[shop.role]}
+              <span className="cluster cluster--tight">
+                <span className={`badge ${ROLE_BADGE[shop.role]}`}>
+                  <FontAwesomeIcon icon={ROLE_ICON[shop.role]} aria-hidden="true" />
+                  {t.invites.roles[shop.role]}
+                </span>
+                <span className="badge badge--neutral">{PLAN_NAMES[shop.plan]}</span>
               </span>
               {shop.address && (
                 <span className="shop-card__label">

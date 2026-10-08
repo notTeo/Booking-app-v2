@@ -121,6 +121,7 @@ export interface OnboardingStrings {
     productsText: string;
     upgrade: string;
     comparePlans: string;
+    lockedByPlan: string;
   };
 }
 
@@ -248,7 +249,7 @@ export const onboardingStrings: Record<'el' | 'en', OnboardingStrings> = {
       switchTo: 'Αλλαγή σε {plan}',
       onPlan: 'Είσαι στο {plan}',
       confirmTitle: 'Αλλαγή σε {plan};',
-      confirmSolo: 'Στο Solo μένεις μόνο εσύ για κρατήσεις. Τα υπόλοιπα μέλη της ομάδας απενεργοποιούνται, τα προϊόντα σου κλείνουν και η σελίδα κρατήσεων δεν τα δείχνει πια. Δεν διαγράφεται τίποτα.',
+      confirmSolo: 'Στο Solo μένεις ενεργός μόνο εσύ, ο ιδιοκτήτης. Τα υπόλοιπα μέλη της ομάδας απενεργοποιούνται και μένουν κλειδωμένα στη λίστα, τα προϊόντα σου κλείνουν και η σελίδα κρατήσεων δεν τα δείχνει πια. Δεν διαγράφεται τίποτα.',
       confirmSmaller: 'Το {plan} έχει θέσεις για {n} μέλη προσωπικού με κρατήσεις. Αν έχεις περισσότερα, μένουν ενεργά τα παλαιότερα και τα υπόλοιπα απενεργοποιούνται. Δεν διαγράφεται τίποτα.',
       cancel: 'Ακύρωση',
       changed: 'Το κατάστημά σου είναι τώρα στο {plan}.',
@@ -264,6 +265,7 @@ export const onboardingStrings: Record<'el' | 'en', OnboardingStrings> = {
       productsText: 'Πούλα προϊόντα που οι πελάτες κρατούν μαζί με το ραντεβού τους. Το κατάστημά σου είναι στο {plan}.',
       upgrade: 'Αναβάθμιση σε Team',
       comparePlans: 'Σύγκριση πακέτων',
+      lockedByPlan: 'Κλειδωμένο από το πακέτο',
     },
   },
   en: {
@@ -389,7 +391,7 @@ export const onboardingStrings: Record<'el' | 'en', OnboardingStrings> = {
       switchTo: 'Switch to {plan}',
       onPlan: 'You are on {plan}',
       confirmTitle: 'Switch to {plan}?',
-      confirmSolo: 'On Solo only you stay bookable. Your other team members are deactivated, your products are turned off and your booking page no longer shows them. Nothing is deleted.',
+      confirmSolo: 'On Solo only you, the owner, stay active. Your other team members are deactivated and stay in the list, locked, your products are turned off and your booking page no longer shows them. Nothing is deleted.',
       confirmSmaller: '{plan} has places for {n} bookable staff. If you have more, the longest-standing ones stay active and the rest are deactivated. Nothing is deleted.',
       cancel: 'Cancel',
       changed: 'Your shop is now on {plan}.',
@@ -405,6 +407,7 @@ export const onboardingStrings: Record<'el' | 'en', OnboardingStrings> = {
       productsText: 'Sell products that customers reserve together with their booking. Your shop is on {plan}.',
       upgrade: 'Upgrade to Team',
       comparePlans: 'Compare plans',
+      lockedByPlan: 'Locked by plan',
     },
   },
 };

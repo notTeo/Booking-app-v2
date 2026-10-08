@@ -128,9 +128,11 @@ export const assertTeamFeatures = async (shopId: string) => {
 
 // An owner may switch plan while the shop's free trial runs; after it, a plan
 // is set by hand (admin/setShopPlan) until a payment provider does it.
-// A smaller plan switches off what it does not include and deletes nothing:
-// bookable staff beyond its places are deactivated (the owner stays, then the
-// longest-standing members), and so are the products when it has none.
+// A smaller plan switches off what it does not include and deletes nothing.
+// Without team features (Solo) the owner is the one member left active. With
+// them, bookable staff beyond the plan's places are deactivated: the owner
+// stays, then the longest-standing members. Without products, the products
+// are deactivated.
 export const changeShopPlan = async (shopId: string, plan: ShopPlan) => {
   const current = await loadPlan(shopId);
   if (current.subscriptionStatus !== 'TRIALING' || isShopLocked(current))
@@ -144,25 +146,32 @@ export const changeShopPlan = async (shopId: string, plan: ShopPlan) => {
 
   const limits = PLAN_LIMITS[plan];
   return prisma.$transaction(async (tx) => {
-    const bookable = await tx.userShop.findMany({
-      where: {
-        shopId,
-        active: true,
-        OR: [{ bookableByCustomers: true }, { bookableInternally: true }],
-      },
-      select: { id: true, role: true },
-      orderBy: { createdAt: 'asc' },
-    });
-    const kept = [
-      ...bookable.filter((m) => m.role === 'owner'),
-      ...bookable.filter((m) => m.role !== 'owner'),
-    ].slice(0, limits.staffLimit);
-    const extra = bookable.filter((m) => !kept.includes(m)).map((m) => m.id);
-    if (extra.length)
+    if (!limits.teamFeatures) {
       await tx.userShop.updateMany({
-        where: { id: { in: extra } },
+        where: { shopId, active: true, role: { not: 'owner' } },
         data: { active: false },
       });
+    } else {
+      const bookable = await tx.userShop.findMany({
+        where: {
+          shopId,
+          active: true,
+          OR: [{ bookableByCustomers: true }, { bookableInternally: true }],
+        },
+        select: { id: true, role: true },
+        orderBy: { createdAt: 'asc' },
+      });
+      const kept = [
+        ...bookable.filter((m) => m.role === 'owner'),
+        ...bookable.filter((m) => m.role !== 'owner'),
+      ].slice(0, limits.staffLimit);
+      const extra = bookable.filter((m) => !kept.includes(m)).map((m) => m.id);
+      if (extra.length)
+        await tx.userShop.updateMany({
+          where: { id: { in: extra } },
+          data: { active: false },
+        });
+    }
 
     if (!limits.products)
       await tx.product.updateMany({

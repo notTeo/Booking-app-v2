@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import {
+  addManager,
   authHeader,
   createStaffMember,
   createTenant,
@@ -161,17 +162,63 @@ describe('PATCH /api/shops/:id/plan', () => {
     );
   });
 
-  it('leaves a member who takes no staff place alone', async () => {
+  it('on Solo the owner is the one left active, bookable or not', async () => {
     const t = await trialTenant();
+    await prisma.userShop.update({
+      where: { id: t.staff.id },
+      data: { bookableByCustomers: false, bookableInternally: false },
+    });
     await addStaff(t, 1);
-    const [desk] = await addStaff(t, 1, {
+    await addStaff(t, 1, {
       bookableByCustomers: false,
       bookableInternally: false,
     });
 
     await changePlan(t, 'SOLO');
 
-    expect((await activeIds(t)).sort()).toEqual([t.staff.id, desk].sort());
+    expect(await activeIds(t)).toEqual([t.staff.id]);
+  });
+
+  it('on a plan with a team, leaves a member who takes no staff place alone', async () => {
+    const t = await trialTenant('BUSINESS');
+    const staff = await addStaff(t, 5);
+    const [desk] = await addStaff(t, 1, {
+      bookableByCustomers: false,
+      bookableInternally: false,
+    });
+
+    await changePlan(t, 'TEAM');
+
+    expect((await activeIds(t)).sort()).toEqual(
+      [t.staff.id, ...staff.slice(0, 4), desk].sort(),
+    );
+  });
+
+  it('cannot be done through the shop settings, by the owner or a manager', async () => {
+    const t = await trialTenant();
+    const manager = await addManager(t);
+
+    for (const token of [t.token, manager.token]) {
+      const res = await api
+        .patch(`/api/shops/${t.shop.id}`)
+        .set(authHeader(token))
+        .send({
+          plan: 'BUSINESS',
+          subscriptionStatus: 'ACTIVE',
+          trialEndsAt: null,
+        });
+      expect(res.status).toBeLessThan(500);
+    }
+    expect((await changePlan(t, 'BUSINESS', manager.token)).status).toBe(403);
+
+    const shop = await prisma.shop.findUniqueOrThrow({
+      where: { id: t.shop.id },
+    });
+    expect(shop).toMatchObject({
+      plan: 'TEAM',
+      subscriptionStatus: 'TRIALING',
+    });
+    expect(shop.trialEndsAt).not.toBeNull();
   });
 
   it('keeps products on when the new plan still has them', async () => {
