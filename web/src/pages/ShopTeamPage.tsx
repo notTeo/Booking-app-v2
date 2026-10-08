@@ -224,20 +224,23 @@ export default function ShopTeamPage() {
                 {members.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
-                      <span className="data-table__identity">
-                        <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
-                        <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
+                      <span className="cluster cluster--tight">
+                        <span className="data-table__identity">
+                          <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
+                          <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
+                        </span>
+                        {!member.userId && (
+                          <>
+                            <span className="badge badge--warning">{t.team.noLoginYet}</span>
+                            <span className="badge badge--neutral">
+                              {member.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
+                            </span>
+                          </>
+                        )}
                       </span>
-                      {!member.userId && (
-                        <>
-                          <span className="badge badge--warning">{t.team.noLoginYet}</span>
-                          <span className="badge badge--neutral">
-                            {member.hasPendingInvite ? t.invites.status.pending : t.invites.notSentYet}
-                          </span>
-                        </>
-                      )}
                     </td>
                     <td role="cell" data-label={t.team.role}>
+                      <span className="cluster cluster--tight">
                       <span className={`badge ${ROLE_BADGE[member.role]}`}>
                         {t.team.roles[member.role]}
                       </span>
@@ -251,6 +254,7 @@ export default function ShopTeamPage() {
                           {t.onboarding.solo.lockedByPlan}
                         </span>
                       )}
+                      </span>
                     </td>
                     <td role="cell" data-label={t.team.joined}>
                       {new Date(member.createdAt).toLocaleDateString()}
