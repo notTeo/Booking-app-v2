@@ -25,14 +25,7 @@ import ProductThumb from '../components/ProductThumb';
 import StockBadge from '../components/StockBadge';
 import Switch from '../components/Switch';
 import '../styles/pages/products.css';
-
-/** Cents from what was typed in euros ("12,50" and "12.5" both work), or null when it is not a price. */
-const parsePrice = (value: string) => {
-  const euros = Number(value.trim().replace(',', '.'));
-  return value.trim() !== '' && Number.isFinite(euros) && euros >= 0 ? Math.round(euros * 100) : null;
-};
-
-const parseStock = (value: string) => (/^\d+$/.test(value.trim()) ? Number(value.trim()) : null);
+import { parsePrice, parseStock } from '../utils/productForm';
 
 /**
  * One product's own page (the product list opens it, like a team member's):

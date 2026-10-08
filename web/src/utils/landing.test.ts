@@ -48,7 +48,11 @@ describe('pickLanding', () => {
     expect(pickLanding({ pendingInvites: 0, shopSlugs: ['hair', 'nails'] })).toBe('/dashboard');
   });
 
-  it('sends no shops and no invites to the dashboard', () => {
-    expect(pickLanding({ pendingInvites: 0, shopSlugs: [] })).toBe('/dashboard');
+  it('sends someone with no shop and no invite straight into creating one', () => {
+    expect(pickLanding({ pendingInvites: 0, shopSlugs: [] })).toBe('/shops/new');
+  });
+
+  it('sends an invited user with no shop to the dashboard, where the invite is', () => {
+    expect(pickLanding({ pendingInvites: 1, shopSlugs: [] })).toBe('/dashboard');
   });
 });

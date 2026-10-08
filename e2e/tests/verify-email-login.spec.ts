@@ -35,12 +35,12 @@ test('verifying the sign-up email logs the new user in', async ({ page, context 
   await page.locator('#verify-password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Verify email' }).click();
 
-  // No shops and no invites yet, so the landing is the dashboard.
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // No shops and no invites yet, so the landing is the start of the new-shop flow.
+  await expect(page).toHaveURL(/\/shops\/new$/);
 
   // The session is a real one: it survives a reload.
   const refreshed = page.waitForResponse((r) => r.url().endsWith('/auth/refresh'));
   await page.reload();
   expect((await refreshed).ok()).toBe(true);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/shops\/new$/);
 });

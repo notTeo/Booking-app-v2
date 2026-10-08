@@ -5,8 +5,8 @@ import { addPendingInvite as seedInvite } from '../support/invites';
 
 /**
  * Where login lands (PublicRoute + utils/landing.ts): a safe ?redirect= first,
- * then pending invites -> /dashboard, exactly one shop -> that shop, otherwise
- * /dashboard. The seeded owner (u1) has one shop, s1. Extra shops here all
+ * then pending invites -> /dashboard, no shop -> /shops/new, exactly one shop
+ * -> that shop, otherwise /dashboard. The seeded owner (u1) has one shop, s1. Extra shops here all
  * have ids starting "land-" and are deleted after each test (cascading their
  * memberships and invites).
  */
@@ -64,10 +64,10 @@ test('a pending invite wins over a single shop: login lands on the dashboard', a
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-test('no shops and no invites: login lands on the dashboard', async ({ page }) => {
+test('no shops and no invites: login lands on the start of the new-shop flow', async ({ page }) => {
   await query(`update "UserShop" set active = false where id = 'us1'`);
   await submitLogin(page);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/shops\/new$/);
 });
 
 test('an invite opened while logged out survives the login and can be accepted', async ({ page }) => {

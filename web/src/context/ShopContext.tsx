@@ -72,5 +72,12 @@ export function ShopRouteProvider() {
 export function useShop() {
   const ctx = useContext(ShopContext);
   if (!ctx) throw new Error('useShop must be used within ShopContextProvider');
-  return { shop: ctx.shop, isLoading: ctx.isLoading, error: ctx.error, refetch: ctx.refetch };
+  return {
+    shop: ctx.shop,
+    isLoading: ctx.isLoading,
+    error: ctx.error,
+    refetch: ctx.refetch,
+    /** Puts a shop the API just returned in place, without the reload (and spinner) of `refetch`. */
+    update: ctx.setShop as (shop: Shop) => void,
+  };
 }

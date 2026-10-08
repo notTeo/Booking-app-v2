@@ -37,6 +37,8 @@ export default function ShopTeamPage() {
   // Members who can be booked take the plan's staff places.
   const staffUsed = members.filter((m) => m.active && (m.bookableByCustomers || m.bookableInternally)).length;
   const atStaffLimit = !!shop && staffUsed >= shop.staffLimit;
+  // A plan without team features has one person: members switched off by a move down to it stay out of sight.
+  const shown = shop && !shop.teamFeatures ? members.filter((m) => m.active) : members;
 
   useEffect(() => {
     if (!shop) return;
@@ -157,7 +159,21 @@ export default function ShopTeamPage() {
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
-      {canManage && shop && atStaffLimit && (
+      {shop?.role === 'owner' && !shop.teamFeatures && !shop.locked && (
+        <Alert
+          variant="info"
+          title={t.onboarding.solo.teamTitle}
+          actions={
+            <>
+              <Link to={`/shops/${shop.slug}/settings?tab=plan`} className="btn btn--sm">{t.onboarding.solo.upgrade}</Link>
+              <Link to="/pricing" className="btn btn--ghost btn--sm">{t.onboarding.solo.comparePlans}</Link>
+            </>
+          }
+        >
+          {t.onboarding.solo.teamText}
+        </Alert>
+      )}
+      {canManage && shop && atStaffLimit && shop.teamFeatures && (
         <Alert variant="info" actions={<Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>}>
           {staffLimitText(t.shopPlan, shop.plan, shop.staffLimit)}
         </Alert>
@@ -167,7 +183,7 @@ export default function ShopTeamPage() {
 
       <div className="table-wrap">
         <div className="table-surface">
-          {members.length === 0 ? (
+          {shown.length === 0 ? (
             <div className="empty empty--sm">
               <p className="empty__text">{t.team.noMembers}</p>
             </div>
@@ -182,7 +198,7 @@ export default function ShopTeamPage() {
                 </tr>
               </thead>
               <tbody>
-                {members.map((member) => (
+                {shown.map((member) => (
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
                       <span className="data-table__identity">

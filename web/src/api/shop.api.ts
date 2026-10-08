@@ -63,6 +63,10 @@ export interface CreateShopDto {
   maxAdvanceDays?: number;
   slotIntervalMinutes?: number;
 }
+/** A new shop, on the plan its owner picked (Team without one). */
+export interface NewShopDto extends CreateShopDto {
+  plan?: ShopPlan;
+}
 export interface UpdateShopDto extends Partial<CreateShopDto> {
   customerRescheduleEnabled?: boolean;
   cancelCutoffHours?: number;
@@ -82,8 +86,25 @@ export const getMyShops = () =>
 export const getShop = (id: string) =>
   client.get(`/api/shops/${id}`).then((r) => r.data.data as Shop);
 
-export const createShop = (dto: CreateShopDto) =>
+export const createShop = (dto: NewShopDto) =>
   client.post('/api/shops', dto).then((r) => r.data.data as Shop);
+
+/** Owner only, while the shop's free trial runs. A smaller plan switches off what it does not include. */
+export const changeShopPlan = (id: string, plan: ShopPlan) =>
+  client.patch(`/api/shops/${id}/plan`, { plan }).then((r) => r.data.data as Shop);
+
+/** What the owner has set up so far, read from the shop's own data. */
+export interface ShopSetup {
+  hasHours: boolean;
+  hasServices: boolean;
+  hasTeam: boolean;
+  hasProducts: boolean;
+  /** The owner's own team member: their working hours are the ones the setup guide edits. */
+  ownerMemberId: string;
+}
+
+export const getShopSetup = (id: string) =>
+  client.get(`/api/shops/${id}/setup`).then((r) => r.data.data as ShopSetup);
 
 /** The shop's photo on its booking page: a new file, or (file null) a new crop of the stored one. */
 export const setShopPhoto = (id: string, file: File | null, crop: PhotoCrop) =>

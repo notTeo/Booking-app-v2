@@ -9,11 +9,15 @@ import { apiErrorMessage } from '../utils/apiError';
 import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
+import { rememberPlan } from '../utils/onboarding';
 
 export default function RegisterPage() {
   const { setUser } = useAuth();
   const { t } = useLang();
   const [params] = useSearchParams();
+  // A plan clicked on the marketing site waits here for the new-shop flow.
+  const planFromLink = params.get('plan');
+  useEffect(() => rememberPlan(planFromLink), [planFromLink]);
 
   const inviteToken = params.get('inviteToken') ?? '';
   const emailFromInvite = params.get('email') ?? '';

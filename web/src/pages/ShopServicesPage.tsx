@@ -20,40 +20,21 @@ import { faPlus, faPenToSquare, faTrashCan, faUsers } from '@fortawesome/free-so
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
-import ServiceFormModal, { type ServiceFormData } from '../components/ServiceFormModal';
-
-// ── helpers ────────────────────────────────────────────────
-
-const formatDuration = (mins: number) => {
-  if (mins < 60) return `${mins} min`;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m ? `${h}h ${m}m` : `${h}h`;
-};
-
-const formatPrice = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+import ServiceFormModal from '../components/ServiceFormModal';
+import {
+  emptyServiceForm,
+  formatServiceDuration,
+  formatServicePrice,
+  serviceFormToDto,
+  serviceToForm,
+  type ServiceFormData,
+} from '../utils/serviceForm';
 
 type FormData = ServiceFormData;
-
-const emptyForm: FormData = { name: '', description: '', duration: '', price: '', isActive: true, showOnPublicPage: true };
-
-const serviceToForm = (s: Service): FormData => ({
-  name: s.name,
-  description: s.description ?? '',
-  duration: String(s.duration),
-  price: (s.price / 100).toFixed(2),
-  isActive: s.isActive,
-  showOnPublicPage: s.showOnPublicPage,
-});
-
-const formToDto = (f: FormData) => ({
-  name: f.name.trim(),
-  description: f.description.trim() || undefined,
-  duration: parseInt(f.duration, 10),
-  price: Math.round(parseFloat(f.price) * 100),
-  isActive: f.isActive,
-  showOnPublicPage: f.showOnPublicPage,
-});
+const emptyForm = emptyServiceForm;
+const formToDto = serviceFormToDto;
+const formatDuration = formatServiceDuration;
+const formatPrice = formatServicePrice;
 
 // ── component ──────────────────────────────────────────────
 

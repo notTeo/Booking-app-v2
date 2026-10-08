@@ -1,4 +1,5 @@
 import SaveBar from '../components/SaveBar';
+import PlanChangeCard from '../components/PlanChangeCard';
 import Tabs from '../components/Tabs';
 import { tabButtonId, tabPanelId } from '../utils/tabIds';
 import { publicProfileUrl, publicShopUrl } from '../utils/publicLink';
@@ -27,6 +28,10 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import TimeOffPanel from '../components/TimeOffPanel';
 import PublicBrandingCard from '../components/PublicBrandingCard';
 import ShopPhotoCard from '../components/ShopPhotoCard';
+import { useQueryClient } from '@tanstack/react-query';
+import { useShop } from '../context/ShopContext';
+import { MY_SHOPS_KEY } from '../hooks/useMyShops';
+import { shopSetupKey } from '../utils/onboarding';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -63,6 +68,8 @@ export default function ShopSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { language, t } = useLang();
+  const queryClient = useQueryClient();
+  const { update: updateShopContext } = useShop();
 
   const [params, setParams] = useSearchParams();
   const asked = params.get('tab') as SettingsTab | null;
@@ -229,6 +236,15 @@ export default function ShopSettingsPage() {
       </div>
     );
   }
+
+  const canSwitchPlan = shop.role === 'owner' && isOnTrial(shop);
+  // The sidebar, the shop pages and the setup card all read the plan: tell them.
+  const onPlanChanged = (updated: Shop) => {
+    setShop(updated);
+    updateShopContext(updated);
+    queryClient.invalidateQueries({ queryKey: MY_SHOPS_KEY });
+    queryClient.invalidateQueries({ queryKey: shopSetupKey(updated.id) });
+  };
 
   return (
     <div className="shops-page">
@@ -601,12 +617,33 @@ export default function ShopSettingsPage() {
               : t.shopPlan.active}{' '}
           {t.shopPlan.staffLimit.replace('{n}', String(shop.staffLimit))}
         </p>
-        <p className="card__text">{t.shopPlan.changePlan}</p>
-        <div className="cluster cluster--tight">
-          <Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>
-          <Link to="/pricing" className="btn btn--ghost btn--sm">{t.shopPlan.seePlans}</Link>
-        </div>
+        {!canSwitchPlan && (
+          <>
+            <p className="card__text">{t.shopPlan.changePlan}</p>
+            <div className="cluster cluster--tight">
+              <Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>
+              <Link to="/pricing" className="btn btn--ghost btn--sm">{t.shopPlan.seePlans}</Link>
+            </div>
+          </>
+        )}
       </div>
+
+      {/* The owner switches plan freely while the trial runs. */}
+      {canSwitchPlan && <PlanChangeCard shop={shop} onChanged={onPlanChanged} />}
+
+      {shop.role === 'owner' && !shop.locked && (
+        <div className="card">
+          <div className="setting-row">
+            <span className="setting-row__label">
+              <span className="setting-row__title">{t.onboarding.changePlan.rerunTitle}</span>
+              <span className="setting-row__text">{t.onboarding.changePlan.rerunText}</span>
+            </span>
+            <Link to={`/shops/${shop.slug}/setup`} className="btn btn--secondary btn--sm">
+              {t.onboarding.changePlan.rerunAction}
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Danger Zone */}
       {shop.role === 'owner' && (

@@ -5,15 +5,9 @@ import { useLang } from '../context/LanguageContext';
 import Alert from './Alert';
 import Modal from './Modal';
 import Switch from './Switch';
+import type { ServiceFormData } from '../utils/serviceForm';
 
-export type ServiceFormData = {
-  name: string;
-  description: string;
-  duration: string;
-  price: string;
-  isActive: boolean;
-  showOnPublicPage: boolean;
-};
+export type { ServiceFormData };
 
 interface Props {
   title: string;

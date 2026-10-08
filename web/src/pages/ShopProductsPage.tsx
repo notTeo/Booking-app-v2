@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowUpRightFromSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare, faPlus, faLock } from '@fortawesome/free-solid-svg-icons';
 import { getProducts, type Product } from '../api/product.api';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
@@ -53,17 +53,26 @@ export default function ShopProductsPage() {
         )}
       </div>
 
-      {!inPlan && (
-        <Alert
-          variant="info"
-          actions={<Link to="/contact" className="btn btn--secondary btn--sm">{t.shopPlan.contactUs}</Link>}
-        >
-          {tp.notInPlan.replace('{plan}', PLAN_NAMES[shop.plan])}
-        </Alert>
-      )}
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && inPlan && <Alert variant="danger">{error}</Alert>}
 
-      {products === null && !error ? (
+      {!inPlan ? (
+        // The plan has no products: the page is there, locked, with the way up.
+        <div className="card">
+          <div className="empty">
+            <div className="empty__icon">
+              <FontAwesomeIcon icon={faLock} aria-hidden="true" />
+            </div>
+            <h2 className="empty__title">{t.onboarding.solo.productsTitle}</h2>
+            <p className="empty__text">{t.onboarding.solo.productsText.replace('{plan}', PLAN_NAMES[shop.plan])}</p>
+            <div className="empty__actions">
+              {shop.role === 'owner' && !shop.locked && (
+                <Link to={`/shops/${shop.slug}/settings?tab=plan`} className="btn">{t.onboarding.solo.upgrade}</Link>
+              )}
+              <Link to="/pricing" className="btn btn--ghost">{t.onboarding.solo.comparePlans}</Link>
+            </div>
+          </div>
+        </div>
+      ) : products === null && !error ? (
         <div className="spinner-wrap"><div className="spinner" role="status" /></div>
       ) : products && products.length === 0 ? (
         <div className="empty empty--sm">

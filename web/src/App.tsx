@@ -35,6 +35,7 @@ import ShopTeamPage from './pages/ShopTeamPage';
 import ShopTeamMemberPage from './pages/ShopTeamMemberPage';
 import ShopCustomersPage from './pages/ShopCustomersPage';
 import ShopCustomerDetailPage from './pages/ShopCustomerDetailPage';
+import ShopSetupPage from './pages/ShopSetupPage';
 import ShopSettingsPage from './pages/ShopSettingsPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import PublicPage from './pages/PublicPage';
@@ -122,6 +123,7 @@ export default function App() {
                           <Route path="customers" element={<ShopCustomersPage />} />
                           <Route path="customers/:customerId" element={<ShopCustomerDetailPage />} />
                           <Route path="settings" element={<ShopSettingsPage />} />
+                          <Route path="setup" element={<ShopSetupPage />} />
                         </Route>
                       </Route>
                     </Route>

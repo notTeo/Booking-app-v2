@@ -103,11 +103,15 @@ test('a trial about to end is announced to the owner', async ({ page }) => {
   await expect(page.getByText(/^Free trial until /)).toBeVisible();
 });
 
-test('Solo at its staff limit: Add member is disabled and the page says why', async ({ page }) => {
+test('Solo: Add member is disabled and the page offers the way up to Team', async ({ page }) => {
   await query(`update "Shop" set plan = 'SOLO' where id = 's1'`);
   await signIn(page);
   await page.goto(`/shops/${E2E.shop.slug}/team`);
-  await expect(page.getByText('The Solo plan allows up to 1 bookable staff. Adding more needs an upgrade.')).toBeVisible();
+  await expect(page.getByText('Solo has one bookable person: you.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Upgrade to Team' })).toHaveAttribute(
+    'href',
+    `/shops/${E2E.shop.slug}/settings?tab=plan`,
+  );
   await expect(page.getByRole('button', { name: 'Add Team Member' })).toBeDisabled();
 });
 

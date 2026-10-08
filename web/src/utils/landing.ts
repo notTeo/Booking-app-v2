@@ -29,9 +29,10 @@ export function safeRedirect(raw: string | null): string | null {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-/** Pending invites first (they are only shown on the dashboard), then a sole shop. */
+/** Pending invites first (they are only shown on the dashboard), then a sole shop; someone with no shop starts one. */
 export function pickLanding({ pendingInvites, shopSlugs }: { pendingInvites: number; shopSlugs: string[] }): string {
   if (pendingInvites > 0) return '/dashboard';
+  if (shopSlugs.length === 0) return '/shops/new';
   if (shopSlugs.length === 1) return `/shops/${shopSlugs[0]}`;
   return '/dashboard';
 }

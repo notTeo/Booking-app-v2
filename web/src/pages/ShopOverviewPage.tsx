@@ -9,6 +9,7 @@ import UpcomingBookings from '../components/overview/UpcomingBookings';
 import OverviewHeader from '../components/overview/OverviewHeader';
 import OverviewBody from '../components/overview/OverviewBody';
 import OverviewEmpty from '../components/overview/OverviewEmpty';
+import FinishSetupCard from '../components/overview/FinishSetupCard';
 import '../styles/pages/shop-overview.css';
 
 // One quick retry, then show the error; the default (3 retries with backoff) leaves the skeleton up for ~7s.
@@ -64,6 +65,7 @@ export default function ShopOverviewPage() {
   return (
     <div className="overview-page">
       <OverviewHeader zone={shop.timezone} range={range} onRangeChange={setRange} bar />
+      <FinishSetupCard shop={shop} />
       <OverviewBody
         range={range}
         overview={overview}
