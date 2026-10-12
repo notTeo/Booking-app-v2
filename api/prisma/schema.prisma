@@ -305,7 +305,8 @@ model Customer {
   serviceDurations CustomerServiceDuration[]
   changeRequest    CustomerChangeRequest?
 
-  @@unique([shopId, phone])
+  // Not unique: see utils/customerPhone.ts.
+  @@index([shopId, phone])
   @@index([shopId])
 }
 

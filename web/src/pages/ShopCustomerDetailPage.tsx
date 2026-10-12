@@ -27,6 +27,7 @@ import '../styles/pages/shop-overview.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
+import SamePhoneAlert from '../components/SamePhoneAlert';
 import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
 import { apiErrorField } from '../utils/apiError';
@@ -241,6 +242,21 @@ export default function ShopCustomerDetailPage() {
         </div>
         <StatCards totals={customer.totals} tiles />
       </div>
+
+      {shop && (
+        <SamePhoneAlert
+          shopId={shop.id}
+          customer={customer}
+          canMerge={canManageShop(shop.role)}
+          onMerged={(merged, keptId) => {
+            setMergeSuccess(t.customers.mergeSuccess.replace('{count}', String(merged.movedBookings)));
+            setBookingsPage(1);
+            // Merged into an older record: that is the one left to look at.
+            if (keptId !== customer.id) navigate(`../${keptId}`, { relative: 'path', replace: true });
+            else setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
 
       {/* What the customer asked to change themselves (owner and managers; the API enforces it too) */}
       {customer.changeRequest && (

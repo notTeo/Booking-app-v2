@@ -13,6 +13,8 @@ export interface BookingCustomer {
   contactHidden?: boolean;
   /** The shop's "Blocked" placeholder: this booking is a blocked slot, not an appointment. */
   isSystem?: boolean;
+  /** Another customer of the shop has this phone number too: probably one person, to be merged. */
+  duplicatePhone?: boolean;
 }
 
 export interface BookingService {

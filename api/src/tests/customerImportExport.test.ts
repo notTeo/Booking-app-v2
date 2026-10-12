@@ -90,7 +90,11 @@ describe('POST /api/shops/:shopId/customers/import', () => {
         email: 'new@example.com',
         notes: 'hi',
       },
-      { name: 'Changed Name', phone: '+306900000001', email: 'other@example.com' },
+      {
+        name: 'Changed Name',
+        phone: '+306900000001',
+        email: 'other@example.com',
+      },
       {
         name: 'Changed Name',
         phone: '+306900000002',

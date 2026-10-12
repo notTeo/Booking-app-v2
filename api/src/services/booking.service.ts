@@ -10,6 +10,7 @@ import { AppError } from '../middleware/errorHandler';
 import { assertProductsFeature, isShopLocked } from './plan.service';
 import { MAX_SERVICES_PER_BOOKING } from '../utils/bookingServices';
 import { redactCustomer } from '../utils/customerVisibility';
+import { duplicatePhones, findCustomerByPhone } from '../utils/customerPhone';
 import {
   canManage,
   canViewCustomerDetails,
@@ -464,7 +465,8 @@ const resolveProductLines = async (
 };
 
 /**
- * Find-or-create the customer for a booking, by (shopId, phone).
+ * Find-or-create the customer for a booking, by (shopId, phone): the oldest
+ * customer with that phone when several have it.
  *
  * `overwriteExisting` controls what happens when the phone already belongs to
  * a customer: owner/staff bookings may correct a customer's name/email on the
@@ -474,37 +476,36 @@ const resolveProductLines = async (
  * new customer is always created with the submitted details; only an
  * existing match is affected.
  */
-const findOrCreateCustomer = (
+const findOrCreateCustomer = async (
   tx: Prisma.TransactionClient,
   shopId: string,
   customer: { name: string; phone: string; email?: string },
   overwriteExisting: boolean,
-) =>
-  overwriteExisting
-    ? tx.customer.upsert({
-        where: { shopId_phone: { shopId, phone: customer.phone } },
-        update: { name: customer.name, email: customer.email ?? undefined },
-        create: { shopId, ...customer },
-      })
-    : tx.customer.upsert({
-        where: { shopId_phone: { shopId, phone: customer.phone } },
-        update: {},
-        create: { shopId, ...customer },
-      });
+) => {
+  const existing = await findCustomerByPhone(tx, shopId, customer.phone);
+  if (!existing) return tx.customer.create({ data: { shopId, ...customer } });
+  if (!overwriteExisting) return existing;
+  return tx.customer.update({
+    where: { id: existing.id },
+    data: { name: customer.name, email: customer.email ?? undefined },
+  });
+};
 
 // The placeholder a blocked slot is booked on: one per shop, created the
 // first time a slot is blocked. Its empty phone can never match a real
 // customer's (a booking's phone is validated), and the web app shows its name
 // translated.
 export const SYSTEM_CUSTOMER_PHONE = '';
-const findOrCreateSystemCustomer = (
+const findOrCreateSystemCustomer = async (
   tx: Prisma.TransactionClient,
   shopId: string,
 ) =>
-  tx.customer.upsert({
-    where: { shopId_phone: { shopId, phone: SYSTEM_CUSTOMER_PHONE } },
-    update: {},
-    create: {
+  (await tx.customer.findFirst({
+    where: { shopId, isSystem: true },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  })) ??
+  tx.customer.create({
+    data: {
       shopId,
       name: 'Blocked',
       phone: SYSTEM_CUSTOMER_PHONE,
@@ -1167,9 +1168,19 @@ export const listBookings = async (
     orderBy: { startTime: 'asc' },
   });
 
+  // A booking whose customer shares a phone with another is flagged, for the
+  // shop to merge the two.
+  const shared = canViewCustomer
+    ? await duplicatePhones(prisma, shopId, [
+        ...new Set(bookings.map((b) => b.customer.phone)),
+      ])
+    : new Set<string>();
   return bookings.map((b) => ({
     ...b,
-    customer: redactCustomer(b.customer, canViewCustomer),
+    customer: redactCustomer(
+      { ...b.customer, duplicatePhone: shared.has(b.customer.phone) },
+      canViewCustomer,
+    ),
   }));
 };
 
@@ -1267,9 +1278,18 @@ export const getBooking = async (
     await requireShopAccess(userId, shopId),
   );
   const booking = await loadBooking(prisma, shopId, bookingId);
+  const shared = canViewCustomer
+    ? await duplicatePhones(prisma, shopId, [booking.customer.phone])
+    : new Set<string>();
   return {
     ...booking,
-    customer: redactCustomer(booking.customer, canViewCustomer),
+    customer: redactCustomer(
+      {
+        ...booking.customer,
+        duplicatePhone: shared.has(booking.customer.phone),
+      },
+      canViewCustomer,
+    ),
   };
 };
 

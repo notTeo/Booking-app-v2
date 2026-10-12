@@ -10,6 +10,7 @@ import {
   faLockOpen,
   faNoteSticky,
   faPen,
+  faCircleExclamation,
   faPhone,
   faScissors,
   faXmark,
@@ -171,6 +172,12 @@ export default function BookingDetailsModal({
             <div className="detail-row">
               <FontAwesomeIcon icon={faPhone} className="detail-row__icon" aria-hidden="true" />
               <div className="detail-row__main">{formatPhone(booking.customer.phone)}</div>
+              {booking.customer.duplicatePhone && (
+                <span className="badge badge--warning detail-row__end">
+                  <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                  {t.customers.duplicatePhoneBadge}
+                </span>
+              )}
             </div>
           )}
           {booking.notes && (

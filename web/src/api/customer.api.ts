@@ -18,6 +18,15 @@ export interface Customer extends Partial<PhotoFields> {
   hasCustomDurations?: boolean;
   /** Customer list only (owner and managers): their own changes wait for approval. */
   hasPendingChanges?: boolean;
+  /** Another customer of the shop has this phone number too: probably one person, to be merged. */
+  duplicatePhone?: boolean;
+}
+
+/** Another customer with the same phone number. */
+export interface SamePhoneCustomer {
+  id: string;
+  name: string;
+  createdAt: string;
 }
 
 /**
@@ -45,6 +54,8 @@ export interface CustomerListResult {
   limit: number;
   /** How many customers have changes waiting (0 for staff). */
   pendingChangesCount?: number;
+  /** How many customers share their phone number with another (0 for who may not see phones). */
+  duplicatePhoneCount?: number;
 }
 
 export interface CustomerBooking {
@@ -77,6 +88,8 @@ export interface CustomerDetail extends Customer {
   serviceDurations: CustomerServiceDuration[];
   /** Owner and managers only; null when nothing is waiting. */
   changeRequest?: CustomerChangeRequest | null;
+  /** The shop's other customers with this phone number, oldest first. */
+  samePhone?: SamePhoneCustomer[];
 }
 
 export interface UpdateCustomerDto {
@@ -97,6 +110,8 @@ export const getCustomers = (
   hasCustomDurations = false,
   /** Only customers whose own changes wait for approval. */
   pendingChanges = false,
+  /** Only customers who share their phone number with another. */
+  duplicatePhone = false,
 ) =>
   client
     .get(base(shopId), {
@@ -104,6 +119,7 @@ export const getCustomers = (
         ...(search ? { search } : {}),
         ...(hasCustomDurations ? { hasCustomDurations: true } : {}),
         ...(pendingChanges ? { pendingChanges: true } : {}),
+        ...(duplicatePhone ? { duplicatePhone: true } : {}),
         page,
         limit,
       },

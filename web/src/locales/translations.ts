@@ -1119,6 +1119,15 @@ export interface Translations {
     mergeConfirmButton: string;
     mergeError: string;
     mergeSuccess: string;
+    duplicatePhoneBadge: string;
+    duplicatePhoneFilter: string;
+    samePhoneTitle: string;
+    samePhoneNewer: string;
+    samePhoneOldest: string;
+    samePhoneAdded: string;
+    samePhoneMergeInto: string;
+    samePhoneMergeHere: string;
+    samePhoneConfirm: string;
     bookingHistory: string;
     bookingsErrorLoad: string;
     providerCol: string;
@@ -2676,6 +2685,15 @@ home: {
       mergeConfirmButton: 'Συγχώνευση',
       mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
       mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      duplicatePhoneBadge: 'Ίδιο τηλέφωνο',
+      duplicatePhoneFilter: 'Ίδιο τηλέφωνο',
+      samePhoneTitle: 'Το {phone} υπάρχει και σε άλλη καρτέλα',
+      samePhoneNewer: 'Μάλλον είναι το ίδιο άτομο. Παλαιότερη καρτέλα:',
+      samePhoneOldest: 'Μάλλον είναι το ίδιο άτομο. Νεότερες καρτέλες:',
+      samePhoneAdded: 'από {date}',
+      samePhoneMergeInto: 'Συγχώνευση στον πελάτη {name}',
+      samePhoneMergeHere: 'Συγχώνευση του {name} εδώ',
+      samePhoneConfirm: 'Τα ραντεβού του {source} θα μεταφερθούν στον {target} και η καρτέλα του {source} θα διαγραφεί. Τα στοιχεία του {target} δεν αλλάζουν. Η ενέργεια δεν αναιρείται.',
       bookingHistory: 'Ραντεβού',
       bookingsErrorLoad: 'Τα ραντεβού δεν φορτώθηκαν.',
       providerCol: 'Προσωπικό',
@@ -4242,6 +4260,15 @@ home: {
       mergeConfirmButton: 'Merge',
       mergeError: 'The merge failed. Please try again.',
       mergeSuccess: 'Customers merged. {count} bookings moved.',
+      duplicatePhoneBadge: 'Same phone',
+      duplicatePhoneFilter: 'Same phone',
+      samePhoneTitle: '{phone} is on another record too',
+      samePhoneNewer: 'Probably the same person. Older record:',
+      samePhoneOldest: 'Probably the same person. Newer records:',
+      samePhoneAdded: 'since {date}',
+      samePhoneMergeInto: 'Merge into {name}',
+      samePhoneMergeHere: 'Merge {name} into this one',
+      samePhoneConfirm: '{source}\'s bookings will move to {target}, and {source}\'s record will be deleted. {target}\'s details stay as they are. This cannot be undone.',
       bookingHistory: 'Bookings',
       bookingsErrorLoad: 'The bookings could not be loaded.',
       providerCol: 'Staff',

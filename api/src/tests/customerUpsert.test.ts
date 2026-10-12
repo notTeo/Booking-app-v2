@@ -67,8 +67,8 @@ describe('customer upsert on booking creation', () => {
     const res = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     expect(res.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.name).toBe('Nikos');
     expect(customer?.email).toBe('nikos@example.com');
@@ -92,8 +92,8 @@ describe('customer upsert on booking creation', () => {
     );
     expect(second.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.name).toBe('Nikos');
     expect(customer?.email).toBe('nikos@example.com');
@@ -114,8 +114,8 @@ describe('customer upsert on booking creation', () => {
     await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     await pub(t, phone, 'Nikos', SECOND); // no email this time
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.email).toBe('nikos@example.com');
   });
@@ -133,8 +133,8 @@ describe('customer upsert on booking creation', () => {
     );
     expect(second.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.name).toBe('Corrected Name');
     expect(customer?.email).toBe('corrected@example.com');

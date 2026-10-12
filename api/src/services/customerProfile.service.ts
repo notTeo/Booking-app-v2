@@ -1,6 +1,7 @@
 import { Prisma } from '../../dist/generated/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { findCustomerByPhone } from '../utils/customerPhone';
 import { prisma } from '../utils/prisma';
 import { PhotoCrop, storePhoto } from './photo.service';
 import { isShopLocked } from './plan.service';
@@ -57,9 +58,7 @@ export const saveCustomerProfile = async (
 
   const signUp = shop.customerProfilePageEnabled && !input.photoOnly;
   const byPhone = (phone: string) =>
-    prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: shop.id, phone } },
-    });
+    findCustomerByPhone(prisma, shop.id, phone);
 
   let customer = await byPhone(input.phone);
   // Someone the shop only knows by the number they say is their new one.

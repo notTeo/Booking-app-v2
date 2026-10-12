@@ -83,7 +83,10 @@ describe('POST /api/shops/:shopId/customers', () => {
     const a = await createTenant('ShopA');
     const b = await createTenant('ShopB');
     await create(a, a.token, { name: 'Same', phone: '+306941234567' });
-    const res = await create(b, b.token, { name: 'Same', phone: '+306941234567' });
+    const res = await create(b, b.token, {
+      name: 'Same',
+      phone: '+306941234567',
+    });
     expect(res.status).toBe(201);
   });
 

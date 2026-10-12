@@ -1066,6 +1066,8 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .cal-block--compact .cal-block__name { flex: 0 1 auto; min-width: 0; }
 /* The customer's photo, in line with their name. */
 .cal-block__name .avatar { display: inline-grid; margin-inline-end: var(--space-1); vertical-align: middle; }
+/* The customer shares a phone number with another one: probably a duplicate to merge. */
+.cal-block__flag { margin-inline-end: var(--space-1); color: var(--warning); }
 .cal-block--compact .cal-block__service { flex: 1 1 0; min-width: 0; }
 .cal-block--compact .cal-block__tag, .cal-block--compact .cal-block__next-day { display: none; }
 /* Phones: one provider column per "page", picked with a row of chips above the calendar. */

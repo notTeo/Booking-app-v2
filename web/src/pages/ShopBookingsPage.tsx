@@ -4,7 +4,7 @@ import { canManageShop } from '../utils/roles';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faChevronLeft, faChevronRight, faClock, faPlus, faSliders, faBoxOpen, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { useShop } from '../context/ShopContext';
 import { useLang } from '../context/LanguageContext';
 import { usePolling } from '../hooks/usePolling';
@@ -538,6 +538,12 @@ export default function ShopBookingsPage() {
                             <span className="cal-block__name">
                               {b.customer.photoUrl && !b.customer.contactHidden && (
                                 <Avatar name={b.customer.name} photoUrl={b.customer.photoUrl} size="xs" />
+                              )}
+                              {b.customer.duplicatePhone && (
+                                <>
+                                  <FontAwesomeIcon icon={faCircleExclamation} className="cal-block__flag" aria-hidden="true" />
+                                  <span className="visually-hidden">{t.customers.duplicatePhoneBadge}</span>
+                                </>
                               )}
                               {customerLabel(b)}
                             </span>

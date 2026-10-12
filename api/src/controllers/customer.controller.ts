@@ -40,6 +40,7 @@ export const listCustomers = async (
       limit,
       String(req.query.hasCustomDurations) === 'true',
       String(req.query.pendingChanges) === 'true',
+      String(req.query.duplicatePhone) === 'true',
     );
     successResponse(res, customers);
   } catch (err) {

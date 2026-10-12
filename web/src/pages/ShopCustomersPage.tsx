@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { faCircleExclamation, faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
 import { formatPhone } from '../utils/phone';
 
 const PAGE_SIZE = 20;
@@ -39,6 +39,9 @@ export default function ShopCustomersPage() {
   // Customers whose own changes (from the sign-up page) wait for approval.
   const [onlyPending, setOnlyPending] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  // Customers who share their phone number with another: probably one person twice.
+  const [onlyDuplicates, setOnlyDuplicates] = useState(false);
+  const [duplicateCount, setDuplicateCount] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -55,10 +58,11 @@ export default function ShopCustomersPage() {
     // whatever page happens to be loaded.
     // A slower, older answer must not overwrite a newer one.
     let stale = false;
-    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyPending)
+    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyPending, onlyDuplicates)
       .then((result) => {
         if (stale) return;
         setPendingCount(result.pendingChangesCount ?? 0);
+        setDuplicateCount(result.duplicatePhoneCount ?? 0);
         setCustomers(result.items);
         setTotal(result.total);
         setLoaded(true);
@@ -66,7 +70,7 @@ export default function ShopCustomersPage() {
       .catch(() => { if (!stale) setError(t.customers.errorLoad); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
-  }, [shop?.id, query, page, onlyCustomDurations, onlyPending, reloadKey]);
+  }, [shop?.id, query, page, onlyCustomDurations, onlyPending, onlyDuplicates, reloadKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -171,6 +175,17 @@ export default function ShopCustomersPage() {
             <span className="chip__label">{t.customerProfile.changesFilter} ({pendingCount})</span>
           </button>
         )}
+        {(duplicateCount > 0 || onlyDuplicates) && (
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={onlyDuplicates}
+            onClick={() => { setOnlyDuplicates((v) => !v); setPage(1); }}
+          >
+            <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+            <span className="chip__label">{t.customers.duplicatePhoneFilter} ({duplicateCount})</span>
+          </button>
+        )}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -187,7 +202,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {query || onlyCustomDurations || onlyPending ? t.customers.noResults : t.customers.noCustomers}
+                  {query || onlyCustomDurations || onlyPending || onlyDuplicates ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -213,6 +228,12 @@ export default function ShopCustomersPage() {
                             <span className="badge badge--warning">
                               <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
                               {t.customerProfile.changesBadge}
+                            </span>
+                          )}
+                          {c.duplicatePhone && (
+                            <span className="badge badge--warning">
+                              <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
+                              {t.customers.duplicatePhoneBadge}
                             </span>
                           )}
                           {c.hasCustomDurations && (

@@ -55,8 +55,9 @@ const submit = (
 };
 
 const customerOf = (t: Tenant, phone: string) =>
-  prisma.customer.findUnique({
-    where: { shopId_phone: { shopId: t.shop.id, phone } },
+  prisma.customer.findFirst({
+    where: { shopId: t.shop.id, phone },
+    orderBy: { createdAt: 'asc' },
   });
 
 describe('POST /public/:slug/profile', () => {
@@ -78,7 +79,11 @@ describe('POST /public/:slug/profile', () => {
 
   it('never changes an existing customer: what differs waits as a change request, and the answer is the same', async () => {
     const t = await shop({ page: true, photos: true });
-    await submit(t, { name: 'Real Name', phone: '+306945550002' }, await image());
+    await submit(
+      t,
+      { name: 'Real Name', phone: '+306945550002' },
+      await image(),
+    );
     const before = await customerOf(t, '+306945550002');
 
     const res = await submit(
@@ -227,9 +232,9 @@ describe('POST /public/:slug/profile', () => {
 
   it('is 404 when the shop has both settings off, is inactive, or does not exist', async () => {
     const off = await shop({});
-    expect((await submit(off, { name: 'A', phone: '+306945550007' })).status).toBe(
-      404,
-    );
+    expect(
+      (await submit(off, { name: 'A', phone: '+306945550007' })).status,
+    ).toBe(404);
     expect(await customerOf(off, '+306945550007')).toBeNull();
 
     const inactive = await shop({ page: true });
@@ -264,7 +269,8 @@ describe('POST /public/:slug/profile', () => {
     expect((await submit(t, { phone: '+306945550009' })).status).toBe(400);
     expect((await submit(t, { name: 'A', phone: 'nope' })).status).toBe(400);
     expect(
-      (await submit(t, { name: 'A', phone: '+306945550009', email: 'x' })).status,
+      (await submit(t, { name: 'A', phone: '+306945550009', email: 'x' }))
+        .status,
     ).toBe(400);
     const notAnImage = await submit(
       t,
@@ -403,26 +409,6 @@ describe('deciding on a customer’s own changes', () => {
     });
     expect(memoryFiles.has(keyOf(request.photoUrl!))).toBe(false);
     expect(memoryFiles.has(keyOf(customer.photoUrl!))).toBe(true);
-  });
-
-  it('refuses a new phone number that another customer already has', async () => {
-    const { t, customer } = await withRequest('+306945550024');
-    const other = await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Taken', phone: '+306945559999' },
-    });
-    const res = await api
-      .post(`${customersUrl(t)}/${customer.id}/change-request/accept`)
-      .set(authHeader(t.token));
-    expect(res.status).toBe(409);
-    expect(res.body.code).toBe('CUSTOMER_EXISTS');
-    expect(res.body.customerId).toBe(other.id);
-    // Nothing was applied, and the request is still there to reject.
-    expect((await customerOf(t, '+306945550024'))!.name).toBe('Old Name');
-    expect(
-      await prisma.customerChangeRequest.count({
-        where: { customerId: customer.id },
-      }),
-    ).toBe(1);
   });
 
   it('deleting the customer removes the offered photo too', async () => {
