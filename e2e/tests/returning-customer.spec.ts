@@ -92,6 +92,22 @@ test('the browser a customer booked from is them the next time, and "Change" boo
     { name: 'Other Person', bookings: '1' },
   ]);
 
+  // No email was given, so no link was sent: the confirmation shows it instead,
+  // and it cancels this booking.
+  const link = await page.locator('.copy-link__value').innerText();
+  expect(link).toMatch(new RegExp(`^${E2E.webUrl}/cancel\\?token=[0-9a-f-]{36}$`));
+  await page.setViewportSize({ width: 360, height: 740 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.goto(link);
+  await page.getByRole('button', { name: 'Yes, cancel booking' }).click();
+  await expect(page.getByRole('heading', { name: 'Booking Cancelled' })).toBeVisible();
+  expect(
+    await query(
+      `select b.status from "Booking" b join "Customer" c on c.id = b."customerId" where c.name = 'Other Person' and c.phone = $1`,
+      [PHONE],
+    ),
+  ).toEqual([{ status: 'CANCELED' }]);
+
   // The browser is still who it was.
   await page.goto(`/${E2E.shop.slug}`);
   await expect(page.getByText('Booking as Remember Tester')).toBeVisible();

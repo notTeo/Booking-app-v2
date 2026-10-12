@@ -158,6 +158,8 @@ export interface CreateBookingPayload {
 
 export interface BookingConfirmation {
   id: string;
+  /** This booking's key: opens its cancel and reschedule pages. */
+  cancelToken?: string | null;
   status: string;
   startTime: string;
   endTime: string;

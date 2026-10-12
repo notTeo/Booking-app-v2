@@ -67,12 +67,15 @@ export const createBooking = async (
       guest: guest === true,
     });
     if (deviceKey) setDeviceCookie(res, deviceKey);
-    // Anonymous caller: never echo the booking row (cancelToken, staff email,
-    // customer and shop data). The emails below use the full row server-side.
+    // Anonymous caller: never echo the booking row (staff email, customer and
+    // shop data). The emails below use the full row server-side. The cancel
+    // token does go back: it is this booking's key, and whoever made the
+    // booking may cancel it, with or without an email to get the link in.
     successResponse(
       res,
       {
         id: booking.id,
+        cancelToken: booking.cancelToken,
         status: booking.status,
         startTime: booking.startTime,
         endTime: booking.endTime,

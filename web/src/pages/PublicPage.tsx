@@ -14,7 +14,8 @@ import DateTimeStep from '../components/booking-wizard/DateTimeStep';
 import { buildISODateTime, formatDuration, servicesSummary } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation, PRODUCT_OUT_OF_STOCK } from '../api/booking.api';
-import { isPlausibleSlug } from '../utils/publicLink';
+import { isPlausibleSlug, publicProfilePath } from '../utils/publicLink';
+import CopyLinkButton from '../components/CopyLinkButton';
 import { forgetSavedCustomer } from '../utils/savedCustomer';
 import CustomerPhotoPicker, { type PickedPhoto } from '../components/CustomerPhotoPicker';
 import Alert from '../components/Alert';
@@ -166,6 +167,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
         email,
         products: booked.products ?? [],
         servicePrice: booked.servicePrice,
+        ...(booked.cancelToken && { cancelToken: booked.cancelToken }),
       };
       saveConfirmedBooking(slug, made);
       // The booking stands whatever happens to the photo.
@@ -298,6 +300,21 @@ function PublicBookingPage({ slug }: { slug: string }) {
               )}
               <ReservedProducts products={confirmation.products} servicePrice={confirmation.servicePrice} />
               {photoFailed && <Alert variant="warning">{t.customerProfile.wizardPhotoFailed}</Alert>}
+              {/* The same link the confirmation email carries, for a customer who gave no email (or mistyped it). */}
+              {confirmation.cancelToken && (
+                <div className="public-stack">
+                  <p className="card__text">{t.public.manageLinkHint}</p>
+                  <CopyLinkButton link={`${window.location.origin}/cancel?token=${confirmation.cancelToken}`} compact />
+                  <Link className="btn btn--ghost btn--sm" to={`/reschedule?token=${confirmation.cancelToken}`}>
+                    {t.public.manageReschedule}
+                  </Link>
+                </div>
+              )}
+              {shop.customerProfilePageEnabled && (
+                <Link className="btn btn--ghost btn--sm" to={publicProfilePath(slug)}>
+                  {t.customerProfile.myDetailsLink}
+                </Link>
+              )}
               <button type="button" className="btn btn--secondary" onClick={handleBookAnother}>
                 {t.public.bookAnother}
               </button>

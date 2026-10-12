@@ -978,6 +978,8 @@ export interface Translations {
     staffContext: string;
     atLabel: string;
     bookAnother: string;
+    manageLinkHint: string;
+    manageReschedule: string;
     scrollForMore: string;
   };
   shopGate: {
@@ -2512,6 +2514,8 @@ home: {
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
       bookAnother: 'Νέα κράτηση',
+      manageLinkHint: 'Κρατήστε αυτόν τον σύνδεσμο: με αυτόν ακυρώνετε το ραντεβού σας.',
+      manageReschedule: 'Αλλαγή ώρας',
       scrollForMore: 'Κύλισε για περισσότερα',
     },
     shopGate: {
@@ -4063,6 +4067,8 @@ home: {
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
       bookAnother: 'Book another',
+      manageLinkHint: 'Keep this link: it is how you cancel your appointment.',
+      manageReschedule: 'Change the time',
       scrollForMore: 'Scroll for more',
     },
     shopGate: {

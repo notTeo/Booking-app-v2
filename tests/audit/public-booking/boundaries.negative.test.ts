@@ -240,7 +240,7 @@ describe('customer record', () => {
     const after = await prisma.customer.findUniqueOrThrow({ where: { id: existing.id } });
     expect([after.name, after.email, after.notes]).toEqual(['Real Name', 'real@example.com', 'private']);
     const text = JSON.stringify(res.body);
-    for (const leak of ['Real Name', 'real@example.com', 'private', 'cancelToken', existing.id])
+    for (const leak of ['Real Name', 'real@example.com', 'private', existing.id])
       expect(text).not.toContain(leak);
   });
 
