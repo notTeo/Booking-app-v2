@@ -9,6 +9,7 @@ import {
   createStaffMember,
   createTenant,
   type Tenant,
+  deviceCookieFor,
 } from './helpers';
 import { sendBookingConfirmationEmail } from '../services/email.service';
 
@@ -37,15 +38,18 @@ async function shop() {
   return { t, cut: t.service, beard };
 }
 
-const publicBook = (t: Tenant, body: object) =>
-  api.post(`/public/${t.shop.slug}/book`).send({
-    name: 'Nikos',
-    phone: '+306900001000',
-    email: 'nikos@example.com',
-    staffId: t.staff.id,
-    startTime: TEN,
-    ...body,
-  });
+const publicBook = (t: Tenant, body: object, cookie = '') =>
+  api
+    .post(`/public/${t.shop.slug}/book`)
+    .set('Cookie', cookie)
+    .send({
+      name: 'Nikos',
+      phone: '+306900001000',
+      email: 'nikos@example.com',
+      staffId: t.staff.id,
+      startTime: TEN,
+      ...body,
+    });
 
 const staffBook = (t: Tenant, body: object, token = t.token) =>
   api
@@ -130,7 +134,11 @@ describe('booking several services at once', () => {
     await prisma.customerServiceDuration.create({
       data: { customerId: customer.id, serviceId: beard.id, duration: 20 },
     });
-    const res = await publicBook(t, { serviceIds: [cut.id, beard.id] });
+    const res = await publicBook(
+      t,
+      { serviceIds: [cut.id, beard.id] },
+      await deviceCookieFor(t.shop.id, customer.id),
+    );
     expect(
       res.body.data.services.map((s: { duration: number }) => s.duration),
     ).toEqual([30, 20]);

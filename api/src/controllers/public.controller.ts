@@ -4,7 +4,16 @@ import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 import { getShopInfoService } from '../services/public.service';
-import { saveCustomerProfile as saveCustomerProfileService } from '../services/customerProfile.service';
+import {
+  getOwnProfile as getOwnProfileService,
+  saveCustomerProfile as saveCustomerProfileService,
+} from '../services/customerProfile.service';
+import {
+  customerOfDevice,
+  newDeviceKey,
+  readDeviceKey,
+  setDeviceCookie,
+} from '../services/customerDevice.service';
 import { parseCrop } from '../services/photo.service';
 import {
   createBooking as createBookingService,
@@ -28,7 +37,6 @@ import {
   bookingServicesPrice,
 } from '../utils/bookingServices';
 import { AppError } from '../middleware/errorHandler';
-import { isPlausiblePhone, normalizePhone } from '../validators/common';
 
 export const getShopInfo = async (
   req: Request,
@@ -51,7 +59,14 @@ export const createBooking = async (
 ) => {
   try {
     const slug = req.params.slug as string;
-    const booking = await createBookingService(slug, req.body);
+    const { guest, ...body } = req.body;
+    // The browser's key: the one it has, or a new one it becomes known by.
+    const deviceKey = readDeviceKey(req) ?? (guest ? null : newDeviceKey());
+    const booking = await createBookingService(slug, body, {
+      key: deviceKey,
+      guest: guest === true,
+    });
+    if (deviceKey) setDeviceCookie(res, deviceKey);
     // Anonymous caller: never echo the booking row (cancelToken, staff email,
     // customer and shop data). The emails below use the full row server-side.
     successResponse(
@@ -286,12 +301,16 @@ export const getPublicSlots = async (
     const serviceId = req.query['serviceId'] as string;
     const serviceIds = parseServiceIds(req.query['serviceIds']);
     const rescheduleToken = req.query['rescheduleToken'] as string | undefined;
-    const phone = req.get('x-customer-phone')?.trim();
+    const guest = String(req.query['guest']) === 'true';
     const shop = await prisma.shop.findUnique({
       where: { slug, isActive: true },
       select: { id: true },
     });
     if (!shop) throw new AppError(404, 'Shop not found');
+    const known =
+      guest || rescheduleToken
+        ? null
+        : await customerOfDevice(prisma, shop.id, readDeviceKey(req));
 
     const slots = await getAvailableSlots(
       shop.id,
@@ -302,13 +321,9 @@ export const getPublicSlots = async (
       // authenticated GET /api/shops/:shopId/bookings/slots.
       'public',
       // A customer rescheduling: their own booking must not block its slot.
-      // Otherwise a returning customer may say who they are, so the times
-      // offered fit their own duration for the service ("continue as" in the
-      // first step of the wizard; skipping it sends no phone and gets the
-      // default durations). Sent as a header to keep the phone out of URLs and
-      // access logs; a malformed one is ignored. A known phone with a personal
-      // duration does get a different grid from an unknown one, which tells
-      // the two apart: accepted by design (audit TI-05).
+      // Otherwise a returning customer (the one this browser is) gets the
+      // times that fit their own duration for the service, unless they said
+      // they are someone else ("Not you?").
       {
         ...(serviceIds && { serviceIds }),
         ...(rescheduleToken
@@ -318,12 +333,34 @@ export const getPublicSlots = async (
                 rescheduleToken,
               ),
             }
-          : isPlausiblePhone(phone)
-            ? { customer: { phone: normalizePhone(phone as string) } }
+          : known
+            ? { customer: { customerId: known.id } }
             : {}),
       },
     );
     successResponse(res, slots);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// The customer this browser is at the shop (null for one it has not seen),
+// for the public pages to greet them and fill in their details.
+export const getOwnProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const deviceKey = readDeviceKey(req);
+    const data = await getOwnProfileService(
+      req.params.slug as string,
+      deviceKey,
+    );
+    if (deviceKey && data.customer) setDeviceCookie(res, deviceKey);
+    // Someone's own details: not for any cache to keep.
+    res.set('Cache-Control', 'no-store');
+    successResponse(res, data);
   } catch (err) {
     next(err);
   }
@@ -335,17 +372,22 @@ export const saveCustomerProfile = async (
   next: NextFunction,
 ) => {
   try {
-    const { name, phone, email, newPhone, photoOnly } = req.body;
-    const data = await saveCustomerProfileService(req.params.slug as string, {
-      name,
-      phone,
-      email: email || undefined,
-      newPhone: newPhone || undefined,
-      photoOnly: photoOnly === true,
-      ...(req.file && {
-        photo: { file: req.file.buffer, crop: parseCrop(req.body.crop) },
-      }),
-    });
+    const { name, phone, email, photoOnly } = req.body;
+    const deviceKey = readDeviceKey(req) ?? newDeviceKey();
+    const data = await saveCustomerProfileService(
+      req.params.slug as string,
+      {
+        name,
+        phone,
+        email: email || undefined,
+        photoOnly: photoOnly === true,
+        ...(req.file && {
+          photo: { file: req.file.buffer, crop: parseCrop(req.body.crop) },
+        }),
+      },
+      deviceKey,
+    );
+    setDeviceCookie(res, deviceKey);
     successResponse(res, data);
   } catch (err) {
     next(err);

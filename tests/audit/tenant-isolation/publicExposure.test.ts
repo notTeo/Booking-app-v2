@@ -63,12 +63,12 @@ describe('TI-04: GET /public/:slug lists more than the public page should', () =
 // ACCEPTED BY DESIGN (decision D3, 2026-10-06): a customer who identifies
 // themselves in the first step of the wizard is shown their own durations;
 // one who skips it gets the defaults. This now documents that behaviour.
-describe('TI-05 (accepted): GET /public/:slug/slots follows the identified customer', () => {
-  // public.controller.ts:287,316-317 passes the X-Customer-Phone header to
-  // getAvailableSlots, which sizes the grid with that customer's own duration
-  // (customerDuration.service.ts:21-31). The comment at public.controller.ts:305
-  // says whether the phone is known "is never revealed"; the slot list reveals it.
-  it('TI-05 (accepted): a known phone gets its own durations; an unknown one gets the default grid', async () => {
+describe('TI-05 (resolved): GET /public/:slug/slots does not tell a known phone from an unknown one', () => {
+  // The grid used to be sized by the X-Customer-Phone header, so a phone with a
+  // personal duration got different times and was thereby shown to be a
+  // customer. Since 2026-10-12 only the browser a customer booked from (a key
+  // in a cookie) gets their own durations; a phone number changes nothing.
+  it('TI-05 (resolved): a known phone gets the default grid, like an unknown one', async () => {
     const t = await createTenant('Oracle');
     await addWeeklySchedule(t); // 09:00-13:00 daily
     const customer = await prisma.customer.create({
@@ -85,7 +85,7 @@ describe('TI-05 (accepted): GET /public/:slug/slots follows the identified custo
 
     expect(known.status).toBe(200);
     expect(unknown.status).toBe(200);
-    expect(known.body.data).not.toEqual(anonymous.body.data);
+    expect(known.body.data).toEqual(anonymous.body.data);
     expect(unknown.body.data).toEqual(anonymous.body.data);
   });
 });

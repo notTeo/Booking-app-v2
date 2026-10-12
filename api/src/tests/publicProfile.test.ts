@@ -5,10 +5,10 @@ import { serve } from './testRequest';
 import { prisma } from '../utils/prisma';
 import { memoryFiles } from '../services/storage.service';
 import {
-  addManager,
   authHeader,
-  createStaffMember,
   createTenant,
+  deviceCookie,
+  deviceCookieFor,
   type Tenant,
 } from './helpers';
 
@@ -39,12 +39,14 @@ async function shop(settings: {
   return t;
 }
 
+// `cookie` is the browser sending the form: none is one the shop has not seen.
 const submit = (
   t: Tenant,
-  fields: { name?: string; phone?: string; email?: string; newPhone?: string },
+  fields: { name?: string; phone?: string; email?: string; photoOnly?: string },
   photo?: Buffer,
+  cookie = '',
 ) => {
-  let req = api.post(`/public/${t.shop.slug}/profile`);
+  let req = api.post(`/public/${t.shop.slug}/profile`).set('Cookie', cookie);
   for (const [key, value] of Object.entries(fields))
     req = req.field(key, value);
   if (photo)
@@ -60,8 +62,15 @@ const customerOf = (t: Tenant, phone: string) =>
     orderBy: { createdAt: 'asc' },
   });
 
+/** The cookie a response handed the browser. */
+const cookieOf = (res: { headers: Record<string, unknown> }) =>
+  String(res.headers['set-cookie']).split(';')[0];
+
+const me = (t: Tenant, cookie: string) =>
+  api.get(`/public/${t.shop.slug}/me`).set('Cookie', cookie);
+
 describe('POST /public/:slug/profile', () => {
-  it('creates a customer with their photo', async () => {
+  it('creates a customer with their photo, and the browser is that customer from then on', async () => {
     const t = await shop({ page: true, photos: true });
     const res = await submit(
       t,
@@ -75,126 +84,127 @@ describe('POST /public/:slug/profile', () => {
     expect(row).toMatchObject({ name: 'Eleni K', email: 'eleni@example.com' });
     expect(row!.photoUrl).toMatch(/^\/media\/shops\//);
     expect(memoryFiles.has(keyOf(row!.photoUrl!))).toBe(true);
+
+    const own = await me(t, cookieOf(res));
+    expect(own.status).toBe(200);
+    expect(own.headers['cache-control']).toBe('no-store');
+    expect(own.body.data.customer).toEqual({
+      name: 'Eleni K',
+      phone: '+306945550001',
+      email: 'eleni@example.com',
+      photoUrl: row!.photoUrl,
+    });
   });
 
-  it('never changes an existing customer: what differs waits as a change request, and the answer is the same', async () => {
+  it('lets the browser that is the customer change their name, phone, email and photo at once', async () => {
     const t = await shop({ page: true, photos: true });
-    await submit(
+    const first = await submit(
       t,
-      { name: 'Real Name', phone: '+306945550002' },
+      { name: 'Old Name', phone: '+306945550002', email: 'old@example.com' },
       await image(),
     );
-    const before = await customerOf(t, '+306945550002');
+    const cookie = cookieOf(first);
+    const before = (await customerOf(t, '+306945550002'))!;
 
     const res = await submit(
       t,
-      {
-        name: 'New Name',
-        phone: '+306945550002',
-        email: 'new@example.com',
-        newPhone: '694 555 0099',
+      { name: 'New Name', phone: '694 555 0099' },
+      await image('#aa3366'),
+      cookie,
+    );
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body).toEqual(first.body);
+
+    const after = await prisma.customer.findUniqueOrThrow({
+      where: { id: before.id },
+    });
+    // An email left empty is an email taken off.
+    expect(after).toMatchObject({
+      name: 'New Name',
+      phone: '+306945550099',
+      email: null,
+    });
+    expect(after.photoUrl).not.toBe(before.photoUrl);
+    expect(memoryFiles.has(keyOf(after.photoUrl!))).toBe(true);
+    expect(memoryFiles.has(keyOf(before.photoUrl!))).toBe(false);
+    expect(await prisma.customer.count({ where: { shopId: t.shop.id } })).toBe(
+      1,
+    );
+  });
+
+  it('makes another browser a new customer, even with a phone the shop has: the first is not touched', async () => {
+    const t = await shop({ page: true, photos: true });
+    const existing = await prisma.customer.create({
+      data: {
+        shopId: t.shop.id,
+        name: 'Real Name',
+        phone: '+306945550003',
+        email: 'real@example.com',
       },
-      await image('#aa3333'),
+    });
+
+    const res = await submit(
+      t,
+      { name: 'Someone', phone: '+306945550003', email: 'other@example.com' },
+      await image(),
+      deviceCookie(),
     );
     expect(res.status).toBe(200);
-    expect(res.body.data).toEqual({ saved: true });
 
-    const after = await customerOf(t, '+306945550002');
-    expect(after).toMatchObject({
+    expect(
+      await prisma.customer.findUniqueOrThrow({ where: { id: existing.id } }),
+    ).toMatchObject({
       name: 'Real Name',
-      email: null,
-      phone: '+306945550002',
-      photoUrl: before!.photoUrl,
+      email: 'real@example.com',
+      photoUrl: null,
     });
-    const request = await prisma.customerChangeRequest.findUniqueOrThrow({
-      where: { customerId: after!.id },
+    const rows = await prisma.customer.findMany({
+      where: { shopId: t.shop.id, phone: '+306945550003' },
+      orderBy: { name: 'asc' },
     });
-    expect(request).toMatchObject({
-      name: 'New Name',
-      email: 'new@example.com',
-      phone: '+306945550099',
-    });
-    expect(request.photoUrl).not.toBe(before!.photoUrl);
-    expect(memoryFiles.has(keyOf(request.photoUrl!))).toBe(true);
+    expect(rows.map((c) => c.name)).toEqual(['Real Name', 'Someone']);
+    expect((await me(t, cookieOf(res))).body.data.customer.name).toBe(
+      'Someone',
+    );
   });
 
-  it('keeps one request per customer: a newer one replaces it and its photo', async () => {
-    const t = await shop({ page: true, photos: true });
-    await submit(t, { name: 'Real', phone: '+306945550012' }, await image());
-    await submit(t, { name: 'First', phone: '+306945550012' }, await image());
-    const customer = await customerOf(t, '+306945550012');
-    const first = await prisma.customerChangeRequest.findUniqueOrThrow({
-      where: { customerId: customer!.id },
+  it('the booking wizard’s photo-only call sets the photo of the customer this browser is, and nothing else', async () => {
+    const t = await shop({ photos: true });
+    const customer = await prisma.customer.create({
+      data: { shopId: t.shop.id, name: 'Booked', phone: '+306945550005' },
     });
+    const cookie = await deviceCookieFor(t.shop.id, customer.id);
+    // A booking for a friend (another phone): the photo is not this customer's.
+    const friend = await submit(
+      t,
+      { name: 'Friend', phone: '+306945550006', photoOnly: 'true' },
+      await image(),
+      cookie,
+    );
+    // A browser the shop has not seen: nobody to give it to, and nobody is created.
+    const stranger = await submit(
+      t,
+      { name: 'Stranger', phone: '+306945550005', photoOnly: 'true' },
+      await image(),
+      deviceCookie(),
+    );
+    expect(friend.status).toBe(200);
+    expect(stranger.body).toEqual(friend.body);
+    expect((await customerOf(t, '+306945550005'))!.photoUrl).toBeNull();
 
-    await submit(t, { name: 'Second', phone: '+306945550012' });
-    const second = await prisma.customerChangeRequest.findUniqueOrThrow({
-      where: { customerId: customer!.id },
-    });
-    expect(second).toMatchObject({ name: 'Second', photoUrl: null });
-    expect(memoryFiles.has(keyOf(first.photoUrl!))).toBe(false);
-    expect(await prisma.customerChangeRequest.count()).toBeGreaterThan(0);
-  });
-
-  it('asks for nothing when what was entered is what the shop already has', async () => {
-    const t = await shop({ page: true });
-    await prisma.customer.create({
-      data: {
-        shopId: t.shop.id,
-        name: 'Same',
-        phone: '+306945550013',
-        email: 'Same@Example.com',
-      },
-    });
-    await submit(t, {
-      name: 'Same',
-      phone: '+306945550013',
-      email: 'same@example.com',
-    });
-    const customer = await customerOf(t, '+306945550013');
-    expect(
-      await prisma.customerChangeRequest.findUnique({
-        where: { customerId: customer!.id },
-      }),
-    ).toBeNull();
-  });
-
-  it('the booking wizard’s photo-only call never asks to rename the customer', async () => {
-    const t = await shop({ page: true, photos: true });
-    await prisma.customer.create({
-      data: {
-        shopId: t.shop.id,
-        name: 'Maria Papadopoulou',
-        phone: '+306945550014',
-      },
-    });
-    const res = await api
-      .post(`/public/${t.shop.slug}/profile`)
-      .field('name', 'Maria')
-      .field('phone', '+306945550014')
-      .field('photoOnly', 'true')
-      .field('crop', JSON.stringify(FULL))
-      .attach('photo', await image(), 'me.jpg');
-    expect(res.status).toBe(200);
-    const customer = await customerOf(t, '+306945550014');
-    expect(customer!.photoUrl).toBeTruthy();
-    expect(customer!.name).toBe('Maria Papadopoulou');
-    expect(
-      await prisma.customerChangeRequest.findUnique({
-        where: { customerId: customer!.id },
-      }),
-    ).toBeNull();
-  });
-
-  it('adds a photo to an existing customer who has none', async () => {
-    const t = await shop({ page: true, photos: true });
-    await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Known', phone: '+306945550003' },
-    });
-    await submit(t, { name: 'Known', phone: '+306945550003' }, await image());
-    const row = await customerOf(t, '+306945550003');
-    expect(row!.photoUrl).toBeTruthy();
-    expect(row!.name).toBe('Known');
+    const own = await submit(
+      t,
+      { name: 'Typed Differently', phone: '+306945550005', photoOnly: 'true' },
+      await image(),
+      cookie,
+    );
+    expect(own.body).toEqual(friend.body);
+    const after = (await customerOf(t, '+306945550005'))!;
+    expect(after.photoUrl).toMatch(/^\/media\/shops\//);
+    expect(after.name).toBe('Booked');
+    expect(await prisma.customer.count({ where: { shopId: t.shop.id } })).toBe(
+      1,
+    );
   });
 
   it('ignores a photo when the shop has not enabled customer photos', async () => {
@@ -206,28 +216,6 @@ describe('POST /public/:slug/profile', () => {
     );
     expect(res.status).toBe(200);
     expect((await customerOf(t, '+306945550004'))!.photoUrl).toBeNull();
-  });
-
-  it('with only photos enabled, adds a photo to a known customer but creates nobody', async () => {
-    const t = await shop({ photos: true });
-    await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Booked', phone: '+306945550005' },
-    });
-    const known = await submit(
-      t,
-      { name: 'Booked', phone: '+306945550005' },
-      await image(),
-    );
-    const unknown = await submit(
-      t,
-      { name: 'Stranger', phone: '+306945550006' },
-      await image(),
-    );
-    expect(known.status).toBe(200);
-    expect(unknown.status).toBe(200);
-    expect(unknown.body).toEqual(known.body);
-    expect((await customerOf(t, '+306945550005'))!.photoUrl).toBeTruthy();
-    expect(await customerOf(t, '+306945550006')).toBeNull();
   });
 
   it('is 404 when the shop has both settings off, is inactive, or does not exist', async () => {
@@ -311,111 +299,51 @@ describe('the two shop settings', () => {
   });
 });
 
-describe('deciding on a customer’s own changes', () => {
-  const customersUrl = (t: Tenant) => `/api/shops/${t.shop.id}/customers`;
+describe('GET /public/:slug/me', () => {
+  it('is nobody for a browser the shop has not seen, and a customer of one shop is nobody at another', async () => {
+    const t = await shop({ page: true });
+    const other = await shop({ page: true });
+    const res = await submit(t, { name: 'Mine', phone: '+306945550030' });
+    const cookie = cookieOf(res);
 
-  async function withRequest(phone: string) {
-    const t = await shop({ page: true, photos: true });
-    await submit(t, { name: 'Old Name', phone }, await image());
-    await submit(
-      t,
-      {
-        name: 'New Name',
-        phone,
-        email: 'new@example.com',
-        newPhone: '+306945559999',
-      },
-      await image('#aa3333'),
-    );
-    const customer = (await customerOf(t, phone))!;
-    const request = await prisma.customerChangeRequest.findUniqueOrThrow({
-      where: { customerId: customer.id },
+    expect((await me(t, cookie)).body.data.customer).toMatchObject({
+      name: 'Mine',
     });
-    return { t, customer, request };
-  }
-
-  it('shows the request to the owner and managers only, and flags it in the list', async () => {
-    const { t, customer } = await withRequest('+306945550020');
-    const manager = await addManager(t);
-    const staff = await createStaffMember(t);
-
-    const forManager = await api
-      .get(`${customersUrl(t)}/${customer.id}`)
-      .set(authHeader(manager.token));
-    expect(forManager.body.data.changeRequest).toMatchObject({
-      name: 'New Name',
-      email: 'new@example.com',
-      phone: '+306945559999',
-    });
-    expect(forManager.body.data.changeRequest.photoUrl).toBeTruthy();
-
-    const forStaff = await api
-      .get(`${customersUrl(t)}/${customer.id}`)
-      .set(authHeader(staff.token));
-    expect(forStaff.body.data.changeRequest).toBeNull();
-
-    const list = await api.get(customersUrl(t)).set(authHeader(t.token));
-    expect(list.body.data.pendingChangesCount).toBe(1);
-    expect(list.body.data.items[0].hasPendingChanges).toBe(true);
-    const staffList = await api
-      .get(customersUrl(t))
-      .set(authHeader(staff.token));
-    expect(staffList.body.data.pendingChangesCount).toBe(0);
-    expect(staffList.body.data.items[0].hasPendingChanges).toBe(false);
-
-    await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Other', phone: '+306945550021' },
-    });
-    const filtered = await api
-      .get(`${customersUrl(t)}?pendingChanges=true`)
-      .set(authHeader(t.token));
-    expect(filtered.body.data.items.map((c: { id: string }) => c.id)).toEqual([
-      customer.id,
-    ]);
+    for (const [where, from] of [
+      [t, ''],
+      [t, deviceCookie()],
+      [t, 'customerKey=nonsense'],
+      [other, cookie],
+    ] as const) {
+      const nobody = await me(where, from);
+      expect(nobody.status).toBe(200);
+      expect(nobody.body.data).toEqual({ customer: null });
+    }
+    expect(
+      (await me({ ...t, shop: { ...t.shop, slug: 'no-such-shop' } }, cookie))
+        .status,
+    ).toBe(404);
   });
 
-  it('accepting applies every change and drops the replaced photo', async () => {
-    const { t, customer, request } = await withRequest('+306945550022');
-    const staff = await createStaffMember(t);
-    const url = `${customersUrl(t)}/${customer.id}/change-request/accept`;
-    expect((await api.post(url).set(authHeader(staff.token))).status).toBe(403);
-
-    const res = await api.post(url).set(authHeader(t.token));
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(res.body.data).toMatchObject({
-      name: 'New Name',
-      email: 'new@example.com',
-      phone: '+306945559999',
-      photoUrl: request.photoUrl,
-      changeRequest: null,
+  it('follows a merge: the browser of the record merged away is the customer that stays', async () => {
+    const t = await shop({ page: true });
+    const older = await prisma.customer.create({
+      data: { shopId: t.shop.id, name: 'Older', phone: '+306945550031' },
     });
-    expect(memoryFiles.has(keyOf(customer.photoUrl!))).toBe(false);
-    expect(memoryFiles.has(keyOf(request.photoUrl!))).toBe(true);
-    expect((await api.post(url).set(authHeader(t.token))).status).toBe(404);
-  });
+    const res = await submit(t, { name: 'Newer', phone: '+306945550031' });
+    const newer = (await prisma.customer.findFirstOrThrow({
+      where: { shopId: t.shop.id, name: 'Newer' },
+    }))!;
 
-  it('rejecting leaves the customer alone and removes the offered photo', async () => {
-    const { t, customer, request } = await withRequest('+306945550023');
-    const res = await api
-      .delete(`${customersUrl(t)}/${customer.id}/change-request`)
-      .set(authHeader(t.token));
-    expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({
-      name: 'Old Name',
-      phone: '+306945550023',
-      email: null,
-      photoUrl: customer.photoUrl,
-      changeRequest: null,
+    const merged = await api
+      .post(`/api/shops/${t.shop.id}/customers/${older.id}/merge`)
+      .set(authHeader(t.token))
+      .send({ sourceCustomerId: newer.id });
+    expect(merged.status, JSON.stringify(merged.body)).toBe(200);
+
+    expect((await me(t, cookieOf(res))).body.data.customer).toMatchObject({
+      name: 'Older',
+      phone: '+306945550031',
     });
-    expect(memoryFiles.has(keyOf(request.photoUrl!))).toBe(false);
-    expect(memoryFiles.has(keyOf(customer.photoUrl!))).toBe(true);
-  });
-
-  it('deleting the customer removes the offered photo too', async () => {
-    const { t, customer, request } = await withRequest('+306945550025');
-    await api
-      .delete(`${customersUrl(t)}/${customer.id}`)
-      .set(authHeader(t.token));
-    expect(memoryFiles.has(keyOf(request.photoUrl!))).toBe(false);
   });
 });

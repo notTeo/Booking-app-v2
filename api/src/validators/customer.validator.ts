@@ -36,10 +36,6 @@ export const listCustomersValidation = [
     .optional()
     .isBoolean()
     .withMessage('hasCustomDurations must be true or false'),
-  query('pendingChanges')
-    .optional()
-    .isBoolean()
-    .withMessage('pendingChanges must be true or false'),
   query('duplicatePhone')
     .optional()
     .isBoolean()

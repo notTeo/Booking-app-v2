@@ -8,6 +8,8 @@ import {
   addWeeklySchedule,
   authHeader,
   createTenant,
+  deviceCookie,
+  deviceCookieFor,
   type Tenant,
 } from './helpers';
 
@@ -116,29 +118,42 @@ describe('a custom duration sets the length of new bookings', () => {
     expect(std.body.data.endTime).toBe('2026-12-08T09:30:00.000Z');
   });
 
-  it('public create uses it, matched by phone', async () => {
-    const { t } = await shopWithSlowCustomer();
-    const res = await api.post(`/public/${t.shop.slug}/book`).send({
-      name: 'Slow',
-      phone: PHONE,
-      serviceId: t.service.id,
-      staffId: t.staff.id,
-      startTime: START,
-    });
+  it('public create uses it, for the browser that is this customer', async () => {
+    const { t, customer } = await shopWithSlowCustomer();
+    const book = (cookie: string, startTime: string) =>
+      api.post(`/public/${t.shop.slug}/book`).set('Cookie', cookie).send({
+        name: 'Slow',
+        phone: PHONE,
+        serviceId: t.service.id,
+        staffId: t.staff.id,
+        startTime,
+      });
+    // The phone alone is not who they are: another browser gets the standard length.
+    const stranger = await book(deviceCookie(), '2026-12-08T10:00:00.000Z');
+    expect(stranger.status, JSON.stringify(stranger.body)).toBe(201);
+    expect(stranger.body.data.endTime).toBe('2026-12-08T10:30:00.000Z');
+
+    const res = await book(
+      await deviceCookieFor(t.shop.id, customer.id),
+      START,
+    );
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(res.body.data.endTime).toBe('2026-12-08T09:00:00.000Z');
   });
 
   it('a longer booking that no longer fits before closing is refused publicly', async () => {
-    const { t } = await shopWithSlowCustomer();
+    const { t, customer } = await shopWithSlowCustomer();
     // 12:30-13:30 local: fine at 30 minutes, past closing at 60.
-    const res = await api.post(`/public/${t.shop.slug}/book`).send({
-      name: 'Slow',
-      phone: PHONE,
-      serviceId: t.service.id,
-      staffId: t.staff.id,
-      startTime: '2026-12-08T10:30:00.000Z',
-    });
+    const res = await api
+      .post(`/public/${t.shop.slug}/book`)
+      .set('Cookie', await deviceCookieFor(t.shop.id, customer.id))
+      .send({
+        name: 'Slow',
+        phone: PHONE,
+        serviceId: t.service.id,
+        staffId: t.staff.id,
+        startTime: '2026-12-08T10:30:00.000Z',
+      });
     expect(res.status).toBe(422);
   });
 });
@@ -167,21 +182,25 @@ describe('a custom duration decides which slots fit', () => {
 });
 
 describe('public slots for a returning customer', () => {
-  it('fit their duration when they send their phone, and reveal nothing otherwise', async () => {
-    const { t } = await shopWithSlowCustomer();
-    const slots = (phone?: string) => {
-      const req = api.get(
-        `/public/${t.shop.slug}/slots?date=${DATE}&serviceId=${t.service.id}&staffId=${t.staff.id}`,
-      );
-      return phone === undefined ? req : req.set('X-Customer-Phone', phone);
-    };
+  it('fit their duration in the browser that is them, and reveal nothing otherwise', async () => {
+    const { t, customer } = await shopWithSlowCustomer();
+    const url = `/public/${t.shop.slug}/slots?date=${DATE}&serviceId=${t.service.id}&staffId=${t.staff.id}`;
+    const own = await deviceCookieFor(t.shop.id, customer.id);
 
-    expect(lastSlot((await slots()).body)).toBe('12:30');
-    expect(lastSlot((await slots(PHONE)).body)).toBe('12:00');
+    expect(lastSlot((await api.get(url)).body)).toBe('12:30');
+    expect(lastSlot((await api.get(url).set('Cookie', own)).body)).toBe(
+      '12:00',
+    );
+    // "Not you?": the standard times, in that same browser.
+    expect(
+      lastSlot((await api.get(`${url}&guest=true`).set('Cookie', own)).body),
+    ).toBe('12:30');
 
-    // An unknown or malformed phone gets the standard times, same shape.
-    for (const phone of ['+306900000099', 'not-a-phone', '']) {
-      const res = await slots(phone);
+    // A phone number is not who they are, and neither is another browser.
+    const byPhone = await api.get(url).set('X-Customer-Phone', PHONE);
+    expect(lastSlot(byPhone.body)).toBe('12:30');
+    for (const cookie of [deviceCookie(), 'customerKey=nonsense']) {
+      const res = await api.get(url).set('Cookie', cookie);
       expect(res.status).toBe(200);
       expect(lastSlot(res.body)).toBe('12:30');
     }

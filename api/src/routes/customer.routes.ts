@@ -28,8 +28,6 @@ import {
   createCustomer,
   setCustomerPhoto,
   removeCustomerPhoto,
-  acceptCustomerChanges,
-  rejectCustomerChanges,
 } from '../controllers/customer.controller';
 
 // mergeParams: true lets us access :shopId from the parent shop router
@@ -105,22 +103,6 @@ router.delete(
   validate,
   removeCustomerPhoto,
 );
-// What the customer asked to change on the public sign-up page.
-router.post(
-  '/:customerId/change-request/accept',
-  authenticate,
-  customerParamsValidation,
-  validate,
-  acceptCustomerChanges,
-);
-router.delete(
-  '/:customerId/change-request',
-  authenticate,
-  customerParamsValidation,
-  validate,
-  rejectCustomerChanges,
-);
-
 router.get(
   '/:customerId/export',
   authenticate,

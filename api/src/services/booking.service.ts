@@ -11,6 +11,7 @@ import { assertProductsFeature, isShopLocked } from './plan.service';
 import { MAX_SERVICES_PER_BOOKING } from '../utils/bookingServices';
 import { redactCustomer } from '../utils/customerVisibility';
 import { duplicatePhones, findCustomerByPhone } from '../utils/customerPhone';
+import { bindDevice, customerOfDevice } from './customerDevice.service';
 import {
   canManage,
   canViewCustomerDetails,
@@ -527,9 +528,16 @@ const claimSlotAndCreate = async (
     endTime: Date;
     // null = a blocked slot, held by the shop's system customer.
     customer: { name: string; phone: string; email?: string } | null;
-    // Public bookings must never overwrite an existing customer's name/email;
-    // owner/staff bookings may (see findOrCreateCustomer).
+    // Owner/staff bookings find the customer by phone, and may correct their
+    // name/email on the way (see findOrCreateCustomer).
     overwriteCustomer: boolean;
+    // Public bookings do not go by the phone: they are for the customer this
+    // browser is (`customerId`) or, with none, for a new one, whom the browser
+    // then becomes (`bindDeviceKey`).
+    publicCustomer?: {
+      customerId: string | null;
+      bindDeviceKey: string | null;
+    };
     notes?: string;
     cancelToken: string;
     contactEmail?: string | null;
@@ -552,9 +560,22 @@ const claimSlotAndCreate = async (
   if (conflict)
     throw new AppError(409, 'Time slot is already booked', 'SLOT_TAKEN');
 
-  const customer = p.customer
-    ? await findOrCreateCustomer(tx, p.shopId, p.customer, p.overwriteCustomer)
-    : await findOrCreateSystemCustomer(tx, p.shopId);
+  const customer = !p.customer
+    ? await findOrCreateSystemCustomer(tx, p.shopId)
+    : !p.publicCustomer
+      ? await findOrCreateCustomer(
+          tx,
+          p.shopId,
+          p.customer,
+          p.overwriteCustomer,
+        )
+      : p.publicCustomer.customerId
+        ? { id: p.publicCustomer.customerId }
+        : await tx.customer.create({
+            data: { shopId: p.shopId, ...p.customer },
+          });
+  if (p.publicCustomer?.bindDeviceKey && !p.publicCustomer.customerId)
+    await bindDevice(tx, p.shopId, customer.id, p.publicCustomer.bindDeviceKey);
 
   return tx.booking.create({
     data: {
@@ -587,6 +608,12 @@ const claimSlotAndCreate = async (
 
 // How often a no-preference booking re-picks its provider after losing one.
 const ANY_STAFF_ATTEMPTS = 4;
+// One retry settles it: by then the browser's key belongs to a customer.
+const DEVICE_BIND_ATTEMPTS = 3;
+const isDeviceBindRace = (err: unknown) => {
+  const e = err as { code?: string; meta?: { modelName?: string } } | null;
+  return e?.code === 'P2002' && e.meta?.modelName === 'CustomerDevice';
+};
 
 export const createBooking = async (
   slug: string,
@@ -602,6 +629,9 @@ export const createBooking = async (
     notes?: string;
     products?: ProductLineInput[];
   },
+  // The browser booking: its key, and whether the person said they are not
+  // the customer it is known as ("Not you?").
+  device: { key: string | null; guest?: boolean } = { key: null },
 ) => {
   const startTime = new Date(data.startTime);
   const cancelToken = randomUUID(); // only persisted by the attempt that commits
@@ -617,13 +647,21 @@ export const createBooking = async (
           'SHOP_LOCKED',
         );
 
+      // Who is booking: the customer this browser is, when the phone given is
+      // theirs. Anyone else (a browser the shop has not seen, or someone
+      // booking for a friend with the friend's number) is a new customer.
+      const known = device.guest
+        ? null
+        : await customerOfDevice(tx, shop.id, device.key);
+      const own = known && known.phone === data.phone ? known : null;
+
       // One or more services, done one after another: the booking runs as long
-      // as they take together. A returning customer (matched by phone) gets
-      // their own duration for each.
+      // as they take together. A returning customer gets their own duration
+      // for each.
       const serviceIds = requestedServiceIds(data);
       const chosen = await resolveServices(tx, shop.id, serviceIds, {
         publicOnly: true,
-        customer: { phone: data.phone },
+        customer: own && { customerId: own.id },
       });
       const endTime = new Date(
         startTime.getTime() + chosen.totalDuration * 60_000,
@@ -676,6 +714,11 @@ export const createBooking = async (
         endTime,
         customer: { name: data.name, phone: data.phone, email: data.email },
         overwriteCustomer: false,
+        publicCustomer: {
+          customerId: own?.id ?? null,
+          // A browser that is already someone stays that someone.
+          bindDeviceKey: known || device.guest ? null : device.key,
+        },
         notes: data.notes,
         cancelToken,
         contactEmail: data.email || null,
@@ -683,13 +726,26 @@ export const createBooking = async (
       });
     });
 
-  if (data.staffId) return attempt();
+  // Two requests from one browser the shop has not seen both try to make it a
+  // new customer. The second fails on the browser's key and goes again, this
+  // time as the customer the first one made.
+  const attemptAsDevice = async () => {
+    for (let n = 1; ; n++) {
+      try {
+        return await attempt();
+      } catch (err) {
+        if (!isDeviceBindRace(err) || n >= DEVICE_BIND_ATTEMPTS) throw err;
+      }
+    }
+  };
+
+  if (data.staffId) return attemptAsDevice();
   // No preference: the provider is picked before their lock is taken, so two
   // parallel requests can pick the same one. The loser tries again, and the
   // pick then sees the winner's booking and moves to someone who is free.
   for (let n = 1; ; n++) {
     try {
-      return await attempt();
+      return await attemptAsDevice();
     } catch (err) {
       const lostThePick = err instanceof AppError && err.code === 'SLOT_TAKEN';
       if (!lostThePick || n >= ANY_STAFF_ATTEMPTS) throw err;

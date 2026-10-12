@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { createBooking, submitCustomerProfile } from '../api/public.api';
+import { createBooking, getOwnProfile, submitCustomerProfile, type OwnProfile } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
@@ -11,12 +11,11 @@ import WizardProgress from '../components/booking-wizard/WizardProgress';
 import ServiceSelectStep from '../components/booking-wizard/ServiceSelectStep';
 import StaffSelectStep from '../components/booking-wizard/StaffSelectStep';
 import DateTimeStep from '../components/booking-wizard/DateTimeStep';
-import PublicIdentityStep, { type PublicIdentity } from '../components/booking-wizard/PublicIdentityStep';
 import { buildISODateTime, formatDuration, servicesSummary } from '../components/booking-wizard/wizardUtils';
 import { shiftDate, todayInZone } from '../utils/shopTime';
 import { getApiError, isBookingRuleViolation, PRODUCT_OUT_OF_STOCK } from '../api/booking.api';
 import { isPlausibleSlug } from '../utils/publicLink';
-import { clearSavedCustomer, hasAddedPhoto, readSavedCustomer, rememberPhotoAdded, saveCustomer } from '../utils/savedCustomer';
+import { forgetSavedCustomer } from '../utils/savedCustomer';
 import CustomerPhotoPicker, { type PickedPhoto } from '../components/CustomerPhotoPicker';
 import Alert from '../components/Alert';
 import PublicPalette from '../components/PublicPalette';
@@ -54,22 +53,37 @@ function PublicBookingPage({ slug }: { slug: string }) {
   const [look] = useSearchParams();
 
   // ── Customer form state (step 4 — plain form, no autocomplete) ──
-  // Prefilled only for a customer who earlier ticked "remember my details" in this browser.
-  const [saved] = useState(readSavedCustomer);
-  const [name, setName] = useState(saved?.name ?? '');
-  const [phone, setPhone] = useState(saved?.phone ?? '');
-  const [email, setEmail] = useState(saved?.email ?? '');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
-  const [remember, setRemember] = useState(saved !== null);
-  // An optional photo of the customer, sent once the booking is made. Not
-  // offered again in a browser that already sent one to this shop.
+  // An optional photo of the customer, sent once the booking is made.
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
-  const [photoOffered] = useState(() => !hasAddedPhoto(slug));
   const [photoFailed, setPhotoFailed] = useState(false);
-  // Saved details are only used to find the customer's own times once they confirm them.
-  const [identity, setIdentity] = useState<PublicIdentity>(saved ? 'ask' : 'anonymous');
+  // The customer this browser is at the shop (the API knows it by a cookie):
+  // their details fill the form, and the times offered fit their own durations.
+  const [me, setMe] = useState<OwnProfile | null>(null);
+  // "Not you?": someone else is booking from this browser, as a new customer.
+  const [guest, setGuest] = useState(false);
+  const known = me !== null && !guest;
 
-  const wizard = useBookingWizard({ slug, slotCustomer: identity === 'known' ? { phone } : null });
+  useEffect(() => {
+    forgetSavedCustomer();
+    let stale = false;
+    getOwnProfile(slug)
+      .then((own) => {
+        if (stale || !own) return;
+        setMe(own);
+        setName(own.name);
+        setPhone(own.phone);
+        setEmail(own.email ?? '');
+      })
+      // Nobody known: a plain booking, as for any new browser.
+      .catch(() => {});
+    return () => { stale = true; };
+  }, [slug]);
+
+  const wizard = useBookingWizard({ slug, slotCustomer: guest ? { guest: true } : null });
 
   usePageMeta(
     wizard.shop
@@ -141,6 +155,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
         startTime: buildISODateTime(wizard.date, wizard.time, wizard.shop!.timezone),
         notes: notes || undefined,
         products: toProductLines(reserved),
+        ...(guest && { guest: true }),
       });
       const made: ConfirmedBooking = {
         name,
@@ -152,14 +167,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
         products: booked.products ?? [],
         servicePrice: booked.servicePrice,
       };
-      if (remember) saveCustomer({ name: name.trim(), phone: phone.trim(), email: email.trim() });
-      else clearSavedCustomer();
       saveConfirmedBooking(slug, made);
       // The booking stands whatever happens to the photo.
       if (photo) {
         try {
           await submitCustomerProfile(slug, { name: name.trim(), phone: phone.trim(), photo, photoOnly: true });
-          rememberPhotoAdded(slug);
         } catch {
           setPhotoFailed(true);
         }
@@ -194,26 +206,13 @@ function PublicBookingPage({ slug }: { slug: string }) {
     }
   }
 
-  // Unticking is the customer's "forget me": the stored copy goes at once, the typed values stay.
-  function handleRememberChange(checked: boolean) {
-    setRemember(checked);
-    if (!checked) clearSavedCustomer();
-  }
-
-  // "Someone else" / "Not you?": book as a new person with the standard times.
-  // The stored copy is left alone; it goes when a booking completes without
-  // "remember" ticked, as before.
+  // "Not you?": book as a new person with the standard times. The browser
+  // stays the customer it was.
   function handleDeclineIdentity() {
-    setIdentity('anonymous');
+    setGuest(true);
     setName('');
     setPhone('');
     setEmail('');
-    setRemember(false);
-  }
-
-  function handleUsePhone(value: string) {
-    setPhone(value);
-    setIdentity('known');
   }
 
   // Forget the confirmation and start over with an empty wizard.
@@ -316,18 +315,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
               )}
 
               {/* Saved details found: the customer says who is booking before anything else. */}
-              {step === 1 && identity !== 'known' && (
-                <PublicIdentityStep
-                  identity={identity}
-                  name={name}
-                  phone={phone}
-                  onConfirm={() => setIdentity('known')}
-                  onDecline={handleDeclineIdentity}
-                  onUsePhone={handleUsePhone}
-                />
-              )}
-
-              {step === 1 && identity !== 'ask' && (
+              {step === 1 && (
                 <ServiceSelectStep
                   services={shop.services}
                   selectedIds={wizard.selectedServiceIds}
@@ -448,7 +436,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     />
                   </div>
 
-                  {shop.customerPhotosEnabled && photoOffered && (
+                  {shop.customerPhotosEnabled && !(known && me.photoUrl) && (
                     <div className="field">
                       <span className="field__label">
                         {t.customerProfile.photoLabel} <span className="field__optional">{t.public.emailOptional}</span>
@@ -463,22 +451,6 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     products={toReservedProducts(shop.products, reserved)}
                     servicePrice={wizard.selectedService?.price}
                   />
-
-                  <div className="field">
-                    <label className="checkbox">
-                      <input
-                        id="b-remember"
-                        className="checkbox__input"
-                        type="checkbox"
-                        checked={remember}
-                        onChange={(e) => handleRememberChange(e.target.checked)}
-                        aria-describedby="b-remember-hint"
-                      />
-                      <span className="checkbox__box" />
-                      {t.public.rememberLabel}
-                    </label>
-                    <p id="b-remember-hint" className="field__hint">{t.public.rememberHint}</p>
-                  </div>
 
                   <p className="field__hint">
                     {t.public.privacyNoticeBefore}{' '}
@@ -512,7 +484,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
                 <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
               </button>
             )}
-            {identity === 'known' && step === 1 && (
+            {known && step === 1 && (
               <p className="booking-card__who">
                 {t.public.bookingAs.replace('{name}', '')}
                 <strong>{name || formatPhone(phone)}</strong>

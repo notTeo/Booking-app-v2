@@ -92,7 +92,7 @@ model Shop {
   invites              ShopInvite[]
   services             Service[]
   customers            Customer[]
-  customerChangeRequests CustomerChangeRequest[]
+  customerDevices      CustomerDevice[]
   bookings             Booking[]
   timeOff              TimeOff[]
   products             Product[]
@@ -303,34 +303,30 @@ model Customer {
   shop             Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   bookings         Booking[]
   serviceDurations CustomerServiceDuration[]
-  changeRequest    CustomerChangeRequest?
+  devices          CustomerDevice[]
 
   // Not unique: see utils/customerPhone.ts.
   @@index([shopId, phone])
   @@index([shopId])
 }
 
-// What a customer asked to change about their own profile on the shop's public
-// sign-up page. Nobody is logged in there, so nothing is applied until the
-// owner or a manager accepts it. A null field is one they did not change. At
-// most one per customer: a newer request replaces the older one.
-model CustomerChangeRequest {
-  id         String  @id @default(cuid())
+// A browser one of the shop's customers booked or signed up from. It holds a
+// random key in a cookie (only its hash is kept here); whoever holds the key
+// is that customer, and may book as them and change their own details. One
+// browser can be a customer of many shops, and one customer can have many.
+model CustomerDevice {
+  id         String   @id @default(cuid())
+  keyHash    String
   shopId     String
-  customerId String  @unique
-  name       String?
-  phone      String?
-  email      String?
-  // A new photo, stored like any other (same three as Shop).
-  photoUrl         String?
-  photoOriginalUrl String?
-  photoCrop        Json?
+  customerId String
   createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime @default(now()) @db.Timestamptz(3)
 
   shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
-  @@index([shopId])
+  @@unique([keyHash, shopId])
+  @@index([customerId])
 }
 
 // How long a service takes for one particular customer, when that differs

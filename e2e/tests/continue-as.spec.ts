@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { createHash } from 'crypto';
+import { test, expect, type BrowserContext, type Page } from '@playwright/test';
 import { E2E } from '../support/env';
 import { waitForLanding } from '../support/auth';
 import { query } from '../support/db';
@@ -7,9 +8,9 @@ import { pickService } from '../support/booking';
 
 /**
  * A returning customer's own duration for a service decides which times they
- * are offered. On the public page they are recognised from details saved in
- * their browser ("Continue as …?") or a phone they choose to enter; in the
- * shop's wizard the owner picks them on the first step.
+ * are offered. On the public page they are recognised by the browser they
+ * booked from (a key in a cookie), never by a phone they type; in the shop's
+ * wizard the owner picks them on the first step.
  *
  * The shop is open until 23:30, so a 30-minute service ends with a 23:00 slot
  * and the customer's 60-minute version of it with 22:30.
@@ -17,6 +18,8 @@ import { pickService } from '../support/booking';
 const PHONE = '+306900008811';
 // The same number as its field shows it, beside the country code.
 const PHONE_SHOWN = '690 000 8811';
+// The key of the browser the shop knows as that customer.
+const DEVICE_KEY = 'e2e-identity-device-key-0123456789abcdefghi';
 // Days no other spec books on; the first test books on `date`, so its second
 // half looks at the day after.
 const date = addDays(athensDate(), 20);
@@ -39,6 +42,11 @@ test.beforeAll(async () => {
     `insert into "CustomerServiceDuration"(id,"customerId","serviceId",duration,"updatedAt")
      values ('csd-ident','cust-ident','sv-ident',60,now()) on conflict (id) do nothing`,
   );
+  await query(
+    `insert into "CustomerDevice"(id,"keyHash","shopId","customerId")
+     values ('dev-ident',$1,'s1','cust-ident') on conflict (id) do nothing`,
+    [createHash('sha256').update(DEVICE_KEY).digest('hex')],
+  );
 });
 
 test.afterAll(async () => {
@@ -47,19 +55,9 @@ test.afterAll(async () => {
   await query(`delete from "Service" where id = 'sv-ident'`);
 });
 
-const saveDetails = (page: Page) =>
-  page.addInitScript(
-    ([phone]) => {
-      if (!sessionStorage.getItem('seeded')) {
-        localStorage.setItem(
-          'booking-details',
-          JSON.stringify({ name: 'Ida Returning', phone, email: '', savedAt: Date.now() }),
-        );
-        sessionStorage.setItem('seeded', '1');
-      }
-    },
-    [PHONE],
-  );
+/** Makes this browser the one the customer booked from. */
+const beTheCustomer = (context: BrowserContext) =>
+  context.addCookies([{ name: 'customerKey', value: DEVICE_KEY, url: E2E.apiUrl, httpOnly: true, sameSite: 'Lax' }]);
 
 async function pickServiceAndDate(page: Page, day = date) {
   await pickService(page, /Identity Service/);
@@ -76,15 +74,11 @@ test.beforeEach(async ({ context }) => {
   await context.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
 });
 
-test('saved details: "yes" offers their own times, "no" the standard ones', async ({ page }) => {
-  await saveDetails(page);
+test('their own browser offers their own times; "Change" and any other browser get the standard ones', async ({ page, context, browser }) => {
+  await beTheCustomer(context);
   await page.goto(`/${E2E.shop.slug}`);
 
-  // The question comes before anything else.
-  await expect(page.getByText('Continue as Ida Returning?')).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Service', exact: true })).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Yes, continue' }).click();
+  // Recognised at once, with the services already there to pick.
   await expect(page.getByText('Booking as Ida Returning')).toBeVisible();
   await pickServiceAndDate(page);
   await expect(lastStandardSlot(page)).toHaveCount(0);
@@ -102,30 +96,24 @@ test('saved details: "yes" offers their own times, "no" the standard ones', asyn
 
   // Same browser, someone else booking: standard times and an empty form.
   await page.goto(`/${E2E.shop.slug}`);
-  await page.getByRole('button', { name: 'No, someone else' }).click();
+  await page.getByRole('button', { name: 'Change' }).click();
   await pickServiceAndDate(page, nextDate);
   await expect(lastStandardSlot(page)).toBeVisible();
   await lastStandardSlot(page).click();
   await page.getByRole('button', { name: /continue/i }).click();
   await expect(page.locator('#b-name')).toHaveValue('');
   await expect(page.locator('#b-phone')).toHaveValue('');
-});
 
-test('nothing saved: the phone is optional, and entering it offers their own times', async ({ page }) => {
-  await page.goto(`/${E2E.shop.slug}`);
-  // Services are offered straight away.
-  await expect(page.getByRole('checkbox', { name: /Identity Service/ })).toBeVisible();
-
-  await page.getByRole('button', { name: /Booked with us before/ }).click();
-  const use = page.getByRole('button', { name: 'Use this number' });
-  await page.getByLabel('Your phone').fill('12');
-  await expect(use).toBeDisabled();
-  await page.getByLabel('Your phone').fill(PHONE);
-  await use.click();
-  await expect(page.getByText(`Booking as +30 ${PHONE_SHOWN}`)).toBeVisible();
-
-  await pickServiceAndDate(page, nextDate);
-  await expect(lastStandardSlot(page)).toHaveCount(0);
+  // A browser the shop has not seen: nobody, and the standard times.
+  const other = await browser.newContext();
+  await other.addCookies([{ name: 'lang', value: 'en', url: E2E.webUrl }]);
+  const stranger = await other.newPage();
+  await stranger.goto(`/${E2E.shop.slug}`);
+  await expect(stranger.getByRole('checkbox', { name: /Identity Service/ })).toBeVisible();
+  await expect(stranger.getByText(/Booking as/)).toHaveCount(0);
+  await pickServiceAndDate(stranger, nextDate);
+  await expect(lastStandardSlot(stranger)).toBeVisible();
+  await other.close();
 });
 
 test('shop wizard: picking the customer first shows their duration and times', async ({ page }) => {

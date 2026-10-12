@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar';
 import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleExclamation, faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { faCircleExclamation, faClock, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { formatPhone } from '../utils/phone';
 
 const PAGE_SIZE = 20;
@@ -36,9 +36,6 @@ export default function ShopCustomersPage() {
   // rows on screen instead of swapping the whole list for a spinner.
   const [loaded, setLoaded] = useState(false);
   const [onlyCustomDurations, setOnlyCustomDurations] = useState(false);
-  // Customers whose own changes (from the sign-up page) wait for approval.
-  const [onlyPending, setOnlyPending] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
   // Customers who share their phone number with another: probably one person twice.
   const [onlyDuplicates, setOnlyDuplicates] = useState(false);
   const [duplicateCount, setDuplicateCount] = useState(0);
@@ -58,10 +55,9 @@ export default function ShopCustomersPage() {
     // whatever page happens to be loaded.
     // A slower, older answer must not overwrite a newer one.
     let stale = false;
-    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyPending, onlyDuplicates)
+    getCustomers(shop.id, query || undefined, page, PAGE_SIZE, onlyCustomDurations, onlyDuplicates)
       .then((result) => {
         if (stale) return;
-        setPendingCount(result.pendingChangesCount ?? 0);
         setDuplicateCount(result.duplicatePhoneCount ?? 0);
         setCustomers(result.items);
         setTotal(result.total);
@@ -70,7 +66,7 @@ export default function ShopCustomersPage() {
       .catch(() => { if (!stale) setError(t.customers.errorLoad); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
-  }, [shop?.id, query, page, onlyCustomDurations, onlyPending, onlyDuplicates, reloadKey]);
+  }, [shop?.id, query, page, onlyCustomDurations, onlyDuplicates, reloadKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -164,17 +160,6 @@ export default function ShopCustomersPage() {
           <FontAwesomeIcon icon={faClock} aria-hidden="true" />
           <span className="chip__label">{t.customers.filterCustomDurations}</span>
         </button>
-        {(pendingCount > 0 || onlyPending) && (
-          <button
-            type="button"
-            className="chip"
-            aria-pressed={onlyPending}
-            onClick={() => { setOnlyPending((v) => !v); setPage(1); }}
-          >
-            <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
-            <span className="chip__label">{t.customerProfile.changesFilter} ({pendingCount})</span>
-          </button>
-        )}
         {(duplicateCount > 0 || onlyDuplicates) && (
           <button
             type="button"
@@ -202,7 +187,7 @@ export default function ShopCustomersPage() {
             {customers.length === 0 ? (
               <div className="empty empty--sm">
                 <p className="empty__text">
-                  {query || onlyCustomDurations || onlyPending || onlyDuplicates ? t.customers.noResults : t.customers.noCustomers}
+                  {query || onlyCustomDurations || onlyDuplicates ? t.customers.noResults : t.customers.noCustomers}
                 </p>
               </div>
             ) : (
@@ -224,12 +209,6 @@ export default function ShopCustomersPage() {
                           <Link to={c.id} className="data-table__link">
                             {c.contactHidden ? t.customers.hiddenLabel : c.name}
                           </Link>
-                          {c.hasPendingChanges && (
-                            <span className="badge badge--warning">
-                              <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
-                              {t.customerProfile.changesBadge}
-                            </span>
-                          )}
                           {c.duplicatePhone && (
                             <span className="badge badge--warning">
                               <FontAwesomeIcon icon={faCircleExclamation} aria-hidden="true" />
