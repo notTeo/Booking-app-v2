@@ -63,26 +63,25 @@ const owner = (
 describe('customer upsert on booking creation', () => {
   it('public: a new phone number creates a new customer with the given details', async () => {
     const t = await shop();
-    const phone = '6900000100';
+    const phone = '+306900000100';
     const res = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     expect(res.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.name).toBe('Nikos');
     expect(customer?.email).toBe('nikos@example.com');
   });
 
-  it('public: an existing phone number is attached to the existing customer, whose name/email are left unchanged', async () => {
+  it('public: a phone the shop already has, from a browser it has not seen, is a new customer beside the first', async () => {
     const t = await shop();
-    const phone = '6900000101';
+    const phone = '+306900000101';
     const first = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     expect(first.status).toBe(201);
 
-    // A second booking with the SAME phone but DIFFERENT name/email — the
-    // customer's own record must not be overwritten by whatever a later
-    // (anonymous, public) booker happens to type.
+    // Anyone can type a phone number: it must neither rewrite the customer it
+    // belongs to nor put a booking on their record.
     const second = await pub(
       t,
       phone,
@@ -92,37 +91,79 @@ describe('customer upsert on booking creation', () => {
     );
     expect(second.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customers = await prisma.customer.findMany({
+      where: { shopId: t.shop.id, phone },
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { bookings: true } } },
     });
-    expect(customer?.name).toBe('Nikos');
-    expect(customer?.email).toBe('nikos@example.com');
-
-    // Both bookings are attached to that one customer, not two different rows.
-    const bookings = await prisma.booking.findMany({
-      where: { shopId: t.shop.id, customerId: customer!.id },
-    });
-    expect(bookings).toHaveLength(2);
-    expect(await prisma.customer.count({ where: { shopId: t.shop.id } })).toBe(
-      1,
-    );
+    expect(customers.map((c) => [c.name, c.email, c._count.bookings])).toEqual([
+      ['Nikos', 'nikos@example.com', 1],
+      ['Someone Else', 'someone@else.com', 1],
+    ]);
   });
 
-  it('public: a booking with no email never blanks out an email already on file', async () => {
+  it('public: the browser a customer booked from is that customer the next time, and a booking never changes their details', async () => {
     const t = await shop();
-    const phone = '6900000102';
-    await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
-    await pub(t, phone, 'Nikos', SECOND); // no email this time
+    const phone = '+306900000102';
+    const first = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
+    expect(first.status).toBe(201);
+    const cookie = String(first.headers['set-cookie']).split(';')[0];
+    expect(cookie).toMatch(/^customerKey=[\w-]{43}$/);
+    expect(String(first.headers['set-cookie'])).toMatch(/HttpOnly/i);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const again = await pub(t, phone, 'Nick', SECOND).set('Cookie', cookie);
+    expect(again.status).toBe(201);
+
+    const customers = await prisma.customer.findMany({
+      where: { shopId: t.shop.id },
+      include: { _count: { select: { bookings: true } } },
     });
-    expect(customer?.email).toBe('nikos@example.com');
+    expect(customers.map((c) => [c.name, c.email, c._count.bookings])).toEqual([
+      ['Nikos', 'nikos@example.com', 2],
+    ]);
+  });
+
+  it('public: booking for someone else (another phone) or as "not you" is a new customer, and the browser stays who it was', async () => {
+    const t = await shop();
+    const first = await pub(t, '+306900000110', 'Parent', FIRST);
+    const cookie = String(first.headers['set-cookie']).split(';')[0];
+
+    const child = await pub(t, '+306900000111', 'Child', SECOND).set(
+      'Cookie',
+      cookie,
+    );
+    expect(child.status).toBe(201);
+    const guest = await api
+      .post(`/public/${t.shop.slug}/book`)
+      .set('Cookie', cookie)
+      .send({
+        name: 'Friend',
+        phone: '+306900000110',
+        guest: true,
+        serviceId: t.service.id,
+        staffId: t.staff.id,
+        startTime: '2026-12-08T12:00:00+02:00',
+      });
+    expect(guest.status).toBe(201);
+
+    expect(
+      (
+        await prisma.customer.findMany({
+          where: { shopId: t.shop.id },
+          orderBy: { name: 'asc' },
+        })
+      ).map((c) => c.name),
+    ).toEqual(['Child', 'Friend', 'Parent']);
+    const me = await api.get(`/public/${t.shop.slug}/me`).set('Cookie', cookie);
+    expect(me.body.data.customer).toMatchObject({
+      name: 'Parent',
+      phone: '+306900000110',
+    });
   });
 
   it('owner/staff: an existing phone number still updates the customer record (unchanged, deliberate behaviour)', async () => {
     const t = await shop();
-    const phone = '6900000103';
+    const phone = '+306900000103';
     await owner(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     const second = await owner(
       t,
@@ -133,8 +174,8 @@ describe('customer upsert on booking creation', () => {
     );
     expect(second.status).toBe(201);
 
-    const customer = await prisma.customer.findUnique({
-      where: { shopId_phone: { shopId: t.shop.id, phone } },
+    const customer = await prisma.customer.findFirst({
+      where: { shopId: t.shop.id, phone },
     });
     expect(customer?.name).toBe('Corrected Name');
     expect(customer?.email).toBe('corrected@example.com');

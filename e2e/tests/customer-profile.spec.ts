@@ -10,14 +10,14 @@ import { confirmBooking, pickServiceAndProvider } from '../support/booking';
  * Customers added by hand, customer photos and the shop's public sign-up page
  * (the one its QR code opens): the owner turns both settings on, a customer
  * signs up with a photo at /<slug>/profile, the photo shows in the shop and
- * the owner removes it. Changes to a customer the shop already has wait for
- * the owner to accept them.
+ * the owner removes it. From the browser they signed up in, the customer
+ * changes their own details and they are saved at once.
  */
 const PHOTO = join(__dirname, '../fixtures/photo.jpg');
-const PHONE = '6947770001';
-const HAND_PHONE = '6947770002';
-const NEW_PHONE = '6947770004';
-const BOOK_PHONE = '6947770003';
+const PHONE = '+306947770001';
+const HAND_PHONE = '+306947770002';
+const NEW_PHONE = '+306947770004';
+const BOOK_PHONE = '+306947770003';
 // A day no other spec books on.
 const bookDate = addDays(athensDate(), 23);
 const profileUrl = `/${E2E.shop.slug}/profile`;
@@ -87,7 +87,7 @@ test('the sign-up page is off until the owner turns it on, then shows its QR cod
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`a customer signs up with a photo, asks for changes the owner accepts, and the owner removes the photo (${theme})`, async ({ page }) => {
+  test(`a customer signs up with a photo, changes their own details from the same browser, and the owner removes the photo (${theme})`, async ({ page }) => {
     await enable(true, true);
     await page.context().addCookies([
       { name: 'lang', value: 'en', url: E2E.webUrl },
@@ -114,46 +114,44 @@ for (const theme of ['light', 'dark'] as const) {
     expect(created.name).toBe('Katerina Sign-Up');
     expect(created.photoUrl).toMatch(/^\/media\/shops\/.+\/customer-/);
 
-    // A second visit with the same phone changes nothing by itself, and says the same.
+    // A second visit from the same browser shows what the shop has, and what
+    // they change is saved at once.
     await page.goto(profileUrl);
+    await expect(page.getByLabel('Name')).toHaveValue('Katerina Sign-Up');
+    await expect(page.getByLabel('Phone')).toHaveValue('694 777 0001');
+    await loaded(page.getByRole('button', { name: 'View photo: Katerina Sign-Up' }).locator('img'));
     await page.getByLabel('Name').fill('Katerina Papadaki');
-    await page.getByLabel('Phone').fill(PHONE);
+    await page.getByLabel('Phone').fill(NEW_PHONE);
     await page.getByLabel('Email').fill('katerina@example.com');
-    await page.getByRole('button', { name: 'My phone number has changed' }).click();
-    await page.getByLabel('New phone number').fill(NEW_PHONE);
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByText('Thank you!')).toBeVisible();
-    expect(await customer(PHONE)).toEqual(created);
-
-    // The owner finds the request, sees old and new, and accepts it.
-    await signIn(page, theme);
-    await page.goto(`/shops/${E2E.shop.slug}/customers`);
-    await page.getByRole('button', { name: 'Changes waiting (1)' }).click();
-    const waiting = page.locator('tr', { hasText: 'Katerina Sign-Up' });
-    await expect(waiting.getByText('Changes waiting')).toBeVisible();
-    expect(await noHorizontalScroll(page)).toBe(true);
-    await waiting.getByRole('link', { name: 'Katerina Sign-Up' }).click();
-    const changes = page.locator('.card', { hasText: 'Changes this customer asked for' });
-    await expect(changes.getByText('Katerina Papadaki')).toBeVisible();
-    await expect(changes.getByText('katerina@example.com')).toBeVisible();
-    await expect(changes.getByText(NEW_PHONE)).toBeVisible();
-    expect(await noHorizontalScroll(page)).toBe(true);
-    await changes.getByRole('button', { name: 'Accept' }).click();
-    await expect(changes).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'Katerina Papadaki' })).toBeVisible();
-    expect(await customer(NEW_PHONE)).toMatchObject({
-      id: created.id,
+    expect(await customer(PHONE)).toBeUndefined();
+    expect(await customer(NEW_PHONE)).toEqual({
+      ...created,
       name: 'Katerina Papadaki',
       email: 'katerina@example.com',
-      photoUrl: created.photoUrl,
     });
+
+    // Nothing waits for the shop to accept.
+    await signIn(page, theme);
+    await page.goto(`/shops/${E2E.shop.slug}/customers/${created.id}`);
+    await expect(page.getByRole('heading', { name: 'Katerina Papadaki' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Accept' })).toHaveCount(0);
 
     // The shop sees the photo in the list and on the customer's page.
     await page.goto(`/shops/${E2E.shop.slug}/customers`);
     const row = page.locator('tr', { hasText: 'Katerina Papadaki' });
     await loaded(row.locator('.avatar img'));
     expect(await noHorizontalScroll(page)).toBe(true);
+    // Clicking the photo opens it at full size, without opening the customer.
+    await row.getByRole('button', { name: 'View photo: Katerina Papadaki' }).click();
+    const viewer = page.getByRole('dialog', { name: 'Katerina Papadaki' });
+    await loaded(viewer.getByRole('img', { name: 'Katerina Papadaki' }));
+    expect(await noHorizontalScroll(page)).toBe(true);
+    await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer).toBeHidden();
+    await expect(page).toHaveURL(/\/customers$/);
     await row.getByRole('link', { name: 'Katerina Papadaki' }).click();
 
     const field = page.locator('.photo-field');

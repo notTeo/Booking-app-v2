@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma';
 import { signAccessToken } from '../utils/jwt';
+import { bindDevice, newDeviceKey } from '../services/customerDevice.service';
 import type { BookingStatus } from '../../dist/generated/prisma';
 
 // Every booking rule an owner/staff request may accept (mirrors the API's
@@ -163,4 +164,14 @@ export async function addManager(
     },
   });
   return { user, staff, token: signAccessToken(user.id) };
+}
+
+/** A browser's cookie header, as sent with a public request. */
+export const deviceCookie = (key = newDeviceKey()) => `customerKey=${key}`;
+
+/** The cookie of a browser the shop knows as this customer. */
+export async function deviceCookieFor(shopId: string, customerId: string) {
+  const key = newDeviceKey();
+  await bindDevice(prisma, shopId, customerId, key);
+  return deviceCookie(key);
 }

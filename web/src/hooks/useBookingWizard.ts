@@ -46,10 +46,11 @@ export interface UseBookingWizardOptions {
   };
   /**
    * Who the booking is for, when known before the date/time step: slot
-   * lookups then fit that customer's own duration for the service. The public
-   * page identifies by phone, the shop's wizard by customer id.
+   * lookups then fit that customer's own duration for the service. The shop's
+   * wizard names them by id. On the public page the API knows the browser's
+   * own customer; `guest` asks for the standard times instead ("Not you?").
    */
-  slotCustomer?: { phone?: string; customerId?: string } | null;
+  slotCustomer?: { customerId?: string; guest?: boolean } | null;
   /** The picked customer's own minutes per service id (owner wizard): used for the summed duration shown. */
   customDurations?: Record<string, number>;
 }
@@ -225,7 +226,7 @@ export function useBookingWizard({
     const request =
       internal && shopId
         ? getOwnerSlots(shopId, targetDate, memberId, serviceId, interval ?? undefined, reschedule?.bookingId, slotCustomer?.customerId, serviceIds)
-        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token, slotCustomer?.phone, serviceIds);
+        : getPublicSlots(slug, targetDate, memberId, serviceId, reschedule?.token, slotCustomer?.guest, serviceIds);
     const seq = ++slotsSeq.current;
     lastSlotsRequest.current = () => fetchSlots(targetDate, memberId, serviceIds, interval);
     setSlotsError(false);

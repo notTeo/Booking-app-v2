@@ -920,19 +920,6 @@ export interface Translations {
     viewButton: string;
   };
   public: {
-    identity: {
-      askTitle: string;
-      askBody: string;
-      yes: string;
-      no: string;
-      knownAs: string;
-      notYou: string;
-      prompt: string;
-      phoneLabel: string;
-      phoneHint: string;
-      usePhone: string;
-      cancel: string;
-    };
     notAcceptingTitle: string;
     notAccepting: string;
     notAcceptingCall: string;
@@ -963,6 +950,7 @@ export interface Translations {
     namePlaceholder: string;
     phoneLabel: string;
     phonePlaceholder: string;
+    phoneCodeLabel: string;
     emailLabel: string;
     emailOptional: string;
     emailHint: string;
@@ -973,8 +961,6 @@ export interface Translations {
     notesLabel: string;
     notesOptional: string;
     notesPlaceholder: string;
-    rememberLabel: string;
-    rememberHint: string;
     confirmBooking: string;
     bookingConfirmed: string;
     bookingConfirmedMsg: string;
@@ -992,6 +978,8 @@ export interface Translations {
     staffContext: string;
     atLabel: string;
     bookAnother: string;
+    manageLinkHint: string;
+    manageReschedule: string;
     scrollForMore: string;
   };
   shopGate: {
@@ -1118,6 +1106,16 @@ export interface Translations {
     mergeConfirmButton: string;
     mergeError: string;
     mergeSuccess: string;
+    viewPhoto: string;
+    duplicatePhoneBadge: string;
+    duplicatePhoneFilter: string;
+    samePhoneTitle: string;
+    samePhoneNewer: string;
+    samePhoneOldest: string;
+    samePhoneAdded: string;
+    samePhoneMergeInto: string;
+    samePhoneMergeHere: string;
+    samePhoneConfirm: string;
     bookingHistory: string;
     bookingsErrorLoad: string;
     providerCol: string;
@@ -1292,11 +1290,13 @@ export interface Translations {
     wizardPhotoFailed: string;
     pageTitle: string;
     pageIntro: string;
+    pageIntroKnown: string;
+    currentPhoto: string;
+    myDetailsLink: string;
     submit: string;
     successTitle: string;
     successBody: string;
     bookLink: string;
-    existingNote: string;
     errorSubmit: string;
     unavailableTitle: string;
     unavailableBody: string;
@@ -1316,18 +1316,6 @@ export interface Translations {
     close: string;
     signupLinkTitle: string;
     signupLinkDesc: string;
-    changesTitle: string;
-    changesDesc: string;
-    changesPhoto: string;
-    changesAccept: string;
-    changesReject: string;
-    changesError: string;
-    changesPhoneTaken: string;
-    changesFilter: string;
-    changesBadge: string;
-    numberChanged: string;
-    newPhoneLabel: string;
-    newPhoneHint: string;
   };
   cancelBooking: {
     invalidLink: string;
@@ -1677,7 +1665,7 @@ home: {
     useHeading: 'Πώς τα χρησιμοποιούμε',
     useBody: 'Χρησιμοποιούμε τα δεδομένα σου για να λειτουργήσει η υπηρεσία: να δημιουργούμε και να διαχειριζόμαστε ραντεβού, να στέλνουμε emails επιβεβαίωσης ή ειδοποιήσεων και να σου παρέχουμε υποστήριξη όταν τη χρειάζεσαι. Δεν πουλάμε ούτε νοικιάζουμε τα δεδομένα σου σε τρίτους.',
     cookiesHeading: 'Cookies και τοπική αποθήκευση',
-    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Αν επιλέξεις «Αποθήκευση των στοιχείων μου» σε μια σελίδα κρατήσεων, το όνομα, το τηλέφωνο και το email σου αποθηκεύονται στην τοπική αποθήκευση του browser σου για να συμπληρωθούν στην επόμενη κράτηση· μένουν στη συσκευή σου για έως 12 μήνες και διαγράφονται μόλις αποεπιλέξεις το πεδίο ή καθαρίσεις τα δεδομένα του ιστότοπου. Μετά από μια κράτηση, η επιβεβαίωσή της κρατιέται στην καρτέλα του browser μέχρι να την κλείσεις, ώστε να φαίνεται ξανά αν ανανεώσεις τη σελίδα. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
+    cookiesBody: 'Χρησιμοποιούμε έναν μικρό αριθμό cookies και τοπικής αποθήκευσης του browser για βασικές λειτουργίες, όπως η διατήρηση της σύνδεσής σου και η προτίμηση γλώσσας/θέματος. Όταν κλείνεις ραντεβού ή γράφεσαι σε ένα κατάστημα, ο browser σου παίρνει ένα cookie που τον αναγνωρίζει σε αυτό το κατάστημα: έτσι βλέπεις συμπληρωμένα τα στοιχεία σου την επόμενη φορά και μπορείς να τα αλλάξεις. Το cookie έχει μόνο έναν τυχαίο κωδικό, όχι τα στοιχεία σου, ισχύει έως 400 ημέρες από την τελευταία επίσκεψη και σβήνεται όταν καθαρίσεις τα δεδομένα του ιστότοπου. Μετά από μια κράτηση, η επιβεβαίωσή της κρατιέται στην καρτέλα του browser μέχρι να την κλείσεις, ώστε να φαίνεται ξανά αν ανανεώσεις τη σελίδα. Δεν χρησιμοποιούμε cookies τρίτων για διαφήμιση ή παρακολούθηση.',
     sharingHeading: 'Κοινοποίηση δεδομένων',
     sharingBody: 'Δεν μοιραζόμαστε τα δεδομένα σου με τρίτους, εκτός από τους παρόχους υπηρεσιών που χρειαζόμαστε για να λειτουργήσει το BeBooked (π.χ. αποστολή email, φιλοξενία, παρακολούθηση σφαλμάτων). Αυτοί οι πάροχοι έχουν πρόσβαση μόνο στα δεδομένα που χρειάζονται για να παρέχουν την υπηρεσία τους. Όταν κάτι πάει στραβά στην εφαρμογή, μια τεχνική αναφορά σφάλματος (το σφάλμα, η σελίδα, ο τύπος του browser και ενδεχομένως η διεύθυνση IP) στέλνεται στη Sentry, τον πάροχο παρακολούθησης σφαλμάτων μας, σε διακομιστές εντός ΕΕ, για να μπορέσουμε να το διορθώσουμε. Έχουμε απενεργοποιήσει τη συλλογή του περιεχομένου των φορμών και των cookies σε αυτές τις αναφορές.',
     rightsHeading: 'Τα δικαιώματά σου',
@@ -2461,19 +2449,6 @@ home: {
       viewButton: 'Άνοιγμα',
     },
     public: {
-      identity: {
-        askTitle: 'Συνέχεια ως {name};',
-        askBody: 'Θα χρησιμοποιήσουμε τα αποθηκευμένα στοιχεία σας για να βρούμε τις ώρες που σας ταιριάζουν.',
-        yes: 'Ναι, συνέχεια',
-        no: 'Όχι, άλλος',
-        knownAs: 'Κράτηση ως',
-        notYou: 'Δεν είστε εσείς;',
-        prompt: 'Έχετε ξανακλείσει μαζί μας; Προσθέστε το τηλέφωνό σας για να βρείτε τις ώρες σας πιο εύκολα',
-        phoneLabel: 'Το τηλέφωνό σας',
-        phoneHint: 'Προαιρετικό. Χρησιμοποιείται μόνο για να βρούμε ώρες που σας ταιριάζουν.',
-        usePhone: 'Χρήση αριθμού',
-        cancel: 'Άκυρο',
-      },
       bookAppointment: 'Κλείστε Ραντεβού',
       notAcceptingTitle: 'Οι online κρατήσεις δεν είναι διαθέσιμες αυτή τη στιγμή',
       notAccepting: 'Επικοινωνήστε με το κατάστημα για να κλείσετε ραντεβού.',
@@ -2503,7 +2478,8 @@ home: {
       nameLabel: 'Όνομα',
       namePlaceholder: 'Το όνομά σας',
       phoneLabel: 'Τηλέφωνο',
-      phonePlaceholder: '+30 697 000 0000',
+      phonePlaceholder: '697 000 0000',
+      phoneCodeLabel: 'Κωδικός χώρας',
       emailLabel: 'Email',
       emailOptional: '(προαιρετικό)',
       emailHint: 'Προσθέστε email για να λάβετε λεπτομέρειες κράτησης και σύνδεσμο ακύρωσης',
@@ -2514,8 +2490,6 @@ home: {
       notesLabel: 'Σημειώσεις',
       notesOptional: '(προαιρετικό)',
       notesPlaceholder: 'Ειδικές απαιτήσεις...',
-      rememberLabel: 'Αποθήκευση των στοιχείων μου σε αυτή τη συσκευή',
-      rememberHint: 'Αποθηκεύονται μόνο σε αυτόν τον browser, για να συμπληρωθούν στην επόμενη κράτησή σας. Αποεπιλέξτε για να διαγραφούν.',
       confirmBooking: 'Επιβεβαίωση Κράτησης',
       bookingConfirmed: 'Κράτηση Επιβεβαιώθηκε!',
       bookingConfirmedMsg: 'Ευχαριστούμε, {name}. Το ραντεβού σας για {service} στις {date} στις {time} έχει κρατηθεί. Τα λέμε!',
@@ -2540,6 +2514,8 @@ home: {
         BOOKING_TOO_LONG: 'Ένα ραντεβού δεν μπορεί να διαρκεί πάνω από 24 ώρες.',
       },
       bookAnother: 'Νέα κράτηση',
+      manageLinkHint: 'Κρατήστε αυτόν τον σύνδεσμο: με αυτόν ακυρώνετε το ραντεβού σας.',
+      manageReschedule: 'Αλλαγή ώρας',
       scrollForMore: 'Κύλισε για περισσότερα',
     },
     shopGate: {
@@ -2674,6 +2650,16 @@ home: {
       mergeConfirmButton: 'Συγχώνευση',
       mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
       mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      viewPhoto: 'Προβολή φωτογραφίας: {name}',
+      duplicatePhoneBadge: 'Ίδιο τηλέφωνο',
+      duplicatePhoneFilter: 'Ίδιο τηλέφωνο',
+      samePhoneTitle: 'Το {phone} υπάρχει και σε άλλη καρτέλα',
+      samePhoneNewer: 'Μάλλον είναι το ίδιο άτομο. Παλαιότερη καρτέλα:',
+      samePhoneOldest: 'Μάλλον είναι το ίδιο άτομο. Νεότερες καρτέλες:',
+      samePhoneAdded: 'από {date}',
+      samePhoneMergeInto: 'Συγχώνευση στον πελάτη {name}',
+      samePhoneMergeHere: 'Συγχώνευση του {name} εδώ',
+      samePhoneConfirm: 'Τα ραντεβού του {source} θα μεταφερθούν στον {target} και η καρτέλα του {source} θα διαγραφεί. Τα στοιχεία του {target} δεν αλλάζουν. Η ενέργεια δεν αναιρείται.',
       bookingHistory: 'Ραντεβού',
       bookingsErrorLoad: 'Τα ραντεβού δεν φορτώθηκαν.',
       providerCol: 'Προσωπικό',
@@ -2861,11 +2847,13 @@ home: {
       wizardPhotoFailed: "Το ραντεβού σου κλείστηκε, αλλά η φωτογραφία δεν αποθηκεύτηκε.",
       pageTitle: "Τα στοιχεία σου",
       pageIntro: "Συμπλήρωσε τα στοιχεία σου για να σε έχει το {shop} στους πελάτες του.",
+      pageIntroKnown: "Αυτά είναι τα στοιχεία που έχει το {shop} για σένα. Άλλαξε ό,τι θέλεις.",
+      currentPhoto: "Η φωτογραφία που έχεις τώρα. Διάλεξε άλλη για να την αλλάξεις.",
+      myDetailsLink: "Τα στοιχεία και η φωτογραφία μου",
       submit: "Αποθήκευση",
       successTitle: "Ευχαριστούμε!",
-      successBody: "Τα στοιχεία σου στάλθηκαν στο {shop}. Αν ήσουν ήδη πελάτης, το κατάστημα θα επιβεβαιώσει τις αλλαγές.",
+      successBody: "Τα στοιχεία σου αποθηκεύτηκαν στο {shop}.",
       bookLink: "Κλείσε ραντεβού",
-      existingNote: "Αν είσαι ήδη πελάτης, το κατάστημα θα δει τις αλλαγές σου και θα τις επιβεβαιώσει.",
       errorSubmit: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
       unavailableTitle: "Η σελίδα δεν είναι διαθέσιμη",
       unavailableBody: "Αυτό το κατάστημα δεν δέχεται εγγραφές πελατών από εδώ.",
@@ -2885,18 +2873,6 @@ home: {
       close: "Κλείσιμο",
       signupLinkTitle: "Σύνδεσμος εγγραφής πελατών",
       signupLinkDesc: "Οι πελάτες γράφουν εδώ τα στοιχεία τους. Τύπωσε τον κωδικό QR για να τον σκανάρουν στο κατάστημα.",
-      changesTitle: "Αλλαγές που ζήτησε ο πελάτης",
-      changesDesc: "Τις έστειλε από τη σελίδα εγγραφής. Δεν ισχύουν μέχρι να τις αποδεχτείς.",
-      changesPhoto: "Νέα φωτογραφία",
-      changesAccept: "Αποδοχή",
-      changesReject: "Απόρριψη",
-      changesError: "Δεν ήταν δυνατή η αποθήκευση. Δοκίμασε ξανά.",
-      changesPhoneTaken: "Το νέο τηλέφωνο ανήκει ήδη σε άλλον πελάτη. Συγχώνευσε τις δύο εγγραφές ή απόρριψε την αλλαγή.",
-      changesFilter: "Αλλαγές σε αναμονή",
-      changesBadge: "Αλλαγές σε αναμονή",
-      numberChanged: "Άλλαξα αριθμό τηλεφώνου",
-      newPhoneLabel: "Νέο τηλέφωνο",
-      newPhoneHint: "Γράψε πιο πάνω τον παλιό σου αριθμό, για να σε βρει το κατάστημα.",
     },
     cancelBooking: {
       invalidLink: 'Μη έγκυρος σύνδεσμος ακύρωσης.',
@@ -3242,7 +3218,7 @@ home: {
     useHeading: 'How We Use It',
     useBody: "We use your data to run the service: creating and managing bookings, sending confirmation or notification emails, and providing support when you need it. We don't sell or rent your data to third parties.",
     cookiesHeading: 'Cookies & Local Storage',
-    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. If you tick \"Remember my details\" on a booking page, your name, phone number and email are kept in your browser's local storage to fill in your next booking; they stay on your device for up to 12 months and are removed as soon as you untick the box or clear the site's data. After you book, the confirmation is kept in that browser tab until you close it, so it is still shown if you reload the page. We don't use third-party cookies for advertising or tracking.",
+    cookiesBody: "We use a small number of cookies and browser local storage for essential functionality, like keeping you signed in and remembering your language/theme preference. When you book with a shop or sign up with it, your browser gets a cookie that recognises it at that shop: your details are then filled in the next time, and you can change them. The cookie holds only a random code, not your details; it lasts up to 400 days from your last visit and goes when you clear the site's data. After you book, the confirmation is kept in that browser tab until you close it, so it is still shown if you reload the page. We don't use third-party cookies for advertising or tracking.",
     sharingHeading: 'Data Sharing',
     sharingBody: "We don't share your data with third parties, except the service providers we rely on to run BeBooked (e.g. email delivery, hosting, error monitoring). Those providers only get access to what they need to provide their service. When something goes wrong in the app, a technical error report (the error, the page, the browser type and possibly the IP address) is sent to Sentry, our error-monitoring provider, on servers in the EU, so that we can fix it. We have switched off the collection of form contents and cookies in these reports.",
     rightsHeading: 'Your Rights',
@@ -4026,19 +4002,6 @@ home: {
       viewButton: 'Open',
     },
     public: {
-      identity: {
-        askTitle: 'Continue as {name}?',
-        askBody: 'We will use your saved details to find the times that suit you.',
-        yes: 'Yes, continue',
-        no: 'No, someone else',
-        knownAs: 'Booking as',
-        notYou: 'Not you?',
-        prompt: 'Booked with us before? Add your phone to find your times faster',
-        phoneLabel: 'Your phone',
-        phoneHint: 'Optional. Only used to find times that suit you.',
-        usePhone: 'Use this number',
-        cancel: 'Cancel',
-      },
       bookAppointment: 'Book an Appointment',
       notAcceptingTitle: 'Online booking is not available right now',
       notAccepting: 'Contact the shop to book an appointment.',
@@ -4068,7 +4031,8 @@ home: {
       nameLabel: 'Name',
       namePlaceholder: 'Your name',
       phoneLabel: 'Phone',
-      phonePlaceholder: '+1 555 000 0000',
+      phonePlaceholder: '697 000 0000',
+      phoneCodeLabel: 'Country code',
       emailLabel: 'Email',
       emailOptional: '(optional)',
       emailHint: 'Add your email to receive booking details and a cancellation link',
@@ -4079,8 +4043,6 @@ home: {
       notesLabel: 'Notes',
       notesOptional: '(optional)',
       notesPlaceholder: 'Any special requests...',
-      rememberLabel: 'Remember my details on this device',
-      rememberHint: 'Saved only in this browser, to fill in your next booking. Untick to delete them.',
       confirmBooking: 'Confirm Booking',
       bookingConfirmed: 'Booking Confirmed!',
       bookingConfirmedMsg: "Thanks, {name}. Your appointment for {service} on {date} at {time} has been booked. We'll see you then!",
@@ -4105,6 +4067,8 @@ home: {
         BOOKING_TOO_LONG: "A booking can't be longer than 24 hours.",
       },
       bookAnother: 'Book another',
+      manageLinkHint: 'Keep this link: it is how you cancel your appointment.',
+      manageReschedule: 'Change the time',
       scrollForMore: 'Scroll for more',
     },
     shopGate: {
@@ -4239,6 +4203,16 @@ home: {
       mergeConfirmButton: 'Merge',
       mergeError: 'The merge failed. Please try again.',
       mergeSuccess: 'Customers merged. {count} bookings moved.',
+      viewPhoto: 'View photo: {name}',
+      duplicatePhoneBadge: 'Same phone',
+      duplicatePhoneFilter: 'Same phone',
+      samePhoneTitle: '{phone} is on another record too',
+      samePhoneNewer: 'Probably the same person. Older record:',
+      samePhoneOldest: 'Probably the same person. Newer records:',
+      samePhoneAdded: 'since {date}',
+      samePhoneMergeInto: 'Merge into {name}',
+      samePhoneMergeHere: 'Merge {name} into this one',
+      samePhoneConfirm: '{source}\'s bookings will move to {target}, and {source}\'s record will be deleted. {target}\'s details stay as they are. This cannot be undone.',
       bookingHistory: 'Bookings',
       bookingsErrorLoad: 'The bookings could not be loaded.',
       providerCol: 'Staff',
@@ -4426,11 +4400,13 @@ home: {
       wizardPhotoFailed: "Your booking is made, but the photo could not be saved.",
       pageTitle: "Your details",
       pageIntro: "Fill in your details so {shop} has you as a customer.",
+      pageIntroKnown: "These are the details {shop} has for you. Change anything you like.",
+      currentPhoto: "The photo you have now. Choose another to change it.",
+      myDetailsLink: "My details and photo",
       submit: "Save",
       successTitle: "Thank you!",
-      successBody: "Your details were sent to {shop}. If you were already a customer, the shop will confirm the changes.",
+      successBody: "Your details are saved with {shop}.",
       bookLink: "Book an appointment",
-      existingNote: "If you are already a customer, the shop will see your changes and confirm them.",
       errorSubmit: "Your details could not be saved. Try again.",
       unavailableTitle: "This page is not available",
       unavailableBody: "This shop does not take customer sign-ups here.",
@@ -4450,18 +4426,6 @@ home: {
       close: "Close",
       signupLinkTitle: "Customer sign-up link",
       signupLinkDesc: "Customers enter their own details here. Print the QR code so they can scan it in the shop.",
-      changesTitle: "Changes this customer asked for",
-      changesDesc: "Sent from the sign-up page. Nothing changes until you accept.",
-      changesPhoto: "New photo",
-      changesAccept: "Accept",
-      changesReject: "Reject",
-      changesError: "This could not be saved. Try again.",
-      changesPhoneTaken: "The new phone number already belongs to another customer. Merge the two records, or reject the change.",
-      changesFilter: "Changes waiting",
-      changesBadge: "Changes waiting",
-      numberChanged: "My phone number has changed",
-      newPhoneLabel: "New phone number",
-      newPhoneHint: "Enter your old number above, so the shop can find you.",
     },
     cancelBooking: {
       invalidLink: 'Invalid cancellation link.',

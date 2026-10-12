@@ -6,6 +6,7 @@ import { createCustomer, type Customer } from '../api/customer.api';
 import { useLang } from '../context/LanguageContext';
 import { apiErrorField, apiErrorMessage } from '../utils/apiError';
 import { isPlausiblePhone } from '../utils/phone';
+import PhoneInput from './PhoneInput';
 import Alert from './Alert';
 import Modal from './Modal';
 
@@ -84,7 +85,7 @@ export default function CustomerFormModal({
             <label className="field__label" htmlFor={`${uid}-phone`}>
               {t.customers.phoneLabel} <span className="field__required">*</span>
             </label>
-            <input id={`${uid}-phone`} className="input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.public.phonePlaceholder} required disabled={submitting} />
+            <PhoneInput id={`${uid}-phone`} value={phone} onChange={setPhone} placeholder={t.public.phonePlaceholder} required disabled={submitting} />
           </div>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-email`}>

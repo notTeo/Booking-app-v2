@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react';
 import { getCustomers, type Customer } from '../../api/customer.api';
 import { useLang } from '../../context/LanguageContext';
 import { shouldLookUpCustomer } from './customerAutofill';
+import { formatPhone } from '../../utils/phone';
 
 /**
  * The shop wizard's optional first question: who is this booking for? Picking
@@ -52,7 +53,7 @@ export default function OwnerCustomerPicker({
   if (customer) {
     return (
       <div className="cluster cluster--tight t-body-sm">
-        <span>{p.selected} <strong>{customer.name}</strong> <span className="t-muted">{customer.phone}</span></span>
+        <span>{p.selected} <strong>{customer.name}</strong> <span className="t-muted">{formatPhone(customer.phone)}</span></span>
         <button
           type="button"
           className="btn btn--ghost btn--sm"
@@ -85,7 +86,7 @@ export default function OwnerCustomerPicker({
             <li key={c.id}>
               <button type="button" className="suggest__item" onClick={() => onPick(c)}>
                 <strong>{c.name}</strong>
-                <span className="suggest__meta">{c.phone}</span>
+                <span className="suggest__meta">{formatPhone(c.phone)}</span>
               </button>
             </li>
           ))}

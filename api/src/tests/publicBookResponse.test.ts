@@ -42,7 +42,7 @@ const book = (
   });
 
 describe('POST /public/:slug/book response', () => {
-  it('returns only id, status, startTime and endTime', async () => {
+  it('returns only the booking itself: its id, cancel token, status, times and lines', async () => {
     const t = await shop();
     const res = await book(
       t,
@@ -51,6 +51,7 @@ describe('POST /public/:slug/book response', () => {
     );
     expect(res.status).toBe(201);
     expect(Object.keys(res.body.data).sort()).toEqual([
+      'cancelToken',
       'endTime',
       'id',
       'products',
@@ -66,7 +67,7 @@ describe('POST /public/:slug/book response', () => {
     );
   });
 
-  it('never exposes the cancel token or the staff email', async () => {
+  it('hands the booker their own cancel token (the link works without an email), and never the staff email', async () => {
     const t = await shop();
     const res = await book(
       t,
@@ -78,13 +79,21 @@ describe('POST /public/:slug/book response', () => {
     const stored = await prisma.booking.findUniqueOrThrow({
       where: { id: res.body.data.id },
     });
-    // The token is still stored (the confirmation email needs it)…
     expect(stored.cancelToken).toBeTruthy();
-    // …but nothing in the response body may contain it or the staff email.
-    const raw = JSON.stringify(res.body);
-    expect(raw).not.toContain(stored.cancelToken!);
-    expect(raw).not.toContain('cancelToken');
-    expect(raw).not.toContain(STAFF_EMAIL);
+    expect(res.body.data.cancelToken).toBe(stored.cancelToken);
+    expect(JSON.stringify(res.body)).not.toContain(STAFF_EMAIL);
+
+    // It is the token of this booking and no other.
+    const other = await book(t, { name: 'Maria', phone: '6900001009' }, SECOND);
+    expect(other.body.data.cancelToken).not.toBe(stored.cancelToken);
+    const canceled = await api
+      .post('/public/cancel')
+      .send({ token: other.body.data.cancelToken });
+    expect(canceled.status, JSON.stringify(canceled.body)).toBe(200);
+    expect(
+      (await prisma.booking.findUniqueOrThrow({ where: { id: stored.id } }))
+        .status,
+    ).toBe('CONFIRMED');
   });
 
   it('returns no customer data, even when the phone matches an existing customer', async () => {

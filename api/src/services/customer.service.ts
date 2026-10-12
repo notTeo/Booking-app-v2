@@ -2,6 +2,7 @@ import { bookingServicesPrice } from '../utils/bookingServices';
 import { AppError } from '../middleware/errorHandler';
 import { prisma } from '../utils/prisma';
 import { BookingStatus, Prisma } from '../../dist/generated/prisma';
+import { duplicatePhones, findCustomerByPhone } from '../utils/customerPhone';
 import { redactCustomer } from '../utils/customerVisibility';
 import { logger } from '../utils/logger';
 import {
@@ -17,6 +18,7 @@ import {
   NOTES_MAX_LENGTH,
   isPlausiblePhone,
   normalizePhone,
+  phoneDigits,
 } from '../validators/common';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
@@ -37,35 +39,40 @@ export const listCustomers = async (
   limit = 20,
   // Only customers with a custom duration for at least one service.
   hasCustomDurations = false,
-  // Only customers whose own changes wait for approval (owner and managers).
-  pendingChanges = false,
+  // Only customers whose phone number another customer has too.
+  duplicatePhone = false,
 ) => {
   const membership = await requireShopAccess(userId, shopId);
-  // Change requests are the owner's and managers' to see and decide.
-  const seesRequests = canManage(membership.role);
-  const pendingChangesCount = seesRequests
-    ? await prisma.customerChangeRequest.count({ where: { shopId } })
+  // Two customers with one phone are probably one person, for the shop to
+  // merge. Phones are contact details: only who may see those is told.
+  const seesPhones = canViewCustomerDetails(membership);
+  const shared = seesPhones ? [...(await duplicatePhones(prisma, shopId))] : [];
+  const duplicatePhoneCount = shared.length
+    ? await prisma.customer.count({
+        where: { shopId, isSystem: false, phone: { in: shared } },
+      })
     : 0;
+  const counts = { duplicatePhoneCount };
 
   // Search matches on name and phone. For a member who may not see those,
   // a hit would confirm the term character by character, so it finds nothing.
-  if (search && !canViewCustomerDetails(membership))
-    return { items: [], total: 0, page, limit, pendingChangesCount };
-  if (pendingChanges && !seesRequests)
-    return { items: [], total: 0, page, limit, pendingChangesCount };
+  if (search && !seesPhones)
+    return { items: [], total: 0, page, limit, ...counts };
+  if (duplicatePhone && shared.length === 0)
+    return { items: [], total: 0, page, limit, ...counts };
 
   const where = {
     shopId,
     isSystem: false,
     ...(hasCustomDurations && { serviceDurations: { some: {} } }),
-    ...(pendingChanges && { changeRequest: { isNot: null } }),
+    ...(duplicatePhone && { phone: { in: shared } }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: 'insensitive' as const } },
         { phone: { contains: search } },
         // Phones are stored without separators; "694 123" still finds it.
         ...(/\d/.test(search) && /^[\d\s().+-]+$/.test(search)
-          ? [{ phone: { contains: normalizePhone(search) } }]
+          ? [{ phone: { contains: phoneDigits(search) } }]
           : []),
       ],
     }),
@@ -74,32 +81,32 @@ export const listCustomers = async (
   const [items, total] = await Promise.all([
     prisma.customer.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      // Sharing a phone: side by side, the oldest of each first.
+      orderBy: duplicatePhone
+        ? [{ phone: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }]
+        : { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
-      include: {
-        _count: { select: { serviceDurations: true } },
-        changeRequest: { select: { id: true } },
-      },
+      include: { _count: { select: { serviceDurations: true } } },
     }),
     prisma.customer.count({ where }),
   ]);
 
   return {
-    items: items.map(({ _count, changeRequest, ...c }) =>
+    items: items.map(({ _count, ...c }) =>
       redactCustomer(
         {
           ...c,
           hasCustomDurations: _count.serviceDurations > 0,
-          hasPendingChanges: seesRequests && changeRequest !== null,
+          duplicatePhone: shared.includes(c.phone),
         },
-        canViewCustomerDetails(membership),
+        seesPhones,
       ),
     ),
     total,
     page,
     limit,
-    pendingChangesCount,
+    ...counts,
   };
 };
 
@@ -111,32 +118,24 @@ export const getCustomer = async (
   const membership = await requireShopAccess(userId, shopId);
   await requireCustomerInShop(customerId, shopId);
 
-  const [customer, allBookings, serviceDurations, changeRequest] =
-    await Promise.all([
-      // The bookings themselves are served a page at a time by
-      // listCustomerBookings; a full Booking row must not go out here (it
-      // carries the customer's private cancel-link token).
-      prisma.customer.findUnique({ where: { id: customerId } }),
-      prisma.booking.findMany({
-        where: { customerId, shopId },
-        select: {
-          status: true,
-          service: { select: { name: true, price: true } },
-          services: { select: { name: true, duration: true, price: true } },
-        },
-      }),
-      prisma.customerServiceDuration.findMany({
-        where: { customerId },
-        select: { serviceId: true, duration: true },
-      }),
-      // What the customer asked to change themselves, for whoever may decide.
-      canManage(membership.role)
-        ? prisma.customerChangeRequest.findUnique({
-            where: { customerId },
-            select: CHANGE_REQUEST_SELECT,
-          })
-        : null,
-    ]);
+  const [customer, allBookings, serviceDurations] = await Promise.all([
+    // The bookings themselves are served a page at a time by
+    // listCustomerBookings; a full Booking row must not go out here (it
+    // carries the customer's private cancel-link token).
+    prisma.customer.findUnique({ where: { id: customerId } }),
+    prisma.booking.findMany({
+      where: { customerId, shopId },
+      select: {
+        status: true,
+        service: { select: { name: true, price: true } },
+        services: { select: { name: true, duration: true, price: true } },
+      },
+    }),
+    prisma.customerServiceDuration.findMany({
+      where: { customerId },
+      select: { serviceId: true, duration: true },
+    }),
+  ]);
 
   const completed = allBookings.filter(
     (b) => b.status === BookingStatus.COMPLETED,
@@ -163,105 +162,29 @@ export const getCustomer = async (
   };
 
   if (!customer) return customer;
+  // The shop's other customers with this phone, oldest first: probably the
+  // same person, to be merged into the oldest of them all.
+  const samePhone =
+    canViewCustomerDetails(membership) && !customer.isSystem
+      ? await prisma.customer.findMany({
+          where: {
+            shopId,
+            phone: customer.phone,
+            isSystem: false,
+            id: { not: customerId },
+          },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          select: { id: true, name: true, createdAt: true },
+        })
+      : [];
   return {
     ...redactCustomer(customer, canViewCustomerDetails(membership)),
     totalVisits,
     totalSpent,
     totals,
     serviceDurations,
-    changeRequest,
+    samePhone,
   };
-};
-
-const CHANGE_REQUEST_SELECT = {
-  name: true,
-  phone: true,
-  email: true,
-  photoUrl: true,
-  createdAt: true,
-} as const;
-
-// The customer's own changes from the public sign-up page are applied: the
-// fields they filled in replace the customer's, the rest stay.
-export const acceptCustomerChanges = async (
-  userId: string,
-  shopId: string,
-  customerId: string,
-) => {
-  await requireShopAccess(userId, shopId, MANAGER_ONLY);
-  const customer = await requireCustomerInShop(customerId, shopId);
-  const request = await prisma.customerChangeRequest.findUnique({
-    where: { customerId },
-  });
-  if (!request) throw new AppError(404, 'No changes are waiting');
-
-  try {
-    await prisma.$transaction([
-      prisma.customer.update({
-        where: { id: customerId },
-        data: {
-          ...(request.name && { name: request.name }),
-          ...(request.phone && { phone: request.phone }),
-          ...(request.email && { email: request.email }),
-          ...(request.photoUrl && {
-            photoUrl: request.photoUrl,
-            photoOriginalUrl: request.photoOriginalUrl,
-            photoCrop: request.photoCrop ?? Prisma.DbNull,
-          }),
-        },
-      }),
-      prisma.customerChangeRequest.delete({ where: { id: request.id } }),
-    ]);
-  } catch (err) {
-    // The new phone number is another customer's: those two are one person,
-    // which is what merging is for.
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === 'P2002' &&
-      request.phone
-    ) {
-      const other = await prisma.customer.findUnique({
-        where: { shopId_phone: { shopId, phone: request.phone } },
-        select: { id: true },
-      });
-      throw new AppError(
-        409,
-        'Another customer already has this phone number',
-        'CUSTOMER_EXISTS',
-        undefined,
-        { customerId: other?.id },
-      );
-    }
-    throw err;
-  }
-  // The photo it replaced is no longer shown anywhere.
-  if (request.photoUrl)
-    await removeStoredFiles([customer.photoUrl, customer.photoOriginalUrl]);
-
-  logger.info(
-    `Customer changes accepted: ${customerId} shop ${shopId} by ${userId}`,
-  );
-  return getCustomer(userId, shopId, customerId);
-};
-
-export const rejectCustomerChanges = async (
-  userId: string,
-  shopId: string,
-  customerId: string,
-) => {
-  await requireShopAccess(userId, shopId, MANAGER_ONLY);
-  await requireCustomerInShop(customerId, shopId);
-  const request = await prisma.customerChangeRequest.findUnique({
-    where: { customerId },
-  });
-  if (request) {
-    await prisma.customerChangeRequest.delete({ where: { id: request.id } });
-    await removeStoredFiles([request.photoUrl, request.photoOriginalUrl]);
-    logger.info(
-      `Customer changes rejected: ${customerId} shop ${shopId} by ${userId}`,
-    );
-  }
-  return getCustomer(userId, shopId, customerId);
 };
 
 // Replace the customer's custom service durations with `items` (a service
@@ -352,10 +275,8 @@ export const createCustomer = async (
     email: data.email || null,
     notes: data.notes || null,
   };
-  const existing = await prisma.customer.findUnique({
-    where: { shopId_phone: { shopId, phone: data.phone } },
-    select: { id: true },
-  });
+  // Added by hand, a phone the shop already has is that customer.
+  const existing = await findCustomerByPhone(prisma, shopId, data.phone);
   const taken = (customerId: string) =>
     new AppError(
       409,
@@ -366,24 +287,9 @@ export const createCustomer = async (
     );
   if (existing) throw taken(existing.id);
 
-  try {
-    const customer = await prisma.customer.create({ data: fields });
-    logger.info(`Customer created: ${customer.id} shop ${shopId} by ${userId}`);
-    return redactCustomer(customer, true);
-  } catch (err) {
-    // The same phone was added in the meantime (a booking, another member).
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === 'P2002'
-    ) {
-      const other = await prisma.customer.findUnique({
-        where: { shopId_phone: { shopId, phone: data.phone } },
-        select: { id: true },
-      });
-      if (other) throw taken(other.id);
-    }
-    throw err;
-  }
+  const customer = await prisma.customer.create({ data: fields });
+  logger.info(`Customer created: ${customer.id} shop ${shopId} by ${userId}`);
+  return redactCustomer(customer, true);
 };
 
 // The customer's photo is the owner's and managers' to set or take down;
@@ -486,10 +392,7 @@ export const mergeCustomers = async (
   const { merged, moved, stale } = await prisma.$transaction(async (tx) => {
     const [target, source] = await Promise.all([
       tx.customer.findUnique({ where: { id: targetId } }),
-      tx.customer.findUnique({
-        where: { id: sourceId },
-        include: { changeRequest: true },
-      }),
+      tx.customer.findUnique({ where: { id: sourceId } }),
     ]);
     if (
       !target ||
@@ -519,6 +422,12 @@ export const mergeCustomers = async (
       },
       data: { customerId: targetId },
     });
+    // The browsers the source booked from are the target's now, so its
+    // owner is not taken for a new customer again.
+    await tx.customerDevice.updateMany({
+      where: { customerId: sourceId },
+      data: { customerId: targetId },
+    });
     await tx.customer.delete({ where: { id: sourceId } });
 
     const notes =
@@ -544,12 +453,7 @@ export const mergeCustomers = async (
     return {
       merged: updated,
       moved: count,
-      // Changes the source asked for go with it.
-      stale: [
-        ...(takePhoto ? [] : [source.photoUrl, source.photoOriginalUrl]),
-        source.changeRequest?.photoUrl,
-        source.changeRequest?.photoOriginalUrl,
-      ],
+      stale: takePhoto ? [] : [source.photoUrl, source.photoOriginalUrl],
     };
   });
   await removeStoredFiles(stale);
@@ -631,8 +535,15 @@ export const importCustomers = async (
     };
   });
 
+  // Newest first, so that of several customers with one phone the map below
+  // ends up holding the oldest.
   const existing = await prisma.customer.findMany({
-    where: { shopId, phone: { in: parsed.map((r) => r.phone) } },
+    where: {
+      shopId,
+      isSystem: false,
+      phone: { in: parsed.map((r) => r.phone) },
+    },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
   // Also holds the customers created below, so a phone repeated in the file
   // is treated like one the shop already has.
@@ -720,16 +631,9 @@ export const exportCustomer = async (
     select: { duration: true, service: { select: { name: true } } },
   });
 
-  const changeRequest = await prisma.customerChangeRequest.findUnique({
-    where: { customerId },
-    select: CHANGE_REQUEST_SELECT,
-  });
-
   logger.info(`Customer exported: ${customerId} shop ${shopId} by ${userId}`);
   return {
     exportedAt: new Date().toISOString(),
-    // Changes they asked for that the shop has not decided on yet.
-    requestedChanges: changeRequest,
     customer: {
       id: customer.id,
       name: customer.name,
@@ -767,20 +671,12 @@ export const deleteCustomer = async (
 ) => {
   await requireShopAccess(userId, shopId, OWNER_ONLY);
   const customer = await requireCustomerInShop(customerId, shopId);
-  const request = await prisma.customerChangeRequest.findUnique({
-    where: { customerId },
-  });
 
   const { count } = await prisma.booking.deleteMany({
     where: { customerId, shopId },
   });
   await prisma.customer.delete({ where: { id: customerId } });
-  await removeStoredFiles([
-    customer.photoUrl,
-    customer.photoOriginalUrl,
-    request?.photoUrl,
-    request?.photoOriginalUrl,
-  ]);
+  await removeStoredFiles([customer.photoUrl, customer.photoOriginalUrl]);
 
   logger.info(
     `Customer deleted: ${customerId} shop ${shopId} by ${userId} (${count} bookings)`,

@@ -3,12 +3,14 @@ import type { ReservedProduct } from '../api/public.api';
 /**
  * The confirmation a customer sees after booking, kept for this tab only so
  * that reloading the page still shows it instead of an empty first step.
- * sessionStorage: gone when the tab closes, never sent anywhere.
+ * sessionStorage: gone when the tab closes, never sent anywhere. It holds the
+ * booking's own cancel link too, which the page shows for the customer to keep.
  */
 
 const keyFor = (slug: string) => `booking-confirmed:${slug}`;
 const TEXT_MAX_LENGTH = 300;
 const MAX_PRODUCTS = 20;
+const TOKEN = /^[0-9a-f-]{36}$/i;
 
 export interface ConfirmedBooking {
   name: string;
@@ -20,6 +22,8 @@ export interface ConfirmedBooking {
   products: ReservedProduct[];
   /** The service's fee in cents, when the booking has products (for the total). */
   servicePrice?: number;
+  /** The booking's key, for its cancel and reschedule links. */
+  cancelToken?: string;
 }
 
 const isProduct = (p: unknown): p is ReservedProduct => {
@@ -34,7 +38,7 @@ export function parseConfirmedBooking(raw: string | null): ConfirmedBooking | nu
   try {
     const value: unknown = JSON.parse(raw);
     if (typeof value !== 'object' || value === null) return null;
-    const { name, serviceNames, date, time, phone, email, products, servicePrice } = value as Record<string, unknown>;
+    const { name, serviceNames, date, time, phone, email, products, servicePrice, cancelToken } = value as Record<string, unknown>;
     const texts = [name, serviceNames, date, time, phone, email];
     if (!texts.every((x): x is string => typeof x === 'string')) return null;
     if (!Array.isArray(products) || !products.every(isProduct)) return null;
@@ -50,6 +54,7 @@ export function parseConfirmedBooking(raw: string | null): ConfirmedBooking | nu
         .slice(0, MAX_PRODUCTS)
         .map((p) => ({ name: p.name.slice(0, TEXT_MAX_LENGTH), quantity: p.quantity, unitPrice: p.unitPrice })),
       ...(typeof servicePrice === 'number' && Number.isFinite(servicePrice) && { servicePrice }),
+      ...(typeof cancelToken === 'string' && TOKEN.test(cancelToken) && { cancelToken }),
     };
   } catch {
     return null;

@@ -69,7 +69,7 @@ export default function UpcomingBookings({ bookings, isError, onRetry, zone = 'U
                     <td data-label={r.customerCol} className="data-table__title">
                       <span className="cluster cluster--tight">
                         {b.customer.photoUrl && !b.customer.contactHidden && (
-                          <Avatar name={b.customer.name} photoUrl={b.customer.photoUrl} size="sm" />
+                          <Avatar name={b.customer.name} photoUrl={b.customer.photoUrl} size="sm" enlarge />
                         )}
                         {b.customer.contactHidden ? t.customers.hiddenLabel : b.customer.name}
                       </span>

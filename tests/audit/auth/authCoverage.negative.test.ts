@@ -42,6 +42,7 @@ const PUBLIC = [
   "POST /public/reschedule",
   "GET /public/:slug/slots",
   "GET /public/:slug",
+  "GET /public/:slug/me",
   "POST /public/:slug/book",
   "POST /public/:slug/profile",
   "GET /health",

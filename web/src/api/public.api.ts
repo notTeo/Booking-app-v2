@@ -1,6 +1,5 @@
 import client from './client';
 import type { ShopRole } from './shop.api';
-import { isPlausiblePhone } from '../utils/phone';
 import type { PhotoCrop } from './photo.api';
 
 export interface OpeningRange {
@@ -103,31 +102,56 @@ export interface CustomerProfilePayload {
   name: string;
   phone: string;
   email?: string;
-  /** "My number has changed": `phone` is then the old one the shop knows. */
-  newPhone?: string;
   photo?: { file: File; crop: PhotoCrop };
   /** Only the photo counts (the booking page): the name is not a request to rename. */
   photoOnly?: boolean;
 }
 
 /**
- * The sign-up page's form (and the booking page's photo). A new customer, or a
- * first photo, is saved at once; changes to a customer the shop already has
- * wait for the shop to accept them. The answer is the same either way, so it
- * says nothing about who is already a customer.
+ * After the API has set or renewed the browser's key cookie, the site's own
+ * host sets it once more (web/api/customer-key.ts says why). Production only:
+ * the function exists on the deployed site, not on the dev server. Nothing
+ * waits for it, and nothing breaks without it.
+ */
+const keepCustomerKey = () => {
+  if (!import.meta.env.PROD) return;
+  fetch('/api/customer-key', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined);
+};
+
+/** The customer this browser is at a shop, as the shop has them. */
+export interface OwnProfile {
+  name: string;
+  phone: string;
+  email: string | null;
+  photoUrl: string | null;
+}
+
+/**
+ * Who this browser is at the shop: the customer who first booked or signed up
+ * from it (the API knows it by a cookie), or null for a browser it has not seen.
+ */
+export const getOwnProfile = (slug: string) =>
+  client.get(`/public/${slug}/me`).then((r) => {
+    keepCustomerKey();
+    return r.data.data.customer as OwnProfile | null;
+  });
+
+/**
+ * The sign-up page's form (and the booking page's photo). The browser's own
+ * customer is changed at once; a browser the shop has not seen becomes a new
+ * customer, whatever phone is typed. The answer is the same either way.
  */
 export const submitCustomerProfile = (slug: string, payload: CustomerProfilePayload) => {
   const form = new FormData();
   form.append('name', payload.name);
   form.append('phone', payload.phone);
   if (payload.email) form.append('email', payload.email);
-  if (payload.newPhone) form.append('newPhone', payload.newPhone);
   if (payload.photoOnly) form.append('photoOnly', 'true');
   if (payload.photo) {
     form.append('crop', JSON.stringify(payload.photo.crop));
     form.append('photo', payload.photo.file);
   }
-  return client.post(`/public/${slug}/profile`, form).then(() => undefined);
+  return client.post(`/public/${slug}/profile`, form).then(() => keepCustomerKey());
 };
 
 export interface CreateBookingPayload {
@@ -142,10 +166,14 @@ export interface CreateBookingPayload {
   startTime: string;       // ISO 8601 datetime
   notes?: string;
   products?: ProductLine[];
+  /** "Not you?": book as someone else than the customer this browser is. */
+  guest?: boolean;
 }
 
 export interface BookingConfirmation {
   id: string;
+  /** This booking's key: opens its cancel and reschedule pages. */
+  cancelToken?: string | null;
   status: string;
   startTime: string;
   endTime: string;
@@ -156,7 +184,10 @@ export interface BookingConfirmation {
 }
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>
-  client.post(`/public/${slug}/book`, payload).then((r) => r.data.data as BookingConfirmation);
+  client.post(`/public/${slug}/book`, payload).then((r) => {
+    keepCustomerKey();
+    return r.data.data as BookingConfirmation;
+  });
 
 export interface CancelBookingResult {
   id: string;
@@ -254,16 +285,15 @@ export const getPublicSlots = (
   /** A customer rescheduling: their own booking doesn't block its slot. */
   rescheduleToken?: string,
   /**
-   * A returning customer's phone: the times offered then fit their own
-   * duration for the service. A header, so it stays out of URLs and logs.
+   * "Not you?": the standard times. Otherwise the times fit the own durations
+   * of the customer this browser is, if it is one.
    */
-  customerPhone?: string,
+  guest?: boolean,
   /** All the services when there are several: the times fit them added up. */
   serviceIds?: string[],
 ) =>
   client
     .get(`/public/${slug}/slots`, {
-      params: { date, staffId, serviceId, rescheduleToken, serviceIds: joinIds(serviceIds) },
-      ...(customerPhone && isPlausiblePhone(customerPhone) && { headers: { 'X-Customer-Phone': customerPhone.trim() } }),
+      params: { date, staffId, serviceId, rescheduleToken, serviceIds: joinIds(serviceIds), ...(guest && { guest: true }) },
     })
     .then((r) => r.data.data as SlotsResponse);

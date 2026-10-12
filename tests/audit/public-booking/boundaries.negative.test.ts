@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 // True negatives: boundary cases of the public booking flow that behave
 // correctly today. These are expected to PASS.
 import {
@@ -239,7 +240,7 @@ describe('customer record', () => {
     const after = await prisma.customer.findUniqueOrThrow({ where: { id: existing.id } });
     expect([after.name, after.email, after.notes]).toEqual(['Real Name', 'real@example.com', 'private']);
     const text = JSON.stringify(res.body);
-    for (const leak of ['Real Name', 'real@example.com', 'private', 'cancelToken', existing.id])
+    for (const leak of ['Real Name', 'real@example.com', 'private', existing.id])
       expect(text).not.toContain(leak);
   });
 
@@ -252,11 +253,13 @@ describe('customer record', () => {
     expect(rows.map((c) => [c.shopId, c.name])).toEqual([[a.shop.id, 'In A'], [b.shop.id, 'In B']]);
   });
 
-  it('10 parallel bookings with one new phone at different times create one customer and no 5xx', async () => {
+  it('10 parallel bookings from one new browser at different times create one customer and no 5xx', async () => {
     const t = await shop('P', '09:00', '15:00');
     const p = phone();
+    // One browser the shop has not seen, sending its key with every request.
+    const browser = { Cookie: `customerKey=${randomBytes(32).toString('base64url')}` };
     const times = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30'];
-    const rs = await Promise.all(times.map((h) => book(t, { phone: p, startTime: at(h) })));
+    const rs = await Promise.all(times.map((h) => book(t, { phone: p, startTime: at(h) }, browser)));
     expect(rs.map((r) => r.status)).toEqual(times.map(() => 201));
     expect(await prisma.customer.count({ where: { shopId: t.shop.id } })).toBe(1);
   });
