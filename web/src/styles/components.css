@@ -423,6 +423,9 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .modal__body { padding: var(--space-2) var(--space-6) var(--space-6); overflow-y: auto; font-size: var(--fs-base); color: var(--text-muted); }
 .modal__body > * + * { margin-top: var(--space-4); }
 .modal__footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-6) var(--space-6); border-top: 1px solid var(--border); }
+/* A photo at full size. */
+.modal--photo { max-width: 32rem; }
+.modal__photo { display: block; width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-md); }
 .modal--confirm { max-width: 24rem; align-items: center; text-align: center; padding: var(--space-6); }
 .modal--confirm .modal__header, .modal--confirm .modal__body, .modal--confirm .modal__footer { padding: 0; border: 0; }
 .modal--confirm .modal__header { flex-direction: column; align-items: center; gap: var(--space-3); }
@@ -577,6 +580,9 @@ a.card:hover, button.card:hover, .card--interactive:hover, .card--interactive.is
 .avatar--sm { width: 2rem; height: 2rem; font-size: var(--fs-xs); }
 .avatar--lg { width: 4rem; height: 4rem; font-size: var(--fs-lg); }
 .avatar--xl { width: 5rem; height: 5rem; font-size: var(--fs-xl); }
+/* A photo that opens at full size when clicked. */
+.avatar--button { padding: 0; border: 0; cursor: zoom-in; }
+.avatar--button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 /* Unsaved changes: the card that holds them, and a bar with Save that stays at
    the bottom of the screen until they are saved. */

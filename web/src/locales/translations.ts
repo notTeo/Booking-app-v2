@@ -1119,6 +1119,7 @@ export interface Translations {
     mergeConfirmButton: string;
     mergeError: string;
     mergeSuccess: string;
+    viewPhoto: string;
     duplicatePhoneBadge: string;
     duplicatePhoneFilter: string;
     samePhoneTitle: string;
@@ -2685,6 +2686,7 @@ home: {
       mergeConfirmButton: 'Συγχώνευση',
       mergeError: 'Η συγχώνευση απέτυχε. Δοκιμάστε ξανά.',
       mergeSuccess: 'Οι πελάτες συγχωνεύθηκαν. Μεταφέρθηκαν {count} ραντεβού.',
+      viewPhoto: 'Προβολή φωτογραφίας: {name}',
       duplicatePhoneBadge: 'Ίδιο τηλέφωνο',
       duplicatePhoneFilter: 'Ίδιο τηλέφωνο',
       samePhoneTitle: 'Το {phone} υπάρχει και σε άλλη καρτέλα',
@@ -4260,6 +4262,7 @@ home: {
       mergeConfirmButton: 'Merge',
       mergeError: 'The merge failed. Please try again.',
       mergeSuccess: 'Customers merged. {count} bookings moved.',
+      viewPhoto: 'View photo: {name}',
       duplicatePhoneBadge: 'Same phone',
       duplicatePhoneFilter: 'Same phone',
       samePhoneTitle: '{phone} is on another record too',

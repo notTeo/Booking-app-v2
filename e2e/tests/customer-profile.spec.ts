@@ -154,6 +154,14 @@ for (const theme of ['light', 'dark'] as const) {
     const row = page.locator('tr', { hasText: 'Katerina Papadaki' });
     await loaded(row.locator('.avatar img'));
     expect(await noHorizontalScroll(page)).toBe(true);
+    // Clicking the photo opens it at full size, without opening the customer.
+    await row.getByRole('button', { name: 'View photo: Katerina Papadaki' }).click();
+    const viewer = page.getByRole('dialog', { name: 'Katerina Papadaki' });
+    await loaded(viewer.getByRole('img', { name: 'Katerina Papadaki' }));
+    expect(await noHorizontalScroll(page)).toBe(true);
+    await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer).toBeHidden();
+    await expect(page).toHaveURL(/\/customers$/);
     await row.getByRole('link', { name: 'Katerina Papadaki' }).click();
 
     const field = page.locator('.photo-field');

@@ -220,7 +220,7 @@ export default function ShopCustomersPage() {
                     <tr key={c.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(c.id))}>
                       <td role="cell" data-label={t.customers.nameCol} className="data-table__title">
                         <span className="cluster cluster--tight">
-                          {!c.contactHidden && <Avatar name={c.name} photoUrl={c.photoUrl} size="sm" />}
+                          {!c.contactHidden && <Avatar name={c.name} photoUrl={c.photoUrl} size="sm" enlarge />}
                           <Link to={c.id} className="data-table__link">
                             {c.contactHidden ? t.customers.hiddenLabel : c.name}
                           </Link>

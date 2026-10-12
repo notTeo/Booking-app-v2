@@ -112,7 +112,7 @@ export default function BookingDetailsModal({
       <div className="modal__header">
         <div className="booking-detail__head">
           {!isBlock && !booking.customer.contactHidden && booking.customer.photoUrl && (
-            <Avatar name={booking.customer.name} photoUrl={booking.customer.photoUrl} size="lg" />
+            <Avatar name={booking.customer.name} photoUrl={booking.customer.photoUrl} size="lg" enlarge />
           )}
           {!isBlock && (
             <span className={`badge ${booking.rescheduledTo ? 'badge--canceled' : BADGE[booking.status]}`}>

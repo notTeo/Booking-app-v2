@@ -186,7 +186,7 @@ export default function ShopTeamPage() {
                   <tr key={member.id} role="row" className="is-clickable" onClick={handleRowClick(() => navigate(member.id))}>
                     <td role="cell" data-label={t.team.email} className="data-table__title">
                       <span className="data-table__identity">
-                        <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" />
+                        <Avatar name={member.name} photoUrl={member.photoUrl} size="sm" enlarge />
                         <Link to={member.id} className="data-table__link">{member.email ?? member.name}</Link>
                       </span>
                       {!member.userId && (

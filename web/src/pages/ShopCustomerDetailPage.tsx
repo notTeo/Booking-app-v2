@@ -228,7 +228,7 @@ export default function ShopCustomerDetailPage() {
       <div className="customer-head">
         <div className="card team-member-card">
           {!customer.contactHidden && customer.photoUrl && (
-            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />
+            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" enlarge />
           )}
           <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
           <div className="cluster">
@@ -281,7 +281,7 @@ export default function ShopCustomerDetailPage() {
           )}
           {customer.changeRequest.photoUrl && (
             <div className="cluster">
-              <Avatar name={customer.name} photoUrl={customer.changeRequest.photoUrl} size="lg" />
+              <Avatar name={customer.name} photoUrl={customer.changeRequest.photoUrl} size="lg" enlarge />
               <span className="t-body-sm">{t.customerProfile.changesPhoto}</span>
             </div>
           )}
