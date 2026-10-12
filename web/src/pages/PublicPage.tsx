@@ -36,6 +36,8 @@ import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
+import PhoneInput from '../components/PhoneInput';
+import { formatPhone } from '../utils/phone';
 
 // Mounted at /:slug, so it also receives every mistyped top-level URL. Anything
 // that can't be a slug, or that the API says doesn't exist, gets the real 404
@@ -290,7 +292,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
               </p>
               {(confirmation.phone || confirmation.email) && (
                 <p className="card__text">
-                  {confirmation.phone && <strong>{confirmation.phone}</strong>}
+                  {confirmation.phone && <strong>{formatPhone(confirmation.phone)}</strong>}
                   {confirmation.phone && confirmation.email && ' / '}
                   {confirmation.email && <strong>{confirmation.email}</strong>}
                 </p>
@@ -407,13 +409,11 @@ function PublicBookingPage({ slug }: { slug: string }) {
                     <label className="field__label" htmlFor="b-phone">
                       {t.public.phoneLabel} <span className="field__required">*</span>
                     </label>
-                    <input
+                    <PhoneInput
                       id="b-phone"
-                      className="input"
-                      type="tel"
                       placeholder={t.public.phonePlaceholder}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={setPhone}
                       autoComplete="tel"
                     />
                   </div>
@@ -515,7 +515,7 @@ function PublicBookingPage({ slug }: { slug: string }) {
             {identity === 'known' && step === 1 && (
               <p className="booking-card__who">
                 {t.public.bookingAs.replace('{name}', '')}
-                <strong>{name || phone}</strong>
+                <strong>{name || formatPhone(phone)}</strong>
                 {' · '}
                 <button type="button" className="booking-card__change" onClick={handleDeclineIdentity}>{t.public.change}</button>
               </p>

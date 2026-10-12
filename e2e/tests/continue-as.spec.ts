@@ -14,7 +14,9 @@ import { pickService } from '../support/booking';
  * The shop is open until 23:30, so a 30-minute service ends with a 23:00 slot
  * and the customer's 60-minute version of it with 22:30.
  */
-const PHONE = '6900008811';
+const PHONE = '+306900008811';
+// The same number as its field shows it, beside the country code.
+const PHONE_SHOWN = '690 000 8811';
 // Days no other spec books on; the first test books on `date`, so its second
 // half looks at the day after.
 const date = addDays(athensDate(), 20);
@@ -90,7 +92,7 @@ test('saved details: "yes" offers their own times, "no" the standard ones', asyn
   // The booking itself runs the customer's 60 minutes.
   await page.getByRole('button', { name: '22:30', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
-  await expect(page.locator('#b-phone')).toHaveValue(PHONE);
+  await expect(page.locator('#b-phone')).toHaveValue(PHONE_SHOWN);
   await page.locator('.booking-card__actions').getByRole('button').last().click();
   await expect(page.getByRole('heading', { name: /confirmed/i })).toBeVisible();
   const [booking] = await query<{ minutes: number }>(
@@ -120,7 +122,7 @@ test('nothing saved: the phone is optional, and entering it offers their own tim
   await expect(use).toBeDisabled();
   await page.getByLabel('Your phone').fill(PHONE);
   await use.click();
-  await expect(page.getByText(`Booking as ${PHONE}`)).toBeVisible();
+  await expect(page.getByText(`Booking as +30 ${PHONE_SHOWN}`)).toBeVisible();
 
   await pickServiceAndDate(page, nextDate);
   await expect(lastStandardSlot(page)).toHaveCount(0);
@@ -153,6 +155,6 @@ test('shop wizard: picking the customer first shows their duration and times', a
 
   await page.getByRole('button', { name: '21:30', exact: true }).click();
   await page.getByRole('button', { name: /continue/i }).click();
-  await expect(page.locator('#b-phone')).toHaveValue(PHONE);
+  await expect(page.locator('#b-phone')).toHaveValue(`+30 ${PHONE_SHOWN}`);
   await expect(page.locator('#b-name')).toHaveValue('Ida Returning');
 });

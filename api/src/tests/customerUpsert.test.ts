@@ -63,7 +63,7 @@ const owner = (
 describe('customer upsert on booking creation', () => {
   it('public: a new phone number creates a new customer with the given details', async () => {
     const t = await shop();
-    const phone = '6900000100';
+    const phone = '+306900000100';
     const res = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     expect(res.status).toBe(201);
 
@@ -76,7 +76,7 @@ describe('customer upsert on booking creation', () => {
 
   it('public: an existing phone number is attached to the existing customer, whose name/email are left unchanged', async () => {
     const t = await shop();
-    const phone = '6900000101';
+    const phone = '+306900000101';
     const first = await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     expect(first.status).toBe(201);
 
@@ -110,7 +110,7 @@ describe('customer upsert on booking creation', () => {
 
   it('public: a booking with no email never blanks out an email already on file', async () => {
     const t = await shop();
-    const phone = '6900000102';
+    const phone = '+306900000102';
     await pub(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     await pub(t, phone, 'Nikos', SECOND); // no email this time
 
@@ -122,7 +122,7 @@ describe('customer upsert on booking creation', () => {
 
   it('owner/staff: an existing phone number still updates the customer record (unchanged, deliberate behaviour)', async () => {
     const t = await shop();
-    const phone = '6900000103';
+    const phone = '+306900000103';
     await owner(t, phone, 'Nikos', FIRST, 'nikos@example.com');
     const second = await owner(
       t,

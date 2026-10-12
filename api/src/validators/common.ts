@@ -18,11 +18,25 @@ export const PRICE_MAX_CENTS = 10_000_000;
 // caps at 15) without asserting a specific country's format.
 const PHONE_CHARS = /^\+?[\d\s().-]+$/;
 
-// The one stored form of a phone number: digits, with a leading + kept. The
-// same number typed with spaces or dashes is then the same customer. A missing
-// country code is not guessed, so "694…" and "+30694…" stay different.
-export const normalizePhone = (value: string): string =>
+// A number typed without a country code is taken to be one of this country's.
+export const DEFAULT_CALLING_CODE = '30';
+
+// Digits, with a leading + kept: what a phone search is matched against.
+export const phoneDigits = (value: string): string =>
   (value.trim().startsWith('+') ? '+' : '') + value.replace(/\D/g, '');
+
+// The one stored form of a phone number: + and the country code, then digits.
+// The same number typed with spaces, dashes, "00" or no country code at all is
+// then the same number ("694…", "0030694…" and "+30 694…" alike).
+export const normalizePhone = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (value.trim().startsWith('+')) return `+${digits}`;
+  if (digits.startsWith('00')) return `+${digits.slice(2)}`;
+  // A national number of this country with its code typed in front, no "+".
+  if (digits.length === 12 && digits.startsWith(DEFAULT_CALLING_CODE))
+    return `+${digits}`;
+  return `+${DEFAULT_CALLING_CODE}${digits}`;
+};
 
 export const isPlausiblePhone = (value: unknown): boolean => {
   if (typeof value !== 'string' || !PHONE_CHARS.test(value)) return false;

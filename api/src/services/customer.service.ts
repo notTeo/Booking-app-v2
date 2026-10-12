@@ -17,6 +17,7 @@ import {
   NOTES_MAX_LENGTH,
   isPlausiblePhone,
   normalizePhone,
+  phoneDigits,
 } from '../validators/common';
 
 async function requireCustomerInShop(customerId: string, shopId: string) {
@@ -65,7 +66,7 @@ export const listCustomers = async (
         { phone: { contains: search } },
         // Phones are stored without separators; "694 123" still finds it.
         ...(/\d/.test(search) && /^[\d\s().+-]+$/.test(search)
-          ? [{ phone: { contains: normalizePhone(search) } }]
+          ? [{ phone: { contains: phoneDigits(search) } }]
           : []),
       ],
     }),

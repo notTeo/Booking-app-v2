@@ -14,10 +14,10 @@ import { confirmBooking, pickServiceAndProvider } from '../support/booking';
  * the owner to accept them.
  */
 const PHOTO = join(__dirname, '../fixtures/photo.jpg');
-const PHONE = '6947770001';
-const HAND_PHONE = '6947770002';
-const NEW_PHONE = '6947770004';
-const BOOK_PHONE = '6947770003';
+const PHONE = '+306947770001';
+const HAND_PHONE = '+306947770002';
+const NEW_PHONE = '+306947770004';
+const BOOK_PHONE = '+306947770003';
 // A day no other spec books on.
 const bookDate = addDays(athensDate(), 23);
 const profileUrl = `/${E2E.shop.slug}/profile`;
@@ -137,7 +137,7 @@ for (const theme of ['light', 'dark'] as const) {
     const changes = page.locator('.card', { hasText: 'Changes this customer asked for' });
     await expect(changes.getByText('Katerina Papadaki')).toBeVisible();
     await expect(changes.getByText('katerina@example.com')).toBeVisible();
-    await expect(changes.getByText(NEW_PHONE)).toBeVisible();
+    await expect(changes.getByText('+30 694 777 0004')).toBeVisible();
     expect(await noHorizontalScroll(page)).toBe(true);
     await changes.getByRole('button', { name: 'Accept' }).click();
     await expect(changes).toHaveCount(0);

@@ -6,6 +6,7 @@ import { getCustomers, mergeCustomer, type Customer, type MergedCustomer } from 
 import { apiErrorMessage } from '../utils/apiError';
 import Alert from './Alert';
 import Modal from './Modal';
+import { formatPhone } from '../utils/phone';
 
 interface Props {
   shopId: string;
@@ -74,8 +75,8 @@ export default function MergeCustomerModal({ shopId, target, onMerged, onClose }
           <>
             <Alert variant="warning">
               {t.customers.mergeSummary
-                .replace('{source}', `${source.name} (${source.phone})`)
-                .replace('{target}', `${target.name} (${target.phone})`)}
+                .replace('{source}', `${source.name} (${formatPhone(source.phone)})`)
+                .replace('{target}', `${target.name} (${formatPhone(target.phone)})`)}
             </Alert>
             <button type="button" className="btn btn--ghost btn--sm" onClick={() => setSource(null)} disabled={merging}>
               {t.customers.mergeChange}
@@ -105,7 +106,7 @@ export default function MergeCustomerModal({ shopId, target, onMerged, onClose }
                   <li key={c.id} className="list__item">
                     <span>
                       <span className="t-body-sm">{c.name}</span>{' '}
-                      <span className="t-body-sm t-muted">{c.phone}</span>
+                      <span className="t-body-sm t-muted">{formatPhone(c.phone)}</span>
                     </span>
                     <button type="button" className="btn btn--secondary btn--sm" onClick={() => setSource(c)}>
                       {t.customers.mergeSelect}

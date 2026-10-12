@@ -72,7 +72,7 @@ describe('TI-05 (accepted): GET /public/:slug/slots follows the identified custo
     const t = await createTenant('Oracle');
     await addWeeklySchedule(t); // 09:00-13:00 daily
     const customer = await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Known', phone: '6912345678' },
+      data: { shopId: t.shop.id, name: 'Known', phone: '+306912345678' },
     });
     await prisma.customerServiceDuration.create({
       data: { customerId: customer.id, serviceId: t.service.id, duration: 120 },

@@ -8,6 +8,7 @@ import { apiErrorMessage } from '../utils/apiError';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import { isPlausiblePhone } from '../utils/phone';
+import PhoneInput from '../components/PhoneInput';
 import { isPlausibleSlug, publicProfilePath, publicShopPath } from '../utils/publicLink';
 import { rememberPhotoAdded } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
@@ -143,13 +144,11 @@ function ProfileForm({ slug }: { slug: string }) {
                 <label className="field__label" htmlFor={`${uid}-phone`}>
                   {t.public.phoneLabel} <span className="field__required">*</span>
                 </label>
-                <input
+                <PhoneInput
                   id={`${uid}-phone`}
-                  className="input"
-                  type="tel"
                   placeholder={t.public.phonePlaceholder}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={setPhone}
                   autoComplete="tel"
                   disabled={submitting}
                 />
@@ -158,13 +157,11 @@ function ProfileForm({ slug }: { slug: string }) {
               {numberChanged ? (
                 <div className="field">
                   <label className="field__label" htmlFor={`${uid}-new-phone`}>{c.newPhoneLabel}</label>
-                  <input
+                  <PhoneInput
                     id={`${uid}-new-phone`}
-                    className="input"
-                    type="tel"
                     placeholder={t.public.phonePlaceholder}
                     value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
+                    onChange={setNewPhone}
                     autoComplete="tel"
                     aria-describedby={`${uid}-new-phone-hint`}
                     disabled={submitting}

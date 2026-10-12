@@ -65,7 +65,7 @@ test('a 503 BOOKING_BUSY response shows a neutral notice, keeps the form, and re
 
   // The typed values are untouched.
   await expect(page.locator('#b-name')).toHaveValue('Busy Tester');
-  await expect(page.locator('#b-phone')).toHaveValue('6900009999');
+  await expect(page.locator('#b-phone')).toHaveValue('690 000 9999');
 
   // The button stays disabled through the server's Retry-After window, then
   // re-enables on its own (no auto-resubmit).

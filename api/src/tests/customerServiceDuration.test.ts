@@ -19,7 +19,7 @@ const api = await serve(app);
 // The shop is open 09:00-13:00 Athens time, i.e. 07:00-11:00 UTC.
 const DATE = '2026-12-08';
 const START = '2026-12-08T08:00:00.000Z';
-const PHONE = '6900000001';
+const PHONE = '+306900000001';
 const minutes = (b: { startTime: Date; endTime: Date }) =>
   (b.endTime.getTime() - b.startTime.getTime()) / 60_000;
 
@@ -112,7 +112,7 @@ describe('a custom duration sets the length of new bookings', () => {
     expect(own.status, JSON.stringify(own.body)).toBe(201);
     expect(own.body.data.endTime).toBe('2026-12-08T09:00:00.000Z');
 
-    const std = await ownerBook(t, '6900000002', '2026-12-08T09:00:00.000Z');
+    const std = await ownerBook(t, '+306900000002', '2026-12-08T09:00:00.000Z');
     expect(std.body.data.endTime).toBe('2026-12-08T09:30:00.000Z');
   });
 
@@ -180,7 +180,7 @@ describe('public slots for a returning customer', () => {
     expect(lastSlot((await slots(PHONE)).body)).toBe('12:00');
 
     // An unknown or malformed phone gets the standard times, same shape.
-    for (const phone of ['6900000099', 'not-a-phone', '']) {
+    for (const phone of ['+306900000099', 'not-a-phone', '']) {
       const res = await slots(phone);
       expect(res.status).toBe(200);
       expect(lastSlot(res.body)).toBe('12:30');
@@ -231,7 +231,7 @@ describe('customers with custom durations in lists, merges and exports', () => {
   it('the list flags them and can filter to them', async () => {
     const { t, customer } = await shopWithSlowCustomer();
     await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Plain', phone: '6900000002' },
+      data: { shopId: t.shop.id, name: 'Plain', phone: '+306900000002' },
     });
     const list = (qs = '') =>
       api
@@ -267,7 +267,7 @@ describe('customers with custom durations in lists, merges and exports', () => {
       data: { customerId: source.id, serviceId: beard.id, duration: 25 },
     });
     const target = await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Target', phone: '6900000002' },
+      data: { shopId: t.shop.id, name: 'Target', phone: '+306900000002' },
     });
     await prisma.customerServiceDuration.create({
       data: { customerId: target.id, serviceId: t.service.id, duration: 45 },

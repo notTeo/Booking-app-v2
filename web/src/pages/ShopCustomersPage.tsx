@@ -13,6 +13,7 @@ import '../styles/pages/team.css';
 import Alert from '../components/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faPlus, faUserPen } from '@fortawesome/free-solid-svg-icons';
+import { formatPhone } from '../utils/phone';
 
 const PAGE_SIZE = 20;
 // How long typing must pause before the search is sent.
@@ -222,7 +223,7 @@ export default function ShopCustomersPage() {
                           )}
                         </span>
                       </td>
-                      <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : c.phone}</td>
+                      <td role="cell" data-label={t.customers.phoneCol}>{c.contactHidden ? '—' : formatPhone(c.phone)}</td>
                       <td role="cell" data-label={t.customers.emailCol}>{c.contactHidden ? '—' : c.email ?? '—'}</td>
                       <td role="cell" data-label={t.customers.addedCol}>
                         {new Date(c.createdAt).toLocaleDateString()}

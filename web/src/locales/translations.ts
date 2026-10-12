@@ -963,6 +963,7 @@ export interface Translations {
     namePlaceholder: string;
     phoneLabel: string;
     phonePlaceholder: string;
+    phoneCodeLabel: string;
     emailLabel: string;
     emailOptional: string;
     emailHint: string;
@@ -2503,7 +2504,8 @@ home: {
       nameLabel: 'Όνομα',
       namePlaceholder: 'Το όνομά σας',
       phoneLabel: 'Τηλέφωνο',
-      phonePlaceholder: '+30 697 000 0000',
+      phonePlaceholder: '697 000 0000',
+      phoneCodeLabel: 'Κωδικός χώρας',
       emailLabel: 'Email',
       emailOptional: '(προαιρετικό)',
       emailHint: 'Προσθέστε email για να λάβετε λεπτομέρειες κράτησης και σύνδεσμο ακύρωσης',
@@ -4068,7 +4070,8 @@ home: {
       nameLabel: 'Name',
       namePlaceholder: 'Your name',
       phoneLabel: 'Phone',
-      phonePlaceholder: '+1 555 000 0000',
+      phonePlaceholder: '697 000 0000',
+      phoneCodeLabel: 'Country code',
       emailLabel: 'Email',
       emailOptional: '(optional)',
       emailHint: 'Add your email to receive booking details and a cancellation link',

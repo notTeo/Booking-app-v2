@@ -23,6 +23,7 @@ import Alert from './Alert';
 import BookingProducts from './BookingProducts';
 import ConfirmDialog from './ConfirmDialog';
 import Modal from './Modal';
+import { formatPhone } from '../utils/phone';
 
 const BADGE: Record<BookingStatus, string> = {
   PENDING: 'badge--warning',
@@ -169,7 +170,7 @@ export default function BookingDetailsModal({
           {!booking.customer.contactHidden && !isBlock && (
             <div className="detail-row">
               <FontAwesomeIcon icon={faPhone} className="detail-row__icon" aria-hidden="true" />
-              <div className="detail-row__main">{booking.customer.phone}</div>
+              <div className="detail-row__main">{formatPhone(booking.customer.phone)}</div>
             </div>
           )}
           {booking.notes && (

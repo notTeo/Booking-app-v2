@@ -33,6 +33,8 @@ import { apiErrorField } from '../utils/apiError';
 import Avatar from '../components/Avatar';
 import PhotoField from '../components/PhotoField';
 import { bookingServiceNames } from '../utils/bookingServices';
+import PhoneInput from '../components/PhoneInput';
+import { formatPhone } from '../utils/phone';
 
 const BOOKINGS_PAGE_SIZE = 10;
 
@@ -248,7 +250,7 @@ export default function ShopCustomerDetailPage() {
           {(
             [
               [t.customers.nameLabel, customer.name, customer.changeRequest.name],
-              [t.customers.phoneLabel, customer.phone, customer.changeRequest.phone],
+              [t.customers.phoneLabel, formatPhone(customer.phone), formatPhone(customer.changeRequest.phone)],
               [t.customers.emailLabel, customer.email, customer.changeRequest.email],
             ] as const
           ).map(
@@ -382,10 +384,7 @@ export default function ShopCustomerDetailPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-phone`}>{t.customers.phoneLabel}</label>
-            <input id={`${uid}-phone`} className="input"
-              value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
-            />
+            <PhoneInput id={`${uid}-phone`} value={editPhone} onChange={setEditPhone} />
           </div>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-email`}>{t.customers.emailLabel}</label>

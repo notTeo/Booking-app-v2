@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { useLang } from '../../context/LanguageContext';
-import { isPlausiblePhone } from '../../utils/phone';
+import { formatPhone, isPlausiblePhone } from '../../utils/phone';
+import PhoneInput from '../PhoneInput';
 import Alert from '../Alert';
 
 /**
@@ -44,7 +45,7 @@ export default function PublicIdentityStep({
     return (
       <Alert
         variant="info"
-        title={i.askTitle.replace('{name}', name || phone)}
+        title={i.askTitle.replace('{name}', name || formatPhone(phone))}
         actions={
           <>
             <button type="button" className="btn btn--sm" onClick={onConfirm}>{i.yes}</button>
@@ -60,7 +61,7 @@ export default function PublicIdentityStep({
   if (identity === 'known') {
     return (
       <div className="cluster cluster--tight t-body-sm t-muted">
-        <span>{i.knownAs} <strong>{name || phone}</strong></span>
+        <span>{i.knownAs} <strong>{name || formatPhone(phone)}</strong></span>
         <button type="button" className="btn btn--ghost btn--sm" onClick={onDecline}>{i.notYou}</button>
       </div>
     );
@@ -83,12 +84,10 @@ export default function PublicIdentityStep({
       }}
     >
       <label className="field__label" htmlFor={`${uid}-phone`}>{i.phoneLabel}</label>
-      <input
+      <PhoneInput
         id={`${uid}-phone`}
-        className="input"
-        type="tel"
         value={typed}
-        onChange={(e) => setTyped(e.target.value)}
+        onChange={setTyped}
         placeholder={t.public.phonePlaceholder}
         autoComplete="tel"
         aria-describedby={`${uid}-hint`}

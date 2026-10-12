@@ -11,6 +11,7 @@ import { useShop } from '../../context/ShopContext';
 import Alert from '../Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
+import { formatPhone } from '../../utils/phone';
 
 export interface OwnerCustomerFormValues {
   name: string;
@@ -76,7 +77,7 @@ export default function OwnerCustomerFormStep({
   // out-of-hours one, so the panel and button say that instead.
   const onlyOffGrid = outsideRules.length > 0 && outsideRules.every((c) => c === 'OFF_SLOT_GRID');
 
-  const [phone, setPhone] = useState(initialCustomer?.phone ?? '');
+  const [phone, setPhone] = useState(formatPhone(initialCustomer?.phone));
   const [name, setName] = useState(initialCustomer?.name ?? '');
   const [email, setEmail] = useState(initialCustomer?.email ?? '');
   const [notes, setNotes] = useState('');
@@ -99,7 +100,7 @@ export default function OwnerCustomerFormStep({
 
   // The latest phone text, so a slow look-up that returns after the user kept
   // typing is discarded instead of filling in for a number no longer shown.
-  const phoneRef = useRef(initialCustomer?.phone ?? '');
+  const phoneRef = useRef(formatPhone(initialCustomer?.phone));
 
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
@@ -134,8 +135,8 @@ export default function OwnerCustomerFormStep({
   }
 
   function selectCustomer(c: Customer) {
-    phoneRef.current = c.phone;
-    setPhone(c.phone);
+    phoneRef.current = formatPhone(c.phone);
+    setPhone(phoneRef.current);
     setName((n) => fillIfEmpty(n, c.name));
     setEmail((m) => fillIfEmpty(m, c.email));
     setShowDropdown(false);
@@ -216,7 +217,7 @@ export default function OwnerCustomerFormStep({
                     onClick={() => selectCustomer(c)}
                   >
                     <strong>{c.name}</strong>
-                    <span className="suggest__meta">{c.phone}</span>
+                    <span className="suggest__meta">{formatPhone(c.phone)}</span>
                   </button>
                 </li>
               ))}

@@ -40,7 +40,7 @@ async function shop() {
 const publicBook = (t: Tenant, body: object) =>
   api.post(`/public/${t.shop.slug}/book`).send({
     name: 'Nikos',
-    phone: '6900001000',
+    phone: '+306900001000',
     email: 'nikos@example.com',
     staffId: t.staff.id,
     startTime: TEN,
@@ -53,7 +53,7 @@ const staffBook = (t: Tenant, body: object, token = t.token) =>
     .set(authHeader(token))
     .send({
       name: 'Nikos',
-      phone: '6900001000',
+      phone: '+306900001000',
       staffId: t.staff.id,
       startTime: TEN,
       ...body,
@@ -98,7 +98,7 @@ describe('booking several services at once', () => {
 
     const single = await publicBook(t, {
       serviceId: cut.id,
-      phone: '6900001001',
+      phone: '+306900001001',
       startTime: '2026-12-08T12:00:00+02:00',
     });
     expect(single.status).toBe(201);
@@ -110,13 +110,13 @@ describe('booking several services at once', () => {
     await publicBook(t, { serviceIds: [cut.id, beard.id] });
     const clash = await publicBook(t, {
       serviceId: cut.id,
-      phone: '6900001002',
+      phone: '+306900001002',
       startTime: '2026-12-08T11:00:00+02:00',
     });
     expect(clash.status).toBe(409);
     const after = await publicBook(t, {
       serviceId: cut.id,
-      phone: '6900001003',
+      phone: '+306900001003',
       startTime: '2026-12-08T11:30:00+02:00',
     });
     expect(after.status).toBe(201);
@@ -125,7 +125,7 @@ describe('booking several services at once', () => {
   it("uses the customer's own duration for each service", async () => {
     const { t, cut, beard } = await shop();
     const customer = await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Regular', phone: '6900001000' },
+      data: { shopId: t.shop.id, name: 'Regular', phone: '+306900001000' },
     });
     await prisma.customerServiceDuration.create({
       data: { customerId: customer.id, serviceId: beard.id, duration: 20 },

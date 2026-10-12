@@ -54,13 +54,13 @@ test('details are remembered only after the customer opts in, and forgotten when
 
   // Notes are per booking and never kept.
   const stored = JSON.parse((await storedDetails(page)) ?? '{}');
-  expect(stored).toMatchObject({ name: 'Remember Tester', phone: '6900007777', email: 'remember@example.com' });
+  expect(stored).toMatchObject({ name: 'Remember Tester', phone: '+306900007777', email: 'remember@example.com' });
   expect(stored).not.toHaveProperty('notes');
 
   // Next visit: prefilled, box already ticked.
   await goToDetailsStep(page, '11:00', true);
   await expect(page.locator('#b-name')).toHaveValue('Remember Tester');
-  await expect(page.locator('#b-phone')).toHaveValue('6900007777');
+  await expect(page.locator('#b-phone')).toHaveValue('690 000 7777');
   await expect(page.locator('#b-email')).toHaveValue('remember@example.com');
   await expect(page.locator('#b-notes')).toHaveValue('');
   await expect(remember).toBeChecked();

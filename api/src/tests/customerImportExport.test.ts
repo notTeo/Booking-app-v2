@@ -29,7 +29,7 @@ describe('GET /api/shops/:shopId/customers/export-all', () => {
       data: { name: 'Maria', email: 'maria@example.com', notes: 'vip' },
     });
     await prisma.customer.create({
-      data: { shopId: t.shop.id, name: 'Nikos', phone: '6900000001' },
+      data: { shopId: t.shop.id, name: 'Nikos', phone: '+306900000001' },
     });
     const other = await createTenant('Other');
     await createBookingRow(other);
@@ -46,7 +46,7 @@ describe('GET /api/shops/:shopId/customers/export-all', () => {
     });
     expect(res.body.data[1]).toMatchObject({
       name: 'Nikos',
-      phone: '6900000001',
+      phone: '+306900000001',
       email: null,
       bookings: 0,
     });
@@ -76,24 +76,24 @@ describe('POST /api/shops/:shopId/customers/import', () => {
         {
           shopId: t.shop.id,
           name: 'Has Email',
-          phone: '6900000001',
+          phone: '+306900000001',
           email: 'kept@example.com',
         },
-        { shopId: t.shop.id, name: 'No Email', phone: '6900000002' },
+        { shopId: t.shop.id, name: 'No Email', phone: '+306900000002' },
       ],
     });
 
     const res = await importRows(t, t.token, [
       {
         name: 'New One',
-        phone: ' 6900000003 ',
+        phone: ' 690 000 0003 ',
         email: 'new@example.com',
         notes: 'hi',
       },
-      { name: 'Changed Name', phone: '6900000001', email: 'other@example.com' },
+      { name: 'Changed Name', phone: '+306900000001', email: 'other@example.com' },
       {
         name: 'Changed Name',
-        phone: '6900000002',
+        phone: '+306900000002',
         email: 'filled@example.com',
         notes: 'note',
       },
@@ -111,9 +111,9 @@ describe('POST /api/shops/:shopId/customers/import', () => {
       orderBy: { phone: 'asc' },
     });
     expect(customers.map((c) => [c.name, c.phone, c.email, c.notes])).toEqual([
-      ['Has Email', '6900000001', 'kept@example.com', null],
-      ['No Email', '6900000002', 'filled@example.com', 'note'],
-      ['New One', '6900000003', 'new@example.com', 'hi'],
+      ['Has Email', '+306900000001', 'kept@example.com', null],
+      ['No Email', '+306900000002', 'filled@example.com', 'note'],
+      ['New One', '+306900000003', 'new@example.com', 'hi'],
     ]);
   });
 
@@ -121,10 +121,10 @@ describe('POST /api/shops/:shopId/customers/import', () => {
     const t = await createTenant('Import');
 
     const res = await importRows(t, t.token, [
-      { name: '', phone: '6900000001' },
+      { name: '', phone: '+306900000001' },
       { name: 'No Phone' },
-      { name: 'Bad Email', phone: '6900000002', email: 'nope' },
-      { name: 'Fine', phone: '6900000003' },
+      { name: 'Bad Email', phone: '+306900000002', email: 'nope' },
+      { name: 'Fine', phone: '+306900000003' },
       'not a row',
     ]);
 
@@ -142,8 +142,8 @@ describe('POST /api/shops/:shopId/customers/import', () => {
     const t = await createTenant('Import');
 
     const res = await importRows(t, t.token, [
-      { name: 'First', phone: '6900000001' },
-      { name: 'Second', phone: '6900000001', email: 'second@example.com' },
+      { name: 'First', phone: '+306900000001' },
+      { name: 'Second', phone: '+306900000001', email: 'second@example.com' },
     ]);
 
     expect(res.body.data).toMatchObject({ created: 1, updated: 1 });
@@ -175,7 +175,7 @@ describe('POST /api/shops/:shopId/customers/import', () => {
     const staff = await createStaffMember(t);
 
     const res = await importRows(t, staff.token, [
-      { name: 'X', phone: '6900000001' },
+      { name: 'X', phone: '+306900000001' },
     ]);
 
     expect(res.status).toBe(403);
