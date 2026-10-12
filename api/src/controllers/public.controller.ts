@@ -66,7 +66,7 @@ export const createBooking = async (
       key: deviceKey,
       guest: guest === true,
     });
-    if (deviceKey) setDeviceCookie(res, deviceKey);
+    if (deviceKey) setDeviceCookie(req, res, deviceKey);
     // Anonymous caller: never echo the booking row (staff email, customer and
     // shop data). The emails below use the full row server-side. The cancel
     // token does go back: it is this booking's key, and whoever made the
@@ -360,7 +360,7 @@ export const getOwnProfile = async (
       req.params.slug as string,
       deviceKey,
     );
-    if (deviceKey && data.customer) setDeviceCookie(res, deviceKey);
+    if (deviceKey && data.customer) setDeviceCookie(req, res, deviceKey);
     // Someone's own details: not for any cache to keep.
     res.set('Cache-Control', 'no-store');
     successResponse(res, data);
@@ -390,7 +390,7 @@ export const saveCustomerProfile = async (
       },
       deviceKey,
     );
-    setDeviceCookie(res, deviceKey);
+    setDeviceCookie(req, res, deviceKey);
     successResponse(res, data);
   } catch (err) {
     next(err);

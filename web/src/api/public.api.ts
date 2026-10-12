@@ -107,6 +107,17 @@ export interface CustomerProfilePayload {
   photoOnly?: boolean;
 }
 
+/**
+ * After the API has set or renewed the browser's key cookie, the site's own
+ * host sets it once more (web/api/customer-key.ts says why). Production only:
+ * the function exists on the deployed site, not on the dev server. Nothing
+ * waits for it, and nothing breaks without it.
+ */
+const keepCustomerKey = () => {
+  if (!import.meta.env.PROD) return;
+  fetch('/api/customer-key', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined);
+};
+
 /** The customer this browser is at a shop, as the shop has them. */
 export interface OwnProfile {
   name: string;
@@ -120,7 +131,10 @@ export interface OwnProfile {
  * from it (the API knows it by a cookie), or null for a browser it has not seen.
  */
 export const getOwnProfile = (slug: string) =>
-  client.get(`/public/${slug}/me`).then((r) => r.data.data.customer as OwnProfile | null);
+  client.get(`/public/${slug}/me`).then((r) => {
+    keepCustomerKey();
+    return r.data.data.customer as OwnProfile | null;
+  });
 
 /**
  * The sign-up page's form (and the booking page's photo). The browser's own
@@ -137,7 +151,7 @@ export const submitCustomerProfile = (slug: string, payload: CustomerProfilePayl
     form.append('crop', JSON.stringify(payload.photo.crop));
     form.append('photo', payload.photo.file);
   }
-  return client.post(`/public/${slug}/profile`, form).then(() => undefined);
+  return client.post(`/public/${slug}/profile`, form).then(() => keepCustomerKey());
 };
 
 export interface CreateBookingPayload {
@@ -170,7 +184,10 @@ export interface BookingConfirmation {
 }
 
 export const createBooking = (slug: string, payload: CreateBookingPayload) =>
-  client.post(`/public/${slug}/book`, payload).then((r) => r.data.data as BookingConfirmation);
+  client.post(`/public/${slug}/book`, payload).then((r) => {
+    keepCustomerKey();
+    return r.data.data as BookingConfirmation;
+  });
 
 export interface CancelBookingResult {
   id: string;

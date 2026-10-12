@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'crypto';
 import type { Request, Response } from 'express';
 import type { Prisma } from '../../dist/generated/prisma';
 import type { prisma } from '../utils/prisma';
+import { env } from '../config/env';
 
 type Db = Prisma.TransactionClient | typeof prisma;
 
@@ -29,16 +30,37 @@ export const readDeviceKey = (req: Request): string | null => {
 export const newDeviceKey = () => randomBytes(32).toString('base64url');
 
 /**
+ * The site the cookie is for, when the API runs on a subdomain of the web
+ * app's own (api.example.com beside example.com): the cookie is then the whole
+ * site's, so the web app's host can set it again (web/api/customer-key.ts
+ * says why). Anywhere else (local development, an API on a host of its own)
+ * the cookie stays the API host's alone.
+ */
+export const deviceCookieDomain = (
+  apiHost: string,
+  clientUrl: string,
+): string | undefined => {
+  let site: string;
+  try {
+    site = new URL(clientUrl).hostname.replace(/^www\./, '');
+  } catch {
+    return undefined;
+  }
+  return site.includes('.') && apiHost.endsWith(`.${site}`) ? site : undefined;
+};
+
+/**
  * Hands the key to the browser, or renews the one it has. Not readable by
  * scripts, and SameSite=Lax: the web app and the API share a site, and no
  * other site's page can make the browser send it with a form.
  */
-export const setDeviceCookie = (res: Response, key: string) =>
+export const setDeviceCookie = (req: Request, res: Response, key: string) =>
   res.cookie(COOKIE, key, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: MAX_AGE_MS,
+    domain: deviceCookieDomain(req.hostname, env.clientUrl),
   });
 
 /** The shop's customer this browser is, or null. */
