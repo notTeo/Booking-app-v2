@@ -310,8 +310,23 @@ export interface Translations {
     rememberMe: string;
     error: string;
   };
+  notifications: {
+    section: string;
+    emailLabel: string;
+    emailDesc: string;
+    pushLabel: string;
+    pushDesc: string;
+    pushInstallFirst: string;
+    pushDenied: string;
+    pushUnsupported: string;
+    saveError: string;
+  };
   install: {
     button: string;
+    /** Shorter, for a button in a row. */
+    navLabel: string;
+    rowTitle: string;
+    rowDesc: string;
     guideTitle: string;
     iosSteps: string[];
     macSteps: string[];
@@ -547,6 +562,10 @@ export interface Translations {
     canManageManagersDesc: string;
     canEditShopSettings: string;
     canEditShopSettingsDesc: string;
+    managerEmailNotifications: string;
+    managerEmailNotificationsDesc: string;
+    managerPushNotifications: string;
+    managerPushNotificationsDesc: string;
     confirmPromoteManager: string;
     confirmDemoteManager: string;
     transferOwnership: string;
@@ -1833,8 +1852,22 @@ home: {
       rememberMe: 'Να με θυμάσαι',
       error: 'Η σύνδεση απέτυχε.',
     },
+    notifications: {
+      section: 'Ειδοποιήσεις',
+      emailLabel: 'Email για κρατήσεις',
+      emailDesc: 'Ένα email όταν ένας πελάτης κλείνει, αλλάζει ή ακυρώνει ραντεβού.',
+      pushLabel: 'Ειδοποιήσεις σε αυτό το κινητό',
+      pushDesc: 'Ειδοποίηση στο κινητό για τα ίδια, ακόμη κι όταν η εφαρμογή είναι κλειστή.',
+      pushInstallFirst: 'Στο iPhone λειτουργούν μόνο μέσα στην εφαρμογή. Εγκαταστήστε την πρώτα.',
+      pushDenied: 'Οι ειδοποιήσεις είναι αποκλεισμένες. Επιτρέψτε τες για το BeBooked στις ρυθμίσεις του κινητού.',
+      pushUnsupported: 'Αυτός ο browser δεν υποστηρίζει ειδοποιήσεις.',
+      saveError: 'Η αλλαγή δεν αποθηκεύτηκε. Δοκιμάστε ξανά.',
+    },
     install: {
       button: 'Εγκατάσταση εφαρμογής',
+      navLabel: 'Εγκατάσταση',
+      rowTitle: 'Εφαρμογή BeBooked',
+      rowDesc: 'Ανοίξτε το BeBooked από την οθόνη ή το Dock σας, σαν εφαρμογή.',
       guideTitle: 'Προσθέστε το BeBooked στην οθόνη σας',
       iosSteps: [
         'Πατήστε το κουμπί Κοινοποίηση (το τετράγωνο με το βέλος).',
@@ -2078,6 +2111,10 @@ home: {
       canManageManagersDesc: 'Όταν είναι ενεργό, μπορεί να προσθέτει, να αλλάζει και να αφαιρεί άλλους διαχειριστές. Αλλιώς διαχειρίζεται μόνο το προσωπικό.',
       canEditShopSettings: 'Επεξεργασία ρυθμίσεων καταστήματος',
       canEditShopSettingsDesc: 'Όταν είναι ενεργό, μπορεί να αλλάζει τα στοιχεία και τις ρυθμίσεις του καταστήματος. Αλλιώς τα βλέπει μόνο.',
+      managerEmailNotifications: 'Email για κρατήσεις',
+      managerEmailNotificationsDesc: 'Λαμβάνει email όταν ένας πελάτης κλείνει, αλλάζει ή ακυρώνει ραντεβού.',
+      managerPushNotifications: 'Ειδοποιήσεις στο κινητό',
+      managerPushNotificationsDesc: 'Λαμβάνει ειδοποίηση στο κινητό για τα ίδια, αν την ενεργοποιήσει στον λογαριασμό του.',
       confirmPromoteManager: 'Αυτό το άτομο θα γίνει διαχειριστής: θα διαχειρίζεται προσωπικό, υπηρεσίες, ωράρια, ραντεβού και πελάτες. Ο ιδιοκτήτης ορίζει αν μπορεί να διαχειρίζεται άλλους διαχειριστές ή τις ρυθμίσεις του καταστήματος.',
       confirmDemoteManager: 'Αυτό το άτομο θα χάσει την πρόσβαση διαχειριστή.',
       transferOwnership: 'Μεταβίβαση ιδιοκτησίας',
@@ -3402,8 +3439,22 @@ home: {
       rememberMe: 'Remember me',
       error: 'Login failed.',
     },
+    notifications: {
+      section: 'Notifications',
+      emailLabel: 'Booking emails',
+      emailDesc: 'An email when a customer books, reschedules or cancels.',
+      pushLabel: 'Notifications on this phone',
+      pushDesc: 'A phone notification for the same, even when the app is closed.',
+      pushInstallFirst: 'On iPhone they only work inside the app. Install it first.',
+      pushDenied: 'Notifications are blocked. Allow them for BeBooked in your phone’s settings.',
+      pushUnsupported: 'This browser does not support notifications.',
+      saveError: 'The change was not saved. Try again.',
+    },
     install: {
       button: 'Install the app',
+      navLabel: 'Install app',
+      rowTitle: 'BeBooked app',
+      rowDesc: 'Open BeBooked from your home screen or Dock, like an app.',
       guideTitle: 'Add BeBooked to your screen',
       iosSteps: [
         'Tap the Share button (the square with an arrow).',
@@ -3647,6 +3698,10 @@ home: {
       canManageManagersDesc: 'When on, they can add, change and remove other managers. When off, they manage staff only.',
       canEditShopSettings: 'Edit shop settings',
       canEditShopSettingsDesc: "When on, they can change the shop's details and settings. When off, they can only view them.",
+      managerEmailNotifications: 'Booking emails',
+      managerEmailNotificationsDesc: 'Gets an email when a customer books, reschedules or cancels.',
+      managerPushNotifications: 'Phone notifications',
+      managerPushNotificationsDesc: 'Gets a phone notification for the same, once they turn it on in their account.',
       confirmPromoteManager: 'This person will become a manager: they run staff, services, schedules, bookings and customers. The owner decides whether they can also manage other managers or edit shop settings.',
       confirmDemoteManager: 'This person will lose manager access.',
       transferOwnership: 'Transfer ownership',

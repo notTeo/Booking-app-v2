@@ -26,10 +26,9 @@ import {
 import {
   sendBookingConfirmationEmail,
   sendBookingRescheduledEmail,
-  sendBookingRescheduledNotificationEmail,
   sendCancellationConfirmationEmail,
-  sendNewBookingNotificationEmail,
 } from '../services/email.service';
+import { notifyShopOfBooking } from '../services/notify.service';
 import { bookingEmailParams } from '../utils/bookingEmail';
 import { prisma } from '../utils/prisma';
 import {
@@ -103,31 +102,19 @@ export const createBooking = async (
       );
     }
 
-    prisma.userShop
-      .findFirst({
-        where: { shopId: booking.shopId, role: 'owner' },
-        include: { user: { select: { locale: true } } },
-      })
-      .then((owner) => {
-        if (!owner?.email) return;
-        return sendNewBookingNotificationEmail({
-          email: owner.email,
-          customerName: booking.customer.name,
-          customerPhone: booking.customer.phone,
-          shopName: booking.shop.name,
-          serviceName: bookingServiceNames(booking),
-          staffName: booking.staff.name ?? 'Staff',
-          startTime: booking.startTime,
-          timezone: booking.shop.timezone,
-          products: booking.products.filter((p) => p.quantity > 0),
-          servicePrice: bookingServicesPrice(booking),
-          // The owner's own language, not the customer's.
-          locale: parseLocale(owner.user?.locale),
-        });
-      })
-      .catch((err) =>
-        logger.error(err, 'Failed to send new booking notification email'),
-      );
+    void notifyShopOfBooking('new', {
+      shopId: booking.shopId,
+      shopName: booking.shop.name,
+      shopSlug: booking.shop.slug,
+      timezone: booking.shop.timezone,
+      customerName: booking.customer.name,
+      customerPhone: booking.customer.phone,
+      serviceName: bookingServiceNames(booking),
+      staffName: booking.staff.name ?? 'Staff',
+      startTime: booking.startTime,
+      products: booking.products.filter((p) => p.quantity > 0),
+      servicePrice: bookingServicesPrice(booking),
+    });
   } catch (err) {
     next(err);
   }
@@ -162,6 +149,18 @@ export const cancelBooking = async (
         logger.error(err, 'Failed to send cancellation confirmation email'),
       );
     }
+
+    void notifyShopOfBooking('cancelled', {
+      shopId: booking.shopId,
+      shopName: booking.shop.name,
+      shopSlug: booking.shop.slug,
+      timezone: booking.shop.timezone,
+      customerName: booking.customer.name,
+      customerPhone: booking.customer.phone,
+      serviceName: bookingServiceNames(booking),
+      staffName: booking.staff.name ?? 'Staff',
+      startTime: booking.startTime,
+    });
   } catch (err) {
     next(err);
   }
@@ -263,30 +262,18 @@ export const rescheduleBooking = async (
       );
     }
 
-    prisma.userShop
-      .findFirst({
-        where: { shopId: booking.shopId, role: 'owner' },
-        include: { user: { select: { locale: true } } },
-      })
-      .then((owner) => {
-        if (!owner?.email) return;
-        return sendBookingRescheduledNotificationEmail({
-          email: owner.email,
-          customerName: booking.customer.name,
-          customerPhone: booking.customer.phone,
-          shopName: booking.shop.name,
-          serviceName: booking.service.name,
-          staffName: booking.staff.name ?? 'Staff',
-          startTime: booking.startTime,
-          previousStartTime: previous.startTime,
-          timezone: booking.shop.timezone,
-          // The owner's own language, not the customer's.
-          locale: parseLocale(owner.user?.locale),
-        });
-      })
-      .catch((err) =>
-        logger.error(err, 'Failed to send booking rescheduled notification'),
-      );
+    void notifyShopOfBooking('rescheduled', {
+      shopId: booking.shopId,
+      shopName: booking.shop.name,
+      shopSlug: booking.shop.slug,
+      timezone: booking.shop.timezone,
+      customerName: booking.customer.name,
+      customerPhone: booking.customer.phone,
+      serviceName: booking.service.name,
+      staffName: booking.staff.name ?? 'Staff',
+      startTime: booking.startTime,
+      previousStartTime: previous.startTime,
+    });
   } catch (err) {
     next(err);
   }

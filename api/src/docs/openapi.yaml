@@ -30,6 +30,13 @@ components:
       description: Access token obtained from `/auth/login` or `/auth/refresh`
 
   schemas:
+    NotificationSettings:
+      type: object
+      properties:
+        emailNotifications: { type: boolean }
+        receivesEmail: { type: boolean }
+        receivesPush: { type: boolean }
+        pushPublicKey: { type: string, nullable: true }
     User:
       type: object
       properties:
@@ -863,6 +870,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /user/me/notifications:
+    get:
+      tags: [user]
+      summary: Booking notification settings
+      description: |
+        The caller's email switch, whether any shop notifies them (the owner
+        always; a manager only where the owner allowed it), and the VAPID public
+        key a phone subscribes to push with (null when push is off on the server).
+      operationId: getNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: success }
+                  data:
+                    $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [user]
+      summary: Turn booking emails on or off
+      operationId: updateNotifications
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [emailNotifications]
+              properties:
+                emailNotifications: { type: boolean }
+      responses:
+        '200':
+          description: The updated settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: success }
+                  data:
+                    $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /user/me/push-subscriptions:
+    post:
+      tags: [user]
+      summary: Turn push on for this phone
+      description: Saves the browser's PushSubscription for the caller (moved to them if another account had it).
+      operationId: addPushSubscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint: { type: string, format: uri }
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh: { type: string }
+                    auth: { type: string }
+      responses:
+        '201':
+          description: Subscribed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      tags: [user]
+      summary: Turn push off for this phone
+      operationId: removePushSubscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint: { type: string }
+      responses:
+        '200':
+          description: Unsubscribed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /shops/overview:
     get:

@@ -39,3 +39,21 @@ export const updateMeValidation = [
 ];
 
 export const deleteAccountValidation = [body('password').optional().isString()];
+
+export const updateNotificationsValidation = [
+  body('emailNotifications').isBoolean({ strict: true }),
+];
+
+// A browser PushSubscription as JSON. The endpoint must be the push
+// service's https URL; the keys are base64url strings.
+export const pushSubscriptionValidation = [
+  body('endpoint')
+    .isURL({ protocols: ['https'], require_protocol: true })
+    .isLength({ max: 1000 }),
+  body('keys.p256dh').isString().isLength({ min: 1, max: 200 }),
+  body('keys.auth').isString().isLength({ min: 1, max: 100 }),
+];
+
+export const pushUnsubscribeValidation = [
+  body('endpoint').isString().isLength({ min: 1, max: 1000 }),
+];

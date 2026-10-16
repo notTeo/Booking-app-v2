@@ -195,6 +195,10 @@ model UserShop {
   // staff, and the owner always has both.
   canManageManagers   Boolean @default(false)
   canEditShopSettings Boolean @default(false)
+  // Whether the owner lets this manager hear about customers' bookings
+  // (new, rescheduled, cancelled) by email and by push. Same rule as above.
+  managerEmailNotifications Boolean @default(false)
+  managerPushNotifications  Boolean @default(false)
 
   active              Boolean @default(true)
   bookableByCustomers Boolean @default(true)
@@ -270,10 +274,13 @@ model User {
   // versioned acceptance), and when.
   termsVersion    String?
   termsAcceptedAt DateTime? @db.Timestamptz(3)
+  // Their own switch for the booking emails a shop sends them.
+  emailNotifications Boolean @default(true)
   createdAt       DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
 
   refreshTokens          RefreshToken[]
+  pushSubscriptions      PushSubscription[]
   emailVerificationToken EmailVerificationToken?
   passwordResetToken     PasswordResetToken?
   pendingEmailChange     PendingEmailChange?
@@ -472,6 +479,22 @@ model Booking {
   @@index([shopId, startTime])
   @@index([staffId, startTime])
   @@index([cancelToken])
+}
+
+// One phone that has push notifications on: the browser's push endpoint and
+// its keys. Turning push off on that phone deletes the row; so does the push
+// service saying the endpoint is gone.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
 }
 
 model RefreshToken {

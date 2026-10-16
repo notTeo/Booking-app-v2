@@ -244,6 +244,10 @@ describe('side effects only happen after a successful commit', () => {
   it('a booking that ultimately fails (409/422/400) sends no email at all', async () => {
     const t = await shop();
     expect((await pub(t)).status).toBe(201);
+    // The successful booking's own notice goes out after the response.
+    await vi.waitFor(() =>
+      expect(email.sendNewBookingNotificationEmail).toHaveBeenCalled(),
+    );
     vi.clearAllMocks();
     expect((await pub(t, { phone: '6933333333' })).status).toBe(409); // slot taken
     expect(

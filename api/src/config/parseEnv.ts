@@ -21,6 +21,15 @@ const STORAGE_VARS = [
   'S3_SECRET_ACCESS_KEY',
 ] as const;
 
+// Web push (booking notifications on phones). All three or none: without
+// them push is off and only emails go out. Make a pair once with
+// `npx web-push generate-vapid-keys`; VAPID_SUBJECT is a mailto: or https: URL.
+const PUSH_VARS = [
+  'VAPID_PUBLIC_KEY',
+  'VAPID_PRIVATE_KEY',
+  'VAPID_SUBJECT',
+] as const;
+
 const NODE_ENVS = ['development', 'test', 'production'] as const;
 export type NodeEnv = (typeof NODE_ENVS)[number];
 
@@ -87,6 +96,14 @@ const buildEnv = (
         bucket: source.S3_BUCKET,
         accessKeyId: source.S3_ACCESS_KEY_ID as string,
         secretAccessKey: source.S3_SECRET_ACCESS_KEY as string,
+      }
+    : null,
+  // null = push off (no VAPID keys).
+  push: source.VAPID_PUBLIC_KEY
+    ? {
+        publicKey: source.VAPID_PUBLIC_KEY,
+        privateKey: source.VAPID_PRIVATE_KEY as string,
+        subject: source.VAPID_SUBJECT as string,
       }
     : null,
 });
@@ -159,6 +176,17 @@ export const parseEnv = (
     } catch {
       errors.push('S3_ENDPOINT must be a URL');
     }
+  }
+
+  const pushSet = PUSH_VARS.filter((key) => source[key]);
+  if (pushSet.length > 0 && pushSet.length < PUSH_VARS.length) {
+    for (const key of PUSH_VARS) {
+      if (!source[key])
+        errors.push(`${key} is required when any VAPID_* variable is set`);
+    }
+  }
+  if (source.VAPID_SUBJECT && !/^(mailto:|https:)/.test(source.VAPID_SUBJECT)) {
+    errors.push('VAPID_SUBJECT must start with mailto: or https:');
   }
 
   const access = parseDurationSeconds(source.JWT_ACCESS_EXPIRES_IN || '15m');
