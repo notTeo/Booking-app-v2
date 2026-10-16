@@ -1186,3 +1186,26 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .numbered-list { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; counter-reset: step; color: var(--text); }
 .numbered-list > li { display: flex; align-items: flex-start; gap: var(--space-3); counter-increment: step; line-height: var(--lh-sm); }
 .numbered-list > li::before { content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--space-6); height: var(--space-6); border-radius: var(--radius-full); background: var(--accent-soft); color: var(--accent); font-size: var(--fs-sm); font-weight: var(--fw-bold); }
+
+/* ---------- 33. Installed app title bar (desktop Chrome / Edge) ---------- */
+/* With "window controls overlay" the page runs up to the window's top edge
+   and the close / minimise buttons float over it. --titlebar-h is that bar's
+   height (0 everywhere else): the top of each layout makes room for it, and
+   .titlebar is an empty strip over it that drags the window. */
+:root { --titlebar-h: 0px; }
+.titlebar { display: none; }
+@media (display-mode: window-controls-overlay) {
+  :root { --titlebar-h: env(titlebar-area-height, 0px); }
+  .titlebar {
+    display: block; position: fixed; z-index: var(--z-toast);
+    top: env(titlebar-area-y, 0px); left: env(titlebar-area-x, 0px);
+    width: env(titlebar-area-width, 100%); height: var(--titlebar-h);
+    -webkit-app-region: drag; app-region: drag;
+  }
+  .app-shell > .sidebar { padding-top: calc(var(--space-4) + var(--titlebar-h)); }
+  .app-shell__main { padding-top: calc(var(--space-8) + var(--titlebar-h)); }
+  .app-shell.is-compact .app-shell__main { padding-top: var(--space-5); }
+  .navbar { top: var(--titlebar-h); }
+  .app-shell.is-compact { padding-top: var(--titlebar-h); }
+  .page--center { padding-top: calc(var(--space-6) + var(--titlebar-h)); }
+}

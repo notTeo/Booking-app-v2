@@ -26,6 +26,7 @@ import PhotoField from '../components/PhotoField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PasswordInput from '../components/PasswordInput';
 import NotificationsCard from '../components/NotificationsCard';
+import { InstallAppRow } from '../components/InstallAppButton';
 
 function formatMemberSince(iso: string, lang: string) {
   const locale = lang === 'el' ? 'el-GR' : 'en-US';
@@ -331,6 +332,7 @@ export default function AccountPage() {
             {language === 'el' ? 'English' : 'Ελληνικά'}
           </button>
         </div>
+        <InstallAppRow />
       </div>
 
       {/* Booking notifications (owners, and managers the owner allowed) */}

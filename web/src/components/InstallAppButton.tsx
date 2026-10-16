@@ -33,7 +33,7 @@ export function InstallGuideModal({ guide, onClose }: { guide: InstallGuide; onC
   );
 }
 
-/** "Install app" under the login and register forms (the sidebar has its own item). */
+/** "Install app" under the login and register forms. */
 export default function InstallAppButton() {
   const { t } = useLang();
   const { available, install, guide, guideOpen, closeGuide } = useInstallApp();
@@ -47,5 +47,26 @@ export default function InstallAppButton() {
       </button>
       {guideOpen && <InstallGuideModal guide={guide} onClose={closeGuide} />}
     </span>
+  );
+}
+
+/** Account → Preferences: install for someone already signed in. */
+export function InstallAppRow() {
+  const { t } = useLang();
+  const { available, install, guide, guideOpen, closeGuide } = useInstallApp();
+  if (!available) return null;
+
+  return (
+    <div className="setting-row">
+      <div className="setting-row__label">
+        <span className="setting-row__title">{t.install.rowTitle}</span>
+        <span className="setting-row__text">{t.install.rowDesc}</span>
+      </div>
+      <button type="button" className="btn btn--secondary btn--sm" onClick={install}>
+        <FontAwesomeIcon icon={faMobileScreenButton} aria-hidden="true" />
+        {t.install.navLabel}
+      </button>
+      {guideOpen && <InstallGuideModal guide={guide} onClose={closeGuide} />}
+    </div>
   );
 }

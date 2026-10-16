@@ -112,7 +112,7 @@
 
 .home-nav-wrapper {
   position: fixed;
-  top: 0;
+  top: var(--titlebar-h); /* below the installed app's window buttons */
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
