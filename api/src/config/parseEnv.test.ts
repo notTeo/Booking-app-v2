@@ -49,6 +49,22 @@ describe('parseEnv', () => {
     expect(parseEnv(VALID).env?.storage?.bucket).toBe('media');
   });
 
+  it('keeps push off without VAPID keys, and wants all three together', () => {
+    expect(parseEnv(VALID).env?.push).toBeNull();
+    const keys = {
+      VAPID_PUBLIC_KEY: 'pub',
+      VAPID_PRIVATE_KEY: 'priv',
+      VAPID_SUBJECT: 'mailto:a@b.c',
+    };
+    expect(parseEnv({ ...VALID, ...keys }).env?.push?.publicKey).toBe('pub');
+    expect(errorsFor({ ...keys, VAPID_PRIVATE_KEY: undefined })).toContain(
+      'VAPID_PRIVATE_KEY is required',
+    );
+    expect(errorsFor({ ...keys, VAPID_SUBJECT: 'a@b.c' })).toContain(
+      'VAPID_SUBJECT must start with',
+    );
+  });
+
   it('requires NODE_ENV, with no default', () => {
     expect(errorsFor({ NODE_ENV: undefined })).toContain('NODE_ENV');
     expect(errorsFor({ NODE_ENV: 'prod' })).toContain('NODE_ENV');

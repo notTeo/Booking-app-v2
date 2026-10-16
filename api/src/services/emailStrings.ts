@@ -151,6 +151,21 @@ const en = {
     heading: 'A customer rescheduled a booking.',
     body: 'The old time is free again and shows as rescheduled in your calendar.',
   },
+  cancelledNotice: {
+    subject: (shop: string) => `Booking cancelled at ${shop}`,
+    title: (shop: string) => `Booking cancelled — ${shop}`,
+    page: 'Cancelled',
+    heading: 'A customer cancelled a booking.',
+    body: 'The time is free again and shows as cancelled in your calendar.',
+  },
+  // Push notifications on the shop's phones (same events as the notices above).
+  push: {
+    newTitle: (shop: string) => `New booking · ${shop}`,
+    rescheduledTitle: (shop: string) => `Booking rescheduled · ${shop}`,
+    cancelledTitle: (shop: string) => `Booking cancelled · ${shop}`,
+    body: (customer: string, service: string, when: string) =>
+      `${customer} · ${service} · ${when}`,
+  },
 };
 
 export type EmailStrings = typeof en;
@@ -292,6 +307,19 @@ const el: EmailStrings = {
     page: 'Αλλαγή ώρας',
     heading: 'Ένας πελάτης άλλαξε την ώρα του ραντεβού του.',
     body: 'Η παλιά ώρα είναι ξανά ελεύθερη και εμφανίζεται ως αλλαγμένη στο ημερολόγιό σου.',
+  },
+  cancelledNotice: {
+    subject: (shop) => `Ακύρωση ραντεβού στο ${shop}`,
+    title: (shop) => `Ακύρωση ραντεβού — ${shop}`,
+    page: 'Ακύρωση',
+    heading: 'Ένας πελάτης ακύρωσε το ραντεβού του.',
+    body: 'Η ώρα είναι ξανά ελεύθερη και εμφανίζεται ως ακυρωμένη στο ημερολόγιό σου.',
+  },
+  push: {
+    newTitle: (shop) => `Νέο ραντεβού · ${shop}`,
+    rescheduledTitle: (shop) => `Αλλαγή ραντεβού · ${shop}`,
+    cancelledTitle: (shop) => `Ακύρωση ραντεβού · ${shop}`,
+    body: (customer, service, when) => `${customer} · ${service} · ${when}`,
   },
 };
 

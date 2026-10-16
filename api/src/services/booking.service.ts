@@ -1887,6 +1887,8 @@ export const cancelBookingByToken = async (token: string) => {
       customer: true,
       service: true,
       shop: true,
+      // Named in the shop's cancellation notice.
+      staff: { select: { name: true } },
       services: SERVICE_LINES,
     },
   });
