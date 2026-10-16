@@ -13,11 +13,14 @@ import {
   faHouse,
   faUser,
   faCircleQuestion,
+  faMobileScreenButton,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useLang } from '../context/LanguageContext';
 import { useNavShop } from '../hooks/useNavShop';
 import type { useSidebarWidth } from '../hooks/useSidebarWidth';
+import { useInstallApp } from '../hooks/useInstallApp';
+import { InstallGuideModal } from './InstallAppButton';
 import Wordmark from './Wordmark';
 
 interface ItemProps {
@@ -44,6 +47,30 @@ function Item({ to, icon, label, end, collapsed, onNavigate }: ItemProps) {
       <FontAwesomeIcon icon={icon} aria-hidden="true" />
       <span className="nav-item__label">{label}</span>
     </NavLink>
+  );
+}
+
+// "Install app" for someone already signed in, who never sees the login
+// page's button. Gone once installed, or where the browser can't install.
+function InstallItem({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => void }) {
+  const { t } = useLang();
+  const { available, install, guide, guideOpen, closeGuide } = useInstallApp();
+  if (!available) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className="nav-item"
+        onClick={() => { onNavigate(); install(); }}
+        aria-label={collapsed ? t.install.navLabel : undefined}
+        title={collapsed ? t.install.navLabel : undefined}
+      >
+        <FontAwesomeIcon icon={faMobileScreenButton} aria-hidden="true" />
+        <span className="nav-item__label">{t.install.navLabel}</span>
+      </button>
+      {guideOpen && <InstallGuideModal guide={guide} onClose={closeGuide} />}
+    </>
   );
 }
 
@@ -79,6 +106,7 @@ function Nav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: () => 
         </>
       )}
       <div className="sidebar__footer sidebar__nav">
+        <InstallItem collapsed={collapsed} onNavigate={onNavigate} />
         <Item to="/help" icon={faCircleQuestion} label={t.sidebar.help} collapsed={collapsed} onNavigate={onNavigate} />
         <Item to="/account" icon={faUser} label={t.sidebar.account} collapsed={collapsed} onNavigate={onNavigate} />
       </div>

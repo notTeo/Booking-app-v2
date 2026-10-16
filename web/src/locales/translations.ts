@@ -312,6 +312,8 @@ export interface Translations {
   };
   install: {
     button: string;
+    /** Shorter, for the sidebar. */
+    navLabel: string;
     guideTitle: string;
     iosSteps: string[];
     macSteps: string[];
@@ -1835,6 +1837,7 @@ home: {
     },
     install: {
       button: 'Εγκατάσταση εφαρμογής',
+      navLabel: 'Εγκατάσταση',
       guideTitle: 'Προσθέστε το BeBooked στην οθόνη σας',
       iosSteps: [
         'Πατήστε το κουμπί Κοινοποίηση (το τετράγωνο με το βέλος).',
@@ -3404,6 +3407,7 @@ home: {
     },
     install: {
       button: 'Install the app',
+      navLabel: 'Install app',
       guideTitle: 'Add BeBooked to your screen',
       iosSteps: [
         'Tap the Share button (the square with an arrow).',
