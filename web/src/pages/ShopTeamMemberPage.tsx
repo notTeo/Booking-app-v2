@@ -54,6 +54,8 @@ export default function ShopTeamMemberPage() {
   const [editCanView, setEditCanView] = useState(true);
   const [editCanManageManagers, setEditCanManageManagers] = useState(false);
   const [editCanEditSettings, setEditCanEditSettings] = useState(false);
+  const [editNotifyEmail, setEditNotifyEmail] = useState(false);
+  const [editNotifyPush, setEditNotifyPush] = useState(false);
   const [editEmail, setEditEmail] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editBookableByCustomers, setEditBookableByCustomers] = useState(true);
@@ -109,6 +111,8 @@ export default function ShopTeamMemberPage() {
         setEditCanView(m.canViewCustomerDetails);
         setEditCanManageManagers(m.canManageManagers);
         setEditCanEditSettings(m.canEditShopSettings);
+        setEditNotifyEmail(m.managerEmailNotifications);
+        setEditNotifyPush(m.managerPushNotifications);
         setEditEmail(m.email ?? '');
         setEditActive(m.active);
         setEditBookableByCustomers(m.bookableByCustomers);
@@ -136,6 +140,8 @@ export default function ShopTeamMemberPage() {
       editCanView !== member.canViewCustomerDetails ||
       editCanManageManagers !== member.canManageManagers ||
       editCanEditSettings !== member.canEditShopSettings ||
+      editNotifyEmail !== member.managerEmailNotifications ||
+      editNotifyPush !== member.managerPushNotifications ||
       editEmail !== (member.email ?? '') ||
       editActive !== member.active ||
       editBookableByCustomers !== member.bookableByCustomers ||
@@ -169,6 +175,8 @@ export default function ShopTeamMemberPage() {
         canViewCustomerDetails: boolean;
         canManageManagers?: boolean;
         canEditShopSettings?: boolean;
+        managerEmailNotifications?: boolean;
+        managerPushNotifications?: boolean;
         email?: string;
         active: boolean;
         bookableByCustomers: boolean;
@@ -184,6 +192,8 @@ export default function ShopTeamMemberPage() {
       if (viewerIsOwner && editRole === 'manager') {
         dto.canManageManagers = editCanManageManagers;
         dto.canEditShopSettings = editCanEditSettings;
+        dto.managerEmailNotifications = editNotifyEmail;
+        dto.managerPushNotifications = editNotifyPush;
       }
       if (editEmail !== (member.email ?? '')) dto.email = editEmail;
       const updated = await updateMemberRole(shop.id, memberId, dto);
@@ -194,6 +204,8 @@ export default function ShopTeamMemberPage() {
       setEditCanView(updated.canViewCustomerDetails);
       setEditCanManageManagers(updated.canManageManagers);
       setEditCanEditSettings(updated.canEditShopSettings);
+      setEditNotifyEmail(updated.managerEmailNotifications);
+      setEditNotifyPush(updated.managerPushNotifications);
       setEditEmail(updated.email ?? '');
       setEditActive(updated.active);
       setEditBookableByCustomers(updated.bookableByCustomers);
@@ -489,6 +501,28 @@ export default function ShopTeamMemberPage() {
                     checked={editCanEditSettings}
                     onChange={setEditCanEditSettings}
                     label={t.team.canEditShopSettings}
+                  />
+                </div>
+                <div className="setting-row">
+                  <div className="setting-row__label">
+                    <span className="setting-row__title">{t.team.managerEmailNotifications}</span>
+                    <span className="setting-row__text">{t.team.managerEmailNotificationsDesc}</span>
+                  </div>
+                  <Switch
+                    checked={editNotifyEmail}
+                    onChange={setEditNotifyEmail}
+                    label={t.team.managerEmailNotifications}
+                  />
+                </div>
+                <div className="setting-row">
+                  <div className="setting-row__label">
+                    <span className="setting-row__title">{t.team.managerPushNotifications}</span>
+                    <span className="setting-row__text">{t.team.managerPushNotificationsDesc}</span>
+                  </div>
+                  <Switch
+                    checked={editNotifyPush}
+                    onChange={setEditNotifyPush}
+                    label={t.team.managerPushNotifications}
                   />
                 </div>
               </>

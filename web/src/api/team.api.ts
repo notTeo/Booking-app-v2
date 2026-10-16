@@ -18,6 +18,9 @@ export interface TeamMember extends PhotoFields {
   /** Manager permissions, set by the owner. Always false for staff. */
   canManageManagers: boolean;
   canEditShopSettings: boolean;
+  /** Whether the owner lets this manager hear about customers' bookings. */
+  managerEmailNotifications: boolean;
+  managerPushNotifications: boolean;
   active: boolean;
   bookableByCustomers: boolean;
   bookableInternally: boolean;
@@ -38,6 +41,8 @@ export interface UpdateMemberRoleDto {
   canViewCustomerDetails?: boolean;
   canManageManagers?: boolean;
   canEditShopSettings?: boolean;
+  managerEmailNotifications?: boolean;
+  managerPushNotifications?: boolean;
   email?: string;
   active?: boolean;
   bookableByCustomers?: boolean;

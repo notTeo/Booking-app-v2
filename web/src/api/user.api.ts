@@ -22,3 +22,24 @@ export const setMyPhoto = <U extends PhotoFields>(file: File | null, crop: Photo
 
 export const removeMyPhoto = <U extends PhotoFields>() =>
   deletePhoto<{ user: U }>('/user/me/photo').then((data) => data.user);
+
+export interface NotificationSettings {
+  emailNotifications: boolean;
+  /** Whether any shop notifies them at all, by email / by push. */
+  receivesEmail: boolean;
+  receivesPush: boolean;
+  /** null while push is off on the server. */
+  pushPublicKey: string | null;
+}
+
+export const getNotifications = (): Promise<NotificationSettings> =>
+  client.get('/user/me/notifications').then((res) => res.data.data);
+
+export const updateNotifications = (emailNotifications: boolean): Promise<NotificationSettings> =>
+  client.patch('/user/me/notifications', { emailNotifications }).then((res) => res.data.data);
+
+export const savePushSubscription = (sub: PushSubscriptionJSON) =>
+  client.post('/user/me/push-subscriptions', sub);
+
+export const deletePushSubscription = (endpoint: string) =>
+  client.delete('/user/me/push-subscriptions', { data: { endpoint } });
