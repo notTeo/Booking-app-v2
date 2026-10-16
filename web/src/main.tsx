@@ -19,6 +19,10 @@ import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
+import { captureInstallPrompt } from './utils/installPrompt';
+
+// Before React renders: Chrome offers install once, as soon as the page loads.
+captureInstallPrompt();
 
 const queryClient = new QueryClient();
 

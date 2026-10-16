@@ -6,6 +6,7 @@ import { apiErrorMessage } from '../utils/apiError';
 import AuthTop from '../components/AuthTop';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
+import InstallAppButton from '../components/InstallAppButton';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -78,6 +79,7 @@ export default function LoginPage() {
         <div className="form-links">
           <span><Link to="/forgot-password">{t.login.forgotPassword}</Link></span>
           <span>{t.login.noAccount} <Link to="/register">{t.login.registerLink}</Link></span>
+          <InstallAppButton />
         </div>
       </div>
     </div>

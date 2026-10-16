@@ -35,6 +35,7 @@ export default function Footer() {
                 <li><Link to="/about">{t.home.aboutBadge || 'About'}</Link></li>
                 <li><a href="mailto:nikostheodosis05@gmail.com">{t.footer.contact}</a></li>
                 <li><Link to="/login">{t.home.signIn}</Link></li>
+                <li><Link to="/login">{t.install.button}</Link></li>
               </ul>
             </div>
 

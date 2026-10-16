@@ -1180,3 +1180,9 @@ button.steps__item:focus-visible { outline: 2px solid var(--focus-ring); outline
 .plan-card__features { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; font-size: var(--fs-sm); line-height: var(--lh-sm); }
 .plan-card__features li { display: flex; align-items: flex-start; gap: var(--space-3); }
 .plan-card__check { flex: none; height: var(--lh-sm); color: var(--accent); }
+
+/* ---------- 32. Numbered list ---------- */
+/* Short how-to steps (e.g. the install guide): a filled number, then the step. */
+.numbered-list { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; counter-reset: step; color: var(--text); }
+.numbered-list > li { display: flex; align-items: flex-start; gap: var(--space-3); counter-increment: step; line-height: var(--lh-sm); }
+.numbered-list > li::before { content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--space-6); height: var(--space-6); border-radius: var(--radius-full); background: var(--accent-soft); color: var(--accent); font-size: var(--fs-sm); font-weight: var(--fw-bold); }
