@@ -310,6 +310,14 @@ export interface Translations {
     rememberMe: string;
     error: string;
   };
+  install: {
+    button: string;
+    guideTitle: string;
+    iosSteps: string[];
+    macSteps: string[];
+    guideNote: string;
+    done: string;
+  };
   register: {
     title: string;
     emailLabel: string;
@@ -1824,6 +1832,22 @@ home: {
       registerLink: 'Εγγραφή',
       rememberMe: 'Να με θυμάσαι',
       error: 'Η σύνδεση απέτυχε.',
+    },
+    install: {
+      button: 'Εγκατάσταση εφαρμογής',
+      guideTitle: 'Προσθέστε το BeBooked στην οθόνη σας',
+      iosSteps: [
+        'Πατήστε το κουμπί Κοινοποίηση (το τετράγωνο με το βέλος).',
+        'Επιλέξτε «Προσθήκη στην οθόνη Αφετηρίας».',
+        'Πατήστε «Προσθήκη».',
+      ],
+      macSteps: [
+        'Ανοίξτε το μενού Αρχείο του Safari.',
+        'Επιλέξτε «Προσθήκη στο Dock».',
+        'Πατήστε «Προσθήκη».',
+      ],
+      guideNote: 'Η εφαρμογή ανοίγει κατευθείαν στον πίνακα ελέγχου. Την πρώτη φορά θα χρειαστεί να συνδεθείτε μέσα σε αυτήν.',
+      done: 'Εντάξει',
     },
     register: {
       title: 'Εγγραφή',
@@ -3377,6 +3401,22 @@ home: {
       registerLink: 'Register',
       rememberMe: 'Remember me',
       error: 'Login failed.',
+    },
+    install: {
+      button: 'Install the app',
+      guideTitle: 'Add BeBooked to your screen',
+      iosSteps: [
+        'Tap the Share button (the square with an arrow).',
+        'Choose “Add to Home Screen”.',
+        'Tap “Add”.',
+      ],
+      macSteps: [
+        'Open Safari’s File menu.',
+        'Choose “Add to Dock”.',
+        'Click “Add”.',
+      ],
+      guideNote: 'The app opens straight on your dashboard. The first time, you’ll log in once inside it.',
+      done: 'Got it',
     },
     register: {
       title: 'Register',

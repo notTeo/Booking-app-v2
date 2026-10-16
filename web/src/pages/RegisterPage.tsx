@@ -7,6 +7,7 @@ import { authStore } from '../store/authStore';
 import PasswordRequirement from '../components/PasswordRequirement';
 import { apiErrorMessage } from '../utils/apiError';
 import AuthTop from '../components/AuthTop';
+import InstallAppButton from '../components/InstallAppButton';
 import Alert from '../components/Alert';
 import PasswordInput from '../components/PasswordInput';
 
@@ -173,6 +174,7 @@ export default function RegisterPage() {
         </form>
         <div className="form-links">
           <span>{t.register.alreadyAccount} <Link to="/login">{t.register.loginLink}</Link></span>
+          <InstallAppButton />
         </div>
       </div>
     </div>
