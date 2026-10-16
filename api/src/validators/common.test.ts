@@ -1,5 +1,35 @@
 import { describe, it, expect } from 'vitest';
-import { isInstant, isPlausiblePhone } from './common';
+import {
+  isInstant,
+  isPlausiblePhone,
+  normalizePhone,
+  phoneDigits,
+} from './common';
+
+describe('normalizePhone', () => {
+  it('stores one form: + and the country code, then digits', () => {
+    expect(normalizePhone('+30 694 123 4567')).toBe('+306941234567');
+    expect(normalizePhone('+44 (7911) 123-456')).toBe('+447911123456');
+  });
+
+  it('takes a number with no country code to be a Greek one', () => {
+    expect(normalizePhone('694 123 4567')).toBe('+306941234567');
+    expect(normalizePhone('2101234567')).toBe('+302101234567');
+  });
+
+  it('reads 00 and a bare 30 in front as the country code', () => {
+    expect(normalizePhone('0030 694 123 4567')).toBe('+306941234567');
+    expect(normalizePhone('00447911123456')).toBe('+447911123456');
+    expect(normalizePhone('306941234567')).toBe('+306941234567');
+  });
+});
+
+describe('phoneDigits', () => {
+  it('keeps what was typed, without separators or a guessed country code', () => {
+    expect(phoneDigits('694 123')).toBe('694123');
+    expect(phoneDigits('+30 694')).toBe('+30694');
+  });
+});
 
 describe('isPlausiblePhone', () => {
   it('accepts real-world phone formats', () => {

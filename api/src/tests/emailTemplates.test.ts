@@ -62,6 +62,8 @@ const ACCOUNT: Record<string, () => Promise<void>> = {
       ...notification,
       ...previous,
     }),
+  'cancelled-notification': () =>
+    email.sendBookingCancelledNotificationEmail(notification),
 };
 
 const CUSTOMER: Record<string, () => Promise<void>> = {

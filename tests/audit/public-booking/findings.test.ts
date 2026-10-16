@@ -257,23 +257,26 @@ describe('PB-08: a locked shop refuses new public bookings but still takes token
 });
 
 // ── PB-09 ────────────────────────────────────────────────────────────────────
-describe('PB-09: the customer key (shopId, phone) is the raw string as typed', () => {
-  it('PB-09: the same number typed with spaces maps to the same customer', async () => {
+describe('PB-09: a phone number is stored in one form however it is typed', () => {
+  it('PB-09: the same number typed with spaces is stored like the one the shop has', async () => {
     const t = await shop();
     await prisma.customer.create({
       data: { shopId: t.shop.id, name: 'Maria', phone: '+306941234567', email: 'maria@example.com' },
     });
     const res = await book(t, { name: 'Maria', phone: '+30 694 123 4567' });
     expect(res.status).toBe(201);
+    // Two records (a browser the shop has not seen is a new customer), one
+    // phone: that is how the shop finds them to merge.
     const customers = await prisma.customer.findMany({ where: { shopId: t.shop.id } });
-    expect(customers.map((c) => c.phone)).toEqual(['+306941234567']);
+    expect(customers.map((c) => c.phone)).toEqual(['+306941234567', '+306941234567']);
   });
 });
 
 // ── PB-10 ────────────────────────────────────────────────────────────────────
-// ACCEPTED BY DESIGN (decision D3, 2026-10-06), same behaviour as TI-05.
-describe('PB-10 (accepted): X-Customer-Phone sizes the public grid for a known customer', () => {
-  it('PB-10 (accepted): a known phone gets its own durations; an unknown one gets the default grid', async () => {
+// RESOLVED (2026-10-12), with TI-05: a phone number no longer says who the
+// customer is. Only the browser they booked from gets their own durations.
+describe('PB-10 (resolved): a phone number does not size the public grid', () => {
+  it('PB-10 (resolved): a known phone gets the default grid, like an unknown one', async () => {
     const t = await shop();
     const vip = await prisma.customer.create({
       data: { shopId: t.shop.id, name: 'VIP', phone: '+306940000001' },
@@ -285,7 +288,7 @@ describe('PB-10 (accepted): X-Customer-Phone sizes the public grid for a known c
     const known = await slots(t, q, { 'x-customer-phone': '+306940000001' });
     const unknown = await slots(t, q, { 'x-customer-phone': '+306940000002' });
     const anonymous = await slots(t, q);
-    expect(known.body.data.slots).not.toEqual(anonymous.body.data.slots);
+    expect(known.body.data.slots).toEqual(anonymous.body.data.slots);
     expect(unknown.body.data.slots).toEqual(anonymous.body.data.slots);
   });
 });

@@ -119,6 +119,8 @@ export const createBookingValidation = [
   body('startTime')
     .custom(isInstant)
     .withMessage('startTime must be an ISO 8601 timestamp with a UTC offset'),
+  // "Not you?": book as someone else than the customer this browser is.
+  body('guest').optional().isBoolean().toBoolean(),
   notesValidation,
   ...productsValidation,
 ];
@@ -136,6 +138,8 @@ export const getPublicSlotsValidation = [
   query('serviceIds').optional({ values: 'falsy' }).isString(),
   // A customer rescheduling from their email link: frees their own slot.
   query('rescheduleToken').optional({ values: 'falsy' }).isUUID(),
+  // "Not you?": the standard times, not those of the customer this browser is.
+  query('guest').optional().isBoolean(),
 ];
 
 export const ownerSlotsValidation = [

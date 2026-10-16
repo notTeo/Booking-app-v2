@@ -18,6 +18,7 @@ import {
   rescheduleBooking,
   getPublicSlots,
   saveCustomerProfile,
+  getOwnProfile,
 } from '../controllers/public.controller';
 import { photoUpload } from '../middleware/photoUpload';
 import { rejectControlChars } from '../middleware/rejectControlChars';
@@ -55,6 +56,14 @@ router.get(
   getPublicSlotsValidation,
   validate,
   getPublicSlots,
+);
+// Who this browser is at the shop, by its key.
+router.get(
+  '/:slug/me',
+  publicReadLimiter,
+  getShopInfoValidation,
+  validate,
+  getOwnProfile,
 );
 router.get(
   '/:slug',

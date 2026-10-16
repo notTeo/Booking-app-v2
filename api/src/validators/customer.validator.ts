@@ -36,10 +36,10 @@ export const listCustomersValidation = [
     .optional()
     .isBoolean()
     .withMessage('hasCustomDurations must be true or false'),
-  query('pendingChanges')
+  query('duplicatePhone')
     .optional()
     .isBoolean()
-    .withMessage('pendingChanges must be true or false'),
+    .withMessage('duplicatePhone must be true or false'),
 ];
 
 // The whole list is replaced; an empty list clears every custom duration.

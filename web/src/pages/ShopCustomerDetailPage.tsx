@@ -14,8 +14,6 @@ import {
   deleteCustomer,
   removeCustomerPhoto,
   setCustomerPhoto,
-  acceptCustomerChanges,
-  rejectCustomerChanges,
   type CustomerBookingsResult,
   type CustomerDetail,
 } from '../api/customer.api';
@@ -27,12 +25,13 @@ import '../styles/pages/shop-overview.css';
 import Alert from '../components/Alert';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MergeCustomerModal from '../components/MergeCustomerModal';
+import SamePhoneAlert from '../components/SamePhoneAlert';
 import CustomerServiceDurations from '../components/CustomerServiceDurations';
 import { canManageShop } from '../utils/roles';
-import { apiErrorField } from '../utils/apiError';
 import Avatar from '../components/Avatar';
 import PhotoField from '../components/PhotoField';
 import { bookingServiceNames } from '../utils/bookingServices';
+import PhoneInput from '../components/PhoneInput';
 
 const BOOKINGS_PAGE_SIZE = 10;
 
@@ -59,10 +58,6 @@ export default function ShopCustomerDetailPage() {
 
   const [privacyBusy, setPrivacyBusy] = useState<'export' | 'delete' | null>(null);
   const [privacyError, setPrivacyError] = useState('');
-
-  // Deciding on what the customer asked to change on the sign-up page.
-  const [changesBusy, setChangesBusy] = useState<'accept' | 'reject' | null>(null);
-  const [changesError, setChangesError] = useState('');
 
   const [mergeOpen, setMergeOpen] = useState(false);
   const [mergeSuccess, setMergeSuccess] = useState('');
@@ -118,27 +113,6 @@ export default function ShopCustomerDetailPage() {
       setSaveError(t.customers.errorUpdate);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const decideChanges = async (decision: 'accept' | 'reject') => {
-    if (!shop || !customerId || changesBusy) return;
-    setChangesBusy(decision);
-    setChangesError('');
-    try {
-      const updated = await (decision === 'accept' ? acceptCustomerChanges : rejectCustomerChanges)(shop.id, customerId);
-      setCustomer(updated);
-      setEditName(updated.name);
-      setEditPhone(updated.phone);
-      setEditEmail(updated.email ?? '');
-    } catch (err: unknown) {
-      setChangesError(
-        apiErrorField(err, 'code') === 'CUSTOMER_EXISTS'
-          ? t.customerProfile.changesPhoneTaken
-          : t.customerProfile.changesError,
-      );
-    } finally {
-      setChangesBusy(null);
     }
   };
 
@@ -225,7 +199,7 @@ export default function ShopCustomerDetailPage() {
       <div className="customer-head">
         <div className="card team-member-card">
           {!customer.contactHidden && customer.photoUrl && (
-            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" />
+            <Avatar name={customer.name} photoUrl={customer.photoUrl} size="xl" enlarge />
           )}
           <h1 className="t-heading">{customer.contactHidden ? t.customers.hiddenLabel : customer.name}</h1>
           <div className="cluster">
@@ -240,53 +214,19 @@ export default function ShopCustomerDetailPage() {
         <StatCards totals={customer.totals} tiles />
       </div>
 
-      {/* What the customer asked to change themselves (owner and managers; the API enforces it too) */}
-      {customer.changeRequest && (
-        <div className="card">
-          <h2 className="card__title">{t.customerProfile.changesTitle}</h2>
-          <p className="card__text">{t.customerProfile.changesDesc}</p>
-          {(
-            [
-              [t.customers.nameLabel, customer.name, customer.changeRequest.name],
-              [t.customers.phoneLabel, customer.phone, customer.changeRequest.phone],
-              [t.customers.emailLabel, customer.email, customer.changeRequest.email],
-            ] as const
-          ).map(
-            ([label, current, asked]) =>
-              asked && (
-                <p key={label} className="card__text">
-                  <span className="label-caps">{label}</span>
-                  <br />
-                  <span className="t-muted">{current || '—'}</span> → <strong>{asked}</strong>
-                </p>
-              ),
-          )}
-          {customer.changeRequest.photoUrl && (
-            <div className="cluster">
-              <Avatar name={customer.name} photoUrl={customer.changeRequest.photoUrl} size="lg" />
-              <span className="t-body-sm">{t.customerProfile.changesPhoto}</span>
-            </div>
-          )}
-          {changesError && <Alert variant="danger">{changesError}</Alert>}
-          <div className="cluster">
-            <button
-              className={`btn${changesBusy === 'accept' ? ' is-loading' : ''}`}
-              onClick={() => decideChanges('accept')}
-              aria-busy={changesBusy === 'accept'}
-              disabled={changesBusy === 'reject'}
-            >
-              {t.customerProfile.changesAccept}
-            </button>
-            <button
-              className={`btn btn--secondary${changesBusy === 'reject' ? ' is-loading' : ''}`}
-              onClick={() => decideChanges('reject')}
-              aria-busy={changesBusy === 'reject'}
-              disabled={changesBusy === 'accept'}
-            >
-              {t.customerProfile.changesReject}
-            </button>
-          </div>
-        </div>
+      {shop && (
+        <SamePhoneAlert
+          shopId={shop.id}
+          customer={customer}
+          canMerge={canManageShop(shop.role)}
+          onMerged={(merged, keptId) => {
+            setMergeSuccess(t.customers.mergeSuccess.replace('{count}', String(merged.movedBookings)));
+            setBookingsPage(1);
+            // Merged into an older record: that is the one left to look at.
+            if (keptId !== customer.id) navigate(`../${keptId}`, { relative: 'path', replace: true });
+            else setReloadKey((k) => k + 1);
+          }}
+        />
       )}
 
       {customer.totals.all + customer.totals.canceled > 0 && <StatusDonut totals={customer.totals} />}
@@ -382,10 +322,7 @@ export default function ShopCustomerDetailPage() {
           </div>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-phone`}>{t.customers.phoneLabel}</label>
-            <input id={`${uid}-phone`} className="input"
-              value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
-            />
+            <PhoneInput id={`${uid}-phone`} value={editPhone} onChange={setEditPhone} />
           </div>
           <div className="field">
             <label className="field__label" htmlFor={`${uid}-email`}>{t.customers.emailLabel}</label>

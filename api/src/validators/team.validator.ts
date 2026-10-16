@@ -19,6 +19,8 @@ export const updateMemberRoleValidation = [
   body('canViewCustomerDetails').optional().isBoolean({ strict: true }),
   body('canManageManagers').optional().isBoolean({ strict: true }),
   body('canEditShopSettings').optional().isBoolean({ strict: true }),
+  body('managerEmailNotifications').optional().isBoolean({ strict: true }),
+  body('managerPushNotifications').optional().isBoolean({ strict: true }),
   body('email')
     .optional({ checkFalsy: true })
     .isEmail()

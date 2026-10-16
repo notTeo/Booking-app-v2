@@ -185,7 +185,7 @@ const buildCalendarUrl = (params: {
   return `https://calendar.google.com/calendar/render?${search.toString()}`;
 };
 
-const formatDate = (date: Date, timezone: string, lang: EmailLocale) =>
+export const formatDate = (date: Date, timezone: string, lang: EmailLocale) =>
   new Intl.DateTimeFormat(emailStrings[lang].intlLocale, {
     timeZone: timezone,
     weekday: 'long',
@@ -194,7 +194,7 @@ const formatDate = (date: Date, timezone: string, lang: EmailLocale) =>
     day: 'numeric',
   }).format(date);
 
-const formatTime = (date: Date, timezone: string, lang: EmailLocale) =>
+export const formatTime = (date: Date, timezone: string, lang: EmailLocale) =>
   new Intl.DateTimeFormat(emailStrings[lang].intlLocale, {
     timeZone: timezone,
     hour: emailStrings[lang].hour12 ? 'numeric' : '2-digit',
@@ -573,7 +573,7 @@ export const sendCancellationConfirmationEmail = async (params: {
 };
 
 /** What a shop is told about one of its bookings. */
-interface BookingNoticeParams {
+export interface BookingNoticeParams {
   email: string;
   customerName: string;
   customerPhone: string;
@@ -646,6 +646,37 @@ export const sendBookingRescheduledNotificationEmail = async (
         ${detailRow(labels.newDate, formatDate(params.startTime, timezone, lang))}
         ${detailRow(labels.newTime, formatTime(params.startTime, timezone, lang))}
         ${detailRow(labels.was, `${formatDate(params.previousStartTime, timezone, lang)}, ${formatTime(params.previousStartTime, timezone, lang)}`)}
+      </table>
+    `,
+    ),
+  });
+};
+
+export const sendBookingCancelledNotificationEmail = async (
+  params: BookingNoticeParams,
+) => {
+  const { styles, detailRow } = accountKit;
+  const lang = params.locale ?? currentLocale();
+  const t = emailStrings[lang];
+  const { labels } = t;
+
+  await deliver('booking cancelled notification', {
+    to: params.email,
+    subject: t.cancelledNotice.subject(params.shopName),
+    html: accountTemplate(
+      lang,
+      t.cancelledNotice.title(params.shopName),
+      t.cancelledNotice.page,
+      `
+      <h1 style="${styles.h1}">${t.cancelledNotice.heading}</h1>
+      <p style="${styles.p}">${t.cancelledNotice.body}</p>
+      ${DETAILS_TABLE}
+        ${detailRow(labels.customer, escapeHtml(params.customerName))}
+        ${detailRow(labels.phone, escapeHtml(params.customerPhone))}
+        ${detailRow(labels.service, escapeHtml(params.serviceName))}
+        ${detailRow(labels.provider, escapeHtml(params.staffName))}
+        ${detailRow(labels.date, formatDate(params.startTime, params.timezone, lang))}
+        ${detailRow(labels.time, formatTime(params.startTime, params.timezone, lang))}
       </table>
     `,
     ),

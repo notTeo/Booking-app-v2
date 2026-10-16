@@ -49,7 +49,7 @@ describe('POST /api/shops/:shopId/customers', () => {
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(res.body.data).toMatchObject({
       name: 'Maria P',
-      phone: '6941234567',
+      phone: '+306941234567',
       email: 'maria@example.com',
       notes: 'Prefers mornings',
       photoUrl: null,
@@ -64,7 +64,7 @@ describe('POST /api/shops/:shopId/customers', () => {
     const t = await createTenant('Dupe');
     const first = await create(t, t.token, {
       name: 'One',
-      phone: '6941234567',
+      phone: '+306941234567',
     });
     const again = await create(t, t.token, {
       name: 'Two',
@@ -82,14 +82,17 @@ describe('POST /api/shops/:shopId/customers', () => {
   it('lets the same phone exist in two shops', async () => {
     const a = await createTenant('ShopA');
     const b = await createTenant('ShopB');
-    await create(a, a.token, { name: 'Same', phone: '6941234567' });
-    const res = await create(b, b.token, { name: 'Same', phone: '6941234567' });
+    await create(a, a.token, { name: 'Same', phone: '+306941234567' });
+    const res = await create(b, b.token, {
+      name: 'Same',
+      phone: '+306941234567',
+    });
     expect(res.status).toBe(201);
   });
 
   it('requires a name and a plausible phone', async () => {
     const t = await createTenant('Invalid');
-    expect((await create(t, t.token, { phone: '6941234567' })).status).toBe(
+    expect((await create(t, t.token, { phone: '+306941234567' })).status).toBe(
       400,
     );
     expect((await create(t, t.token, { name: 'No phone' })).status).toBe(400);

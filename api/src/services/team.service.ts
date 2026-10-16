@@ -22,6 +22,8 @@ export interface UpdateMemberRoleDto {
   canViewCustomerDetails?: boolean;
   canManageManagers?: boolean;
   canEditShopSettings?: boolean;
+  managerEmailNotifications?: boolean;
+  managerPushNotifications?: boolean;
   email?: string;
   active?: boolean;
   bookableByCustomers?: boolean;
@@ -46,6 +48,8 @@ const MEMBER_SELECT = {
   canViewCustomerDetails: true,
   canManageManagers: true,
   canEditShopSettings: true,
+  managerEmailNotifications: true,
+  managerPushNotifications: true,
   active: true,
   bookableByCustomers: true,
   bookableInternally: true,
@@ -172,10 +176,17 @@ export const updateMemberRole = async (
   const member = await requireMemberInShop(memberId, shopId);
   requireManagerAccess(caller, member.role, dto.role);
 
-  // A manager's two extra permissions are the owner's to give. They are sent
+  // A manager's extra permissions (and whether they hear about customers'
+  // bookings) are the owner's to give. They are sent
   // with every save of the member form, so only an actual change is refused,
   // and they are cleared when the member is not (or no longer) a manager.
-  const permission = (key: 'canManageManagers' | 'canEditShopSettings') => {
+  const permission = (
+    key:
+      | 'canManageManagers'
+      | 'canEditShopSettings'
+      | 'managerEmailNotifications'
+      | 'managerPushNotifications',
+  ) => {
     if (dto.role !== 'manager') return false;
     const wanted = dto[key] ?? member[key];
     if (wanted !== member[key] && caller.role !== 'owner')
@@ -188,6 +199,8 @@ export const updateMemberRole = async (
   const managerPermissions = {
     canManageManagers: permission('canManageManagers'),
     canEditShopSettings: permission('canEditShopSettings'),
+    managerEmailNotifications: permission('managerEmailNotifications'),
+    managerPushNotifications: permission('managerPushNotifications'),
   };
 
   // A shop has one owner. Only the owner edits their own row, and its role
@@ -341,6 +354,8 @@ export const transferOwnership = async (
         role: 'manager',
         canManageManagers: false,
         canEditShopSettings: false,
+        managerEmailNotifications: false,
+        managerPushNotifications: false,
       },
     }),
     prisma.userShop.update({
@@ -349,6 +364,8 @@ export const transferOwnership = async (
         role: 'owner',
         canManageManagers: false,
         canEditShopSettings: false,
+        managerEmailNotifications: false,
+        managerPushNotifications: false,
       },
     }),
   ]);

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getShopInfo, submitCustomerProfile, type ShopInfo } from '../api/public.api';
+import { getOwnProfile, getShopInfo, submitCustomerProfile, type OwnProfile, type ShopInfo } from '../api/public.api';
 import { useLang } from '../context/LanguageContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { SITE_NAME } from '../config/seo';
@@ -8,9 +8,10 @@ import { apiErrorMessage } from '../utils/apiError';
 import { parsePublicFont, parsePublicPalette } from '../utils/branding';
 import { mediaUrl } from '../utils/media';
 import { isPlausiblePhone } from '../utils/phone';
+import PhoneInput from '../components/PhoneInput';
 import { isPlausibleSlug, publicProfilePath, publicShopPath } from '../utils/publicLink';
-import { rememberPhotoAdded } from '../utils/savedCustomer';
 import Alert from '../components/Alert';
+import Avatar from '../components/Avatar';
 import CustomerPhotoPicker, { type PickedPhoto } from '../components/CustomerPhotoPicker';
 import LangSwitch from '../components/LangSwitch';
 import PublicPalette from '../components/PublicPalette';
@@ -18,9 +19,10 @@ import SuccessCheck from '../components/SuccessCheck';
 import NotFoundPage from './NotFoundPage';
 import '../styles/pages/public.css';
 
-// The shop's customer sign-up page (/<slug>/profile), usually opened from the
-// QR code the shop prints. A customer leaves their name and phone, and a photo
-// if the shop takes them. It only ever adds to what the shop has.
+// The shop's customer page (/<slug>/profile), usually opened from the QR code
+// the shop prints. In a browser the shop has not seen, a customer leaves their
+// name and phone, and a photo if the shop takes them. In the browser they
+// signed up or booked from, they see what the shop has and change it.
 export default function PublicProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   if (!slug || !isPlausibleSlug(slug)) return <NotFoundPage />;
@@ -37,9 +39,8 @@ function ProfileForm({ slug }: { slug: string }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  // "My number has changed": the phone above is then the old one.
-  const [numberChanged, setNumberChanged] = useState(false);
-  const [newPhone, setNewPhone] = useState('');
+  // The customer this browser is at the shop (the API knows it by a cookie).
+  const [me, setMe] = useState<OwnProfile | null>(null);
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -47,8 +48,18 @@ function ProfileForm({ slug }: { slug: string }) {
 
   useEffect(() => {
     let stale = false;
-    getShopInfo(slug)
-      .then((info) => { if (!stale) setShop(info); })
+    // Nobody known reads the same as a failed look-up: an empty form.
+    Promise.all([getShopInfo(slug), getOwnProfile(slug).catch(() => null)])
+      .then(([info, own]) => {
+        if (stale) return;
+        if (own) {
+          setMe(own);
+          setName(own.name);
+          setPhone(own.phone);
+          setEmail(own.email ?? '');
+        }
+        setShop(info);
+      })
       .catch(() => { if (!stale) setShop(null); });
     return () => { stale = true; };
   }, [slug]);
@@ -80,10 +91,8 @@ function ProfileForm({ slug }: { slug: string }) {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim() || undefined,
-        ...(numberChanged && newPhone.trim() && { newPhone: newPhone.trim() }),
         ...(photo && { photo }),
       });
-      if (photo) rememberPhotoAdded(slug);
       setDone(true);
     } catch (err: unknown) {
       setError(apiErrorMessage(err, c.errorSubmit));
@@ -119,7 +128,7 @@ function ProfileForm({ slug }: { slug: string }) {
             <form className="public-booking-form" onSubmit={handleSubmit}>
               <div>
                 <h2 className="booking-card__heading">{c.pageTitle}</h2>
-                <p className="booking-card__hint">{c.pageIntro.replace('{shop}', shop.name)}</p>
+                <p className="booking-card__hint">{(me ? c.pageIntroKnown : c.pageIntro).replace('{shop}', shop.name)}</p>
               </div>
 
               <div className="field">
@@ -143,41 +152,15 @@ function ProfileForm({ slug }: { slug: string }) {
                 <label className="field__label" htmlFor={`${uid}-phone`}>
                   {t.public.phoneLabel} <span className="field__required">*</span>
                 </label>
-                <input
+                <PhoneInput
                   id={`${uid}-phone`}
-                  className="input"
-                  type="tel"
                   placeholder={t.public.phonePlaceholder}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={setPhone}
                   autoComplete="tel"
                   disabled={submitting}
                 />
               </div>
-
-              {numberChanged ? (
-                <div className="field">
-                  <label className="field__label" htmlFor={`${uid}-new-phone`}>{c.newPhoneLabel}</label>
-                  <input
-                    id={`${uid}-new-phone`}
-                    className="input"
-                    type="tel"
-                    placeholder={t.public.phonePlaceholder}
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
-                    autoComplete="tel"
-                    aria-describedby={`${uid}-new-phone-hint`}
-                    disabled={submitting}
-                  />
-                  <p id={`${uid}-new-phone-hint`} className="field__hint">{c.newPhoneHint}</p>
-                </div>
-              ) : (
-                <div className="cluster">
-                  <button type="button" className="btn btn--ghost btn--sm btn--wrap" onClick={() => setNumberChanged(true)} disabled={submitting}>
-                    {c.numberChanged}
-                  </button>
-                </div>
-              )}
 
               <div className="field">
                 <label className="field__label" htmlFor={`${uid}-email`}>
@@ -200,12 +183,17 @@ function ProfileForm({ slug }: { slug: string }) {
                   <span className="field__label">
                     {c.photoLabel} <span className="field__optional">{t.public.emailOptional}</span>
                   </span>
+                  {me?.photoUrl && !photo && (
+                    <div className="cluster cluster--tight">
+                      <Avatar name={me.name} photoUrl={me.photoUrl} size="lg" enlarge />
+                      <span className="field__hint">{c.currentPhoto}</span>
+                    </div>
+                  )}
                   <CustomerPhotoPicker value={photo} onChange={setPhoto} disabled={submitting} />
                   <p className="field__hint">{c.photoHelp}</p>
                 </div>
               )}
 
-              <p className="field__hint">{c.existingNote}</p>
               <p className="field__hint">
                 {t.public.privacyNoticeBefore}{' '}
                 <Link to="/privacy" target="_blank" rel="noopener">{t.public.privacyNoticeLink}</Link>
@@ -218,7 +206,7 @@ function ProfileForm({ slug }: { slug: string }) {
                 type="submit"
                 className={`btn btn--block${submitting ? ' is-loading' : ''}`}
                 aria-busy={submitting}
-                disabled={name.trim() === '' || !isPlausiblePhone(phone) || (numberChanged && newPhone.trim() !== '' && !isPlausiblePhone(newPhone))}
+                disabled={name.trim() === '' || !isPlausiblePhone(phone)}
               >
                 {c.submit}
               </button>

@@ -19,6 +19,23 @@ import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
+import { captureInstallPrompt } from './utils/installPrompt';
+
+// Before React renders: Chrome offers install once, as soon as the page loads.
+captureInstallPrompt();
+
+// The installed app's window (its title bar and buttons) takes the page's own
+// background, so it blends in with every theme and colour set.
+const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+const syncThemeColor = () => {
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  if (themeMeta && bg) themeMeta.content = bg;
+};
+syncThemeColor();
+new MutationObserver(syncThemeColor).observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ['data-theme', 'data-palette'],
+});
 
 const queryClient = new QueryClient();
 

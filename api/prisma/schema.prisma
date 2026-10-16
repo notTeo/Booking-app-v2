@@ -92,7 +92,7 @@ model Shop {
   invites              ShopInvite[]
   services             Service[]
   customers            Customer[]
-  customerChangeRequests CustomerChangeRequest[]
+  customerDevices      CustomerDevice[]
   bookings             Booking[]
   timeOff              TimeOff[]
   products             Product[]
@@ -195,6 +195,10 @@ model UserShop {
   // staff, and the owner always has both.
   canManageManagers   Boolean @default(false)
   canEditShopSettings Boolean @default(false)
+  // Whether the owner lets this manager hear about customers' bookings
+  // (new, rescheduled, cancelled) by email and by push. Same rule as above.
+  managerEmailNotifications Boolean @default(false)
+  managerPushNotifications  Boolean @default(false)
 
   active              Boolean @default(true)
   bookableByCustomers Boolean @default(true)
@@ -270,10 +274,13 @@ model User {
   // versioned acceptance), and when.
   termsVersion    String?
   termsAcceptedAt DateTime? @db.Timestamptz(3)
+  // Their own switch for the booking emails a shop sends them.
+  emailNotifications Boolean @default(true)
   createdAt       DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
 
   refreshTokens          RefreshToken[]
+  pushSubscriptions      PushSubscription[]
   emailVerificationToken EmailVerificationToken?
   passwordResetToken     PasswordResetToken?
   pendingEmailChange     PendingEmailChange?
@@ -303,33 +310,30 @@ model Customer {
   shop             Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   bookings         Booking[]
   serviceDurations CustomerServiceDuration[]
-  changeRequest    CustomerChangeRequest?
+  devices          CustomerDevice[]
 
-  @@unique([shopId, phone])
+  // Not unique: see utils/customerPhone.ts.
+  @@index([shopId, phone])
   @@index([shopId])
 }
 
-// What a customer asked to change about their own profile on the shop's public
-// sign-up page. Nobody is logged in there, so nothing is applied until the
-// owner or a manager accepts it. A null field is one they did not change. At
-// most one per customer: a newer request replaces the older one.
-model CustomerChangeRequest {
-  id         String  @id @default(cuid())
+// A browser one of the shop's customers booked or signed up from. It holds a
+// random key in a cookie (only its hash is kept here); whoever holds the key
+// is that customer, and may book as them and change their own details. One
+// browser can be a customer of many shops, and one customer can have many.
+model CustomerDevice {
+  id         String   @id @default(cuid())
+  keyHash    String
   shopId     String
-  customerId String  @unique
-  name       String?
-  phone      String?
-  email      String?
-  // A new photo, stored like any other (same three as Shop).
-  photoUrl         String?
-  photoOriginalUrl String?
-  photoCrop        Json?
+  customerId String
   createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime @default(now()) @db.Timestamptz(3)
 
   shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
-  @@index([shopId])
+  @@unique([keyHash, shopId])
+  @@index([customerId])
 }
 
 // How long a service takes for one particular customer, when that differs
@@ -475,6 +479,22 @@ model Booking {
   @@index([shopId, startTime])
   @@index([staffId, startTime])
   @@index([cancelToken])
+}
+
+// One phone that has push notifications on: the browser's push endpoint and
+// its keys. Turning push off on that phone deletes the row; so does the push
+// service saying the endpoint is gone.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
 }
 
 model RefreshToken {

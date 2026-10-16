@@ -20,7 +20,7 @@ const api = await serve(app);
 
 const SECRET = {
   name: 'Secret Person',
-  phone: '6955555555',
+  phone: '+306955555555',
   email: 'secret.person@example.com',
 };
 
@@ -173,9 +173,12 @@ describe('editing contact details', () => {
 
   it.each([
     ['name', { name: 'Hijacked' }],
-    ['phone', { phone: '6999999999' }],
+    ['phone', { phone: '+306999999999' }],
     ['email', { email: 'hijack@example.com' }],
-    ['all three', { name: 'H', phone: '6999999999', email: 'h@example.com' }],
+    [
+      'all three',
+      { name: 'H', phone: '+306999999999', email: 'h@example.com' },
+    ],
   ])(
     'staff without permission cannot change %s: 403 and nothing written',
     async (_l, body) => {
